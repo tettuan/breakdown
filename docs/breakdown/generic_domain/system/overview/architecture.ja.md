@@ -379,6 +379,6 @@ sequenceDiagram
 
 ### Level.1.4 カスタマイズポイント
 1. **config**: `--config/-c`でprofile指定
-2. **パラメータパターン**: 正規表現でdemonstrative/layerType制御
+2. **パラメータパターン**: 正規表現でdirective/layerType制御
 3. **ユーザー変数**: `--uv-$name=value`でプロンプト内変数制御
 

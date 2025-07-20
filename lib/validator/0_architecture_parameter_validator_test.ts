@@ -169,7 +169,6 @@ Deno.test("0_architecture - ValidatedParams type structure constraints", () => {
   const mockTwoParamsResult: TwoParams_Result = {
     type: "two",
     directiveType: "to",
-    demonstrativeType: "to",
     layerType: "project",
     options: {},
     params: ["to", "project"],
@@ -353,7 +352,6 @@ Deno.test("0_architecture - Type safety in parameter result types", () => {
   const mockTwoParamsResult = {
     type: "two" as const,
     directiveType: "to",
-    demonstrativeType: "to",
     layerType: "project",
     params: ["to", "project"],
     options: {},
@@ -393,7 +391,6 @@ Deno.test("0_architecture - Error handling maintains Result type consistency", (
   const mockTwoParamsResultForSuccess: TwoParams_Result = {
     type: "two",
     directiveType: "to",
-    demonstrativeType: "to",
     layerType: "project",
     options: {},
     params: ["to", "project"],

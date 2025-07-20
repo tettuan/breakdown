@@ -18,7 +18,6 @@ import type { TwoParams_Result } from "../../../../types/two_params_result_exten
 const mockTwoParamsResult: TwoParams_Result = {
   type: "two",
   directiveType: "to",
-  demonstrativeType: "to",
   layerType: "project",
   params: ["to", "project"],
   options: {},

@@ -15,7 +15,6 @@ import type { TwoParams_Result } from "../../../../deps.ts";
 const mockTwoParamsResult: TwoParams_Result = {
   type: "two",
   directiveType: "to",
-  demonstrativeType: "to",
   layerType: "project",
   params: ["to", "project"],
   options: {},
@@ -148,7 +147,7 @@ Deno.test("1_behavior: creates PromptPath with valid parameters", () => {
   }
 });
 
-Deno.test("1_behavior: validates required demonstrative parameter", () => {
+Deno.test("1_behavior: validates required directive parameter", () => {
   const result = PromptPath.create((null as unknown) as DirectiveType, validLayer, validFilename);
 
   assertEquals(result.ok, false);

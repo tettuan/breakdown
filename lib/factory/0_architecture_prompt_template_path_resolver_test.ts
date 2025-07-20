@@ -11,7 +11,8 @@
 
 import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import { PromptTemplatePathResolverTotality as PromptTemplatePathResolver } from "./prompt_template_path_resolver_totality.ts";
-import type { PromptCliParams, TwoParams_Result } from "./prompt_variables_factory.ts";
+import type { TwoParams_Result } from "../deps.ts";
+import type { PromptCliParams } from "./prompt_variables_factory.ts";
 
 // Type-safe interfaces for error testing
 type ConfigObject = Record<string, unknown>;
@@ -35,7 +36,6 @@ const validLegacyParams: PromptCliParams = {
 const validTwoParams: TwoParams_Result = {
   type: "two",
   directiveType: "to",
-  demonstrativeType: "to",
   layerType: "project",
   params: ["to", "project"],
   options: {
@@ -346,7 +346,7 @@ Deno.test("0_architecture: Invariant constraint - domain business rules", () => 
     // Test template path structure invariants
     const pathResult = result.data.getPath();
     if (pathResult.ok) {
-      // Template paths must follow directory structure: base/demonstrative/layer/filename
+      // Template paths must follow directory structure: base/directive/layer/filename
       const pathParts = pathResult.data.value.split("/");
       assertEquals(pathParts.length >= 4, true, "Path must have at least 4 parts");
       assertEquals(pathParts[pathParts.length - 3], "to", "Demonstrative type must be in path");

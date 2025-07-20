@@ -104,7 +104,7 @@ breakdownParams:
   customConfig:
     params:
       two:
-        demonstrativeType:
+        directiveType:
           pattern: "^(find|to|summary|defect)$"
         layerType:
           pattern: "^(bugs|project|issue|task)$"
@@ -376,10 +376,10 @@ console.log();
 const args = parse(Deno.args);
 
 // Example: Check if find bugs would work
-const demonstrativeType = "find";
+const directiveType = "find";
 const layerType = "bugs";
 
-console.log(`Testing command: breakdown ${demonstrativeType} ${layerType}`);
+console.log(`Testing command: breakdown ${directiveType} ${layerType}`);
 console.log();
 
 // Check against current default-app.yml patterns
@@ -387,7 +387,7 @@ const currentDemonstrativePattern = /^(to|summary|defect)$/;
 const currentLayerPattern = /^(project|issue|task)$/;
 
 console.log("Current Configuration Status:");
-console.log(`- Demonstrative type '${demonstrativeType}': ${currentDemonstrativePattern.test(demonstrativeType) ? "✅ Allowed" : "❌ Not allowed"}`);
+console.log(`- Demonstrative type '${directiveType}': ${currentDemonstrativePattern.test(directiveType) ? "✅ Allowed" : "❌ Not allowed"}`);
 console.log(`- Layer type '${layerType}': ${currentLayerPattern.test(layerType) ? "✅ Allowed" : "❌ Not allowed"}`);
 console.log();
 
@@ -396,7 +396,7 @@ const prodDemonstrativePattern = /^(find|to|summary|defect)$/;
 const prodLayerPattern = /^(bugs|project|issue|task)$/;
 
 console.log("Production Configuration Status:");
-console.log(`- Demonstrative type '${demonstrativeType}': ${prodDemonstrativePattern.test(demonstrativeType) ? "✅ Allowed" : "✅ Would be allowed"}`);
+console.log(`- Demonstrative type '${directiveType}': ${prodDemonstrativePattern.test(directiveType) ? "✅ Allowed" : "✅ Would be allowed"}`);
 console.log(`- Layer type '${layerType}': ${prodLayerPattern.test(layerType) ? "✅ Allowed" : "✅ Would be allowed"}`);
 console.log();
 
@@ -408,7 +408,7 @@ console.log("❌ Not enabled in default-app.yml configuration patterns");
 console.log();
 
 console.log("To enable 'find bugs' functionality:");
-console.log("1. Update default-app.yml demonstrativeType pattern to include 'find'");
+console.log("1. Update default-app.yml directiveType pattern to include 'find'");
 console.log("2. Update default-app.yml layerType pattern to include 'bugs'");
 console.log("3. The existing two-parameter CLI logic will handle the command");
 EOF
@@ -503,7 +503,7 @@ echo "  ✅ Schema: lib/breakdown/schema/find/bugs/base.schema.md"
 echo "  ✅ Types: DemonstrativeType and LayerType include 'find' and 'bugs'"
 echo
 echo "What needs to be done:"
-echo "  ❌ Update default-app.yml to allow 'find' in demonstrativeType pattern"
+echo "  ❌ Update default-app.yml to allow 'find' in directiveType pattern"
 echo "  ❌ Update default-app.yml to allow 'bugs' in layerType pattern"
 echo
 

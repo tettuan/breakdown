@@ -39,7 +39,6 @@ function _createMockTwoParamsResult(directive: string, layer: string): TwoParams
     params: [directive, layer],
     directiveType: directive,
     layerType: layer,
-    demonstrativeType: directive,
     options: {},
   };
 }

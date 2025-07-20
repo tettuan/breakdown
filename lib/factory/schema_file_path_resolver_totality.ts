@@ -250,7 +250,6 @@ export class SchemaFilePathResolverTotality {
         params: twoParams.params ? [...twoParams.params] : [],
         layerType: twoParams.params?.[1] || "",
         directiveType: twoParams.params?.[0] || "",
-        demonstrativeType: twoParams.params?.[0] || "",
         options: { ...twoParams.options },
       } as TwoParams_Result;
       return copy;
@@ -390,7 +389,7 @@ export class SchemaFilePathResolverTotality {
   }
 
   /**
-   * Gets the demonstrative type with validation
+   * Gets the directive type with validation
    */
   private getDirectiveType(): string {
     const type = SchemaFilePathResolverTotality.extractDirectiveType(this._cliParams);
@@ -398,7 +397,7 @@ export class SchemaFilePathResolverTotality {
   }
 
   /**
-   * Static helper to extract demonstrative type
+   * Static helper to extract directive type
    * Handles multiple parameter formats safely
    */
   private static extractDirectiveType(

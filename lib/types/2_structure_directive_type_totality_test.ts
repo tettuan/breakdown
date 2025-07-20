@@ -19,7 +19,6 @@ const _createTwoParamsResult = (directiveType: string): TwoParams_Result => ({
   type: "two",
   directiveType,
   layerType: "project",
-  demonstrativeType: directiveType,
   params: [directiveType, "project"],
   options: {},
 });

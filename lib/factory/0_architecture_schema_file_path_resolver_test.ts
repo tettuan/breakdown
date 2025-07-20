@@ -24,7 +24,8 @@ import {
   SchemaPath,
 } from "./schema_file_path_resolver_totality.ts";
 import type { PathResolutionError } from "../types/path_resolution_option.ts";
-import type { PromptCliParams, TwoParams_Result } from "./prompt_variables_factory.ts";
+import type { TwoParams_Result } from "../deps.ts";
+import type { PromptCliParams } from "./prompt_variables_factory.ts";
 
 Deno.test("SchemaFilePathResolver Architecture - Smart Constructor enforces validation", () => {
   // Valid inputs should create instance

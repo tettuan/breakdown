@@ -62,7 +62,6 @@ Deno.test("LayerType Behavior - Valid Layer Creation from TwoParams_Result", () 
     const twoParamsResult: TwoParams_Result = {
       type: "two",
       directiveType: "to",
-      demonstrativeType: "to",
       layerType: layer,
       params: ["to", layer],
       options: {},

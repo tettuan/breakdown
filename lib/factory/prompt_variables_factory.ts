@@ -250,7 +250,6 @@ function createTwoParamsResult(
     params: [directiveType, layerType],
     layerType,
     directiveType,
-    demonstrativeType: directiveType, // For JSR package compatibility
     options,
   };
 }

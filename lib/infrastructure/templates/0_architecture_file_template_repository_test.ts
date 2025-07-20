@@ -72,7 +72,6 @@ describe("FileTemplateRepository - Architecture", () => {
         type: "two",
         directiveType: "to",
         layerType: "project",
-        demonstrativeType: "to",
         params: ["to", "project"],
         options: {},
       };
@@ -129,7 +128,6 @@ describe("FileTemplateRepository - Architecture", () => {
         type: "two",
         directiveType: "to",
         layerType: "project",
-        demonstrativeType: "to",
         params: ["to", "project"],
         options: {},
       };
@@ -236,7 +234,6 @@ describe("FileTemplateRepository - Architecture", () => {
         type: "two",
         directiveType: "to",
         layerType: "project",
-        demonstrativeType: "to",
         params: ["to", "project"],
         options: {},
       };
@@ -280,7 +277,6 @@ describe("FileTemplateRepository - Architecture", () => {
         type: "two",
         directiveType: "to",
         layerType: "project",
-        demonstrativeType: "to",
         params: ["to", "project"],
         options: {},
       };
@@ -333,7 +329,6 @@ describe("FileTemplateRepository - Architecture", () => {
         type: "two",
         directiveType: "to",
         layerType: "project",
-        demonstrativeType: "to",
         params: ["to", "project"],
         options: {},
       };
@@ -474,7 +469,6 @@ describe("FileTemplateRepository - Architecture", () => {
         type: "two",
         directiveType: "to",
         layerType: "project",
-        demonstrativeType: "to",
         params: ["to", "project"],
         options: {},
       };

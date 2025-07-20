@@ -309,7 +309,6 @@ Deno.test("defaultConfigTwoParams - Result Type Integration", async (t) => {
       const twoParamsResult: TwoParams_Result = {
         type: "two",
         directiveType: directive,
-        demonstrativeType: directive,
         layerType: layer,
         params: [directive, layer],
         options: {},

@@ -74,7 +74,6 @@ Deno.test("SchemaFilePathResolver Structure - Parameter structures support both 
     type: "two",
     params: ["summary", "issue"],
     directiveType: "summary",
-    demonstrativeType: "summary",
     layerType: "issue",
     options: {},
   };
@@ -87,7 +86,6 @@ Deno.test("SchemaFilePathResolver Structure - Parameter structures support both 
     type: "two" as const,
     params: ["defect", "task"],
     directiveType: "ignored",
-    demonstrativeType: "ignored",
     layerType: "ignored",
     options: {},
   };

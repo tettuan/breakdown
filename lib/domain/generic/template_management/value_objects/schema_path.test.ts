@@ -14,7 +14,6 @@ import type { TwoParams_Result } from "../../../../deps.ts";
 const mockTwoParamsResult: TwoParams_Result = {
   type: "two",
   directiveType: "to",
-  demonstrativeType: "to",
   layerType: "project",
   params: ["to", "project"],
   options: {},
@@ -24,7 +23,7 @@ const validDirectiveResult = DirectiveType.create(mockTwoParamsResult.directiveT
 const validLayerResult = LayerType.create(mockTwoParamsResult.layerType);
 
 if (!validDirectiveResult.ok || !validLayerResult.ok) {
-  throw new Error("Test setup failed: unable to create valid demonstrative or layer");
+  throw new Error("Test setup failed: unable to create valid directive or layer");
 }
 
 const validDemonstrative = validDirectiveResult.data!;
@@ -148,7 +147,7 @@ Deno.test("1_behavior: creates SchemaPath with valid parameters", () => {
   }
 });
 
-Deno.test("1_behavior: validates required demonstrative parameter", () => {
+Deno.test("1_behavior: validates required directive parameter", () => {
   const result = SchemaPath.create(null as unknown as DirectiveType, validLayer, validFilename);
 
   assertEquals(result.ok, false);

@@ -132,7 +132,7 @@ export const ProcessorErrorFactory = {
  * const twoParamsResult: TwoParams_Result = {
  *   type: "two",
  *   directiveType: "to",
-    demonstrativeType: "to",
+    directiveType: "to",
  *   layerType: "project",
  *   directiveType: "to",
  *   params: ["to", "project"],

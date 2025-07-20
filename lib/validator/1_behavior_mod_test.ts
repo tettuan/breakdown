@@ -276,7 +276,6 @@ Deno.test("1_behavior - Module exports enable comprehensive validation workflow"
   const _mockTwoParamsResult = {
     type: "two" as const,
     directiveType: "to",
-    demonstrativeType: "to",
     layerType: "project",
     params: ["to", "project"],
     options: {

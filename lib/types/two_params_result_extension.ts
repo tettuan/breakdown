@@ -7,7 +7,7 @@
  * @module types/two_params_result_extension
  */
 
-import type { TwoParamsResult as BaseTwoParamsResult } from "jsr:@tettuan/breakdownparams@^1.0.7";
+import type { TwoParamsResult as BaseTwoParamsResult } from "jsr:@tettuan/breakdownparams@^1.1.0";
 
 /**
  * Extended TwoParams_Result interface with params property
@@ -34,7 +34,7 @@ export function isTwoParamsResult(obj: unknown): obj is TwoParams_Result {
     "type" in obj &&
     "params" in obj &&
     "layerType" in obj &&
-    ("directiveType" in obj || "demonstrativeType" in obj) &&
+    "directiveType" in obj &&
     Array.isArray((obj as Record<string, unknown>).params)
   );
 }
@@ -54,7 +54,6 @@ export function createTwoParamsResult(
     params: [directiveType, layerType],
     layerType,
     directiveType,
-    demonstrativeType: directiveType, // For JSR package compatibility
     options: options || {},
   };
 }

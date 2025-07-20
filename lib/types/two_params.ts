@@ -161,7 +161,7 @@ export class TwoParamsType {
     }
 
     // directiveType validation (primary)
-    const directiveType = result.directiveType || result.demonstrativeType;
+    const directiveType = result.directiveType;
     if (!directiveType || typeof directiveType !== "string") {
       return error(ErrorFactory.validationError("MissingRequiredField", {
         field: "directiveType",

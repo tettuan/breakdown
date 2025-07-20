@@ -13,7 +13,6 @@ Deno.test("TwoParamsProcessor - Valid input conversion", () => {
   const twoParamsResult: TwoParams_Result = {
     type: "two",
     directiveType: "to",
-    demonstrativeType: "to",
     layerType: "project",
     params: ["to", "project"],
     options: {
@@ -62,7 +61,6 @@ Deno.test("TwoParamsProcessor - Missing directiveType error", () => {
   const twoParamsResult = {
     type: "two",
     directiveType: "",
-    demonstrativeType: "", // Same as directiveType (empty)
     layerType: "project",
     params: ["to", "project"],
     options: {},
@@ -108,7 +106,6 @@ Deno.test("TwoParamsProcessor - Insufficient params error", () => {
   const twoParamsResult: TwoParams_Result = {
     type: "two",
     directiveType: "to",
-    demonstrativeType: "to",
     layerType: "project",
     params: ["to"], // Only one param
     options: {},
@@ -131,7 +128,6 @@ Deno.test("TwoParamsProcessor - Custom variables extraction", () => {
   const twoParamsResult: TwoParams_Result = {
     type: "two",
     directiveType: "to",
-    demonstrativeType: "to",
     layerType: "project",
     params: ["to", "project"],
     options: {
@@ -162,7 +158,6 @@ Deno.test("TwoParamsProcessor - File path extraction", () => {
   const twoParamsResult: TwoParams_Result = {
     type: "two",
     directiveType: "to",
-    demonstrativeType: "to",
     layerType: "project",
     params: ["to", "project"],
     options: {
@@ -194,7 +189,6 @@ Deno.test("TwoParamsProcessor - Default values", () => {
   const twoParamsResult: TwoParams_Result = {
     type: "two",
     directiveType: "to",
-    demonstrativeType: "to",
     layerType: "project",
     params: ["to", "project"],
     options: {},
@@ -220,7 +214,6 @@ Deno.test("TwoParamsProcessor - validateOnly method", () => {
   const validResult: TwoParams_Result = {
     type: "two",
     directiveType: "to",
-    demonstrativeType: "to",
     layerType: "project",
     params: ["to", "project"],
     options: {
@@ -260,7 +253,6 @@ Deno.test("TwoParamsProcessor - Input text extraction", () => {
   const twoParamsResult: TwoParams_Result = {
     type: "two",
     directiveType: "to",
-    demonstrativeType: "to",
     layerType: "project",
     params: ["to", "project"],
     options: {

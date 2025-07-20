@@ -20,7 +20,6 @@ import type { TwoParams_Result } from "../../deps.ts";
 const createMockTwoParamsResult = (directive: string, layer: string): TwoParams_Result => ({
   type: "two",
   directiveType: directive,
-  demonstrativeType: directive,
   layerType: layer,
   options: {},
   params: [directive, layer],

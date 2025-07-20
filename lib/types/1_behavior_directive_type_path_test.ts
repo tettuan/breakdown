@@ -22,7 +22,6 @@ const createTwoParamsResult = (directiveType: string, layerType: string): TwoPar
   params: [directiveType, layerType],
   directiveType,
   layerType,
-  demonstrativeType: directiveType,
   options: {},
 });
 

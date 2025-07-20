@@ -251,7 +251,6 @@ Deno.test("InputFilePathResolverTotality - handles TwoParams_Result structure", 
     type: "two" as const,
     params: ["to", "project"],
     directiveType: "to",
-    demonstrativeType: "to",
     layerType: "project",
     options: { fromFile: "input.md" },
   };

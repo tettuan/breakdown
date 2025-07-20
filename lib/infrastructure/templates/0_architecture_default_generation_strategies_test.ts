@@ -46,7 +46,6 @@ describe("DefaultGenerationStrategies - Architecture", () => {
           type: "two",
           directiveType: "to",
           layerType: "project",
-          demonstrativeType: "to",
           params: ["to", "project"],
           options: {},
         };
@@ -124,7 +123,6 @@ describe("DefaultGenerationStrategies - Architecture", () => {
           type: "two",
           directiveType: "to",
           layerType: "project",
-          demonstrativeType: "to",
           params: ["to", "project"],
           options: {},
         };
@@ -169,7 +167,6 @@ describe("DefaultGenerationStrategies - Architecture", () => {
         type: "two",
         directiveType: "to",
         layerType: "project",
-        demonstrativeType: "to",
         params: ["to", "project"],
         options: {},
       };
@@ -224,7 +221,6 @@ describe("DefaultGenerationStrategies - Architecture", () => {
         type: "two",
         directiveType: "defect",
         layerType: "project",
-        demonstrativeType: "defect",
         params: ["defect", "project"],
         options: {},
       };
@@ -277,7 +273,6 @@ describe("DefaultGenerationStrategies - Architecture", () => {
         type: "two",
         directiveType: "to",
         layerType: "project",
-        demonstrativeType: "to",
         params: ["to", "project"],
         options: {},
       };
@@ -339,7 +334,6 @@ describe("DefaultGenerationStrategies - Architecture", () => {
         type: "two",
         directiveType: "to",
         layerType: "project",
-        demonstrativeType: "to",
         params: ["to", "project"],
         options: {},
       };
@@ -371,7 +365,6 @@ describe("DefaultGenerationStrategies - Architecture", () => {
         type: "two",
         directiveType: "to",
         layerType: "project",
-        demonstrativeType: "to",
         params: ["to", "project"],
         options: {},
       };

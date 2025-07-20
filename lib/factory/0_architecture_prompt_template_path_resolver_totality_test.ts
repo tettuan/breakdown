@@ -175,7 +175,6 @@ Deno.test("PromptTemplatePathResolverTotality - handles schema file resolution",
     {
       type: "two" as const,
       directiveType: "to",
-      demonstrativeType: "to",
       layerType: "project",
       params: ["to", "project"],
       options: { useSchema: true },
@@ -251,7 +250,6 @@ Deno.test("PromptTemplatePathResolverTotality - handles TwoParams_Result structu
     type: "two" as const,
     params: ["summary", "issue"],
     directiveType: "summary",
-    demonstrativeType: "summary",
     layerType: "issue",
     options: { adaptation: "brief" },
   };

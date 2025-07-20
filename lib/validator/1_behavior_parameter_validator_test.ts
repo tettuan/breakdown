@@ -71,7 +71,6 @@ function createValidTwoParamsResult(): TwoParams_Result {
   return {
     type: "two",
     directiveType: "to",
-    demonstrativeType: "to",
     layerType: "project",
     params: ["to", "project"],
     options: {
@@ -84,7 +83,7 @@ function createValidTwoParamsResult(): TwoParams_Result {
 function createValidOneParamsResult(): OneParamsResult {
   return {
     type: "one",
-    demonstrativeType: "init",
+    directiveType: "init",
     params: ["init"],
     options: {
       input: "/path/to/input.txt",
@@ -334,7 +333,6 @@ Deno.test("1_behavior - Type creation and validation integration", () => {
   const twoParamsData = {
     type: "two" as const,
     directiveType: "to",
-    demonstrativeType: "to",
     layerType: "project",
     params: ["to", "project"],
     options: {},
@@ -435,7 +433,6 @@ Deno.test("1_behavior - Validation result structure consistency", () => {
   const _mockTwoParamsResult: TwoParams_Result = {
     type: "two",
     directiveType: "to",
-    demonstrativeType: "to",
     layerType: "project",
     options: {},
     params: ["to", "project"],

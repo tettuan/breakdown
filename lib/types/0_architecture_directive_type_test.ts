@@ -20,7 +20,6 @@ Deno.test("0_architecture: DirectiveType follows domain boundary rules", () => {
   const twoParamsResult: TwoParams_Result = {
     type: "two",
     directiveType: "to",
-    demonstrativeType: "to",
     layerType: "project",
     params: ["to", "project"],
     options: {},
@@ -57,7 +56,6 @@ Deno.test("0_architecture: DirectiveType enforces Smart Constructor pattern", ()
   const twoParamsResult: TwoParams_Result = {
     type: "two",
     directiveType: "summary",
-    demonstrativeType: "summary",
     layerType: "issue",
     params: ["summary", "issue"],
     options: {},
@@ -89,7 +87,6 @@ Deno.test("0_architecture: DirectiveType implements Totality principle", () => {
     {
       type: "two",
       directiveType: "to",
-      demonstrativeType: "to",
       layerType: "project",
       params: ["to", "project"],
       options: {},
@@ -97,7 +94,6 @@ Deno.test("0_architecture: DirectiveType implements Totality principle", () => {
     {
       type: "two",
       directiveType: "",
-      demonstrativeType: "", // Same as directiveType (empty)
       layerType: "",
       params: ["", ""],
       options: {},
@@ -105,7 +101,6 @@ Deno.test("0_architecture: DirectiveType implements Totality principle", () => {
     {
       type: "two",
       directiveType: "custom_directive_with_long_name",
-      demonstrativeType: "custom_directive_with_long_name",
       layerType: "custom_layer",
       params: ["custom_directive_with_long_name", "custom_layer"],
       options: { complex: { nested: { data: true } } },
@@ -171,7 +166,6 @@ Deno.test("0_architecture: DirectiveType maintains single responsibility", () =>
   const twoParamsResult: TwoParams_Result = {
     type: "two",
     directiveType: "analyze",
-    demonstrativeType: "analyze",
     layerType: "system",
     params: ["analyze", "system"],
     options: {},
@@ -209,7 +203,6 @@ Deno.test("0_architecture: DirectiveType dependency flow is unidirectional", () 
   const twoParamsResult: TwoParams_Result = {
     type: "two",
     directiveType: "defect",
-    demonstrativeType: "defect",
     layerType: "task",
     params: ["defect", "task"],
     options: {},
@@ -238,7 +231,6 @@ Deno.test("0_architecture: DirectiveType supports extensibility without modifica
   const customResult: TwoParams_Result = {
     type: "two",
     directiveType: "future_directive_type",
-    demonstrativeType: "future_directive_type",
     layerType: "future_layer",
     params: ["future_directive_type", "future_layer"],
     options: {
@@ -299,7 +291,6 @@ Deno.test("0_architecture: DirectiveType and TwoParamsDirectivePattern are loose
   const twoParamsResult: TwoParams_Result = {
     type: "two",
     directiveType: "transform",
-    demonstrativeType: "transform",
     layerType: "module",
     params: ["transform", "module"],
     options: {},

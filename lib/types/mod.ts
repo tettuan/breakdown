@@ -24,9 +24,9 @@
  *
  * // Create validated types
  * const directive = DirectiveType.create({ type: "two", directiveType: "to",
-    demonstrativeType: "to", layerType: "project", params: ["to", "project"], options: {} });
+    directiveType: "to", layerType: "project", params: ["to", "project"], options: {} });
  * const layer = LayerType.create({ type: "two", directiveType: "to",
-    demonstrativeType: "to", layerType: "project", params: ["to", "project"], options: {} });
+    directiveType: "to", layerType: "project", params: ["to", "project"], options: {} });
  * ```
  *
  * @example Error Handling with Result Types
@@ -66,7 +66,7 @@
  *
  * // Create a profile name (Totality-compliant with validation)
  * const profileResult = ConfigProfileName.create({ type: "two", DirectiveType: "to", layerType: "project", directiveType: "to",
-    demonstrativeType: "to", params: ["to", "project"], options: {} });
+    directiveType: "to", params: ["to", "project"], options: {} });
  *
  * if (profileResult.ok) {
  *   console.log("Profile:", profileResult.data.value);

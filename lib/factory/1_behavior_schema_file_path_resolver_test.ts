@@ -85,7 +85,7 @@ Deno.test("SchemaFilePathResolver Behavior - Handles different parameter types",
   try {
     const config = { app_schema: { base_dir: SCHEMA_DIR } };
 
-    // Test various demonstrative and layer type combinations
+    // Test various directive and layer type combinations
     const testCases = [
       { directiveType: "to", layerType: "project" },
       { directiveType: "summary", layerType: "issue" },
@@ -199,7 +199,6 @@ Deno.test("SchemaFilePathResolver Behavior - Handles TwoParams_Result format", a
       type: "two" as const,
       params: ["to", "project"],
       directiveType: "to",
-      demonstrativeType: "to",
       layerType: "project",
       options: {},
     };
@@ -432,7 +431,6 @@ Deno.test("SchemaFilePathResolver Behavior - Parameter extraction edge cases", (
     type: "two" as const,
     params: ["", ""],
     directiveType: "",
-    demonstrativeType: "", // Same as directiveType (empty)
     layerType: "",
     options: {},
   };
@@ -446,7 +444,6 @@ Deno.test("SchemaFilePathResolver Behavior - Parameter extraction edge cases", (
     type: "two" as const,
     params: ["to", "project"],
     directiveType: "",
-    demonstrativeType: "", // Same as directiveType (empty)
     layerType: "",
     options: {},
   };
@@ -479,7 +476,6 @@ Deno.test("SchemaFilePathResolver Behavior - Parameter extraction edge cases", (
     type: "two" as const,
     params: ["to", "project"],
     directiveType: "to",
-    demonstrativeType: "to", // Should match params[0]
     layerType: "project", // Should match params[1]
     options: {},
   };

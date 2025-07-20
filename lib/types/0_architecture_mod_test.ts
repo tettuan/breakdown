@@ -35,7 +35,6 @@ describe("0_architecture_mod_test", () => {
       const mockTwoParamsResult = {
         type: "two",
         directiveType: "to",
-        demonstrativeType: "to",
         layerType: "project",
         params: ["to", "project"],
         options: {},
@@ -62,7 +61,6 @@ describe("0_architecture_mod_test", () => {
       const mockTwoParamsResult = {
         type: "two",
         directiveType: "to",
-        demonstrativeType: "to",
         layerType: "project",
         params: ["to", "project"],
         options: {},

@@ -25,7 +25,6 @@ const _createValidTwoParamsResult = (
   type: "two" as const,
   directiveType,
   layerType,
-  demonstrativeType: directiveType,
   params: [directiveType, layerType],
   options: {},
 });

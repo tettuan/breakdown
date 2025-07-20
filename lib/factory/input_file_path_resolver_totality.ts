@@ -12,7 +12,7 @@
 
 import { isAbsolute, resolve } from "jsr:@std/path@^1.0.9";
 import type { PromptCliParams } from "./prompt_variables_factory.ts";
-import type { TwoParams_Result } from "./prompt_variables_factory.ts";
+import type { TwoParams_Result } from "../deps.ts";
 import type { ConfigProfileName } from "../config/config_profile_name.ts";
 import type { Result } from "../types/result.ts";
 import { error, ok } from "../types/result.ts";
@@ -313,7 +313,6 @@ export class InputFilePathResolverTotality {
         type: "two",
         params: twoParams.params ? [...twoParams.params] : [],
         directiveType: twoParams.directiveType || twoParams.params?.[0] || "",
-        demonstrativeType: twoParams.directiveType || twoParams.params?.[0] || "",
         layerType: twoParams.params?.[1] || "",
         options: { ...twoParams.options },
       };

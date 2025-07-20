@@ -141,9 +141,9 @@ Breakdownドメインにおけるビジネス用語とその実装における�
 
 | 用語 | 使用箇所 | 説明 | 関連ワード |
 |------|----------|------|------------|
-| PromptCliParams | app_factory.ja.md | プロンプト生成に必要なCLIパラメータを定義するインターフェース。directiveType（旧demonstrativeType）、layerType、optionsなどのプロパティを持つ。 | directiveType, layerType, options |
+| PromptCliParams | app_factory.ja.md | プロンプト生成に必要なCLIパラメータを定義するインターフェース。directiveType、layerType、optionsなどのプロパティを持つ。 | directiveType, layerType, options |
 | PromptVariablesFactoryOptions | app_factory.ja.md | プロンプト変数ファクトリーの初期化オプションを定義するインターフェース。configとcliParamsを必要とする。 | config, cliParams |
-| DoubleParamsResult | options.ja.md | 廃止された型。2つのパラメータを持つコマンドの結果を表していたが、TwoParamsResultに統合。directiveType（旧demonstrativeType）とlayerTypeを必須としていた。 | directiveType, layerType, TwoParamsResult |
+| DoubleParamsResult | options.ja.md | 廃止された型。2つのパラメータを持つコマンドの結果を表していたが、TwoParamsResultに統合。directiveTypeとlayerTypeを必須としていた。 | directiveType, layerType, TwoParamsResult |
 | SingleParamResult | options.ja.md | 廃止された型。1つのパラメータを持つコマンドの結果を表していたが、OneParamResultに変更。initコマンドなどで使用されていた。 | init, command, OneParamResult |
 | NoParamsResult | options.ja.md | 廃止された型。パラメータを持たないコマンドの結果を表していたが、ZeroParamsResultに変更。ヘルプやバージョン確認などで使用されていた。 | help, version, ZeroParamsResult |
 

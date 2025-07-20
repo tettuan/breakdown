@@ -14,7 +14,7 @@ import { isAbsolute, join, resolve } from "jsr:@std/path@^1.0.9";
 import { existsSync } from "jsr:@std/fs@0.224.0";
 import { DEFAULT_PROMPT_BASE_DIR } from "../config/constants.ts";
 import type { PromptCliParams } from "./prompt_variables_factory.ts";
-import type { TwoParams_Result } from "./prompt_variables_factory.ts";
+import type { TwoParams_Result } from "../deps.ts";
 import { error as resultError, ok as resultOk, type Result } from "../types/result.ts";
 import type { PathResolutionError } from "../types/path_resolution_option.ts";
 
@@ -218,7 +218,6 @@ export class PromptTemplatePathResolverTotality {
         params: twoParams.params ? [...twoParams.params] : [],
         layerType: twoParams.params?.[1] || "",
         directiveType: twoParams.directiveType || twoParams.params?.[0] || "",
-        demonstrativeType: twoParams.directiveType || twoParams.params?.[0] || "",
         options: { ...twoParams.options },
       };
       return copy;
@@ -441,14 +440,14 @@ export class PromptTemplatePathResolverTotality {
   }
 
   /**
-   * Gets the demonstrative type value
+   * Gets the directive type value
    */
   private getDirectiveType(): string {
     return PromptTemplatePathResolverTotality.extractDirectiveType(this._cliParams);
   }
 
   /**
-   * Static helper to extract demonstrative type
+   * Static helper to extract directive type
    */
   private static extractDirectiveType(
     cliParams: DoubleParams_Result | TwoParams_Result,

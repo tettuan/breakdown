@@ -32,17 +32,12 @@ export class ConfigError extends Error {
 }
 
 /**
- * Type definition for ParamsConfig structure (matching BreakdownParams v1.0.6)
+ * Type definition for ParamsConfig structure (matching BreakdownParams v1.1.0)
  *
- * Phase 1: Both DirectiveType and demonstrativeType supported for compatibility
- * Actual BreakdownParams uses 'demonstrativeType' - matching real structure
+ * Updated to directiveType only (unified naming in v1.1.0)
  */
 export interface ParamsConfig {
   directiveType: {
-    pattern: string;
-    errorMessage: string;
-  };
-  demonstrativeType: {
     pattern: string;
     errorMessage: string;
   };
@@ -178,13 +173,13 @@ export class ParamsCustomConfig {
         const two = params.two as Record<string, unknown>;
         const paramsOverride: Partial<ParamsConfig> = {};
 
-        // Override demonstrativeType if provided (handle both directiveType, DirectiveType, and demonstrativeType)
-        const directiveConfig = (two.demonstrativeType || two.directiveType || two.DirectiveType) as
+        // Override directiveType if provided (handle both directiveType and DirectiveType)
+        const directiveConfig = (two.directiveType || two.DirectiveType) as
           | Record<string, unknown>
           | undefined;
         if (directiveConfig && typeof directiveConfig === "object") {
           if (typeof directiveConfig.pattern === "string") {
-            paramsOverride.demonstrativeType = {
+            paramsOverride.directiveType = {
               pattern: directiveConfig.pattern,
               errorMessage: typeof directiveConfig.errorMessage === "string"
                 ? directiveConfig.errorMessage

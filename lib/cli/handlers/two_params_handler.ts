@@ -2,7 +2,7 @@
  * @fileoverview Two Params Handler with internal orchestration
  *
  * This module handles the main breakdown functionality when two parameters
- * are provided (demonstrative type + layer type), using internal orchestration
+ * are provided (directive type + layer type), using internal orchestration
  * pattern for better separation of concerns while maintaining backward compatibility.
  *
  * Key features:

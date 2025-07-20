@@ -37,7 +37,6 @@ Deno.test("0_architecture: BreakdownParamsResult follows domain boundary rules",
   const mockData: TwoParams_Result = {
     type: "two",
     directiveType: "to",
-    demonstrativeType: "to",
     layerType: "project",
     params: ["to", "project"],
     options: {},
@@ -77,7 +76,6 @@ Deno.test("0_architecture: BreakdownParamsResult enforces Discriminated Union pa
   const mockData: TwoParams_Result = {
     type: "two",
     directiveType: "summary",
-    demonstrativeType: "summary",
     layerType: "issue",
     params: ["summary", "issue"],
     options: {},
@@ -120,7 +118,6 @@ Deno.test("0_architecture: BreakdownParamsResult implements Totality principle",
     {
       type: "two",
       directiveType: "to",
-      demonstrativeType: "to",
       layerType: "project",
       params: ["to", "project"],
       options: {},
@@ -128,7 +125,6 @@ Deno.test("0_architecture: BreakdownParamsResult implements Totality principle",
     {
       type: "two",
       directiveType: "",
-      demonstrativeType: "", // Same as directiveType (empty)
       layerType: "",
       params: ["", ""],
       options: {},
@@ -136,7 +132,6 @@ Deno.test("0_architecture: BreakdownParamsResult implements Totality principle",
     {
       type: "two",
       directiveType: "custom_with_long_name",
-      demonstrativeType: "custom_with_long_name",
       layerType: "custom_layer",
       params: ["custom_with_long_name", "custom_layer"],
       options: { complex: { nested: { data: true } } },
@@ -173,7 +168,6 @@ Deno.test("0_architecture: Pattern matching ensures exhaustiveness", () => {
   const mockData: TwoParams_Result = {
     type: "two",
     directiveType: "analyze",
-    demonstrativeType: "analyze",
     layerType: "module",
     params: ["analyze", "module"],
     options: {},
@@ -207,7 +201,6 @@ Deno.test("0_architecture: BreakdownParamsResult maintains immutability", () => 
   const mockData: TwoParams_Result = {
     type: "two",
     directiveType: "transform",
-    demonstrativeType: "transform",
     layerType: "service",
     params: ["transform", "service"],
     options: { verbose: true },

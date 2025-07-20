@@ -24,7 +24,6 @@ const createTwoParamsResult = (
   type: "two",
   directiveType,
   layerType,
-  demonstrativeType: directiveType,
   params: [directiveType, layerType],
   options,
 });
@@ -98,7 +97,6 @@ Deno.test("1_totality: DirectiveType.create validates all input conditions", () 
   const missingFieldResult = {
     type: "two",
     directiveType: "",
-    demonstrativeType: "to",
     layerType: "project",
     params: ["", "project"],
     options: {},
@@ -304,7 +302,6 @@ Deno.test("1_totality: createOrError provides better error context than create",
   const invalidInput = {
     type: "two",
     directiveType: null,
-    demonstrativeType: null,
     layerType: "project",
   } as unknown as TwoParams_Result;
 
