@@ -18,9 +18,11 @@ echo "=== Initializing Breakdown Project Structure (deno run) ==="
 # Check if .agent/breakdown already exists in examples directory
 if [ -d ".agent/breakdown" ]; then
   echo "Warning: .agent/breakdown directory already exists in examples"
-  echo "Skipping initialization to avoid overwriting existing configuration"
-  echo "To reinitialize, please remove .agent/breakdown directory first"
-else
+  echo "Continuing with profile configuration files creation..."
+fi
+
+# Initialize project structure if not exists
+if [ ! -d ".agent/breakdown" ]; then
   # Initialize project structure manually due to version.ts export issues
   echo "Creating .agent/breakdown directory structure manually..."
   mkdir -p .agent/breakdown/{config,prompts,schema,temp,output}
