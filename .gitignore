@@ -89,3 +89,6 @@ debug*.ts
 # agent files
 .agent/
 .agent/*
+
+# tmp files
+instructions/project-worker.md

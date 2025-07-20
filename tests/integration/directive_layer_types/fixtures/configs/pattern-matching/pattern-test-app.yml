@@ -1,0 +1,123 @@
+# Pattern matching test application configuration
+# This configuration file defines the resource directories and base paths
+# for DirectiveType/LayerType pattern matching tests
+
+# Working directory for test outputs
+working_dir: "tmp/pattern-matching-tests"
+
+# Application prompt and schema configuration (required by BreakdownConfig)
+app_prompt:
+  base_dir: "fixtures/pattern-matching-resources/prompts"
+app_schema:
+  base_dir: "fixtures/pattern-matching-resources/schemas"
+
+# Parameter validation patterns
+params:
+  two:
+    directiveType:
+      pattern: "^(to|summary|defect)$"
+    layerType:
+      pattern: "^(project|issue|task)$"
+
+# Application metadata
+app:
+  name: "Breakdown Pattern Matching Test"
+  version: "1.0.0"
+  description: "Application configuration for testing DirectiveType/LayerType pattern validation"
+
+# Path resolution settings
+path_resolution:
+  # Enable strict pattern validation
+  strict_mode: true
+  # Fallback behavior when pattern doesn't match
+  fallback_enabled: false
+  # Log pattern matching attempts
+  log_pattern_matching: true
+
+# File system settings
+file_system:
+  # Create directories if they don't exist
+  create_missing_dirs: true
+  # Directory permissions (octal)
+  dir_permissions: "0755"
+  # File permissions (octal)
+  file_permissions: "0644"
+
+# Prompt template settings
+prompt_templates:
+  # Default template when no specific pattern is matched
+  default_template: "default.md"
+  # File extension for prompt templates
+  template_extension: ".md"
+  # Enable template caching
+  cache_templates: false
+
+# Schema settings
+schemas:
+  # Default schema when no specific pattern is matched
+  default_schema: "default.schema.json"
+  # Schema validation strictness
+  strict_validation: true
+  # Allow additional properties in schema validation
+  additional_properties: false
+
+# Test environment settings
+test_environment:
+  # Clean up test files after completion
+  cleanup_after_test: true
+  # Generate test reports
+  generate_reports: true
+  # Report format
+  report_format: "json"
+  # Report output directory
+  report_dir: "${working_dir}/reports"
+
+# Logging configuration
+logging:
+  # Log level for pattern matching operations
+  level: "debug"
+  # Include timestamp in logs
+  include_timestamp: true
+  # Log file path
+  log_file: "${working_dir}/pattern-matching.log"
+  # Rotate logs
+  rotate_logs: true
+  # Max log file size (in MB)
+  max_log_size: 10
+
+# Resource initialization settings
+initialization:
+  # Create default resources on startup
+  create_defaults: true
+  # Default prompt content
+  default_prompt_content: |
+    # ${directive_type}/${layer_type} Pattern Test
+    
+    Input: ${input}
+    Output: ${output}
+    
+    Pattern validation test for DirectiveType: ${directive_type}, LayerType: ${layer_type}
+  
+  # Default schema content
+  default_schema_content: |
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "properties": {
+        "directive_type": {
+          "type": "string",
+          "pattern": "${directive_patterns}"
+        },
+        "layer_type": {
+          "type": "string",
+          "pattern": "${layer_patterns}"
+        },
+        "input": {
+          "type": "string"
+        },
+        "output": {
+          "type": "string"
+        }
+      },
+      "required": ["directive_type", "layer_type"]
+    }

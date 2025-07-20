@@ -1,0 +1,265 @@
+# Pattern matching test configuration
+# This configuration file is used for comprehensive testing of DirectiveType/LayerType pattern validation
+# It covers various pattern scenarios including edge cases and complex patterns
+
+# Primary patterns - comprehensive coverage with different complexity levels
+directive_patterns: "^(to|from|via|by|for|summary|defect|analyze|create|update|delete|test[0-9]{0,3}|[a-z]{2,8}|[a-z][0-9a-z]*|[a-z]+(-[a-z]+)*|v[0-9]+|[a-z0-9]{3,8})$"
+layer_patterns: "^(project|issue|task|subtask|epic|story|bug|feature|layer[0-9]{1,3}|[a-z]{2,8}|[a-z][0-9a-z]*|[a-z]+(-[a-z]+)*|l[0-9]+|[a-z0-9]{3,8})$"
+
+# Valid directive types (allow any 3-8 character alphanumeric string for testing)
+directive_types:
+  - to
+  - from
+  - via
+  - by
+  - for
+  - summary
+  - defect
+  - analyze
+  - create
+  - update
+  - delete
+  # Allow pattern matching for test generated strings
+  pattern_match: true
+
+# Valid layer types (allow any 3-8 character alphanumeric string for testing)  
+layer_types:
+  - project
+  - issue
+  - task
+  - subtask
+  - epic
+  - story
+  - bug
+  - feature
+  # Allow pattern matching for test generated strings
+  pattern_match: true
+
+# Alternative pattern sets for different test scenarios
+pattern_sets:
+  # Strict alphanumeric patterns
+  strict:
+    directive: "^[a-z0-9]{3,8}$"
+    layer: "^[a-z0-9]{3,8}$"
+  
+  # Liberal patterns allowing more characters
+  liberal:
+    directive: "^[a-zA-Z0-9_-]{2,16}$"
+    layer: "^[a-zA-Z0-9_-]{2,16}$"
+  
+  # Minimal patterns for edge case testing
+  minimal:
+    directive: "^[a-z]{2,4}$"
+    layer: "^[a-z]{2,4}$"
+  
+  # Complex patterns with special rules
+  complex:
+    directive: "^(to|from|via|[a-z]{2}[0-9]{0,2}|test_[a-z]+)$"
+    layer: "^(project|issue|[a-z]{3}_[0-9]{3})$"
+  
+  # Version-based patterns
+  versioned:
+    directive: "^v[0-9]+\\.[0-9]+$"
+    layer: "^release-[0-9]+\\.[0-9]+$"
+  
+  # Hierarchical patterns
+  hierarchical:
+    directive: "^[a-z]+(-[a-z]+)*$"
+    layer: "^[a-z]+(\\/[a-z]+)*$"
+
+# Test-specific custom variables for pattern matching tests
+custom_variables:
+  author: "Pattern Matching Test Suite"
+  version: "2.0.0"
+  organization: "Breakdown Pattern Testing"
+  test_type: "comprehensive_pattern_matching"
+  pattern_constraints:
+    min_length: 2
+    max_length: 16
+    allowed_chars: "a-zA-Z0-9_-"
+    special_chars: "_-"
+  test_metadata:
+    created_date: "${current_date}"
+    test_run_id: "${test_run_id}"
+    environment: "${test_env}"
+
+# Comprehensive aliases for various test patterns
+aliases:
+  # DirectiveType aliases - basic
+  t: "to"
+  f: "from"
+  s: "summary"
+  d: "defect"
+  a: "analyze"
+  c: "create"
+  u: "update"
+  del: "delete"
+  
+  # DirectiveType aliases - testing
+  t1: "test1"
+  t2: "test2"
+  t3: "test3"
+  t123: "test123"
+  tv1: "v1"
+  tv2: "v2"
+  
+  # DirectiveType aliases - special patterns
+  rnd: "random"
+  tst: "testing"
+  dev: "develop"
+  prd: "produce"
+  
+  # LayerType aliases - basic
+  p: "project"
+  i: "issue"
+  t: "task"
+  st: "subtask"
+  e: "epic"
+  s: "story"
+  b: "bug"
+  f: "feature"
+  
+  # LayerType aliases - testing
+  l1: "layer1"
+  l2: "layer2"
+  l3: "layer3"
+  l99: "layer99"
+  l100: "layer100"
+  
+  # LayerType aliases - special patterns
+  lr: "random"
+  lt: "layertest"
+  ld: "layerdev"
+  lp: "layerprod"
+
+# Pattern validation test cases
+test_cases:
+  valid_patterns:
+    - directive: "to"
+      layer: "project"
+      description: "Basic valid pattern"
+    - directive: "test123"
+      layer: "layer99"
+      description: "Numeric suffix pattern"
+    - directive: "analyze"
+      layer: "feature"
+      description: "Full word pattern"
+    - directive: "v1"
+      layer: "l1"
+      description: "Version pattern"
+    
+  invalid_patterns:
+    - directive: "TO"
+      layer: "PROJECT"
+      description: "Uppercase should fail"
+    - directive: "test-123"
+      layer: "layer_99"
+      description: "Special characters in wrong pattern"
+    - directive: "a"
+      layer: "b"
+      description: "Too short pattern"
+    - directive: "verylongdirectivetype"
+      layer: "verylonglayertype"
+      description: "Too long pattern"
+  
+  edge_cases:
+    - directive: "to"
+      layer: "l1"
+      description: "Minimum valid length"
+    - directive: "test999"
+      layer: "layer999"
+      description: "Maximum numeric suffix"
+    - directive: "abcdefgh"
+      layer: "abcdefgh"
+      description: "Maximum length simple pattern"
+
+# Templates for pattern matching test outputs
+templates:
+  pattern_test_prompt: |
+    Pattern Matching Test
+    =====================
+    Test Type: ${test_type}
+    Directive Pattern: ${directive_pattern}
+    Layer Pattern: ${layer_pattern}
+    
+    Testing: ${directive_type}/${layer_type}
+    Input: ${input}
+    Output: ${output}
+    
+    Validation Result: ${validation_result}
+    Test Case: ${test_case_description}
+  
+  validation_template: |
+    Pattern Validation
+    ==================
+    Pattern: ${pattern}
+    Value: ${value}
+    Result: ${result}
+    Match Details: ${match_details}
+    Constraints: ${constraints}
+  
+  error_template: |
+    Pattern Validation Error
+    ========================
+    Error: ${error}
+    Pattern: ${pattern}
+    Value: ${value}
+    Expected Format: ${expected_format}
+    Actual Format: ${actual_format}
+    Suggestion: ${suggestion}
+  
+  batch_test_template: |
+    Batch Pattern Test Results
+    ==========================
+    Total Tests: ${total_tests}
+    Passed: ${passed_tests}
+    Failed: ${failed_tests}
+    Success Rate: ${success_rate}%
+    
+    Failed Cases:
+    ${failed_cases_list}
+
+# User configuration for testing environment
+user:
+  name: "Pattern Test User"
+  email: "pattern-test@example.com"
+  preferences:
+    verboseOutput: true
+    confirmActions: false
+    enablePatternValidation: true
+    logValidationResults: true
+    strictMode: true
+    allowPatternOverride: false
+    testMode: "comprehensive"
+    
+# Pattern validation rules and error messages
+validation:
+  rules:
+    - name: "length_check"
+      description: "Check pattern length constraints"
+      enabled: true
+    - name: "character_check"
+      description: "Check allowed characters"
+      enabled: true
+    - name: "format_check"
+      description: "Check pattern format"
+      enabled: true
+    - name: "reserved_word_check"
+      description: "Check for reserved words"
+      enabled: true
+      
+  error_messages:
+    invalid_length: "Value length must be between ${min_length} and ${max_length} characters"
+    invalid_characters: "Value contains invalid characters. Allowed: ${allowed_chars}"
+    invalid_format: "Value does not match the required pattern: ${pattern}"
+    reserved_word: "Value '${value}' is a reserved word and cannot be used"
+
+# Test execution configuration
+execution:
+  parallel: false
+  timeout: 30000
+  retries: 3
+  log_level: "debug"
+  capture_output: true
+  generate_report: true
+  report_format: "json"
