@@ -1,13 +1,13 @@
 # プロジェクト: BreakdownのDirectiveType/LayerType判定とConfigProfileNameの関係性見直し
 
-実装方針:
+調査方針:
 現在の`lib/`配下の実装をドメイン駆動設計と全域性（Totality）による大幅リファクタリングした。
 
 ところが、examples/ 配下に移動して
 `deno run --allow-all ../cli/breakdown.ts find bugs --config=findbugs --from=tmp/production-bug-reports/test_bug.js -o=tmp/production-bug-reports/bug_analysis.md` を実行すると、`find` が認識されない。設定ファイルは examples/.agent 配下に存在する。
 
 この問題が、設計と実装にあることを突き止め、リファクタ計画を作る。
-「現在の判明状況」を踏まえ、調査を推し進める。
+「現在の判明状況」を踏まえ「仮説」を立てた。この仮説に基づいて調査を推し進める。
 
 `Totality` について、必ず `docs/breakdown/generic_domain/system/overview/totality.ja.md` を参照すること。
 ドメイン情報は、 `docs/breakdown/domain_core/domain_boundaries_flow.ja.md` および `docs/breakdown/domain_core/*` を必ず読むこと。
@@ -49,8 +49,8 @@
 2. 理解した結果や調査した結果を `tmp/<branch_name>/` 配下に作成する。
 
 ### 2. 作業開始
-3. 「スコープの認識」を行い、「現在の判明状況」を踏まえ、examples/11番を実行する
-4. `BreakdownConfig`へ、`ConfigProfileName` を用いて設定値を取得しているか確認する
+3. 「スコープの認識」を行い、「現在の判明状況」を踏まえ、examples/11番を実行する（examples/ をCWDとして実行）
+4. 「仮説」に基づき `BreakdownConfig`へ、`ConfigProfileName` を用いて設定値を取得しているか確認する
 5. ProfileNameを用いた`BreakdownConfig`が、`find`を許容数rpattern設定値を持っているか確認する
 6. `BreakdownParams`へ4の設定値が渡されているか調査する
 7. `BreakdownParams`が`find`を許容した結果を返しているか確認する（DirectiveType(DemonstrativeType)にfindがセットされて返ってくる）
