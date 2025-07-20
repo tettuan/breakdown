@@ -104,8 +104,8 @@ echo "Created sample production report"
 # Run breakdown with production configuration
 echo ""
 echo "Running breakdown with production configuration..."
-echo "Command: deno run -A ../cli/breakdown.ts summary issue --config=production < production_report.md"
-deno run -A ../cli/breakdown.ts summary issue --config=production < production_report.md > production_output.md
+echo "Command: deno run --allow-all ../cli/breakdown.ts summary issue --config=production < production_report.md"
+deno run --allow-all ../cli/breakdown.ts summary issue --config=production < production_report.md > production_output.md
 
 echo ""
 echo "=== Output ==="

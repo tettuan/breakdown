@@ -145,8 +145,8 @@ echo "Testing different environments..."
 for ENV in dev staging prod; do
     echo ""
     echo "=== Testing ${ENV} environment ==="
-    echo "Command: deno run -A ../cli/breakdown.ts defect issue --config=${ENV} < environment_test.md"
-    deno run -A ../cli/breakdown.ts defect issue --config=${ENV} < environment_test.md > ${ENV}_output.md
+    echo "Command: deno run --allow-all ../cli/breakdown.ts defect issue --config=${ENV} < environment_test.md"
+    deno run --allow-all ../cli/breakdown.ts defect issue --config=${ENV} < environment_test.md > ${ENV}_output.md
     echo "Output preview:"
     head -10 ${ENV}_output.md
     rm -f ${ENV}_output.md

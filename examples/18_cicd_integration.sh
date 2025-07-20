@@ -62,7 +62,7 @@ jobs:
     
     - name: Install Breakdown
       run: |
-        deno install -A -n breakdown https://deno.land/x/breakdown/cli/breakdown.ts
+        deno install -A -n breakdown https://deno.land/x/breakdo../cli/breakdown.ts
         echo "$HOME/.deno/bin" >> $GITHUB_PATH
     
     - name: Generate Project Summary
@@ -131,7 +131,7 @@ before_script:
   - apt-get update -qq && apt-get install -y curl
   - curl -fsSL https://deno.land/x/install/install.sh | sh
   - export PATH="$HOME/.deno/bin:$PATH"
-  - deno install -A -n breakdown https://deno.land/x/breakdown/cli/breakdown.ts
+  - deno install -A -n breakdown https://deno.land/x/breakdo../cli/breakdown.ts
 
 analyze:changes:
   stage: analyze
@@ -212,7 +212,7 @@ pipeline {
                     sh '''
                         curl -fsSL https://deno.land/x/install/install.sh | sh
                         export PATH="$HOME/.deno/bin:$PATH"
-                        deno install -A -n breakdown https://deno.land/x/breakdown/cli/breakdown.ts
+                        deno install -A -n breakdown https://deno.land/x/breakdo../cli/breakdown.ts
                         cp $HOME/.deno/bin/breakdown ${BREAKDOWN_PATH}
                     '''
                 }
@@ -331,7 +331,7 @@ jobs:
       - run:
           name: Install Breakdown
           command: |
-            deno install -A -n breakdown https://deno.land/x/breakdown/cli/breakdown.ts
+            deno install -A -n breakdown https://deno.land/x/breakdo../cli/breakdown.ts
             echo 'export PATH="$HOME/.deno/bin:$PATH"' >> $BASH_ENV
       
       - run:
@@ -356,7 +356,7 @@ jobs:
       - run:
           name: Install Breakdown
           command: |
-            deno install -A -n breakdown https://deno.land/x/breakdown/cli/breakdown.ts
+            deno install -A -n breakdown https://deno.land/x/breakdo../cli/breakdown.ts
             echo 'export PATH="$HOME/.deno/bin:$PATH"' >> $BASH_ENV
       
       - run:

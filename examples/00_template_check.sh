@@ -81,8 +81,8 @@ ensure_config_structure() {
         mkdir -p "$config_dir"
         
         # Create basic config file if it doesn't exist
-        if [[ ! -f "$config_dir/app.yml" ]]; then
-            cat > "$config_dir/app.yml" << 'EOF'
+        if [[ ! -f "$config_dir/default-app.yml" ]]; then
+            cat > "$config_dir/default-app.yml" << 'EOF'
 # Breakdown Configuration for Examples
 app_prompt:
   base_dir: "prompts"
@@ -94,7 +94,7 @@ workspace:
 performance:
   timeout: 60000
 EOF
-            echo -e "${GREEN}✅ Created basic config: $config_dir/app.yml${NC}"
+            echo -e "${GREEN}✅ Created basic config: $config_dir/default-app.yml${NC}"
         fi
     else
         echo -e "${GREEN}✅ Config structure exists${NC}"

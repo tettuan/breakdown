@@ -236,6 +236,7 @@ describe("ConfigProfileName - Unit Tests", () => {
       assertEquals(directives.includes("to"), true);
       assertEquals(directives.includes("summary"), true);
       assertEquals(directives.includes("defect"), true);
+      assertEquals(directives.includes("find"), true);
 
       const layers = profile.getLayerTypes();
       assertEquals(Array.isArray(layers), true);

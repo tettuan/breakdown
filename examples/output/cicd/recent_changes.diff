@@ -1,0 +1,46 @@
+diff --git a/lib/cli/1_behavior_help_test.ts b/lib/cli/1_behavior_help_test.ts
+index dd60d71..9770a67 100644
+--- a/lib/cli/1_behavior_help_test.ts
++++ b/lib/cli/1_behavior_help_test.ts
+@@ -14,7 +14,7 @@
+ import { assertEquals, assertExists as _assertExists } from "../deps.ts";
+ import { describe, it } from "@std/testing/bdd";
+ import { BreakdownLogger } from "@tettuan/breakdownlogger";
+-import { _VERSION, APP_NAME, HELP_TEXT, showHelp, showUsage, showVersion } from "./help.ts";
++import { VERSION, APP_NAME, HELP_TEXT, showHelp, showUsage, showVersion } from "./help.ts";
+ 
+ const logger = new BreakdownLogger("help-behavior");
+ 
+@@ -214,7 +214,7 @@ describe("Behavior: Version Display", () => {
+ 
+       // First line should be version
+       assertEquals(
+-        capturedOutput[0].includes(`Breakdown v${_VERSION}`),
++        capturedOutput[0].includes(`Breakdown v${VERSION}`),
+         true,
+         "First line should include formatted version",
+       );
+@@ -228,7 +228,7 @@ describe("Behavior: Version Display", () => {
+ 
+       // Version should be valid format
+       assertEquals(
+-        /^\d+\.\d+\.\d+/.test(_VERSION),
++        /^\d+\.\d+\.\d+/.test(VERSION),
+         true,
+         "Version should follow semantic versioning format",
+       );
+@@ -244,12 +244,12 @@ describe("Behavior: Version Display", () => {
+ 
+     // Version shown should match what's referenced in help
+     assertEquals(
+-      typeof _VERSION,
++      typeof VERSION,
+       "string",
+       "Version should be string",
+     );
+     assertEquals(
+-      _VERSION.length > 0,
++      VERSION.length > 0,
+       true,
+       "Version should not be empty",
+     );

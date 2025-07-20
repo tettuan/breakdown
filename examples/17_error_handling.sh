@@ -117,7 +117,7 @@ EOF
     
     # リトライ
     echo "→ リトライ実行"
-    retry_with_backoff 3 1 "echo '' | $BREAKDOWN to project --from='$NON_EXISTENT_FILE' -o='$OUTPUT_DIR/test1.md'"
+    retry_with_backoff 3 1 "echo '' | \"$BREAKDOWN\" to project --from='$NON_EXISTENT_FILE' -o='$OUTPUT_DIR/test1.md'"
 fi
 
 # Example 2: 不正な入力のエラーハンドリング
@@ -207,7 +207,7 @@ cat > "$OUTPUT_DIR/large_input.md" << 'EOF'
 This simulates a large document that takes time to process.
 EOF
 
-run_with_timeout 5 "echo '' | $BREAKDOWN to project --from='$OUTPUT_DIR/large_input.md' -o='$OUTPUT_DIR/timeout_test.md'"
+run_with_timeout 5 "echo '' | \"$BREAKDOWN\" to project --from='$OUTPUT_DIR/large_input.md' -o='$OUTPUT_DIR/timeout_test.md'"
 
 # Example 5: エラー集約とレポート
 echo

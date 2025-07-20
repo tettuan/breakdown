@@ -1,0 +1,71 @@
+name: Documentation Generation with Breakdown
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  generate-docs:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Deno
+      uses: denoland/setup-deno@v1
+      with:
+        deno-version: v1.x
+    
+    - name: Install Breakdown
+      run: |
+        deno install -A -n breakdown https://deno.land/x/breakdo../cli/breakdown.ts
+        echo "$HOME/.deno/bin" >> $GITHUB_PATH
+    
+    - name: Generate Project Summary
+      run: |
+        echo "# ${{ github.repository }}" > project_overview.md
+        echo "Commit: ${{ github.sha }}" >> project_overview.md
+        echo "Branch: ${{ github.ref }}" >> project_overview.md
+        cat README.md >> project_overview.md
+        
+        breakdown summary project --from=project_overview.md \
+          --uv-repo="${{ github.repository }}" \
+          --uv-branch="${{ github.ref }}" \
+          --uv-commit="${{ github.sha }}" \
+          -o=docs/project_summary.md
+    
+    - name: Analyze Changes
+      if: github.event_name == 'pull_request'
+      run: |
+        git diff ${{ github.event.pull_request.base.sha }}..HEAD > changes.diff
+        breakdown defect project --from=changes.diff -o=pr_analysis.md
+    
+    - name: Generate Issue Report
+      run: |
+        find . -name "TODO" -o -name "FIXME" | xargs grep -l "" | \
+        xargs cat | breakdown to issue -o=issues/
+    
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: breakdown-reports
+        path: |
+          docs/project_summary.md
+          pr_analysis.md
+          issues/
+    
+    - name: Comment PR
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const analysis = fs.readFileSync('pr_analysis.md', 'utf8');
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: '## Breakdown Analysis\\n\\n' + analysis
+          });

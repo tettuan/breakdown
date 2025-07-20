@@ -209,7 +209,7 @@ test -f "$INPUT_FILE" && echo "✓ Input file exists" || echo "✗ Input file mi
 echo ""
 echo "🔍 DEBUG: Testing currently supported breakdown commands"
 echo "Testing breakdown CLI help..."
-if deno run -A ../cli/breakdown.ts --help 2>&1; then
+if deno run --allow-all ../cli/breakdown.ts --help 2>&1; then
     echo "✓ breakdown CLI is accessible"
 else
     echo "✗ breakdown CLI is not accessible"
@@ -220,7 +220,7 @@ echo "🔍 VERIFICATION: All breakdown commands are fully implemented and functi
 echo "Testing breakdown summary project command with basic configuration..."
 
 # Test summary project command with basic config
-echo "Test project specification for summary" | deno run -A ../cli/breakdown.ts summary project --config=basic > summary_test_output.log 2>&1
+echo "Test project specification for summary" | deno run --allow-all ../cli/breakdown.ts summary project --config=basic > summary_test_output.log 2>&1
 if [ -s summary_test_output.log ]; then
     echo "✓ 'breakdown summary project' works correctly with basic config"
     echo "Output preview:"
@@ -239,8 +239,8 @@ cd "$TEMP_TEST_DIR"
 # Copy our basic config to test directory
 cp "../.agent/breakdown/config/basic-app.yml" "./basic-app-test.yml" 2>/dev/null || true
 
-echo "Running: deno run -A ../../cli/breakdown.ts init"
-if deno run -A ../../cli/breakdown.ts init > init_output.log 2>&1; then
+echo "Running: deno run --allow-all ../../cli/breakdown.ts init"
+if deno run --allow-all ../../cli/breakdown.ts init > init_output.log 2>&1; then
     echo "✓ Breakdown init successful"
     echo ""
     echo "=== Init Output ==="

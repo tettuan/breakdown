@@ -14,7 +14,7 @@
 import { assertEquals, assertExists as _assertExists } from "../deps.ts";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { VERSION, APP_NAME, HELP_TEXT, showHelp, showUsage, showVersion } from "./help.ts";
+import { APP_NAME, HELP_TEXT, showHelp, showUsage, showVersion, VERSION } from "./help.ts";
 
 const logger = new BreakdownLogger("help-behavior");
 

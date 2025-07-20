@@ -335,6 +335,28 @@ EOF
 echo "Test project created with various bug types and patterns."
 echo
 
+echo "=== Running Find Bugs on Test Project ==="
+echo
+echo "--------------------------------------------------"
+echo "Executing command:"
+echo "   deno run --allow-all ../cli/breakdown.ts find bugs --config=production --from=$TEST_DIR -o=$OUTPUT_DIR/production_bugs_report.md"
+echo "--------------------------------------------------"
+echo
+
+if deno run --allow-all ../cli/breakdown.ts find bugs --config=production --from="$TEST_DIR" -o="$OUTPUT_DIR/production_bugs_report.md" > "$OUTPUT_DIR/production_bugs_report.md" 2>&1; then
+    echo "✅ Production bug analysis completed!"
+    echo "   Output: $OUTPUT_DIR/production_bugs_report.md"
+    if [ -f "$OUTPUT_DIR/production_bugs_report.md" ] && [ -s "$OUTPUT_DIR/production_bugs_report.md" ]; then
+        echo "   Preview:"
+        head -10 "$OUTPUT_DIR/production_bugs_report.md" | sed 's/^/     /'
+    fi
+else
+    echo "⚠️  Production bug analysis encountered issues"
+    echo "   Error output:"
+    cat "$OUTPUT_DIR/production_bugs_report.md" 2>/dev/null | head -10 | sed 's/^/     /'
+fi
+echo
+
 echo "=== Demonstrating JSR Package Usage ==="
 echo "Using JSR package instead of binary for breakdown commands"
 echo
@@ -360,7 +382,7 @@ const layerType = "bugs";
 console.log(`Testing command: breakdown ${demonstrativeType} ${layerType}`);
 console.log();
 
-// Check against current app.yml patterns
+// Check against current default-app.yml patterns
 const currentDemonstrativePattern = /^(to|summary|defect)$/;
 const currentLayerPattern = /^(project|issue|task)$/;
 
@@ -382,18 +404,26 @@ console.log("=== Implementation Status ===");
 console.log("✅ Prompts exist: lib/breakdown/prompts/find/bugs/");
 console.log("✅ Schema exists: lib/breakdown/schema/find/bugs/");
 console.log("✅ Types defined in lib/types/mod.ts");
-console.log("❌ Not enabled in app.yml configuration patterns");
+console.log("❌ Not enabled in default-app.yml configuration patterns");
 console.log();
 
 console.log("To enable 'find bugs' functionality:");
-console.log("1. Update app.yml demonstrativeType pattern to include 'find'");
-console.log("2. Update app.yml layerType pattern to include 'bugs'");
+console.log("1. Update default-app.yml demonstrativeType pattern to include 'find'");
+console.log("2. Update default-app.yml layerType pattern to include 'bugs'");
 console.log("3. The existing two-parameter CLI logic will handle the command");
 EOF
 
 # Make the test script executable and run it
 chmod +x "$OUTPUT_DIR/test_breakdown.ts"
-deno run -A "$OUTPUT_DIR/test_breakdown.ts"
+
+echo
+echo "--------------------------------------------------"
+echo "Executing command:"
+echo "   deno run --allow-all $OUTPUT_DIR/test_breakdown.ts"
+echo "--------------------------------------------------"
+echo
+
+deno run --allow-all "$OUTPUT_DIR/test_breakdown.ts"
 
 echo
 echo "=== Using Breakdown via JSR Package ==="
@@ -403,7 +433,7 @@ echo "1. Import method:"
 echo "   import { breakdown } from '../cli/breakdown.ts';"
 echo
 echo "2. CLI usage via deno task:"
-echo "   deno run -A ../cli/breakdown.ts <command>"
+echo "   deno run --allow-all ../cli/breakdown.ts <command>"
 echo
 echo "3. Or use the configured task:"
 echo "   deno task breakdown <command>"
@@ -418,6 +448,9 @@ echo
 
 echo "=== Testing Find Bugs Functionality ==="
 echo "Running find bugs command with findbugs configuration..."
+echo
+echo "Creating test file with bug patterns:"
+echo "   $OUTPUT_DIR/test_bug.js"
 
 # Test the find bugs command with a simple bug pattern
 cat > "$OUTPUT_DIR/test_bug.js" << 'EOF'
@@ -432,7 +465,14 @@ if (user == null) {  // Bug: should use ===
 }
 EOF
 
-if deno run -A ../cli/breakdown.ts find bugs --config=findbugs --from="$OUTPUT_DIR/test_bug.js" -o="$OUTPUT_DIR/bug_analysis.md" > "$OUTPUT_DIR/bug_analysis.md" 2>&1; then
+echo
+echo "--------------------------------------------------"
+echo "Executing command:"
+echo "   deno run --allow-all ../cli/breakdown.ts find bugs --config=findbugs --from=$OUTPUT_DIR/test_bug.js -o=$OUTPUT_DIR/bug_analysis.md"
+echo "--------------------------------------------------"
+echo
+
+if deno run --allow-all ../cli/breakdown.ts find bugs --config=findbugs --from="$OUTPUT_DIR/test_bug.js" -o="$OUTPUT_DIR/bug_analysis.md" > "$OUTPUT_DIR/bug_analysis.md" 2>&1; then
     if [ -f "$OUTPUT_DIR/bug_analysis.md" ] && [ -s "$OUTPUT_DIR/bug_analysis.md" ]; then
         echo "✅ Find bugs command executed successfully!"
         echo "   Output file: $OUTPUT_DIR/bug_analysis.md"
@@ -446,13 +486,12 @@ else
     echo "⚠️  Find bugs command failed - checking error details"
     echo "Error output:"
     cat "$OUTPUT_DIR/bug_analysis.md" 2>/dev/null | head -10 | sed 's/^/     /'
-    fi
 fi
 echo
 
 echo "=== Configuration Locations ==="
 echo "The new structure uses:"
-echo "  • System config: .agent/breakdown/config/app.yml"
+echo "  • System config: .agent/breakdown/config/default-app.yml"
 echo "  • User config: .agent/breakdown/config/default-user.yml"
 echo "  • Production config: .agent/breakdown/config/production-user.yml"
 echo
@@ -464,8 +503,8 @@ echo "  ✅ Schema: lib/breakdown/schema/find/bugs/base.schema.md"
 echo "  ✅ Types: DemonstrativeType and LayerType include 'find' and 'bugs'"
 echo
 echo "What needs to be done:"
-echo "  ❌ Update app.yml to allow 'find' in demonstrativeType pattern"
-echo "  ❌ Update app.yml to allow 'bugs' in layerType pattern"
+echo "  ❌ Update default-app.yml to allow 'find' in demonstrativeType pattern"
+echo "  ❌ Update default-app.yml to allow 'bugs' in layerType pattern"
 echo
 
 echo

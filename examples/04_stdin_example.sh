@@ -72,15 +72,8 @@ fi
 
 echo "Using existing configuration: ${CONFIG_DIR}/stdin-app.yml"
 
-# Ensure we have a way to run breakdown
-# Use absolute path to avoid config file resolution issues
-run_breakdown() {
-    local exit_code
-    # Run breakdown from current directory to preserve config file paths
-    deno run -A ../cli/breakdown.ts "$@"
-    exit_code=$?
-    return $exit_code
-}
+# Source common functions to get run_breakdown
+source ./common_functions.sh
 
 # Create a sample input for demonstration
 SAMPLE_INPUT="# Project Overview

@@ -180,8 +180,8 @@ EOF
 # Run breakdown find bugs command
 echo ""
 echo "Running breakdown find bugs command..."
-echo "Command: deno run -A ../cli/breakdown.ts defect issue --config=production-bugs < code_files.md"
-deno run -A ../cli/breakdown.ts defect issue --config=production-bugs < code_files.md > bugs_report.md
+echo "Command: deno run --allow-all ../cli/breakdown.ts defect issue --config=production-bugs < code_files.md"
+deno run --allow-all ../cli/breakdown.ts defect issue --config=production-bugs < code_files.md > bugs_report.md
 
 echo ""
 echo "=== Bugs Report ==="

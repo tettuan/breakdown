@@ -60,7 +60,8 @@
       "tests/"
     ],
     "exclude": [
-      "tmp/"
+      "tmp/",
+      "tests/fixtures/"
     ],
     "rules": {
       "tags": [
@@ -80,6 +81,7 @@
     ]
   },
   "exclude": [
-    "tmp/"
+    "tmp/",
+    "examples/tmp/"
   ]
 }

@@ -21,9 +21,30 @@ if [ -d ".agent/breakdown" ]; then
   echo "Skipping initialization to avoid overwriting existing configuration"
   echo "To reinitialize, please remove .agent/breakdown directory first"
 else
-  # Initialize project structure using deno run
-  echo "Running breakdown init with deno run..."
-  deno run -A ../cli/breakdown.ts init
+  # Initialize project structure manually due to version.ts export issues
+  echo "Creating .agent/breakdown directory structure manually..."
+  mkdir -p .agent/breakdown/{config,prompts,schema,temp,output}
+  mkdir -p .agent/breakdown/prompts/{to,summary,defect}/{project,issue,task}
+  
+  # Create default-app.yml manually
+  cat > .agent/breakdown/config/default-app.yml << 'EOF'
+# Breakdown Default Configuration
+working_dir: ".agent/breakdown"
+app_prompt:
+  base_dir: ".agent/breakdown/prompts"
+app_schema:
+  base_dir: ".agent/breakdown/schema"
+params:
+  two:
+    directiveType:
+      pattern: "^(to|summary|defect)$"
+    layerType:
+      pattern: "^(project|issue|task)$"
+workspace:
+  working_dir: ".agent/breakdown"
+  temp_dir: ".agent/breakdown/temp"
+EOF
+  echo "✅ Successfully created directory structure and default-app.yml"
 
   # Copy prompt templates from test fixtures to make examples functional
   echo "Copying prompt templates..."

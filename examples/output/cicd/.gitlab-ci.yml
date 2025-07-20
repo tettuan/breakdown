@@ -1,0 +1,70 @@
+stages:
+  - analyze
+  - document
+  - report
+
+variables:
+  BREAKDOWN_VERSION: "latest"
+
+before_script:
+  - apt-get update -qq && apt-get install -y curl
+  - curl -fsSL https://deno.land/x/install/install.sh | sh
+  - export PATH="$HOME/.deno/bin:$PATH"
+  - deno install -A -n breakdown https://deno.land/x/breakdo../cli/breakdown.ts
+
+analyze:changes:
+  stage: analyze
+  script:
+    - |
+      if [ "$CI_PIPELINE_SOURCE" == "merge_request_event" ]; then
+        git diff $CI_MERGE_REQUEST_DIFF_BASE_SHA..HEAD > changes.diff
+        breakdown defect project --from=changes.diff -o=analysis/defects.md
+        breakdown summary project --from=changes.diff -o=analysis/summary.md
+      fi
+  artifacts:
+    paths:
+      - analysis/
+    expire_in: 1 week
+  only:
+    - merge_requests
+
+generate:docs:
+  stage: document
+  script:
+    - find src -name "*.md" -type f | xargs cat > all_docs.md
+    - breakdown summary project --from=all_docs.md -o=docs/project_overview.md
+    - breakdown to issue --from=docs/project_overview.md -o=docs/issues/
+  artifacts:
+    paths:
+      - docs/
+    expire_in: 1 month
+  only:
+    - main
+    - develop
+
+quality:report:
+  stage: report
+  script:
+    - |
+      # コード品質メトリクス生成
+      echo "# Code Quality Report" > quality.md
+      echo "Pipeline: $CI_PIPELINE_ID" >> quality.md
+      echo "Commit: $CI_COMMIT_SHA" >> quality.md
+      
+      # TODOとFIXMEの集計
+      TODO_COUNT=$(grep -r "TODO" src/ | wc -l || echo 0)
+      FIXME_COUNT=$(grep -r "FIXME" src/ | wc -l || echo 0)
+      
+      echo "## Technical Debt" >> quality.md
+      echo "- TODO items: $TODO_COUNT" >> quality.md
+      echo "- FIXME items: $FIXME_COUNT" >> quality.md
+      
+      breakdown summary task --from=quality.md \
+        --uv-pipeline_id="$CI_PIPELINE_ID" \
+        --uv-commit="$CI_COMMIT_SHA" \
+        -o=reports/quality_summary.md
+  artifacts:
+    reports:
+      junit: reports/quality_summary.xml
+    paths:
+      - reports/

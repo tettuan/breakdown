@@ -490,7 +490,7 @@ function createMockConfig(features: Record<string, boolean>): UnifiedConfigInter
     _patternCache: new Map(),
     _initialized: true,
     initialize: () => ({ ok: true, data: undefined }),
-    getDirectiveTypes: () => ["to", "summary"],
+    getDirectiveTypes: () => ["to", "summary", "defect", "find"],
     getLayerTypes: () => ["task", "issue"],
     getAllPatterns: () => ({
       ok: true,

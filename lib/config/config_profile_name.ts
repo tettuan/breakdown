@@ -257,7 +257,7 @@ export class ConfigProfileName {
    * @returns Array of directive types
    */
   getDirectiveTypes(): string[] {
-    return ["to", "summary", "defect"];
+    return ["to", "summary", "defect", "find"];
   }
 
   /**

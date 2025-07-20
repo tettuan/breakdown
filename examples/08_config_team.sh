@@ -130,8 +130,8 @@ echo "Created team planning document"
 # Run breakdown with team configuration
 echo ""
 echo "Running breakdown with team configuration..."
-echo "Command: deno run -A ../cli/breakdown.ts to task --config=team < team_planning.md"
-deno run -A ../cli/breakdown.ts to task --config=team < team_planning.md > team_tasks.md
+echo "Command: deno run --allow-all ../cli/breakdown.ts to task --config=team < team_planning.md"
+deno run --allow-all ../cli/breakdown.ts to task --config=team < team_planning.md > team_tasks.md
 
 echo ""
 echo "=== Output ==="

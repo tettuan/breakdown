@@ -35,19 +35,11 @@ if ! bash ./00_template_check.sh full; then
     handle_error "Template setup failed"
 fi
 
-# Ensure we have a way to run breakdown
-if [ -f ../.deno/bin/breakdown ] && ../.deno/bin/breakdown --help &> /dev/null; then
-    BREAKDOWN="../.deno/bin/breakdown"
-elif command -v breakdown &> /dev/null; then
-    BREAKDOWN="breakdown"
-else
-    BREAKDOWN="deno run -A ../cli/breakdown.ts"
-fi
-
-# Verify breakdown command works
-if ! $BREAKDOWN --help &> /dev/null; then
-    handle_error "Breakdown command not functional"
-fi
+# Use deno task for breakdown command
+# Define as function to avoid quote issues
+BREAKDOWN() {
+    deno task breakdown "$@"
+}
 
 # Create output directory for examples
 OUTPUT_DIR="./output/basic_examples"
@@ -71,7 +63,7 @@ Build a modern e-commerce platform with user management, product catalog, and pa
 EOF
 
 echo "Running: breakdown to issue..."
-if cat "$OUTPUT_DIR/project_spec.md" | $BREAKDOWN to issue --config=timeout --destination="$OUTPUT_DIR/issues/" 2>/dev/null; then
+if cat "$OUTPUT_DIR/project_spec.md" | BREAKDOWN to issue --config=timeout --destination="$OUTPUT_DIR/issues/" 2>/dev/null; then
     # Validate output was created
     if [ -d "$OUTPUT_DIR/issues" ] && [ "$(ls -A "$OUTPUT_DIR/issues" 2>/dev/null)" ]; then
         echo "✅ Created issue breakdowns in $OUTPUT_DIR/issues/"
@@ -98,7 +90,7 @@ mobile responsive design issues on tablets
 EOF
 
 echo "Processing messy notes into organized summary..."
-if cat "$OUTPUT_DIR/messy_notes.md" | $BREAKDOWN summary task --config=default --destination="$OUTPUT_DIR/task_summary.md" 2>/dev/null; then
+if cat "$OUTPUT_DIR/messy_notes.md" | BREAKDOWN summary task --config=default --destination="$OUTPUT_DIR/task_summary.md" 2>/dev/null; then
     # Validate output file was created and has content
     if [ -f "$OUTPUT_DIR/task_summary.md" ] && [ -s "$OUTPUT_DIR/task_summary.md" ]; then
         echo "✅ Created task summary at $OUTPUT_DIR/task_summary.md"
@@ -124,7 +116,7 @@ cat > "$OUTPUT_DIR/error_log.txt" << EOF
 EOF
 
 echo "Analyzing error logs..."
-if tail -20 "$OUTPUT_DIR/error_log.txt" | $BREAKDOWN defect project --config=default --destination="$OUTPUT_DIR/defect_analysis.md" 2>/dev/null; then
+if tail -20 "$OUTPUT_DIR/error_log.txt" | BREAKDOWN defect project --config=default --destination="$OUTPUT_DIR/defect_analysis.md" 2>/dev/null; then
     # Validate output file was created and has content
     if [ -f "$OUTPUT_DIR/defect_analysis.md" ] && [ -s "$OUTPUT_DIR/defect_analysis.md" ]; then
         echo "✅ Created defect analysis at $OUTPUT_DIR/defect_analysis.md"
@@ -161,7 +153,7 @@ function processUser(user) {
 EOF
 
 echo "Running find bugs analysis..."
-if $BREAKDOWN find bugs --config=findbugs --from="$OUTPUT_DIR/buggy_code.js" -o="$OUTPUT_DIR/bugs_analysis.md" > "$OUTPUT_DIR/bugs_analysis.md" 2>/dev/null; then
+if BREAKDOWN find bugs --config=findbugs --from="$OUTPUT_DIR/buggy_code.js" -o="$OUTPUT_DIR/bugs_analysis.md" > "$OUTPUT_DIR/bugs_analysis.md" 2>/dev/null; then
     if [ -f "$OUTPUT_DIR/bugs_analysis.md" ] && [ -s "$OUTPUT_DIR/bugs_analysis.md" ]; then
         echo "✅ Created bug analysis at $OUTPUT_DIR/bugs_analysis.md"
         echo "   File size: $(wc -c < "$OUTPUT_DIR/bugs_analysis.md" | tr -d ' ') bytes"
@@ -195,7 +187,7 @@ function calculateTotal(items) {
 \`\`\`
 EOF
     
-    if $BREAKDOWN defect task --config=default --from="$OUTPUT_DIR/bug_report.md" -o="$OUTPUT_DIR/bugs_report.md" > "$OUTPUT_DIR/bugs_report.md" 2>/dev/null; then
+    if BREAKDOWN defect task --config=default --from="$OUTPUT_DIR/bug_report.md" -o="$OUTPUT_DIR/bugs_report.md" > "$OUTPUT_DIR/bugs_report.md" 2>/dev/null; then
         if [ -f "$OUTPUT_DIR/bugs_report.md" ] && [ -s "$OUTPUT_DIR/bugs_report.md" ]; then
             echo "✅ Created fallback defect analysis at $OUTPUT_DIR/bugs_report.md"
             echo "   File size: $(wc -c < "$OUTPUT_DIR/bugs_report.md" | tr -d ' ') bytes"
@@ -205,10 +197,6 @@ EOF
     else
         echo "⚠️  Both 'find bugs' and fallback 'defect task' failed"
     fi
-fi
-    fi
-else
-    echo "⚠️  'defect task' command failed or is not supported"
 fi
 
 echo

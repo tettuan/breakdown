@@ -144,6 +144,7 @@ worker9: %24→%2
 
 1. マネージャーへの部下のアサインと役割通知(`tmp/worker-management.md`へ割り当てを記録)
 2. マネージャーに `instructions/team-manager.ja.md` を読ませて役割を理解させる
+3. ワーカーへプロジェクトルール（主目的、禁止事項）を通達 ( `instructions/project-worker.ja.md` へ10行以内で記録する) 
 
 ### マネージャーへのワーカープール指示例文
 

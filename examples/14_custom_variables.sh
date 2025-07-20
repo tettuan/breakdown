@@ -22,7 +22,7 @@ echo
 if command -v breakdown &> /dev/null; then
     BREAKDOWN="breakdown"
 else
-    BREAKDOWN="deno run --allow-read --allow-write --allow-env --allow-net ../cli/breakdown.ts"
+    BREAKDOWN='deno run --allow-read --allow-write --allow-env --allow-net ../cli/breakdown.ts'
 fi
 
 # Create output directory
