@@ -1,19 +1,19 @@
 # layerTypeとDirectiveType
 
-## ドメインストーリー - CLIからファイルシステムへの変換
+## ドメインストーリー - JSR検証済み値からファイルシステムへの変換
 
 ### 具体例で理解する処理の流れ
 
 ユーザーがコマンドラインで `breakdown to issue` を実行したとき、システムは以下の処理を行います：
 
 1. **CLI引数の受信**: `["to", "issue"]`
-2. **設定読み込み**: ProfileNameに基づくBreakdownConfig取得
-3. **パターンマッチング**: 設定のパターンで引数をバリデーション
-4. **ドメインオブジェクト生成**: 検証済みのTwoParams作成
+2. **設定読み込み**: ConfigProfileName（短寿命）に基づくBreakdownConfig取得
+3. **JSRパラメータ検証**: JSR @tettuan/breakdownparams による検証実行
+4. **検証済み値生成**: BreakdownParams検証結果から DirectiveType, LayerType を直接取得
 5. **ファイルパス解決**: プロンプトテンプレートとスキーマファイルの特定
-6. **実行**: `prompts/to/issue/f_issue.md` と `schemas/to/issue/base.schema.json` を使用
+6. このドメイン型定義により、TwoParamsがDirectiveTypeとLayerTypeの2つを持つという関係性が型安全に表現され、**BreakdownParams による外部検証システム**を活用した信頼性の高いドメイン値として機能します。これらの値は**プロンプトパス決定ドメイン**で使用され、適切なパス解決の実現に貢献します。ConfigProfileNameの短寿命化により、責務の明確化と処理効率の向上が実現されています。*実行**: `prompts/to/issue/f_issue.md` と `schemas/to/issue/base.schema.json` を使用
 
-この一連の流れにおいて、**DirectiveType（"to"）とLayerType（"issue"）** は、単なる文字列から**型安全で信頼性の高いドメイン値**へと変換され、最終的に**ファイルシステム上の具体的なリソース**を特定する役割を担います。
+この一連の流れにおいて、**DirectiveType（"to"）とLayerType（"issue"）** は、**BreakdownParams検証済みの信頼性の高いドメイン値**として提供され、最終的に**ファイルシステム上の具体的なリソース**を特定する役割を担います。
 
 ### なぜ「2つのパラメータ」なのか
 
@@ -24,17 +24,21 @@ Breakdownにおいて、**処理方向（DirectiveType）** と **階層（Layer
 
 この2つの軸が交差することで、具体的な処理内容が決定され、適切なプロンプトテンプレートとスキーマファイルが特定されます。
 
+**重要**: DirectiveTypeとLayerTypeは **BreakdownParams** で事前検証済みのため、Breakdown CLI内での追加バリデーションは不要です。BreakdownParamsには設定値から生成された`ParamsCustomConfig`が渡され、`directivePatterns`と`layerPatterns`に基づいてパターンマッチング検証が実行されます。
+
+**注意**: BreakdownParamsパッケージの具体的な使用方法は [JSR @tettuan/breakdownparams](https://jsr.io/@tettuan/breakdownparams) のドキュメントを参照してください。
+
 ## 中核概念 - TwoParams
 
 ### ドメインオブジェクトとしてのTwoParams
 
-TwoParamsは、CLIのargsがBreakdownConfigとBreakdownParamsを経由して得られる2つの単一値（DirectiveTypeとLayerType）の組み合わせを表すドメイン型です。両者ともパターンマッチングによってバリデートされ、アプリケーションライフサイクル全体で一貫して使用される不変の値です。
+TwoParamsは、BreakdownParams で検証済みのTwoParamsResultから生成される2つの単一値（DirectiveTypeとLayerType）の組み合わせを表すドメイン型です。BreakdownParams検証により信頼性が保証されており、アプリケーションライフサイクル全体で一貫して使用される不変の値です。
 
 ### 型定義 - ドメインの表現
 
 ```typescript
 // =============================================================================
-// TwoParams - 2パラメータ処理のドメイン型
+// TwoParams - 2パラメータ処理のドメイン型（BreakdownParams検証済み値ベース）
 // =============================================================================
 
 /**
@@ -46,24 +50,13 @@ TwoParamsは、CLIのargsがBreakdownConfigとBreakdownParamsを経由して得�
  * - プロンプト生成とスキーマ解決のコンテキスト
  * 
  * 設計理念:
- * - CLI引数からファイルシステムリソースへの橋渡し
- * - パターンバリデーションによる信頼性保証
+ * - BreakdownParams検証済み値からファイルシステムリソースへの橋渡し
+ * - 追加バリデーション不要による信頼性保証
  * - 型安全なパス解決の実現
  */
 type TwoParams = {
   readonly directive: DirectiveType;
   readonly layer: LayerType;
-  readonly profile: ConfigProfileName;
-  
-  // ドメイン操作
-  toCommand(): BreakdownCommand;
-  validate(): Result<void, TwoParamsValidationError>;
-  
-  // パス解決機能（プロンプト・スキーマファイル）
-  getPromptPath(fromLayerType?: string, adaptation?: string): PromptPath;
-  getSchemaPath(): SchemaPath;
-  resolvePromptFilePath(baseDir: string, fromLayerType?: string, adaptation?: string): string;
-  resolveSchemaFilePath(baseDir: string): string;
   
   // 型安全な比較
   equals(other: TwoParams): boolean;
@@ -75,162 +68,176 @@ type TwoParams = {
 
 ```typescript
 /**
- * DirectiveType - 処理方向を表すドメイン型
+ * DirectiveType - 処理方向を表すドメイン型（BreakdownParams検証済み）
  * 
  * 役割: 「何をするか」を決定
  * 例: "to"(変換), "summary"(要約), "defect"(欠陥検出)
+ * 
+ * 注意: BreakdownParams で事前検証済みのため追加検証不要
  */
-type DirectiveType = {
-  readonly value: string;
-  readonly profile: ConfigProfileName;
-  readonly validatedByPattern: boolean;
+class DirectiveType {
+  readonly source = "BREAKDOWN_PARAMS_VALIDATED" as const;
   
-  // ドメイン操作
-  isValidForProfile(profile: ConfigProfileName): boolean;
-  
-  // パス解決専用ドメイン操作
-  getPromptDirectory(baseDir: string, layer: LayerType): string;
-  getSchemaDirectory(baseDir: string, layer: LayerType): string;
-  isValidForResourcePath(): boolean;
+  constructor(readonly value: string) {}
   
   // 型安全な比較
-  equals(other: DirectiveType): boolean;
-  toString(): string;
+  equals(other: DirectiveType): boolean {
+    return this.value === other.value;
+  }
+  
+  toString(): string {
+    return this.value;
+  }
 }
 
 /**
- * LayerType - 階層を表すドメイン型
+ * LayerType - 階層を表すドメイン型（BreakdownParams検証済み）
  * 
  * 役割: 「どのレベルで」を決定
  * 例: "project"(プロジェクト), "issue"(課題), "task"(タスク)
+ * 
+ * 注意: BreakdownParams で事前検証済みのため追加検証不要
  */
-type LayerType = {
-  readonly value: string;
-  readonly validatedByPattern: boolean;
+class LayerType {
+  readonly source = "BREAKDOWN_PARAMS_VALIDATED" as const;
   
-  // ドメイン操作
-  isValidForDirective(directive: DirectiveType): boolean;
-  
-  // パス解決専用ドメイン操作
-  getPromptFilename(fromLayerType: string, adaptation?: string): string;
-  getSchemaFilename(): string;
-  isValidForResourcePath(): boolean;
+  constructor(readonly value: string) {}
   
   // 型安全な比較
-  equals(other: LayerType): boolean;
-  toString(): string;
+  equals(other: LayerType): boolean {
+    return this.value === other.value;
+  }
+  
+  toString(): string {
+    return this.value;
+  }
 }
 
 /**
- * ConfigProfileName - 設定プロファイル名を表すドメイン型
+ * ConfigProfileName - 設定プロファイル名を表すドメイン型（短寿命）
  * 
- * 役割: 設定の切り替えコンテキスト
- * 例: "breakdown"(標準), "search"(検索), "custom"(カスタム)
+ * 役割: 設定の切り替えコンテキスト（設定ファイル読み込み専用）
+ * 例: "default"(デフォルト), "production"(本番), "custom"(カスタム)
  * 
- * 重要: ConfigProfileNameは必須オプションではない
+ * 寿命管理:
+ * - 非常に短寿命（設定ファイル読み込み後すぐに役割終了）
  * - CLIから未指定時は自動的に "default" が適用される
- * - 型システム上は常にConfigProfileNameとして扱われる
- * - デフォルト値の適用により、型安全性を保持
+ * - BreakdownConfig取得後は参照されない
+ * - DirectiveType/LayerType提供責務は削除（BreakdownParams検証に移譲）
  */
-type ConfigProfileName = {
-  readonly value: string;
+class ConfigProfileName {
   readonly isDefault: boolean;
-  readonly prefix: string | null;
   
-  // ドメイン操作
-  getConfigPath(): string;
-  getDirectiveTypes(): readonly DirectiveType[];
-  getLayerTypes(): readonly LayerType[];
+  private constructor(readonly value: string, isDefault: boolean) {
+    this.isDefault = isDefault;
+  }
   
   // デフォルト値関連の操作
-  static createDefault(): ConfigProfileName;
-  static fromCliOption(option: string | null | undefined): ConfigProfileName;
+  static createDefault(): ConfigProfileName {
+    return new ConfigProfileName("default", true);
+  }
+  
+  static fromCliOption(option?: string): ConfigProfileName {
+    return option 
+      ? new ConfigProfileName(option, false) 
+      : this.createDefault();
+  }
+  
+  // 設定ファイル読み込み用
+  getConfigPath(): string {
+    return `config/${this.value}.yml`;
+  }
   
   // 型安全な比較
-  equals(other: ConfigProfileName): boolean;
-  toString(): string;
+  equals(other: ConfigProfileName): boolean {
+    return this.value === other.value;
+  }
+  
+  toString(): string {
+    return this.value;
+  }
 }
 ```
 
-## 信頼性の確保 - パターンベースバリデーション
+## BreakdownParams統合による検証システム
 
-### バリデーション戦略
+### BreakdownParams検証済み値の活用戦略
 
-Breakdownでは、CLI引数をそのまま使用するのではなく、**パターンベースバリデーション**により信頼性を確保しています：
+Breakdownでは、**BreakdownParams** による外部検証システムを活用し、CLI引数の信頼性を確保しています：
 
 ```
-CLI args → ConfigProfileName.fromCliOption("default") → BreakdownConfig → CustomConfig.two.ParamsConfig
-     ↓                           ↓                           ↓                      ↓
-CLI args → BreakdownParams (pattern validation) → TwoParamsResult
-     ↓                                                    ↓
-TwoParams → DirectiveType + LayerType (pattern-validated)
+CLI args → ConfigProfileName.fromCliOption("default") → BreakdownConfig
+     ↓                                                         ↓
+CLI args → BreakdownParams (external validation) → TwoParamsResult
+     ↓        ↑ ParamsCustomConfig(directivePatterns,layerPatterns)
+TwoParams → new DirectiveType() + new LayerType() (pre-validated)
 
-注意: ProfileNameが未指定時は自動的に "default" が適用される
+検証フロー詳細:
+1. BreakdownConfigから directivePatterns, layerPatterns を抽出
+2. ParamsCustomConfigとしてBreakdownParamsに渡す
+3. BreakdownParamsが設定パターンに基づいて検証実行
+4. 検証済みTwoParamsResultから DirectiveType, LayerType を生成
+
+注意: 
+- ConfigProfileNameは設定ファイル読み込み後すぐに寿命終了
+- DirectiveType/LayerTypeは BreakdownParams検証済みのため追加検証不要
+- 冗長なパターンマッチング処理を削除
 ```
+### なぜBreakdownParams統合が必要なのか
 
-### なぜパターンバリデーションが必要なのか
-
-1. **設定の柔軟性**: 環境やプロジェクトごとに異なる値を許可
-2. **品質保証**: 不正な値によるエラーを事前に防止
-3. **拡張性**: 新しいDirectiveTypeやLayerTypeを設定で追加可能
-4. **一貫性**: ConfigProfileNameによる設定切り替えで環境別対応
-5. **シンプルさ**: 未指定時のデフォルト値適用で利用しやすさを向上
+1. **外部検証による信頼性**: BreakdownParamsパッケージによる事前検証で品質保証
+2. **設定値ベース検証**: `ParamsCustomConfig`として設定パターン（directivePatterns/layerPatterns）を渡し、設定値に基づいた柔軟な検証を実現
+3. **検証ロジック分離**: Breakdown CLI本体から検証責務を分離
+4. **冗長性排除**: 重複するパターンマッチング処理を削除
+5. **一貫性保証**: 複数のアプリケーション間で共通の検証基準
+6. **ConfigProfileNameの責務簡素化**: 設定ファイル読み込み専用の短寿命オブジェクトに変更
 
 ### エラーハンドリング戦略
 
 ```typescript
 /**
- * TwoParams検証エラー - パターンコンテキスト付きエラー情報
+ * BreakdownParams統合後の簡略化されたエラー型
+ * 
+ * 注意: DirectiveType/LayerTypeのバリデーションエラーは
+ * BreakdownParams で処理されるため、
+ * Breakdown CLI内では以下の限定的なエラーのみ扱う
+ * 
+ * BreakdownParamsでの検証:
+ * - ParamsCustomConfigのdirectivePatternsによるDirectiveType検証
+ * - ParamsCustomConfigのlayerPatternsによるLayerType検証
+ * - パターンマッチ失敗時のエラーはBreakdownParamsが処理
  */
-type TwoParamsValidationError = 
-  | { kind: "InvalidDirective"; directive: string; profile: ConfigProfileName; pattern: string; }
-  | { kind: "InvalidLayer"; layer: string; pattern: string; }
-  | { kind: "UnsupportedCombination"; directive: string; layer: string; profile: ConfigProfileName; }
-  | { kind: "PatternNotFound"; profile: ConfigProfileName; configPath: string; }
-
-/**
- * DirectiveType検証エラー
- */
-type InvalidDirectiveError = {
-  kind: "InvalidDirective";
-  value: string;
-  profile: ConfigProfileName;
-  pattern: string;
-  validDirectives: string[];
-}
-
-/**
- * LayerType検証エラー
- */
-type InvalidLayerError = {
-  kind: "InvalidLayer";
-  value: string;
-  pattern: string;
-  validLayers: string[];
-}
+type TwoParamsError = 
+  | { kind: "BreakdownParamsValidationFailed"; breakdownParamsError: BreakdownParamsError; }
+  | { kind: "ConfigProfileNotFound"; profile: ConfigProfileName; configPath: string; }
+  | { kind: "PathResolutionFailed"; directive: string; layer: string; baseDir: string; }
 ```
+
 
 ## 実用性の実現 - パス解決システム
 
 ### DirectiveTypeとLayerTypeの実際の活用
 
-バリデーション済みのDirectiveTypeとLayerTypeは、**ファイルシステム上のリソース配置と密接に関連したドメイン概念**として機能します。これらの値は、プロンプトテンプレートやスキーマファイルの**パス解決において重要なドメイン用語**として使用されます。
+**BreakdownParams検証済み**のDirectiveTypeとLayerTypeは、**単純な文字列値を保持するドメイン型**として機能します。これらの値は、**プロンプトパス決定ドメイン**において**パス解決の一部として**使用されます。
 
-### パス解決の仕組み
+### パス解決の仕組み（プロンプトパス決定ドメインの責務）
 
-パス解決は以下の4つの変数の組み合わせで決定されます：
+パス解決は**プロンプトパス決定ドメイン**で行われ、以下の3つの変数の組み合わせで決定されます：
 
 1. **設定値（base_dir）** - `app_prompt.base_dir` または `app_schema.base_dir`
-2. **DirectiveType** - 処理方向（to, summary, defect など）
-3. **LayerType** - 階層レベル（project, issue, task など）
-4. **その他の修飾子** - fromLayerType, adaptation など
+2. **DirectiveType（BreakdownParams検証済み）** - 処理方向（to, summary, defect など）
+3. **LayerType（BreakdownParams検証済み）** - 階層レベル（project, issue, task など）
+
+**重要**: TwoParamsはこれらの値を提供するのみで、パス解決自体は行いません。
 
 ```typescript
-// パス解決専用型定義
+// パス解決専用型定義（BreakdownParams統合版）
+// 注意: パス解決は「プロンプトパス決定ドメイン」の責務
+// TwoParamsは値の提供のみ行う
 type PromptPath = {
   readonly baseDir: string;           // app_prompt.base_dir (cwd起点)
-  readonly directive: DirectiveType;  // "to", "summary", "defect" など
-  readonly layer: LayerType;          // "project", "issue", "task" など
+  readonly directive: DirectiveType;  // BreakdownParams検証済み "to", "summary", "defect" など
+  readonly layer: LayerType;          // BreakdownParams検証済み "project", "issue", "task" など
   readonly fromLayer: string;         // fromLayerType
   readonly adaptation?: string;       // adaptation修飾子（オプション）
   resolve(): string;
@@ -239,8 +246,8 @@ type PromptPath = {
 
 type SchemaPath = {
   readonly baseDir: string;           // app_schema.base_dir (cwd起点)
-  readonly directive: DirectiveType;  // "to", "summary", "defect" など
-  readonly layer: LayerType;          // "project", "issue", "task" など
+  readonly directive: DirectiveType;  // BreakdownParams検証済み "to", "summary", "defect" など
+  readonly layer: LayerType;          // BreakdownParams検証済み "project", "issue", "task" など
   readonly schemaFile: string;        // デフォルト: "base.schema.json"
   resolve(): string;
 }
@@ -249,117 +256,109 @@ type SchemaPath = {
 ### ディレクトリ構造との対応
 
 ```
-TwoParams (pattern-validated) → {base_dir}/{directive}/{layer}/filename
+プロンプトパス決定ドメインが実行: {base_dir}/{directive.value}/{layer.value}/filename
+TwoParamsは: directive.value, layer.value を提供するのみ
 
 プロジェクトルート/
 ├── prompts/           # app_prompt.base_dir
-│   ├── to/           # DirectiveType
-│   │   ├── project/  # LayerType
-│   │   ├── issue/    # LayerType
-│   │   └── task/     # LayerType
-│   ├── summary/      # DirectiveType
-│   └── defect/       # DirectiveType
+│   ├── to/           # DirectiveType.value
+│   │   ├── project/  # LayerType.value
+│   │   ├── issue/    # LayerType.value
+│   │   └── task/     # LayerType.value
+│   ├── summary/      # DirectiveType.value
+│   └── defect/       # DirectiveType.value
 └── schemas/          # app_schema.base_dir
-    ├── to/           # DirectiveType
-    │   ├── project/  # LayerType
-    │   ├── issue/    # LayerType
-    │   └── task/     # LayerType
-    ├── summary/      # DirectiveType
-    └── defect/       # DirectiveType
+    ├── to/           # DirectiveType.value
+    │   ├── project/  # LayerType.value
+    │   ├── issue/    # LayerType.value
+    │   └── task/     # LayerType.value
+    ├── summary/      # DirectiveType.value
+    └── defect/       # DirectiveType.value
 ```
 
 ## 実装ガイド
 
-### Smart Constructors（型安全な生成）
+### Smart Constructors（BreakdownParams統合版）
 
 ```typescript
 /**
- * Smart Constructors - 型安全な生成パターン（デフォルト値自動適用）
+ * Smart Constructors - BreakdownParams検証済み値からの型安全な生成
  */
 namespace TwoParams {
-  export function create(
-    directive: string,
-    layer: string,
-    profile: ConfigProfileName
-  ): Result<TwoParams, TwoParamsValidationError>;
-  
-  export function createWithCliOption(
-    directive: string,
-    layer: string,
-    profileOption: string | null | undefined
-  ): Result<TwoParams, TwoParamsValidationError>;
-}
-
-namespace DirectiveType {
-  export function create(
-    value: string,
-    profile: ConfigProfileName
-  ): Result<DirectiveType, InvalidDirectiveError>;
-}
-
-namespace LayerType {
-  export function create(value: string): Result<LayerType, InvalidLayerError>;
-}
-
-namespace ConfigProfileName {
-  export function create(value: string): ConfigProfileName;
-  export function createDefault(): ConfigProfileName;
-  export function fromCliOption(option: string | null | undefined): ConfigProfileName;
-}
-```
-
-### 統合使用例 - CLI実行からファイル特定まで
-
-```typescript
-// バリデーション → パス解決の完全なフロー（デフォルト値自動適用）
-const cliProfileOption: string | null | undefined = extractConfigFromCLI(); // null, "breakdown", "custom", etc.
-const profile = ConfigProfileName.fromCliOption(cliProfileOption); // 自動的に "default" が適用
-const config = BreakdownConfig.load(profile);
-
-if (config.ok) {
-  const paramsResult = BreakdownParams.validate(["to", "issue"], config.data.customConfig.two.ParamsConfig);
-  
-  if (paramsResult.type === "two") {
-    const twoParams = TwoParams.fromResult(paramsResult);
-    
-    // プロンプトテンプレートパス解決
-    const promptPath = twoParams.data.resolvePromptFilePath("prompts", "issue");
-    // 結果: "prompts/to/issue/f_issue.md"
-    
-    const adaptedPrompt = twoParams.data.resolvePromptFilePath("prompts", "issue", "strict");
-    // 結果: "prompts/to/issue/f_issue_strict.md"
-    
-    // スキーマファイルパス解決
-    const schemaPath = twoParams.data.resolveSchemaFilePath("schemas");
-    // 結果: "schemas/to/issue/base.schema.json"
+  // BreakdownParams TwoParamsResultから直接生成
+  export function create(twoParamsResult: TwoParamsResult): TwoParams {
+    return {
+      directive: new DirectiveType(twoParamsResult.directiveType),
+      layer: new LayerType(twoParamsResult.layerType)
+    };
   }
 }
 
-// より簡潔な使用例
-const twoParamsResult = TwoParams.createWithCliOption("to", "issue", null); // nullは自動的にデフォルト値を適用
-if (twoParamsResult.ok) {
-  console.log(twoParamsResult.data.profile.value); // "default"
-  console.log(twoParamsResult.data.profile.isDefault); // true
+namespace DirectiveType {
+  // BreakdownParams検証済み値から直接生成（追加検証不要）
+  export function create(value: string): DirectiveType {
+    return new DirectiveType(value);
+  }
+}
+
+namespace LayerType {
+  // BreakdownParams検証済み値から直接生成（追加検証不要）
+  export function create(value: string): LayerType {
+    return new LayerType(value);
+  }
+}
+
+namespace ConfigProfileName {
+  export function createDefault(): ConfigProfileName {
+    return new ConfigProfileName("default", true);
+  }
+  
+  export function fromCliOption(option?: string): ConfigProfileName {
+    return option 
+      ? new ConfigProfileName(option, false) 
+      : this.createDefault();
+  }
+}
+```
+### 統合使用例 - ドメインライフサイクル
+
+```typescript
+// ConfigProfileName（短寿命）→ BreakdownParams検証 → TwoParams（長寿命）
+async function domainLifecycleExample() {
+  // 1. ConfigProfileName: 短寿命（設定読み込み専用）
+  const profile = ConfigProfileName.fromCliOption(null); // "default"適用
+  const config = await loadBreakdownConfig(profile);
+  // ConfigProfileNameの役割終了
+  
+  // 2. BreakdownParams: 設定パターンベース検証
+  // 具体的な呼び出し方法は JSR @tettuan/breakdownparams のドキュメントを参照
+  const breakdownParamsResult = await validateWithBreakdownParams(["to", "issue"]);
+  const twoParams = TwoParams.create(breakdownParamsResult);
+  
+  // 3. TwoParams: 長寿命（アプリケーション全体で使用）
+  return {
+    directive: twoParams.directive.value, // "to"
+    layer: twoParams.layer.value,         // "issue"
+    source: twoParams.directive.source    // "BREAKDOWN_PARAMS_VALIDATED"
+  };
 }
 ```
 
 ### エラーハンドリング例
 
 ```typescript
-// パターンマッチング失敗時の対応
-const result = BreakdownParams.validate(["invalid", "layer"], patterns);
-if (!result.ok) {
-  switch (result.error.kind) {
-    case "InvalidDirective":
-      console.error(`無効な処理方向: ${result.error.directive}`);
-      console.error(`有効な値: ${result.error.validDirectives.join(", ")}`);
+// BreakdownParams検証エラーの処理（概念例）
+// 具体的な呼び出し方法は JSR @tettuan/breakdownparams のドキュメントを参照
+if (!breakdownParamsResult.ok) {
+  switch (breakdownParamsResult.error.kind) {
+    case "BreakdownParamsValidationFailed":
+      // BreakdownParamsでの設定パターンベース検証失敗
       break;
-    case "InvalidLayer":
-      console.error(`無効な階層: ${result.error.layer}`);
-      console.error(`有効な値: ${result.error.validLayers.join(", ")}`);
+    case "ConfigProfileNotFound":
+      // 設定プロファイルが見つからない
       break;
-    case "UnsupportedCombination":
-      console.error(`サポートされていない組み合わせ: ${result.error.directive} + ${result.error.layer}`);
+    case "PathResolutionFailed":
+      // プロンプトパス決定ドメインでのパス解決失敗
       break;
   }
 }
@@ -368,17 +367,23 @@ if (!result.ok) {
 ## アプリケーションライフサイクルでの一貫性
 
 ```
-TwoParams (値オブジェクト)
-├── DirectiveType (パターン検証済み単一値) - "to", "summary", "defect" など
-└── LayerType (パターン検証済み単一値) - "project", "issue", "task" など
+TwoParams (純粋な値オブジェクト)
+├── DirectiveType (BreakdownParams検証済み文字列値) - "to", "summary", "defect" など
+└── LayerType (BreakdownParams検証済み文字列値) - "project", "issue", "task" など
 
 特徴：
-- BreakdownConfigのパターンで検証済み
-- ProfileNameによって利用可能な値が決定
+- BreakdownParams で事前検証済み
+- ConfigProfileNameは設定読み込み後すぐに寿命終了
+- 追加バリデーション不要
 - アプリケーション全体で不変
-- ファイルシステムリソースへの確実なアクセス
+- パス解決はプロンプトパス決定ドメインが担当
+
+寿命管理:
+1. ConfigProfileName: 短寿命（設定ファイル読み込み専用）
+2. DirectiveType/LayerType: 長寿命（BreakdownParams検証済み、アプリケーション全体で使用）
+3. TwoParams: 長寿命（プロンプト生成まで継続使用）
 ```
 
-このドメイン型定義により、TwoParamsがDirectiveTypeとLayerTypeの2つを持つという関係性が型安全に表現され、BreakdownConfigのパターンによるバリデーションを経た信頼性の高いドメインオブジェクトとして機能します。さらに、これらの型はプロンプトテンプレートとスキーマファイルの物理的な配置を決定する重要な役割を担い、ファイルシステム上のリソースへの確実なアクセスを可能にします。ProfileNameによるパターン切り替えにより、柔軟な設定管理とリソース配置の両方が実現されています。
+このドメイン型定義により、TwoParamsがDirectiveTypeとLayerTypeの2つを持つという関係性が型安全に表現され、**BreakdownParams による外部検証システム**を活用した信頼性の高いドメインオブジェクトとして機能します。さらに、これらの型はプロンプトテンプレートとスキーマファイルの物理的な配置を決定する重要な役割を担い、ファイルシステム上のリソースへの確実なアクセスを可能にします。ConfigProfileNameの短寿命化により、責務の明確化と処理効率の向上が実現されています。
 
 
