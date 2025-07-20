@@ -11,8 +11,9 @@ Breakdown CLIは、3つの主要ドメインと複数の支援ドメインから
 ```typescript
 // ドメインの階層構造
 type BreakdownDomain = 
-  | "cli-parsing"           // CLI引数解析ドメイン
-  | "config-management"     // 設定管理ドメイン
+  | "cli-parsing"           // CLI引数解析ドメイン（config prefix検出のみ）
+  | "config-management"     // 設定管理ドメイン（設定ファイル読み込み）
+  | "parameter-validation"  // パラメータバリデーションドメイン（DirectiveType/LayerType検証）
   | "prompt-path-resolution" // プロンプトパス決定ドメイン
   | "prompt-variable-generation" // プロンプト変数生成ドメイン
   | "prompt-generation"     // プロンプト生成ドメイン（最終出力）
@@ -31,11 +32,15 @@ type BreakdownDomain =
 ```mermaid
 graph TB
     subgraph "CLI Layer"
-        CLI[CLI引数解析ドメイン]
+        CLI[CLI引数解析ドメイン<br/>ConfigPrefix検出]
     end
     
     subgraph "Configuration Layer"
-        CONFIG[設定管理ドメイン]
+        CONFIG[設定管理ドメイン<br/>設定ファイル読み込み]
+    end
+    
+    subgraph "Parameter Processing Layer"
+        PARAMS[パラメータバリデーション<br/>ドメイン]
     end
     
     subgraph "Core Processing Layer"
@@ -54,8 +59,9 @@ graph TB
     end
     
     CLI --> CONFIG
-    CLI --> PATH
+    CONFIG --> PARAMS
     CONFIG --> PATH
+    PARAMS --> PATH
     PATH --> VARS
     VARS --> PROMPT
     PROMPT --> OUTPUT
@@ -83,18 +89,9 @@ graph TB
  */
 type DirectiveType = {
   readonly value: string;
-  readonly profile: ConfigProfileName;
   readonly validatedByPattern: boolean;
   
   // ドメイン操作
-  isValidForProfile(profile: ConfigProfileName): boolean;
-  
-  // パス解決専用ドメイン操作
-  getPromptDirectory(baseDir: string, layer: LayerType): string;
-  getSchemaDirectory(baseDir: string, layer: LayerType): string;
-  isValidForResourcePath(): boolean;
-  
-  // 型安全な比較
   equals(other: DirectiveType): boolean;
   toString(): string;
 }
@@ -107,14 +104,10 @@ type LayerType = {
   readonly validatedByPattern: boolean;
   
   // ドメイン操作
-  isValidForDirective(directive: DirectiveType): boolean;
-  
-  // パス解決専用ドメイン操作
-  getPromptFilename(fromLayerType: string, adaptation?: string): string;
-  getSchemaFilename(): string;
-  isValidForResourcePath(): boolean;
-  
-  // 型安全な比較
+  equals(other: LayerType): boolean;
+  toString(): string;
+}
+  // ドメイン操作
   equals(other: LayerType): boolean;
   toString(): string;
 }
@@ -122,20 +115,16 @@ type LayerType = {
 /**
  * ConfigProfileName - 設定プロファイル名を表すバリューオブジェクト
  * 
- * 重要: ConfigProfileNameは必須オプションではない
- * - CLIから未指定時は自動的に "default" が適用される
- * - 型システム上は常にConfigProfileNameとして扱われる
- * - デフォルト値の適用により、型安全性と利便性を両立
+ * 責務: 設定プロファイル名の管理のみ
+ * ConfigProfileNameはBreakdownConfigへの「名前」としてのみ機能し、
+ * DirectiveTypeやLayerTypeなどの設定値を直接返す責務は持たない
  */
 type ConfigProfileName = {
   readonly value: string;
   readonly isDefault: boolean;
-  readonly prefix: string | null;
   
-  // ドメイン操作
+  // 単一責務: 設定ファイルのパス解決のみ
   getConfigPath(): string;
-  getDirectiveTypes(): readonly DirectiveType[];
-  getLayerTypes(): readonly LayerType[];
   
   // デフォルト値関連の操作
   static createDefault(): ConfigProfileName;
@@ -144,6 +133,71 @@ type ConfigProfileName = {
   // 型安全な比較
   equals(other: ConfigProfileName): boolean;
   toString(): string;
+}
+
+/**
+ * BreakdownConfig - アプリケーション設定を表すバリューオブジェクト
+ * 
+ * JSRパッケージから読み込まれた設定データと独自設定の統合型
+ * ParamsCustomConfigとPathResolutionConfigの2つの役割に分離される
+ */
+type BreakdownConfig = {
+  readonly profileName: ConfigProfileName;
+  
+  // パラメータバリデーション用の設定値
+  readonly directivePatterns: string;      // PARAMS ドメインで使用
+  readonly layerPatterns: string;          // PARAMS ドメインで使用
+  
+  // パス解決用の設定値
+  readonly app_prompt: {                   // PATH ドメインで使用
+    readonly base_dir: string;             // プロンプトテンプレートのベースディレクトリ
+    readonly working_dir?: string;         // 作業ディレクトリ（相対パス解決用）
+  };
+  readonly app_schema: {                   // PATH ドメインで使用
+    readonly base_dir: string;             // スキーマファイルのベースディレクトリ
+  };
+  
+  // 寿命管理: BreakdownConfigは以下2つの変換後に寿命を終える
+  toParamsCustomConfig(): ParamsCustomConfig;
+  toPathResolutionConfig(): PathResolutionConfig;
+}
+
+/**
+ * ParamsCustomConfig - パラメータバリデーション用設定
+ * 
+ * 役割1: CLI argsからDirectiveType/LayerType解析、オプション解析
+ * 寿命: BreakdownParamsによる解析処理でのみ使用
+ */
+type ParamsCustomConfig = {
+  readonly breakdown: {
+    readonly params: {
+      readonly two: {
+        readonly demonstrativeType: PatternConfig;
+        readonly layerType: PatternConfig;
+      };
+    };
+  };
+  
+  // ドメイン操作
+  validateDirective(value: string): Result<DirectiveType, ValidationError>;
+  validateLayer(value: string): Result<LayerType, ValidationError>;
+}
+
+/**
+ * PathResolutionConfig - パス解決用設定
+ * 
+ * 役割2: workingdirやpromptパスの構成要素としてbase_dirを持つ
+ * 寿命: プロンプトパス決定ドメインで継続的に使用
+ */
+type PathResolutionConfig = {
+  readonly promptBaseDir: string;          // プロンプトテンプレートの基準ディレクトリ
+  readonly schemaBaseDir: string;          // スキーマファイルの基準ディレクトリ
+  readonly workingDir?: string;            // 相対パス解決時の作業ディレクトリ
+  
+  // ドメイン操作
+  resolvePromptPath(directive: DirectiveType, layer: LayerType): string;
+  resolveSchemaPath(directive: DirectiveType, layer: LayerType): string;
+  resolveWorkingPath(relativePath: string): string; // working_dir基準の相対パス解決
 }
 
 /**
@@ -186,34 +240,17 @@ type PromptVariables = {
 ```typescript
 /**
  * TwoParams - 2パラメータ処理のバリューオブジェクト
+ * 
+ * DirectiveType/LayerTypeの検証済みの状態を保持
+ * 寿命が長く、アプリケーション全体を通してプロンプト変数生成まで使用される
  */
 type TwoParams = {
   readonly directive: DirectiveType;
   readonly layer: LayerType;
-  readonly profile: ConfigProfileName;
   
   // ドメイン操作
-  toCommand(): BreakdownCommand;
-  validate(): Result<void, TwoParamsValidationError>;
-  getPromptPath(fromLayerType?: string, adaptation?: string): PromptPath;
-  getSchemaPath(): SchemaPath;
   equals(other: TwoParams): boolean;
-}
-
-/**
- * BreakdownConfig - 設定を表すバリューオブジェクト
- */
-type BreakdownConfig = {
-  readonly profileName: ConfigProfileName;
-  readonly app_prompt: PromptConfig;
-  readonly app_schema: SchemaConfig;
-  readonly customConfig: CustomConfig;
-  
-  // ドメイン操作
-  getPromptBaseDirectory(): string;
-  getSchemaBaseDirectory(): string;
-  getPatternConfig(): PatternConfig;
-  isValidTwoParams(directive: string, layer: string): boolean;
+  toString(): string;
 }
 ```
 
@@ -251,11 +288,14 @@ type OneParamsResult =
 
 /**
  * TwoParamsResult - プロンプト生成のユニオン型
+ * 
+ * BreakdownParamsの解析結果として生成され、
+ * プロンプト変数生成ドメインまで継続的に使用される
  */
 type TwoParamsResult = {
   kind: "prompt-generation";
-  params: TwoParams;
-  options: PromptVariableSource;
+  params: TwoParams;                    // 検証済みDirectiveType/LayerType
+  options: PromptVariableSource;        // Variable Generation Layerで使用される入力ソース情報
 };
 ```
 
@@ -371,28 +411,34 @@ sequenceDiagram
 flowchart TD
     subgraph INPUT ["Input Layer"]
         A["CLI Args: string[]"]
-        B["Config Profile"]
     end
     
-    subgraph PARSING ["Parsing Layer"]
-        C["BreakdownParamsResult"]
-        D["TwoParamsResult"]
-        E["PromptVariableSource"]
-    end
-    
-    subgraph RESOLUTION ["Resolution Layer"]
-        F["PathResolutionOption"]
-        G["PromptTemplatePath"]
+    subgraph CONFIG ["Configuration Layer"]
+        B["ConfigProfileName"]
         H["BreakdownConfig"]
     end
     
-    subgraph GENERATION ["Generation Layer"]
+    subgraph PARSING ["Parameter Validation Layer"]
+        C["ParamsCustomConfig"]
+        D["TwoParamsResult"]
+    end
+    
+    subgraph RESOLUTION ["Path Resolution Layer"]
+        E["PathResolutionConfig"]
+        G["PromptTemplatePath"]
+    end
+    
+    subgraph GENERATION ["Variable Generation Layer"]
+        F["PromptVariableSource"]
         I["PromptVariables"]
+    end
+    
+    subgraph PROMPT ["Prompt Generation Layer"]
         J["PromptParams"]
+        K["GeneratedPrompt"]
     end
     
     subgraph OUTPUT ["Output Layer (Breakdown CLI Scope)"]
-        K["GeneratedPrompt"]
         L["StandardOutput"]
     end
     
@@ -401,15 +447,16 @@ flowchart TD
         N["AI Response"]
     end
     
-    A --> C
+    A --> B
     B --> H
+    H --> C
     C --> D
-    D --> E
+    H --> E
     D --> F
-    H --> G
-    F --> G
+    D --> G
+    E --> G
+    F --> I
     G --> I
-    E --> I
     I --> J
     J --> K
     K --> L
@@ -433,7 +480,7 @@ flowchart TD
 ```typescript
 // 境界インターフェース
 interface CLIToConfigBoundary {
-  // 入力（自動的にデフォルト値適用）
+  // 入力（ConfigProfileNameの責務を限定）
   configProfileName: ConfigProfileName;
   
   // 出力
@@ -449,54 +496,107 @@ const transformCLIToConfig = (args: string[]): ConfigProfileName => {
   return ConfigProfileName.fromCliOption(configOption); // 自動的にデフォルト値適用
 };
 
-// 使用例
-const cliArgs = ["to", "issue"]; // プロファイル指定なし
-const profile = transformCLIToConfig(cliArgs);
-console.log(profile.value); // "default"
-console.log(profile.isDefault); // true
+// 使用例（ConfigProfileNameの寿命が短いことを示す）
+const cliArgs = ["to", "issue", "--config=production"];
+const profile = transformCLIToConfig(cliArgs); // ConfigProfileName作成
+const config = await loadConfig(profile);      // BreakdownConfig取得
+// この時点でConfigProfileNameの寿命は終了
 ```
 
-### 2. 設定管理ドメイン → プロンプトパス決定ドメイン
+### 2. 設定管理ドメイン → パラメータバリデーションドメイン
 
 ```typescript
 // 境界インターフェース
-interface ConfigToPathBoundary {
+interface ConfigToParamsBoundary {
   // 入力
-  pathResolutionOption: PathResolutionOption;
-  breakdownConfig: BreakdownConfig;
+  rawArgs: string[];
+  paramsCustomConfig: ParamsCustomConfig;
+  
+  // 出力
+  twoParamsResult: TwoParamsResult;
+  
+  // 契約
+  validateParams(
+    args: string[],
+    config: ParamsCustomConfig
+  ): Result<TwoParamsResult, ParameterParsingError>;
+}
+
+// データ変換（BreakdownConfigの分割）
+const transformConfigToParams = (
+  config: BreakdownConfig
+): ParamsCustomConfig => {
+  return {
+    breakdown: {
+      params: {
+        two: {
+          demonstrativeType: {
+            pattern: config.directivePatterns,
+            errorMessage: "Invalid demonstrative type"
+          },
+          layerType: {
+            pattern: config.layerPatterns,
+            errorMessage: "Invalid layer type"
+          }
+        }
+      }
+    }
+  };
+};
+
+// この時点でBreakdownConfigの役割1（パラメータバリデーション）は完了
+```
+
+### 3. パラメータバリデーションドメイン → プロンプトパス決定ドメイン
+
+```typescript
+// 境界インターフェース
+interface ParamsToPathBoundary {
+  // 入力
+  twoParamsResult: TwoParamsResult;
+  pathResolutionConfig: PathResolutionConfig;
   
   // 出力
   promptTemplatePath: PromptTemplatePath;
   
   // 契約
   resolvePath(
-    option: PathResolutionOption, 
-    config: BreakdownConfig
+    params: TwoParamsResult,
+    config: PathResolutionConfig
   ): Result<PromptTemplatePath, PathResolutionError>;
 }
 
-// データ変換
+// データ変換（BreakdownConfigの分割）
 const transformConfigToPath = (
-  twoParams: TwoParams,
   config: BreakdownConfig
-): PathResolutionOption => {
+): PathResolutionConfig => {
   return {
-    adaptation: twoParams.options.adaptation,
-    baseDirectory: config.app_prompt.base_dir,
-    directive: twoParams.params.directive,
-    layer: twoParams.params.layer
+    promptBaseDir: config.app_prompt.base_dir,
+    schemaBaseDir: config.app_schema.base_dir,
+    workingDir: config.app_prompt.working_dir,
+    resolvePromptPath: (directive, layer) => 
+      `${config.app_prompt.base_dir}/${directive.value}/${layer.value}`,
+    resolveSchemaPath: (directive, layer) => 
+      `${config.app_schema.base_dir}/${directive.value}/${layer.value}`,
+    resolveWorkingPath: (relativePath) => 
+      config.app_prompt.working_dir 
+        ? `${config.app_prompt.working_dir}/${relativePath}`
+        : relativePath
   };
 };
+
+// この時点でBreakdownConfigの役割2（パス解決）も完了
+// BreakdownConfigの寿命が終了
 ```
 
-### 3. プロンプトパス決定ドメイン → プロンプト変数生成ドメイン
+### 4. プロンプトパス決定ドメイン → プロンプト変数生成ドメイン
 
 ```typescript
 // 境界インターフェース
 interface PathToVariablesBoundary {
   // 入力
   promptTemplatePath: PromptTemplatePath;
-  promptVariableSource: PromptVariableSource;
+  promptVariableSource: PromptVariableSource; // TwoParamsResult.optionsから抽出
   
   // 出力
   promptVariables: PromptVariables;
@@ -508,7 +608,14 @@ interface PathToVariablesBoundary {
   ): Result<PromptVariables, VariableGenerationError>;
 }
 
-// データ変換
+// データ変換（TwoParamsResultからPromptVariableSourceを抽出）
+const extractPromptVariableSource = (
+  twoParamsResult: TwoParamsResult
+): PromptVariableSource => {
+  return twoParamsResult.options; // TwoParamsResultのoptions値がPromptVariableSource
+};
+
+// プロンプト変数の生成
 const transformPathToVariables = (
   templatePath: PromptTemplatePath,
   source: PromptVariableSource
@@ -525,7 +632,7 @@ const transformPathToVariables = (
 };
 ```
 
-### 4. プロンプト変数生成ドメイン → プロンプト生成ドメイン
+### 5. プロンプト変数生成ドメイン → プロンプト生成ドメイン
 
 ```typescript
 // 境界インターフェース
@@ -560,7 +667,7 @@ const transformVariablesToPrompt = (
 };
 ```
 
-### 5. プロンプト生成ドメイン → 標準出力ドメイン
+### 6. プロンプト生成ドメイン → 標準出力ドメイン
 
 ```typescript
 // 境界インターフェース
@@ -674,41 +781,33 @@ flowchart TD
 namespace DirectiveType {
   export function create(
     value: string,
-    profile: ConfigProfileName
+    config: ParamsCustomConfig
   ): Result<DirectiveType, InvalidDirectiveError> {
     // バリデーション
-    if (!isValidDirective(value, profile)) {
+    if (!isValidDirective(value, config)) {
       return Result.error({
         kind: "InvalidDirective",
         value,
-        profile,
-        validDirectives: getValidDirectives(profile)
+        validDirectives: getValidDirectives(config)
       });
     }
     
     // 成功時の生成
     return Result.ok({
       value,
-      profile,
       validatedByPattern: true,
-      isValidForProfile: (p) => p.equals(profile),
-      getPromptDirectory: (baseDir, layer) => `${baseDir}/${value}/${layer.value}`,
-      equals: (other) => other.value === value && other.profile.equals(profile),
+      equals: (other) => other.value === value,
       toString: () => value
     });
   }
 }
 
-// ConfigProfileName用のSmart Constructor（デフォルト値自動適用）
 namespace ConfigProfileName {
   export function createDefault(): ConfigProfileName {
     return {
       value: "default",
       isDefault: true,
-      prefix: null,
-      getConfigPath: () => "./default.config.yml",
-      getDirectiveTypes: () => getDefaultDirectiveTypes(),
-      getLayerTypes: () => getDefaultLayerTypes(),
+      getConfigPath: () => "./config/default-app.yml",
       equals: (other) => other.value === "default" && other.isDefault,
       toString: () => "default"
     };
@@ -718,10 +817,9 @@ namespace ConfigProfileName {
     return {
       value,
       isDefault: value === "default",
-      prefix: value === "default" ? null : value,
-      getConfigPath: () => value === "default" ? "./default.config.yml" : `./${value}.config.yml`,
-      getDirectiveTypes: () => getDirectiveTypesForProfile(value),
-      getLayerTypes: () => getLayerTypesForProfile(value),
+      getConfigPath: () => value === "default" 
+        ? "./config/default-app.yml" 
+        : `./config/${value}-app.yml`,
       equals: (other) => other.value === value,
       toString: () => value
     };
@@ -802,16 +900,17 @@ class StandardPathResolutionStrategy implements PathResolutionStrategy {
 - **責務の限定**: AI実行・応答処理は対象外
 - **境界の明示**: 何を行い、何を行わないかの明確化
 
-### 2. 型安全性の確保
+### 2. 責務の明確化と寿命管理
+- **ConfigProfileName**: 設定ファイル名の管理のみ（短寿命）
+- **BreakdownConfig**: 2つの役割に分離後に寿命終了
+- **TwoParamsResult**: 検証済み状態での長寿命オブジェクト
+- **各ドメインの単一責任**: 明確な境界と変換
+
+### 3. 型安全性の確保
 - バリューオブジェクトによる不変性
 - ユニオン型による状態の明確化
 - Smart Constructorによる生成時バリデーション
 - デフォルト値の自動適用による型安全性の維持
-
-### 3. 責務の明確化
-- 各ドメインの単一責任
-- 境界での明確なデータ変換
-- エラー処理の局所化
 
 ### 4. 拡張性の実現
 - 新しいドメインの追加容易性
@@ -830,21 +929,6 @@ class StandardPathResolutionStrategy implements PathResolutionStrategy {
 - **段階的な設定**: 標準動作から始めて必要に応じてカスタマイズ
 
 ### 7. 統合の容易性
-- 各ドメインの単一責任
-- 境界での明確なデータ変換
-- エラー処理の局所化
-
-### 4. 拡張性の実現
-- 新しいドメインの追加容易性
-- 既存境界への影響最小化
-- 設定による動的な挙動変更
-
-### 5. 保守性の向上
-- ドメイン固有の用語による理解促進
-- 境界での変換ロジックの集約
-- テスト可能な設計
-
-### 6. 統合の容易性
 - 標準出力による他ツールとの連携
 - パイプライン処理への組み込み
 - 外部システムとの疎結合
@@ -860,4 +944,28 @@ class StandardPathResolutionStrategy implements PathResolutionStrategy {
 
 **設計原則**: Domain-Driven Design, Value Objects, Union Types  
 **実装パターン**: Smart Constructor, Factory, Strategy  
-**文書作成**: 2025年1月5日
+**文書作成**: 2025年7月20日
+
+---
+
+## CHANGELOG
+
+### 設定値フローの明確化（2025年7月20日）
+- **ドメイン境界図の改善**: Configuration LayerからCore Processing Layerへの設定値の流れを明示
+- **図の簡素化**: 重複する線を削除し、ドメイン間の基本的な依存関係のみを表示
+- **TwoParamsResult.optionsの明確化**: Variable Generation Layerで使用されるPromptVariableSourceの流れを段階的データ変換フローに追加
+- **base_dir/working_dirの用途明確化**: どのドメインで使用されるかをコメントで明記
+- **PathResolutionConfig**: working_dir対応とresolveWorkingPath()メソッド追加
+- **BreakdownConfig**: 設定値の用途をコメントで明示（PARAMS/PATHドメイン別）
+
+### 責務変更の記録
+- **ConfigProfileName**: DirectiveType/LayerType提供責務を削除
+- **BreakdownConfig**: 2つの役割（パラメータバリデーション・パス解決）に分離
+- **TwoParams**: profile参照を削除、純粋なDirective/Layer保持のみ
+- **DirectiveType/LayerType**: プロファイル依存プロパティを削除
+
+### ドメイン境界の変更
+- パラメータバリデーションドメインを独立化
+- 設定管理からパラメータバリデーションへの明確な分離
+- ConfigProfileNameの寿命を設定読み込みまでに限定
+- Configuration LayerからCore Processing Layerへの設定値の流れを明確化
