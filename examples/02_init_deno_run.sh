@@ -37,9 +37,9 @@ app_schema:
 params:
   two:
     directiveType:
-      pattern: "^(to|summary|defect)$"
+      pattern: "^(to|summary|defect|find)$"
     layerType:
-      pattern: "^(project|issue|task)$"
+      pattern: "^(project|issue|task|bugs)$"
 workspace:
   working_dir: ".agent/breakdown"
   temp_dir: ".agent/breakdown/temp"
@@ -446,6 +446,168 @@ EOF
 EOF
   fi
 
+  # Create missing find/* templates
+  echo "Creating find directive prompts..."
+  mkdir -p .agent/breakdown/prompts/find/{project,issue,task,bugs}
+  
+  # Create find/bugs/f_bugs.md template
+  if [ ! -f ".agent/breakdown/prompts/find/bugs/f_bugs.md" ]; then
+    cat > .agent/breakdown/prompts/find/bugs/f_bugs.md << 'EOF'
+# Find Bugs Template
+
+## Input
+
+{input_text}
+
+## Output
+
+- bugs_report.md
+
+---
+
+## Bug Detection Perspectives
+
+- Code smells and anti-patterns
+- Security vulnerabilities
+- Performance bottlenecks
+- Error handling issues
+- Concurrency problems
+- Memory leaks
+- API misuse
+- Dead code
+
+## Instructions
+
+1. Analyze the code for potential bugs
+2. Categorize issues by severity (Critical, High, Medium, Low)
+3. Provide specific line numbers and code references
+4. Suggest fixes for each identified issue
+5. Include best practice recommendations
+
+## Output Format
+
+- Output as structured Markdown with severity levels
+EOF
+  fi
+
+  # Create find/project/f_project.md template
+  if [ ! -f ".agent/breakdown/prompts/find/project/f_project.md" ]; then
+    cat > .agent/breakdown/prompts/find/project/f_project.md << 'EOF'
+# Find Project Issues Template
+
+## Input
+
+{input_text}
+
+## Output
+
+- project_issues.md
+
+---
+
+## Project Analysis Perspectives
+
+- Architecture issues
+- Technical debt
+- Dependency problems
+- Configuration issues
+- Documentation gaps
+- Testing coverage
+- CI/CD problems
+- Security concerns
+
+## Instructions
+
+1. Analyze project structure and configuration
+2. Identify architectural and design issues
+3. Find dependency and compatibility problems
+4. Detect missing or outdated documentation
+5. Assess testing and quality gaps
+
+## Output Format
+
+- Output as structured Markdown by category
+EOF
+  fi
+
+  # Create find/issue/f_issue.md template
+  if [ ! -f ".agent/breakdown/prompts/find/issue/f_issue.md" ]; then
+    cat > .agent/breakdown/prompts/find/issue/f_issue.md << 'EOF'
+# Find Issue Problems Template
+
+## Input
+
+{input_text}
+
+## Output
+
+- issue_problems.md
+
+---
+
+## Issue Analysis Perspectives
+
+- Incomplete requirements
+- Ambiguous specifications
+- Missing acceptance criteria
+- Dependency conflicts
+- Resource constraints
+- Timeline risks
+- Technical blockers
+
+## Instructions
+
+1. Analyze issue description for completeness
+2. Identify missing or unclear requirements
+3. Find potential implementation problems
+4. Detect dependency and resource issues
+5. Assess risks and blockers
+
+## Output Format
+
+- Output as structured Markdown with recommendations
+EOF
+  fi
+
+  # Create find/task/f_task.md template
+  if [ ! -f ".agent/breakdown/prompts/find/task/f_task.md" ]; then
+    cat > .agent/breakdown/prompts/find/task/f_task.md << 'EOF'
+# Find Task Issues Template
+
+## Input
+
+{input_text}
+
+## Output
+
+- task_issues.md
+
+---
+
+## Task Analysis Perspectives
+
+- Task definition clarity
+- Missing prerequisites
+- Unclear success criteria
+- Resource allocation issues
+- Time estimation problems
+- Skill requirements gaps
+- Testing approach issues
+
+## Instructions
+
+1. Analyze task definition for clarity
+2. Identify missing prerequisites and dependencies
+3. Find unclear or missing success criteria
+4. Detect resource and time estimation issues
+5. Assess testing and quality concerns
+
+## Output Format
+
+- Output as structured Markdown with action items
+EOF
+  fi
+
   # Verify the created structure
   if [ -d ".agent/breakdown" ]; then
     echo "✅ Successfully initialized project structure"
@@ -617,7 +779,7 @@ app_schema:
 params:
   two:
     directiveType:
-      pattern: "^(to|summary|defect)$"
+      pattern: "^(to|summary|defect|find)$"
     layerType:
       pattern: "^(project|issue|task|bugs)$"
 workspace:
@@ -670,7 +832,7 @@ app_schema:
 params:
   two:
     directiveType:
-      pattern: "^(to|summary|defect)$"
+      pattern: "^(to|summary|defect|find)$"
     layerType:
       pattern: "^(project|issue|task|bugs)$"
 workspace:
@@ -704,7 +866,7 @@ app_schema:
 params:
   two:
     directiveType:
-      pattern: "^(to|summary|defect)$"
+      pattern: "^(to|summary|defect|find)$"
     layerType:
       pattern: "^(project|issue|task|bugs)$"
 workspace:
@@ -742,7 +904,7 @@ app_schema:
 params:
   two:
     directiveType:
-      pattern: "^(to|summary|defect)$"
+      pattern: "^(to|summary|defect|find)$"
     layerType:
       pattern: "^(project|issue|task|bugs)$"
 workspace:
@@ -798,7 +960,7 @@ app_schema:
 params:
   two:
     directiveType:
-      pattern: "^(to|summary|defect)$"
+      pattern: "^(to|summary|defect|find)$"
     layerType:
       pattern: "^(project|issue|task|bugs)$"
 workspace:
@@ -837,7 +999,7 @@ app_schema:
 params:
   two:
     directiveType:
-      pattern: "^(to|summary|defect)$"
+      pattern: "^(to|summary|defect|find)$"
     layerType:
       pattern: "^(project|issue|task|bugs)$"
 workspace:
@@ -878,7 +1040,7 @@ app_schema:
 params:
   two:
     directiveType:
-      pattern: "^(to|summary|defect)$"
+      pattern: "^(to|summary|defect|find)$"
     layerType:
       pattern: "^(project|issue|task|bugs)$"
 workspace:

@@ -41,6 +41,12 @@ app_prompt:
 app_schema:
   base_dir: "../lib/breakdown/schema/dev"
   validation_enabled: false
+params:
+  two:
+    directiveType:
+      pattern: "^(to|summary|defect|find)$"
+    layerType:
+      pattern: "^(project|issue|task|bugs)$"
 logger:
   level: "debug"
   format: "text"
@@ -65,6 +71,12 @@ app_prompt:
 app_schema:
   base_dir: "../lib/breakdown/schema/staging"
   validation_enabled: true
+params:
+  two:
+    directiveType:
+      pattern: "^(to|summary|defect|find)$"
+    layerType:
+      pattern: "^(project|issue|task|bugs)$"
 logger:
   level: "info"
   format: "json"
@@ -92,6 +104,12 @@ app_schema:
   base_dir: "../lib/breakdown/schema/prod"
   validation_enabled: true
   strict_mode: true
+params:
+  two:
+    directiveType:
+      pattern: "^(to|summary|defect|find)$"
+    layerType:
+      pattern: "^(project|issue|task|bugs)$"
 logger:
   level: "error"
   format: "json"

@@ -88,6 +88,12 @@ app_prompt:
   base_dir: "prompts"
 app_schema:
   base_dir: "schema"
+params:
+  two:
+    directiveType:
+      pattern: "^(to|summary|defect|find)$"
+    layerType:
+      pattern: "^(project|issue|task)$"
 workspace:
   working_dir: ".agent/breakdown"
   temp_dir: ".agent/breakdown/temp"
