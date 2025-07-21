@@ -10,7 +10,7 @@ A powerful CLI tool for creating AI-optimized development instructions using Typ
 Install Breakdown globally using JSR:
 
 ```bash
-deno install -A -f --global breakdown jsr:@tettuan/breakdown
+deno install --allow-read --allow-write --allow-run --allow-env --allow-net -f --global breakdown jsr:@tettuan/breakdown
 ```
 
 Convert your markdown requirements to AI-optimized prompts:
@@ -169,11 +169,15 @@ breakdown defect task --from=<improvement_request.md> -o=<task_defect_dir>
 Install Breakdown globally for system-wide access:
 
 ```bash
-deno install -A -f --global breakdown jsr:@tettuan/breakdown
+deno install --allow-read --allow-write --allow-run --allow-env --allow-net -f --global breakdown jsr:@tettuan/breakdown
 ```
 
 **Options explained:**
-- `-A`: Allow all permissions (required for file operations)
+- `--allow-read`: File reading permissions
+- `--allow-write`: File writing permissions
+- `--allow-run`: Subprocess execution permissions
+- `--allow-env`: Environment variable access permissions
+- `--allow-net`: Network access permissions
 - `-f`: Force overwrite existing installation
 - `--global`: Install globally for system-wide access
 
@@ -187,7 +191,7 @@ breakdown --version
 ### Update to Latest Version
 
 ```bash
-deno install -A -f --global breakdown jsr:@tettuan/breakdown
+deno install --allow-read --allow-write --allow-run --allow-env --allow-net -f --global breakdown jsr:@tettuan/breakdown
 ```
 
 ### Alternative Installation Methods
@@ -198,7 +202,7 @@ deno install -A -f --global breakdown jsr:@tettuan/breakdown
 Install for a specific project only:
 
 ```bash
-deno install -A -f --root .deno -n breakdown jsr:@tettuan/breakdown
+deno install --allow-read --allow-write --allow-run --allow-env --allow-net -f --root .deno -n breakdown jsr:@tettuan/breakdown
 export PATH="$(pwd)/.deno/bin:$PATH"
 ```
 
@@ -228,14 +232,14 @@ Compile as a standalone executable:
 
 ```bash
 mkdir -p .deno/bin
-deno compile -A -o .deno/bin/breakdown jsr:@tettuan/breakdown
+deno compile --allow-read --allow-write --allow-run --allow-env --allow-net -o .deno/bin/breakdown jsr:@tettuan/breakdown
 ```
 
 </details>
 
 ### Requirements
 
-- **Deno 1.40+** (recommended)
+- **Deno 2.0+** (recommended)
 - **Permissions**: File system access required for reading/writing files
 
 ## 🏗️ Architecture

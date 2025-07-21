@@ -137,9 +137,13 @@ Breakdownは主にCLIツールとして使用することを目的としてい�
 以下の公式Deno/JSRの方法でインストールできます：
 
 ```bash
-deno install -A -f --global breakdown jsr:@tettuan/breakdown
+deno install --allow-read --allow-write --allow-run --allow-env --allow-net -f --global breakdown jsr:@tettuan/breakdown
 ```
-- `-A`: すべての権限を許可（推奨）
+- `--allow-read`: ファイル読み取り権限
+- `--allow-write`: ファイル書き込み権限
+- `--allow-run`: サブプロセス実行権限
+- `--allow-env`: 環境変数アクセス権限
+- `--allow-net`: ネットワークアクセス権限
 - `-f`: 既存のコマンドを上書き
 - `--global`: グローバルインストール
 - `breakdown`: コマンド名
@@ -155,7 +159,7 @@ deno install -A -f --global breakdown jsr:@tettuan/breakdown
 最新バージョンにアップデートするには、同じインストールコマンドを再度実行するだけです：
 
 ```bash
-deno install -A -f --global breakdown jsr:@tettuan/breakdown
+deno install --allow-read --allow-write --allow-run --allow-env --allow-net -f --global breakdown jsr:@tettuan/breakdown
 ```
 
 ---
@@ -190,7 +194,7 @@ deno add @tettuan/breakdown
 ### 注意事項
 
 - breakdownコマンドは、`deno.json`の`bin`設定により自動的に`cli/breakdown.ts`をエントリーポイントとして使用します。
-- Deno 1.40以降を推奨します。
+- Deno 2.0以降を推奨します。
 - 詳細な使用方法は下記の「使用方法」セクションを参照してください。
 
 ### プロジェクトディレクトリへのローカルインストール
@@ -198,7 +202,7 @@ deno add @tettuan/breakdown
 特定のプロジェクト内でのみbreakdownコマンドを使用したい場合は、`--root`オプションを使用して`.deno/bin`にインストールできます：
 
 ```bash
-deno install -A -f --global --root .deno -n breakdown jsr:@tettuan/breakdown
+deno install --allow-read --allow-write --allow-run --allow-env --allow-net -f --global --root .deno -n breakdown jsr:@tettuan/breakdown
 ```
 
 インストール後、binディレクトリをPATHに追加します：
@@ -220,15 +224,10 @@ which breakdown
 
 2. 直接実行でテスト:
 ```bash
-deno run --allow-all jsr:@tettuan/breakdown
+deno run --allow-read --allow-write --allow-run --allow-env --allow-net jsr:@tettuan/breakdown
 ```
 
-3. バイナリとしてコンパイル:
-```bash
-deno compile -A -o ~/.deno/bin/breakdown jsr:@tettuan/breakdown
-```
-
-4. パスの確認:
+3. パスの確認:
 ```bash
 echo $PATH
 ```
@@ -243,7 +242,7 @@ JSRを使用してBreakdown CLIをスタンドアロンバイナリとしてコ�
 mkdir -p .deno/bin
 # JSRからCLIをコンパイルして.deno/bin/breakdownに出力
 
-deno compile -A -o .deno/bin/breakdown jsr:@tettuan/breakdown
+deno compile --allow-read --allow-write --allow-run --allow-env --allow-net -o .deno/bin/breakdown jsr:@tettuan/breakdown
 ```
 - 生成されたバイナリは`./.deno/bin/breakdown`で利用可能です。
 - 以下のコマンドで実行できます：
