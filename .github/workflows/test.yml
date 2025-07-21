@@ -32,4 +32,4 @@ jobs:
         run: deno check lib/ cli/ mod.ts
 
       - name: Run tests
-        run: deno task test
+        run: deno test --allow-env --allow-write --allow-read --allow-run
