@@ -363,9 +363,9 @@ const transformConfigToParams = (
     breakdown: {
       params: {
         two: {
-          demonstrativeType: {
+          directiveType: {
             pattern: config.directivePatterns,
-            errorMessage: "Invalid demonstrative type"
+            errorMessage: "Invalid directive type"
           },
           layerType: {
             pattern: config.layerPatterns,

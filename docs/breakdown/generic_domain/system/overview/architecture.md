@@ -135,7 +135,7 @@ Users can specify and customize the following three points.
   - Custom: $prefix-app.yml, $prefix-user.yml
   - Custom specification method: Use `--config/-c` in CLI options
     - Example: `--config=production`, `-c=system`
-2. Demonstrative words usable in two parameters
+2. Directive words usable in two parameters
   - Standard: 
     - directiveType: to, summary, defect
     - layerType: project, issue, task

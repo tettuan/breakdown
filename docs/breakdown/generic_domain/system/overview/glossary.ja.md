@@ -52,15 +52,11 @@ Breakdownドメインにおけるビジネス用語とその実装における�
 | プロンプト変数ファクトリーオプション型 | Prompt Variables Factory Options | PromptVariablesFactoryOptions | ファクトリー初期化オプションの型定義 |
 | ワークスペースオプション型 | Workspace Options | WorkspaceOptions | ワークスペース初期化オプションの型定義 |
 | **パラメータ解析結果型** | | | |
-| 無引数結果型 | Zero Parameters Result | ZeroParamsResult | パラメータなしコマンドの解析結果型（旧NoParamsResult） |
-| 単一引数結果型 | One Parameter Result | OneParamResult | 単一パラメータコマンドの解析結果型（旧SingleParamResult） |
+| 無引数結果型 | Zero Parameters Result | ZeroParamsResult | パラメータなしコマンドの解析結果型 |
+| 単一引数結果型 | One Parameter Result | OneParamResult | 単一パラメータコマンドの解析結果型 |
 | 二重引数結果型 | Two Parameters Result | TwoParamsResult | 二重パラメータコマンドの解析結果型 |
-| 旧無引数結果型 | No Parameters Result | NoParamsResult | 廃止：ZeroParamsResultに変更 |
-| 旧単一引数結果型 | Single Parameter Result | SingleParamResult | 廃止：OneParamResultに変更 |
-| 旧二重引数結果型 | Double Parameters Result | DoubleParamsResult | 廃止：TwoParamsResultに統合 |
 | **二重パラメータ処理方向バリデーションルール型** | Two Parameters Directive Pattern | TwoParamsDirectivePattern | `DirectiveType`の2つパラメータ組み合わせ時のバリデーションルール。標準値（to, summary, defect）に加え、設定ファイルで正規表現パターンとしてカスタム定義可能。`params.two.DirectiveType.pattern`で指定。 |
 | **二重パラメータ階層バリデーションルール型** | Two Parameters Layer Type Pattern | TwoParamsLayerTypePattern | `layerType`の2つパラメータ組み合わせ時のバリデーションルール。標準値（project, issue, task）に加え、設定ファイルで正規表現パターンとしてカスタム定義可能。`params.two.layerType.pattern`で指定。 |
-| 旧処理方向型 | Demonstrative Type | DemonstrativeType | 廃止：DirectiveTypeに変更 |
 | **戦略パターン** | | | |
 | パス解決戦略 | Path Resolution Strategy | PathResolutionStrategy | パス解決アルゴリズムの戦略パターン |
 | 入力ファイル解決戦略 | Input File Resolution Strategy | InputFileResolutionStrategy | 入力ファイル特定のための解決戦略 |
@@ -143,9 +139,6 @@ Breakdownドメインにおけるビジネス用語とその実装における�
 |------|----------|------|------------|
 | PromptCliParams | app_factory.ja.md | プロンプト生成に必要なCLIパラメータを定義するインターフェース。directiveType、layerType、optionsなどのプロパティを持つ。 | directiveType, layerType, options |
 | PromptVariablesFactoryOptions | app_factory.ja.md | プロンプト変数ファクトリーの初期化オプションを定義するインターフェース。configとcliParamsを必要とする。 | config, cliParams |
-| DoubleParamsResult | options.ja.md | 廃止された型。2つのパラメータを持つコマンドの結果を表していたが、TwoParamsResultに統合。directiveTypeとlayerTypeを必須としていた。 | directiveType, layerType, TwoParamsResult |
-| SingleParamResult | options.ja.md | 廃止された型。1つのパラメータを持つコマンドの結果を表していたが、OneParamResultに変更。initコマンドなどで使用されていた。 | init, command, OneParamResult |
-| NoParamsResult | options.ja.md | 廃止された型。パラメータを持たないコマンドの結果を表していたが、ZeroParamsResultに変更。ヘルプやバージョン確認などで使用されていた。 | help, version, ZeroParamsResult |
 
 #### 2.3 エラー処理・バリデーション
 
