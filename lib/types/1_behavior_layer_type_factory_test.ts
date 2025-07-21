@@ -20,8 +20,8 @@ import type { TwoParams_Result } from "../deps.ts";
  * - Layer validation functionality
  * - Suggestion generation for unknown inputs
  */
-Deno.test("LayerType Behavior - Valid Layer Creation from String", () => {
-  const knownLayers = LayerType.getKnownLayerTypes();
+Deno.test("LayerType Behavior - Valid Layer Creation from String", async () => {
+  const knownLayers = await LayerType.getKnownLayerTypes();
 
   for (const layer of knownLayers) {
     // Test lowercase input
@@ -55,8 +55,8 @@ Deno.test("LayerType Behavior - Valid Layer Creation from String", () => {
   }
 });
 
-Deno.test("LayerType Behavior - Valid Layer Creation from TwoParams_Result", () => {
-  const knownLayers = LayerType.getKnownLayerTypes();
+Deno.test("LayerType Behavior - Valid Layer Creation from TwoParams_Result", async () => {
+  const knownLayers = await LayerType.getKnownLayerTypes();
 
   for (const layer of knownLayers) {
     const twoParamsResult: TwoParams_Result = {
@@ -74,33 +74,24 @@ Deno.test("LayerType Behavior - Valid Layer Creation from TwoParams_Result", () 
   }
 });
 
-Deno.test("LayerType Behavior - Layer Validation", () => {
-  const knownLayers = LayerType.getKnownLayerTypes();
+Deno.test("LayerType Behavior - Layer Validation", async () => {
+  const knownLayers = await LayerType.getKnownLayerTypes();
 
-  // Test valid layers
+  // Test valid layers (exact case and trimmed)
   for (const layer of knownLayers) {
-    assertEquals(LayerType.isValidLayer(layer), true, `${layer} should be valid`);
-    assertEquals(
-      LayerType.isValidLayer(layer.toUpperCase()),
-      true,
-      `${layer.toUpperCase()} should be valid`,
-    );
-    assertEquals(
-      LayerType.isValidLayer(`  ${layer}  `),
-      true,
-      `"  ${layer}  " should be valid`,
-    );
+    assertEquals(await LayerType.isValidLayer(layer), true, `${layer} should be valid`);
+    assertEquals(await LayerType.isValidLayer(`  ${layer}  `), true, `"  ${layer}  " should be valid after trim`);
   }
 
-  // Test invalid layers
-  const invalidLayers = ["unknown", "invalid", "nonexistent", ""];
+  // Test invalid layers (uppercase, unknown)
+  const invalidLayers = ["unknown", "invalid", "nonexistent", "", "PROJECT", "Issue"];
   for (const invalid of invalidLayers) {
-    assertEquals(LayerType.isValidLayer(invalid), false, `${invalid} should be invalid`);
+    assertEquals(await LayerType.isValidLayer(invalid), false, `${invalid} should be invalid`);
   }
 });
 
-Deno.test("LayerType Behavior - Known Layers Consistency", () => {
-  const knownLayers = LayerType.getKnownLayerTypes();
+Deno.test("LayerType Behavior - Known Layers Consistency", async () => {
+  const knownLayers = await LayerType.getKnownLayerTypes();
 
   // Should have expected minimum layers
   assert(knownLayers.length >= 4, "Should have at least 4 known layers");

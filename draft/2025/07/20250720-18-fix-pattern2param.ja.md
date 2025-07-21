@@ -1,4 +1,4 @@
-# プロジェクト: BreakdownのDirectiveType/LayerType判定とConfigProfileNameの関係性見直し
+# プロジェクト: BreakdownのDirectiveType/LayerType判定とConfigProfileの関係性見直し
 
 調査方針:
 現在の`lib/`配下の実装をドメイン駆動設計と全域性（Totality）による大幅リファクタリングした。
@@ -37,7 +37,7 @@
 
 前提: DemonstrativeTypeはDirectiveTypeの旧名であり問題ではない
 
-1. 「現在の判明状況」に基づくと、単なるProfileNameである `ConfigProfileName` に過剰な責務がある
+1. 「現在の判明状況」に基づくと、単なるProfileNameである `ConfigProfile` に過剰な責務がある
 2. 設定のpatternでParamsが解析されるべきで、Params解析結果が DirectiveType/LayerTypeである
 3. 上記1と2の結果、 `BreakdownParams`を活用できておらず、`ProfileName`を用いて取得した`BreakdownConfig`の設定値を、`BreakdownParams`へ渡すべき処理が欠けている
 4. 設計 `domain_boundaries_flow.ja.md`に、上記3のフロー記載がなく、実装漏れが生じている
@@ -50,7 +50,7 @@
 
 ### 2. 作業開始
 3. 「スコープの認識」を行い、「現在の判明状況」を踏まえ、examples/11番を実行する（examples/ をCWDとして実行）
-4. 「仮説」に基づき `BreakdownConfig`へ、`ConfigProfileName` を用いて設定値を取得しているか確認する
+4. 「仮説」に基づき `BreakdownConfig`へ、`ConfigProfile` を用いて設定値を取得しているか確認する
 5. ProfileNameを用いた`BreakdownConfig`が、`find`を許容数rpattern設定値を持っているか確認する
 6. `BreakdownParams`へ4の設定値が渡されているか調査する
 7. `BreakdownParams`が`find`を許容した結果を返しているか確認する（DirectiveType(DemonstrativeType)にfindがセットされて返ってくる）
@@ -94,7 +94,7 @@ deno run --allow-all ../cli/breakdown.ts find bugs --config=findbugs --from=tmp/
 
 ## 根本原因
 
-### 1. ConfigProfileNameクラスのメソッド不足
+### 1. ConfigProfileクラスのメソッド不足
 - **問題箇所**: `lib/config/config_profile_name.ts`
 - **不足メソッド**: 
   - `getDirectiveTypes()` 
@@ -102,7 +102,7 @@ deno run --allow-all ../cli/breakdown.ts find bugs --config=findbugs --from=tmp/
 - **影響**: DirectiveTypeとLayerTypeの検証時に、設定ファイルのパターンが無視される
 
 ### 2. フォールバック処理による固定値
-- **DirectiveType.ts** (137-139行目): ConfigProfileNameにメソッドがない場合、固定値 `["to", "summary", "defect"]` を返す
+- **DirectiveType.ts** (137-139行目): ConfigProfileにメソッドがない場合、固定値 `["to", "summary", "defect"]` を返す
 - **結果**: 設定ファイルに `find` が含まれていても認識されない
 
 ## 設定ファイルの状況
@@ -116,18 +116,18 @@ deno run --allow-all ../cli/breakdown.ts find bugs --config=findbugs --from=tmp/
 - 他のDirectiveType/LayerTypeを使用するすべての箇所
 
 ## 推奨される修正方法
-1. `ConfigProfileName`クラスに`getDirectiveTypes()`と`getLayerTypes()`メソッドを実装
+1. `ConfigProfile`クラスに`getDirectiveTypes()`と`getLayerTypes()`メソッドを実装
 2. これらのメソッドで設定ファイルから正しくパターンを読み込む
 3. DirectiveTypeとLayerTypeのフォールバック処理を改善
 
 ## 現在の状況
 - プロジェクトルートの`.agent/breakdown/config/default-app.yml`に`find`と`bugs`が追加済み
-- しかし、ConfigProfileNameクラスのメソッド不足により、設定が反映されない
+- しかし、ConfigProfileクラスのメソッド不足により、設定が反映されない
 - エラーメッセージ: "Invalid demonstrative type. Must be one of: to, summary, defect"
 - これは固定値のフォールバックが使用されていることを示す
 
 ## DDD観点からの分析
-- **境界コンテキストの違反**: ConfigProfileNameが設定管理ドメインの責務を果たしていない
+- **境界コンテキストの違反**: ConfigProfileが設定管理ドメインの責務を果たしていない
 - **全域性（Totality）の違反**: メソッドが存在しない場合の処理が部分関数的
 
 ## 調査実施者
@@ -144,7 +144,7 @@ deno run --allow-all ../cli/breakdown.ts find bugs --config=findbugs --from=tmp/
 
 2. **DirectiveTypeの実装問題**
    - パターン文字列（例: "^(to|summary|defect|find)$"）からリスト抽出する実装が欠落
-   - ConfigProfileName.getDirectiveTypes()メソッドが存在しないため、パターンが活用されない
+   - ConfigProfile.getDirectiveTypes()メソッドが存在しないため、パターンが活用されない
 
 3. **完了条件達成**
    - 特定した問題点を`tmp/refactor_investigations.md`に報告 ✓

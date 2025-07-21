@@ -10,7 +10,6 @@
 
 import type { Result } from "../../../types/result.ts";
 import { error, ok } from "../../../types/result.ts";
-import type { ConfigProfileName } from "../../../config/config_profile_name.ts";
 import type { ValidationError } from "../../../types/unified_error_types.ts";
 import { ErrorFactory } from "../../../types/unified_error_types.ts";
 
@@ -23,7 +22,6 @@ export type DirectiveTypeError =
   | {
     kind: "PatternMismatch";
     value: string;
-    profile: string;
     validDirectives: readonly string[];
     message: string;
   }
@@ -37,29 +35,27 @@ export type DirectiveTypeError =
  *
  * Design Principles:
  * - Smart Constructor pattern with Result<T, E>
- * - Pattern-based validation with ConfigProfileName
+ * - Pattern-based validation for basic format
  * - Immutable Value Object with type safety
  * - Path resolution domain operations
  *
  * Domain Context:
  * - Used in TwoParams aggregate root
- * - Validates against ConfigProfileName patterns
+ * - Validates against basic format patterns
  * - Provides path resolution for prompt and schema files
  * - Ensures type-safe comparison and operations
  *
  * @example Basic usage
  * ```typescript
- * const profile = ConfigProfileName.createDefault();
- * const directiveResult = DirectiveType.create("to", profile);
+ * const directiveResult = DirectiveType.create("to");
  * if (directiveResult.ok) {
  *   console.log(directiveResult.data.value); // "to"
- *   console.log(directiveResult.data.isValidForProfile(profile)); // true
  * }
  * ```
  *
  * @example Path resolution
  * ```typescript
- * const directive = DirectiveType.create("to", profile).data;
+ * const directive = DirectiveType.create("to").data;
  * const layer = LayerType.create("issue").data;
  * const promptDir = directive.getPromptDirectory("prompts", layer);
  * // Result: "prompts/to/issue"
@@ -78,15 +74,18 @@ export class DirectiveType {
   static readonly #MAX_LENGTH = 20;
 
   /**
+   * Source identifier for BreakdownParams integration
+   */
+  readonly source = "BREAKDOWN_PARAMS_VALIDATED" as const;
+
+  /**
    * Private constructor following Smart Constructor pattern
    *
    * @param value - Validated directive type value
-   * @param profile - Configuration profile for pattern validation
-   * @param validatedByPattern - Indicates if validated against profile pattern
+   * @param validatedByPattern - Indicates if validated against pattern
    */
   private constructor(
     private readonly _value: string,
-    private readonly _profile: ConfigProfileName,
     private readonly _validatedByPattern: boolean,
   ) {
     Object.freeze(this);
@@ -101,13 +100,6 @@ export class DirectiveType {
   }
 
   /**
-   * Configuration profile accessor
-   */
-  get profile(): ConfigProfileName {
-    return this._profile;
-  }
-
-  /**
    * Pattern validation status
    */
   get validatedByPattern(): boolean {
@@ -117,29 +109,15 @@ export class DirectiveType {
   /**
    * Smart Constructor for DirectiveType creation
    *
-   * Validates the input against basic format and ConfigProfileName patterns.
+   * Validates the input against basic format patterns.
    * Follows Totality principle by handling all possible input cases.
    *
    * @param value - Directive type candidate string
-   * @param profile - Configuration profile for pattern validation (optional, uses default if not provided)
    * @returns Result with DirectiveType or detailed error
    */
   static create(
     value: string | null | undefined,
-    profile?: ConfigProfileName,
   ): Result<DirectiveType, DirectiveTypeError> {
-    // Handle missing profile with default configuration
-    const actualProfile = profile || (() => {
-      try {
-        return (globalThis as unknown as {
-          ConfigProfileName?: { createDefault?: () => ConfigProfileName };
-        }).ConfigProfileName?.createDefault?.() ||
-          { value: "default", getDirectiveTypes: () => ["to", "summary", "defect"] };
-      } catch {
-        return { value: "default", getDirectiveTypes: () => ["to", "summary", "defect"] };
-      }
-    })();
-
     // Type guard for string input
     if (typeof value !== "string") {
       return error({
@@ -190,38 +168,14 @@ export class DirectiveType {
       });
     }
 
-    // Case 4: Pattern-based validation against ConfigProfileName
-    const validDirectives = actualProfile.getDirectiveTypes
-      ? actualProfile.getDirectiveTypes()
-      : ["to", "summary", "defect"];
-    const isValidForProfile = validDirectives.includes(trimmedValue);
-
-    if (!isValidForProfile) {
-      return error({
-        kind: "PatternMismatch",
-        value: trimmedValue,
-        profile: actualProfile.value || "default",
-        validDirectives: [...validDirectives],
-        message: `DirectiveType "${trimmedValue}" is not valid for profile "${
-          actualProfile.value || "default"
-        }". Valid options: ${validDirectives.join(", ")}`,
-      });
-    }
+    // Case 4: Basic validation only - skip profile-based validation
+    // Profile-based validation should be handled at application layer with BreakdownConfig
+    // This maintains separation of concerns between domain and configuration layers
 
     // Case 5: Success
-    return ok(new DirectiveType(trimmedValue, actualProfile as ConfigProfileName, true));
+    return ok(new DirectiveType(trimmedValue, true));
   }
 
-  /**
-   * Check if this DirectiveType is valid for a specific profile
-   *
-   * @param profile - Configuration profile to check against
-   * @returns true if valid for the profile
-   */
-  isValidForProfile(profile: ConfigProfileName): boolean {
-    const validDirectives = profile.getDirectiveTypes();
-    return validDirectives.includes(this._value);
-  }
 
   /**
    * Get prompt directory path for this directive type
@@ -233,7 +187,10 @@ export class DirectiveType {
    * @returns Directory path string
    */
   getPromptDirectory(baseDir: string, layer: { value: string }): string {
-    return `${baseDir}/${this._value}/${layer.value}`;
+    const canonicalLayer = typeof layer === "object" && "getCanonicalLayerName" in layer
+      ? (layer as { getCanonicalLayerName(): string }).getCanonicalLayerName()
+      : layer.value;
+    return `${baseDir}/${this._value}/${canonicalLayer}`;
   }
 
   /**
@@ -246,7 +203,10 @@ export class DirectiveType {
    * @returns Directory path string
    */
   getSchemaDirectory(baseDir: string, layer: { value: string }): string {
-    return `${baseDir}/${this._value}/${layer.value}`;
+    const canonicalLayer = typeof layer === "object" && "getCanonicalLayerName" in layer
+      ? (layer as { getCanonicalLayerName(): string }).getCanonicalLayerName()
+      : layer.value;
+    return `${baseDir}/${this._value}/${canonicalLayer}`;
   }
 
   /**
@@ -267,14 +227,18 @@ export class DirectiveType {
     adaptation?: string,
   ): string {
     const dir = this.getPromptDirectory(baseDir, layer);
-    let filename = `${this._value}_${layer.value}.md`;
+    const canonicalLayer = typeof layer === "object" && "getCanonicalLayerName" in layer
+      ? (layer as { getCanonicalLayerName(): string }).getCanonicalLayerName()
+      : layer.value;
+
+    let filename = `${this._value}_${canonicalLayer}.md`;
 
     if (fromLayerType) {
-      filename = `${fromLayerType}_${layer.value}.md`;
+      filename = `${fromLayerType}_${canonicalLayer}.md`;
     }
 
     if (adaptation) {
-      filename = `${fromLayerType || this._value}_${layer.value}_${adaptation}.md`;
+      filename = `${fromLayerType || this._value}_${canonicalLayer}_${adaptation}.md`;
     }
 
     return `${dir}/${filename}`;
@@ -291,7 +255,10 @@ export class DirectiveType {
    */
   getSchemaPath(layer: { value: string }, baseDir = "schemas"): string {
     const dir = this.getSchemaDirectory(baseDir, layer);
-    const filename = `${this._value}_${layer.value}.schema.json`;
+    const canonicalLayer = typeof layer === "object" && "getCanonicalLayerName" in layer
+      ? (layer as { getCanonicalLayerName(): string }).getCanonicalLayerName()
+      : layer.value;
+    const filename = `${this._value}_${canonicalLayer}.schema.json`;
     return `${dir}/${filename}`;
   }
 
@@ -306,10 +273,15 @@ export class DirectiveType {
    * @returns Resolved output file path string
    */
   resolveOutputPath(inputPath: string, layer: { value: string }, baseDir = "output"): string {
-    const dir = `${baseDir}/${this._value}/${layer.value}`;
+    const canonicalLayer = typeof layer === "object" && "getCanonicalLayerName" in layer
+      ? (layer as { getCanonicalLayerName(): string }).getCanonicalLayerName()
+      : layer.value;
+    const dir = `${baseDir}/${this._value}/${canonicalLayer}`;
     const filename = inputPath.split("/").pop() || inputPath;
     return `${dir}/${filename}`;
   }
+
+
 
   /**
    * Check if this DirectiveType is valid for resource path generation
@@ -327,8 +299,7 @@ export class DirectiveType {
    * @returns true if values are equal
    */
   equals(other: DirectiveType): boolean {
-    return this._value === other._value &&
-      this._profile.value === other._profile.value;
+    return this._value === other._value;
   }
 
   /**
@@ -342,7 +313,31 @@ export class DirectiveType {
    * Get detailed information for debugging
    */
   toDebugString(): string {
-    return `DirectiveType(value="${this._value}", profile="${this._profile.value}", validated=${this._validatedByPattern})`;
+    return `DirectiveType(value="${this._value}", validated=${this._validatedByPattern})`;
+  }
+
+  /**
+   * Create DirectiveType from TwoParamsResult (JSR package integration)
+   * 
+   * This factory method creates a DirectiveType instance from the result
+   * of BreakdownParams JSR package, marking it as validated.
+   * 
+   * @param result - Object containing directiveType from BreakdownParams
+   * @returns Result containing DirectiveType or validation error
+   */
+  static fromTwoParamsResult(
+    result: { directiveType: string }
+  ): Result<DirectiveType, DirectiveTypeError> {
+    if (!result || typeof result.directiveType !== "string") {
+      return error({
+        kind: "EmptyInput",
+        message: "Invalid TwoParamsResult: directiveType must be a string"
+      });
+    }
+    
+    // Create DirectiveType with JSR validation marker
+    // Since this comes from BreakdownParams, it's already validated
+    return ok(new DirectiveType(result.directiveType, true));
   }
 }
 

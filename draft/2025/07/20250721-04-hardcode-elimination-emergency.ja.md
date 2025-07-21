@@ -218,7 +218,7 @@ specialCombinations:
 // CLI引数 → 設定ファイル読み込み → CustomConfig生成 → BreakdownParams実行
 async function processBreakdownCommand(args: string[]): Promise<BreakdownResult> {
   // 1. 設定プロファイル決定
-  const profileName = ConfigProfileName.fromCliOption(extractConfigOption(args));
+  const profileName = ConfigProfile.fromCliOption(extractConfigOption(args));
   
   // 2. 設定ファイル読み込み（ProfileName → BreakdownConfig）
   const userConfig = await loadUserConfig(profileName);
@@ -373,7 +373,7 @@ config/
 #### 統合検証
 ```typescript
 // ProfileName → BreakdownConfig → CustomConfig の完全フロー検証
-const profileName = ConfigProfileName.fromCliOption("production");
+const profileName = ConfigProfile.fromCliOption("production");
 const breakdownConfig = await loadUserConfig(profileName);
 const customConfig = ParamsCustomConfig.create(breakdownConfig); // params階層がCustomConfig
 const result = await breakdownParams(args, customConfig);

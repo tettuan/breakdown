@@ -12,7 +12,9 @@
 
 import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import { LayerType } from "./mod.ts";
+import { ConfigProfile } from "../config/mod.ts";
 import type { TwoParams_Result } from "../deps.ts";
+import { getLayerTypes } from "../test_helpers/config_test_helper.ts";
 
 // Test data setup
 const createValidTwoParamsResult = (
@@ -70,7 +72,7 @@ Deno.test("2_structure: LayerType maintains consistent interface", () => {
   }
 });
 
-Deno.test("2_structure: LayerType ensures input validation safety", () => {
+Deno.test("2_structure: LayerType ensures input validation safety", async () => {
   // Test dangerous/invalid inputs
   const invalidInputs = [
     "",
@@ -87,14 +89,10 @@ Deno.test("2_structure: LayerType ensures input validation safety", () => {
     assertEquals(result.ok, false, `Input "${invalidInput}" should be rejected`);
   }
 
-  // Test valid inputs
+  // Test valid inputs - configuration-based approach
+  const configLayerTypes = await getLayerTypes();
   const validInputs = [
-    "project",
-    "issue",
-    "task",
-    "bugs",
-    "feature",
-    "epic",
+    ...configLayerTypes,
     "test-layer",
     "custom_layer",
   ];
@@ -124,15 +122,13 @@ Deno.test("2_structure: LayerType with TwoParams_Result compatibility", () => {
   }
 });
 
-Deno.test("2_structure: LayerType hierarchical validation", () => {
-  const testCases = [
-    { type: "project", isValid: true },
-    { type: "issue", isValid: true },
-    { type: "task", isValid: true },
-    { type: "bugs", isValid: true },
-    { type: "feature", isValid: true },
-    { type: "epic", isValid: true },
-  ];
+Deno.test("2_structure: LayerType hierarchical validation", async () => {
+  // Configuration-based test cases
+  const configLayerTypes = await getLayerTypes();
+  const testCases = configLayerTypes.map(type => ({
+    type,
+    isValid: true
+  }));
 
   for (const testCase of testCases) {
     const layerTypeResult = LayerType.create(testCase.type);

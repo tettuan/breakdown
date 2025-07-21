@@ -10,7 +10,7 @@
 import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import { createTwoParamsType, TwoParamsType } from "./two_params.ts";
 import { createTwoParamsResult } from "./two_params_result_extension.ts";
-import { ConfigProfileName } from "../config/config_profile_name.ts";
+import { ConfigProfile } from "../config/mod.ts";
 
 Deno.test("TwoParamsType - Smart Constructor Integration", async (t) => {
   await t.step("should create TwoParamsType from valid TwoParams_Result", () => {
@@ -82,10 +82,10 @@ Deno.test("TwoParamsType - Domain Integration", async (t) => {
     assertEquals(twoParamsType.ok, true);
 
     if (twoParamsType.ok) {
-      const profile = ConfigProfileName.createDefault();
+      const profile = ConfigProfile.createDefault();
 
       // Act
-      const aggregateResult = await twoParamsType.data.toAggregate(profile);
+      const aggregateResult = await twoParamsType.data.toAggregate(profile.value);
 
       // Assert
       assertEquals(aggregateResult.ok, true);

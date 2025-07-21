@@ -163,7 +163,6 @@ Deno.test("DefaultTypePatternProvider - Configuration Behavior", async (t) => {
     assertExists(config.params.two);
     assertExists(config.params.two.directiveType);
     assertExists(config.params.two.layerType);
-    assertExists(config.params.two.validation);
   });
 
   await t.step("should maintain configuration immutability", () => {

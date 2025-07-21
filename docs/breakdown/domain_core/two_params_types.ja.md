@@ -7,11 +7,13 @@
 ユーザーがコマンドラインで `breakdown to issue` を実行したとき、システムは以下の処理を行います：
 
 1. **CLI引数の受信**: `["to", "issue"]`
-2. **設定読み込み**: ConfigProfileName（短寿命）に基づくBreakdownConfig取得
+2. **設定読み込み**: ConfigProfile（短寿命）に基づくBreakdownConfig取得
 3. **JSRパラメータ検証**: JSR @tettuan/breakdownparams による検証実行
 4. **検証済み値生成**: BreakdownParams検証結果から DirectiveType, LayerType を直接取得
 5. **ファイルパス解決**: プロンプトテンプレートとスキーマファイルの特定
-6. このドメイン型定義により、TwoParamsがDirectiveTypeとLayerTypeの2つを持つという関係性が型安全に表現され、**BreakdownParams による外部検証システム**を活用した信頼性の高いドメイン値として機能します。これらの値は**プロンプトパス決定ドメイン**で使用され、適切なパス解決の実現に貢献します。ConfigProfileNameの短寿命化により、責務の明確化と処理効率の向上が実現されています。*実行**: `prompts/to/issue/f_issue.md` と `schemas/to/issue/base.schema.json` を使用
+6. **プロンプト実行**: `prompts/to/issue/f_issue.md` と `schemas/to/issue/base.schema.json` を使用
+
+このドメイン型定義により、TwoParamsがDirectiveTypeとLayerTypeの2つを持つという関係性が型安全に表現され、**BreakdownParams による外部検証システム**を活用した信頼性の高いドメイン値として機能します。これらの値は**プロンプトパス決定ドメイン**で使用され、適切なパス解決の実現に貢献します。ConfigProfileの短寿命化により、責務の明確化と処理効率の向上が実現されています。
 
 この一連の流れにおいて、**DirectiveType（"to"）とLayerType（"issue"）** は、**BreakdownParams検証済みの信頼性の高いドメイン値**として提供され、最終的に**ファイルシステム上の具体的なリソース**を特定する役割を担います。
 
@@ -114,7 +116,7 @@ class LayerType {
 }
 
 /**
- * ConfigProfileName - 設定プロファイル名を表すドメイン型（短寿命）
+ * ConfigProfile - 設定プロファイル名を表すドメイン型（短寿命）
  * 
  * 役割: 設定の切り替えコンテキスト（設定ファイル読み込み専用）
  * 例: "default"(デフォルト), "production"(本番), "custom"(カスタム)
@@ -125,7 +127,7 @@ class LayerType {
  * - BreakdownConfig取得後は参照されない
  * - DirectiveType/LayerType提供責務は削除（BreakdownParams検証に移譲）
  */
-class ConfigProfileName {
+class ConfigProfile {
   readonly isDefault: boolean;
   
   private constructor(readonly value: string, isDefault: boolean) {
@@ -133,13 +135,13 @@ class ConfigProfileName {
   }
   
   // デフォルト値関連の操作
-  static createDefault(): ConfigProfileName {
-    return new ConfigProfileName("default", true);
+  static createDefault(): ConfigProfile {
+    return new ConfigProfile("default", true);
   }
   
-  static fromCliOption(option?: string): ConfigProfileName {
+  static fromCliOption(option?: string): ConfigProfile {
     return option 
-      ? new ConfigProfileName(option, false) 
+      ? new ConfigProfile(option, false) 
       : this.createDefault();
   }
   
@@ -149,7 +151,7 @@ class ConfigProfileName {
   }
   
   // 型安全な比較
-  equals(other: ConfigProfileName): boolean {
+  equals(other: ConfigProfile): boolean {
     return this.value === other.value;
   }
   
@@ -166,7 +168,7 @@ class ConfigProfileName {
 Breakdownでは、**BreakdownParams** による外部検証システムを活用し、CLI引数の信頼性を確保しています：
 
 ```
-CLI args → ConfigProfileName.fromCliOption("default") → BreakdownConfig
+CLI args → ConfigProfile.fromCliOption("default") → BreakdownConfig
      ↓                                                         ↓
 CLI args → BreakdownParams (external validation) → TwoParamsResult
      ↓        ↑ ParamsCustomConfig(directivePatterns,layerPatterns)
@@ -179,7 +181,7 @@ TwoParams → new DirectiveType() + new LayerType() (pre-validated)
 4. 検証済みTwoParamsResultから DirectiveType, LayerType を生成
 
 注意: 
-- ConfigProfileNameは設定ファイル読み込み後すぐに寿命終了
+- ConfigProfileは設定ファイル読み込み後すぐに寿命終了
 - DirectiveType/LayerTypeは BreakdownParams検証済みのため追加検証不要
 - 冗長なパターンマッチング処理を削除
 ```
@@ -190,7 +192,7 @@ TwoParams → new DirectiveType() + new LayerType() (pre-validated)
 3. **検証ロジック分離**: Breakdown CLI本体から検証責務を分離
 4. **冗長性排除**: 重複するパターンマッチング処理を削除
 5. **一貫性保証**: 複数のアプリケーション間で共通の検証基準
-6. **ConfigProfileNameの責務簡素化**: 設定ファイル読み込み専用の短寿命オブジェクトに変更
+6. **ConfigProfileの責務簡素化**: 設定ファイル読み込み専用の短寿命オブジェクトに変更
 
 ### エラーハンドリング戦略
 
@@ -209,7 +211,7 @@ TwoParams → new DirectiveType() + new LayerType() (pre-validated)
  */
 type TwoParamsError = 
   | { kind: "BreakdownParamsValidationFailed"; breakdownParamsError: BreakdownParamsError; }
-  | { kind: "ConfigProfileNotFound"; profile: ConfigProfileName; configPath: string; }
+  | { kind: "ConfigProfileNotFound"; profile: ConfigProfile; configPath: string; }
   | { kind: "PathResolutionFailed"; directive: string; layer: string; baseDir: string; }
 ```
 
@@ -308,14 +310,14 @@ namespace LayerType {
   }
 }
 
-namespace ConfigProfileName {
-  export function createDefault(): ConfigProfileName {
-    return new ConfigProfileName("default", true);
+namespace ConfigProfile {
+  export function createDefault(): ConfigProfile {
+    return new ConfigProfile("default", true);
   }
   
-  export function fromCliOption(option?: string): ConfigProfileName {
+  export function fromCliOption(option?: string): ConfigProfile {
     return option 
-      ? new ConfigProfileName(option, false) 
+      ? new ConfigProfile(option, false) 
       : this.createDefault();
   }
 }
@@ -323,12 +325,12 @@ namespace ConfigProfileName {
 ### 統合使用例 - ドメインライフサイクル
 
 ```typescript
-// ConfigProfileName（短寿命）→ BreakdownParams検証 → TwoParams（長寿命）
+// ConfigProfile（短寿命）→ BreakdownParams検証 → TwoParams（長寿命）
 async function domainLifecycleExample() {
-  // 1. ConfigProfileName: 短寿命（設定読み込み専用）
-  const profile = ConfigProfileName.fromCliOption(null); // "default"適用
+  // 1. ConfigProfile: 短寿命（設定読み込み専用）
+  const profile = ConfigProfile.fromCliOption(null); // "default"適用
   const config = await loadBreakdownConfig(profile);
-  // ConfigProfileNameの役割終了
+  // ConfigProfileの役割終了
   
   // 2. BreakdownParams: 設定パターンベース検証
   // 具体的な呼び出し方法は JSR @tettuan/breakdownparams のドキュメントを参照
@@ -373,17 +375,17 @@ TwoParams (純粋な値オブジェクト)
 
 特徴：
 - BreakdownParams で事前検証済み
-- ConfigProfileNameは設定読み込み後すぐに寿命終了
+- ConfigProfileは設定読み込み後すぐに寿命終了
 - 追加バリデーション不要
 - アプリケーション全体で不変
 - パス解決はプロンプトパス決定ドメインが担当
 
 寿命管理:
-1. ConfigProfileName: 短寿命（設定ファイル読み込み専用）
+1. ConfigProfile: 短寿命（設定ファイル読み込み専用）
 2. DirectiveType/LayerType: 長寿命（BreakdownParams検証済み、アプリケーション全体で使用）
 3. TwoParams: 長寿命（プロンプト生成まで継続使用）
 ```
 
-このドメイン型定義により、TwoParamsがDirectiveTypeとLayerTypeの2つを持つという関係性が型安全に表現され、**BreakdownParams による外部検証システム**を活用した信頼性の高いドメインオブジェクトとして機能します。さらに、これらの型はプロンプトテンプレートとスキーマファイルの物理的な配置を決定する重要な役割を担い、ファイルシステム上のリソースへの確実なアクセスを可能にします。ConfigProfileNameの短寿命化により、責務の明確化と処理効率の向上が実現されています。
+このドメイン型定義により、TwoParamsがDirectiveTypeとLayerTypeの2つを持つという関係性が型安全に表現され、**BreakdownParams による外部検証システム**を活用した信頼性の高いドメインオブジェクトとして機能します。さらに、これらの型はプロンプトテンプレートとスキーマファイルの物理的な配置を決定する重要な役割を担い、ファイルシステム上のリソースへの確実なアクセスを可能にします。ConfigProfileの短寿命化により、責務の明確化と処理効率の向上が実現されています。
 
 

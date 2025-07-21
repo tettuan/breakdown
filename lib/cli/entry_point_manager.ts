@@ -252,7 +252,7 @@ export class EntryPointManager {
   /**
    * Handles shutdown signals gracefully
    */
-  private handleShutdownSignal(signal: string): void {
+  private async handleShutdownSignal(signal: string): Promise<void> {
     if (this.isShuttingDown) {
       // Force exit if already shutting down
       console.log(`⚠️ Force exit on second ${signal}`);
@@ -266,17 +266,16 @@ export class EntryPointManager {
     }
 
     // Perform graceful shutdown
-    this.shutdown()
-      .then(() => {
-        if (this.config.verbose) {
-          console.log("✅ Graceful shutdown completed");
-        }
-        Deno.exit(0);
-      })
-      .catch((err) => {
-        console.error("❌ Error during shutdown:", err);
-        Deno.exit(1);
-      });
+    try {
+      await this.shutdown();
+      if (this.config.verbose) {
+        console.log("✅ Graceful shutdown completed");
+      }
+      Deno.exit(0);
+    } catch (err) {
+      console.error("❌ Error during shutdown:", err);
+      Deno.exit(1);
+    }
   }
 
   /**

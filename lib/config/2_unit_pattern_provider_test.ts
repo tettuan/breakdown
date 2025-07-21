@@ -119,13 +119,13 @@ Deno.test("Unit: ConfigPatternProvider falls back to default patterns", () => {
   const directivePattern = provider.getDirectivePattern();
   const layerPattern = provider.getLayerTypePattern();
 
-  // デフォルトパターンが返されることを確認
-  assertExists(directivePattern, "Should return default directive pattern");
-  assertExists(layerPattern, "Should return default layer pattern");
+  // ❌ HARDCODE ELIMINATION: No hardcoded pattern expectations in tests
+  // Configuration must define patterns explicitly - no fallback patterns allowed
+  assertExists(directivePattern, "Should return configured directive pattern from settings");
+  assertExists(layerPattern, "Should return configured layer pattern from settings");
 
-  // デフォルトパターンの内容を検証（実装に基づく）
-  // デフォルト: "^(to|summary|defect|init|find)$" と "^(project|issue|task|bugs|temp)$"
-  assertEquals(provider.hasValidPatterns(), true, "Default patterns should be valid");
+  // Pattern validation should depend on configuration, not hardcoded defaults
+  assertEquals(provider.hasValidPatterns(), true, "Configured patterns should be valid");
 });
 
 /**

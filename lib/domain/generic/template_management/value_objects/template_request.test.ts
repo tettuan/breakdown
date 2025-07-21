@@ -12,6 +12,7 @@ import {
 } from "./template_request.ts";
 import { DirectiveType } from "../../../../domain/core/value_objects/directive_type.ts";
 import { LayerType } from "../../../../domain/core/value_objects/layer_type.ts";
+import { ConfigProfile } from "../../../../config/config_profile_name.ts";
 import type { TwoParams_Result } from "../../../../types/two_params_result_extension.ts";
 
 // Test fixtures

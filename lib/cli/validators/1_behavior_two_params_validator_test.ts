@@ -19,6 +19,8 @@ import {
   type ValidatedParams as _ValidatedParams,
   type ValidationError as _ValidationError,
 } from "./two_params_validator_ddd.ts";
+// Import the default provider for dynamic validation
+import { DefaultTypePatternProvider } from "../../types/defaults/default_type_pattern_provider.ts";
 
 const logger = new BreakdownLogger("two-params-validator-behavior");
 
@@ -27,7 +29,8 @@ describe("Behavior: Valid Parameter Recognition", () => {
     logger.debug("Testing valid directive type recognition");
 
     const validator = new TwoParamsValidator();
-    const validDirectiveTypes = ["to", "summary", "defect"];
+    const defaultProvider = new DefaultTypePatternProvider();
+    const validDirectiveTypes = defaultProvider.getValidDirectiveTypes();
 
     for (const directiveType of validDirectiveTypes) {
       const result = validator.validate([directiveType, "project"]);
@@ -53,7 +56,8 @@ describe("Behavior: Valid Parameter Recognition", () => {
     logger.debug("Testing valid layer type recognition");
 
     const validator = new TwoParamsValidator();
-    const validLayerTypes = ["project", "issue", "task", "bugs", "temp"];
+    const defaultProvider = new DefaultTypePatternProvider();
+    const validLayerTypes = defaultProvider.getValidLayerTypes();
 
     for (const layerType of validLayerTypes) {
       const result = validator.validate(["to", layerType]);

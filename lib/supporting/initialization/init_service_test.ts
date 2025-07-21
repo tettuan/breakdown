@@ -9,7 +9,7 @@ Deno.test("InitService - 基本的な初期化", async () => {
   try {
     const options: InitServiceOptions = {
       workspaceDirectory: tempDir,
-      configProfileName: "test",
+      configProfile: "test",
     };
 
     const service = new InitService();
@@ -17,7 +17,7 @@ Deno.test("InitService - 基本的な初期化", async () => {
 
     // 基本的な検証
     assertEquals(result.success, true);
-    assertEquals(result.configProfileName, "test");
+    assertEquals(result.configProfile, "test");
     assertEquals(result.workspaceDirectory, tempDir);
 
     // ディレクトリ構造の検証
@@ -62,7 +62,7 @@ Deno.test("InitService - デフォルトプロファイル名", async () => {
     const result = await service.initialize(options);
 
     assertEquals(result.success, true);
-    assertEquals(result.configProfileName, "default");
+    assertEquals(result.configProfile, "default");
 
     // default設定ファイルの存在確認
     const appConfigPath = join(tempDir, "config/default-app.yml");
@@ -148,7 +148,7 @@ Deno.test("InitService - 不正なプロファイル名", async () => {
     const service = new InitService();
     const result = await service.initialize({
       workspaceDirectory: tempDir,
-      configProfileName: "invalid/name", // スラッシュは無効
+      configProfile: "invalid/name", // スラッシュは無効
     });
 
     assertEquals(result.success, false);

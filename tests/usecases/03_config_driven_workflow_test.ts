@@ -21,6 +21,7 @@ import { join } from "@std/path";
 // Core domain imports
 import { DirectiveType } from "../../lib/domain/core/value_objects/directive_type.ts";
 import { LayerType } from "../../lib/domain/core/value_objects/layer_type.ts";
+import { ConfigProfile } from "../../lib/config/mod.ts";
 import { createTwoParamsResult } from "../../lib/types/two_params_result_extension.ts";
 
 const logger = new BreakdownLogger("usecase:config_driven");
@@ -84,6 +85,7 @@ Deno.test("UC3.1: Minimal Configuration Loading and Application", async () => {
 
   const command = ["to", "project"];
   const twoParamsResult = createTwoParamsResult(command[0], command[1]);
+  const defaultProfile = ConfigProfile.createDefault();
   const directiveTypeResult = DirectiveType.create(twoParamsResult.directiveType);
   const layerTypeResult = LayerType.create(twoParamsResult.layerType);
 

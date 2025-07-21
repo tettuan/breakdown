@@ -1,4 +1,4 @@
-# プロジェクト: DirectiveType/LayerType型からConfigProfileName依存の完全除去 - JSR検証済み値統合設計の実現
+# プロジェクト: DirectiveType/LayerType型からConfigProfile依存の完全除去 - JSR検証済み値統合設計の実現
 
 ## チームの構成
 
@@ -15,33 +15,33 @@
 現在のDirectiveType/LayerType実装で以下の**重大な設計違反**が発見された：
 
 ```typescript
-// ❌ 絶対禁止：DirectiveTypeへのConfigProfileName注入
+// ❌ 絶対禁止：DirectiveTypeへのConfigProfile注入
 class DirectiveType {
   private constructor(
     private readonly _value: string,
-    private readonly _profile: ConfigProfileName,  // ← 設計違反
+    private readonly _profile: ConfigProfile,  // ← 設計違反
     private readonly _validatedByPattern: boolean,
   ) {}
   
-  get profile(): ConfigProfileName {  // ← 設計違反
+  get profile(): ConfigProfile {  // ← 設計違反
     return this._profile;
   }
   
   static create(
     value: string | null | undefined,
-    profile?: ConfigProfileName,  // ← 設計違反
+    profile?: ConfigProfile,  // ← 設計違反
   ): Result<DirectiveType, DirectiveTypeError> {}
 }
 
-// ❌ 絶対禁止：LayerTypeへのConfigProfileName注入
+// ❌ 絶対禁止：LayerTypeへのConfigProfile注入
 class LayerType {
-  static getCommonLayerTypes(profile?: ConfigProfileName): readonly string[] {}  // ← 設計違反
-  static getKnownLayerTypes(profile?: ConfigProfileName): readonly string[] {}   // ← 設計違反
+  static getCommonLayerTypes(profile?: ConfigProfile): readonly string[] {}  // ← 設計違反
+  static getKnownLayerTypes(profile?: ConfigProfile): readonly string[] {}   // ← 設計違反
 }
 
-// ❌ 絶対禁止：テストでのConfigProfileName使用
-DirectiveType.create(directive, ConfigProfileName.createDefault());  // ← 設計違反
-LayerType.create(mockTwoParamsResult.layerType, ConfigProfileName.createDefault());  // ← 設計違反
+// ❌ 絶対禁止：テストでのConfigProfile使用
+DirectiveType.create(directive, ConfigProfile.createDefault());  // ← 設計違反
+LayerType.create(mockTwoParamsResult.layerType, ConfigProfile.createDefault());  // ← 設計違反
 ```
 
 この実装は、`domain_boundaries_flow.ja.md` と `two_params_types.ja.md` で定義された**BreakdownParams検証済み値統合設計**に**完全に違反**している。
@@ -49,30 +49,30 @@ LayerType.create(mockTwoParamsResult.layerType, ConfigProfileName.createDefault(
 ### 設計原則違反の深刻度
 1. **ドメイン境界違反**: DirectiveType/LayerTypeは設定ドメインに依存してはならない
 2. **BreakdownParams統合設計違反**: BreakdownParams検証済み値が設定参照する必要はない
-3. **責務分離違反**: ConfigProfileNameは設定読み込み専用、型定義に不要
+3. **責務分離違反**: ConfigProfileは設定読み込み専用、型定義に不要
 4. **全域性原則違反**: 検証済み値に追加検証インフラの混入
-5. **テスト設計違反**: 検証済み値の生成にConfigProfileNameは不要
+5. **テスト設計違反**: 検証済み値の生成にConfigProfileは不要
 
 ### 正しい設計原則
 - **DirectiveType/LayerTypeはBreakdownParams検証済みの純粋値オブジェクト**
-- **ConfigProfileNameは設定読み込み専用（短寿命）、型定義に関与しない**
+- **ConfigProfileは設定読み込み専用（短寿命）、型定義に関与しない**
 - **- **JSR TwoParamsResultから直接生成、追加検証不要****
 - **ドメイン型の設定ドメインからの完全分離**
 
 ## タスクとゴール
 
 ```yml
-- 緊急対応の背景: DirectiveType/LayerType型にConfigProfileNameが不要に注入され、BreakdownParams検証済み値統合設計に重大に違反している状態
+- 緊急対応の背景: DirectiveType/LayerType型にConfigProfileが不要に注入され、BreakdownParams検証済み値統合設計に重大に違反している状態
 - 緊急対応タスク: |
-  1. DirectiveType/LayerType型からConfigProfileNameパラメータを完全除去 |
-  2. ConfigProfileNameに依存するメソッド（profile accessor、getCommonLayerTypes等）を完全削除 |
+  1. DirectiveType/LayerType型からConfigProfileパラメータを完全除去 |
+  2. ConfigProfileに依存するメソッド（profile accessor、getCommonLayerTypes等）を完全削除 |
   3. JSR TwoParamsResultから直接生成するコンストラクタの実装 |
   4. 設定ベースの検証をBreakdownParams統合に移行（型定義から除去） |
-  5. テストでのConfigProfileName使用の完全削除 |
+  5. テストでのConfigProfile使用の完全削除 |
   6. BreakdownParams検証済み値として純粋な値オブジェクト実装 |
   7. ドメイン型と設定ドメインの完全分離実現 |
   8. 全テストが新しい実装でpassすることを確認 |
-- ゴール: DirectiveType/LayerType型がBreakdownParams検証済み値として純粋に機能し、ConfigProfileNameへの依存が完全に除去された状態を実現する。ドメイン境界が明確に分離され、BreakdownParams統合設計に完全準拠した実装にする。
+- ゴール: DirectiveType/LayerType型がBreakdownParams検証済み値として純粋に機能し、ConfigProfileへの依存が完全に除去された状態を実現する。ドメイン境界が明確に分離され、BreakdownParams統合設計に完全準拠した実装にする。
 ```
 
 ## 実装要件
@@ -81,39 +81,39 @@ LayerType.create(mockTwoParamsResult.layerType, ConfigProfileName.createDefault(
 
 #### 禁止パターン（即座に削除）
 ```typescript
-// ❌ 絶対禁止：DirectiveTypeのConfigProfileName依存
+// ❌ 絶対禁止：DirectiveTypeのConfigProfile依存
 class DirectiveType {
-  private readonly _profile: ConfigProfileName;
-  get profile(): ConfigProfileName;
-  static create(value: string, profile?: ConfigProfileName);
-  isValidForProfile(profile: ConfigProfileName): boolean;
+  private readonly _profile: ConfigProfile;
+  get profile(): ConfigProfile;
+  static create(value: string, profile?: ConfigProfile);
+  isValidForProfile(profile: ConfigProfile): boolean;
 }
 
-// ❌ 絶対禁止：LayerTypeのConfigProfileName依存
+// ❌ 絶対禁止：LayerTypeのConfigProfile依存
 class LayerType {
-  static getCommonLayerTypes(profile?: ConfigProfileName): readonly string[];
-  static getKnownLayerTypes(profile?: ConfigProfileName): readonly string[];
-  static create(value: string, profile?: ConfigProfileName);
+  static getCommonLayerTypes(profile?: ConfigProfile): readonly string[];
+  static getKnownLayerTypes(profile?: ConfigProfile): readonly string[];
+  static create(value: string, profile?: ConfigProfile);
 }
 
-// ❌ 絶対禁止：テストでのConfigProfileName注入
-DirectiveType.create("to", ConfigProfileName.createDefault());
-LayerType.create("project", ConfigProfileName.createDefault());
-const profile = ConfigProfileName.createDefault();
+// ❌ 絶対禁止：テストでのConfigProfile注入
+DirectiveType.create("to", ConfigProfile.createDefault());
+LayerType.create("project", ConfigProfile.createDefault());
+const profile = ConfigProfile.createDefault();
 ```
 
 #### 検索・削除対象
 以下のパターンを含むコードは**即座に削除または修正**：
-- `ConfigProfileName.*DirectiveType`
-- `DirectiveType.*ConfigProfileName`
-- `ConfigProfileName.*LayerType`
-- `LayerType.*ConfigProfileName`
-- `profile?: ConfigProfileName`
+- `ConfigProfile.*DirectiveType`
+- `DirectiveType.*ConfigProfile`
+- `ConfigProfile.*LayerType`
+- `LayerType.*ConfigProfile`
+- `profile?: ConfigProfile`
 - `getCommonLayerTypes(profile`
 - `getKnownLayerTypes(profile`
 - `isValidForProfile(profile`
-- `_profile: ConfigProfileName`
-- `get profile(): ConfigProfileName`
+- `_profile: ConfigProfile`
+- `get profile(): ConfigProfile`
 
 ### 2. 正しい実装パターン（必須）
 
@@ -183,7 +183,7 @@ if (result.type === "two") {
 // DirectiveType/LayerType型には検証ロジック不要
 
 // ProfileName → BreakdownConfig → CustomConfig → BreakdownParams
-const profileName = ConfigProfileName.fromCliOption(extractConfigOption(args));
+const profileName = ConfigProfile.fromCliOption(extractConfigOption(args));
 const userConfig = await loadUserConfig(profileName);
 const customConfig = ParamsCustomConfig.create({
   params: {
@@ -204,7 +204,7 @@ const customConfig = ParamsCustomConfig.create({
 const result = await breakdownParams(args, customConfig);
 // result.directiveType, result.layerType が検証済み
 
-// ConfigProfileNameの寿命終了（設定読み込み後）
+// ConfigProfileの寿命終了（設定読み込み後）
 // BreakdownConfigの分離後寿命終了（CustomConfig生成後）
 // DirectiveType/LayerTypeはJSR検証済み値として長寿命
 ```
@@ -236,27 +236,27 @@ describe("LayerType", () => {
   });
 });
 
-// ❌ 禁止パターン：ConfigProfileName使用
-// DirectiveType.create("to", ConfigProfileName.createDefault()); // 削除
-// const profile = ConfigProfileName.createDefault(); // 削除
+// ❌ 禁止パターン：ConfigProfile使用
+// DirectiveType.create("to", ConfigProfile.createDefault()); // 削除
+// const profile = ConfigProfile.createDefault(); // 削除
 ```
 
 ### 5. 修正対象ファイル
 
 #### 優先度1（緊急）
 ```
-lib/domain/core/value_objects/directive_type.ts          # ConfigProfileName依存完全除去
-lib/domain/core/value_objects/layer_type.ts             # ConfigProfileName依存完全除去
+lib/domain/core/value_objects/directive_type.ts          # ConfigProfile依存完全除去
+lib/domain/core/value_objects/layer_type.ts             # ConfigProfile依存完全除去
 lib/domain/core/aggregates/two_params.ts                # fromTwoParamsResult()統合実装
 ```
 
 #### 優先度2（重要）
 ```
-lib/domain/core/aggregates/two_params.test.ts                           # テストでのConfigProfileName除去
-lib/application/templates/1_behavior_prompt_generation_service_test.ts  # テストでのConfigProfileName除去
-lib/types/type_factory.ts                                               # ConfigProfileName参照除去
-lib/validator/0_architecture_parameter_validator_test.ts                # テストでのConfigProfileName除去
-lib/validator/1_behavior_parameter_validator_test.ts                    # テストでのConfigProfileName除去
+lib/domain/core/aggregates/two_params.test.ts                           # テストでのConfigProfile除去
+lib/application/templates/1_behavior_prompt_generation_service_test.ts  # テストでのConfigProfile除去
+lib/types/type_factory.ts                                               # ConfigProfile参照除去
+lib/validator/0_architecture_parameter_validator_test.ts                # テストでのConfigProfile除去
+lib/validator/1_behavior_parameter_validator_test.ts                    # テストでのConfigProfile除去
 ```
 
 #### 優先度3（必要）
@@ -280,8 +280,8 @@ if (directive.equals(otherDirective)) {
   // 処理
 }
 
-// ❌ 禁止される実装：ConfigProfileName依存
-const directive = DirectiveType.create("to", ConfigProfileName.createDefault());
+// ❌ 禁止される実装：ConfigProfile依存
+const directive = DirectiveType.create("to", ConfigProfile.createDefault());
 const profile = directive.profile;
 directive.isValidForProfile(profile);
 LayerType.getCommonLayerTypes(profile);
@@ -290,7 +290,7 @@ LayerType.getCommonLayerTypes(profile);
 #### 統合検証
 ```typescript
 // BreakdownParams統合フローの完全検証
-const profileName = ConfigProfileName.fromCliOption("default");
+const profileName = ConfigProfile.fromCliOption("default");
 const userConfig = await loadUserConfig(profileName);
 const customConfig = ParamsCustomConfig.create(userConfig);
 const result = await breakdownParams(args, customConfig);
@@ -298,16 +298,16 @@ const result = await breakdownParams(args, customConfig);
 if (result.type === "two") {
   const twoParams = fromTwoParamsResult(result.data);
   // twoParams.directive, twoParams.layerは検証済み
-  // ConfigProfileNameへの依存は一切なし
+  // ConfigProfileへの依存は一切なし
 }
 ```
 
 ## 作業手順
 
 ### Phase 1: 緊急調査（即座実行）
-1. ConfigProfileName依存パターンの全コード検索
-2. DirectiveType/LayerType型でのConfigProfileName使用箇所特定
-3. テストでのConfigProfileName注入箇所特定
+1. ConfigProfile依存パターンの全コード検索
+2. DirectiveType/LayerType型でのConfigProfile使用箇所特定
+3. テストでのConfigProfile注入箇所特定
 4. 設定ベース検証の現在の実装状況調査
 5. 依存除去対象の完全リスト作成
 6. 調査結果を `tmp/<branch>/configprofile-dependency-audit.md` に記録
@@ -316,23 +316,23 @@ if (result.type === "two") {
 1. DirectiveTypeの単純コンストラクタ実装
 2. LayerTypeの単純コンストラクタ実装
 3. fromTwoParamsResult()ヘルパー関数実装
-4. ConfigProfileName依存メソッドの削除
+4. ConfigProfile依存メソッドの削除
 5. BreakdownParams検証済み値としての純粋実装
 
-### Phase 3: ConfigProfileName依存の段階的除去
-1. **優先度1ファイル**: DirectiveType/LayerTypeからConfigProfileName完全除去
-2. **優先度2ファイル**: テストでのConfigProfileName使用削除
+### Phase 3: ConfigProfile依存の段階的除去
+1. **優先度1ファイル**: DirectiveType/LayerTypeからConfigProfile完全除去
+2. **優先度2ファイル**: テストでのConfigProfile使用削除
 3. **優先度3ファイル**: ドキュメント・サンプルの更新
 4. 各段階でテスト実行による動作確認
 
 ### Phase 4: 設定分離の完全実現
 1. BreakdownParams統合による設定ベース検証確認
-2. ConfigProfileName短寿命化の確認
+2. ConfigProfile短寿命化の確認
 3. ドメイン型と設定ドメインの分離確認
 4. エラーハンドリングのBreakdownParams統合対応
 
 ### Phase 5: 完全性検証
-1. ConfigProfileName依存の完全除去確認（grep検索）
+1. ConfigProfile依存の完全除去確認（grep検索）
 2. 全テストの成功確認（`deno task test`）
 3. BreakdownParams統合フローの動作確認
 4. ドメイン境界分離の動作確認
@@ -340,30 +340,30 @@ if (result.type === "two") {
 ## 完了条件
 
 ### 必須条件（全て満たすこと）
-- [ ] DirectiveType型にConfigProfileNameパラメータが一切存在しない
-- [ ] LayerType型にConfigProfileNameパラメータが一切存在しない
-- [ ] `profile?: ConfigProfileName` パターンが完全に削除されている
+- [ ] DirectiveType型にConfigProfileパラメータが一切存在しない
+- [ ] LayerType型にConfigProfileパラメータが一切存在しない
+- [ ] `profile?: ConfigProfile` パターンが完全に削除されている
 - [ ] `getCommonLayerTypes(profile)` / `getKnownLayerTypes(profile)` が削除されている
 - [ ] `isValidForProfile(profile)` メソッドが削除されている
-- [ ] `get profile(): ConfigProfileName` アクセサが削除されている
+- [ ] `get profile(): ConfigProfile` アクセサが削除されている
 - [ ] DirectiveType() / LayerType() コンストラクタが実装されている
 - [ ] fromTwoParamsResult() ヘルパー関数が実装されている
-- [ ] テストでConfigProfileName使用が完全に除去されている
+- [ ] テストでConfigProfile使用が完全に除去されている
 - [ ] `deno task test` が全てpassする
 - [ ] 既存機能の動作に影響がない
 
 ### 品質条件
 - [ ] BreakdownParams検証済み値統合設計に完全準拠している
 - [ ] ドメイン型と設定ドメインが完全に分離されている
-- [ ] ConfigProfileNameの責務が設定読み込み専用に限定されている
+- [ ] ConfigProfileの責務が設定読み込み専用に限定されている
 - [ ] DirectiveType/LayerTypeが純粋な値オブジェクトとして機能している
 - [ ] パフォーマンスの劣化がない
 - [ ] ドキュメントがBreakdownParams統合設計に更新されている
 
 ### 検証条件
-- [ ] `grep -r "ConfigProfileName.*DirectiveType\|DirectiveType.*ConfigProfileName" lib/` の結果が空
-- [ ] `grep -r "ConfigProfileName.*LayerType\|LayerType.*ConfigProfileName" lib/` の結果が空
-- [ ] `grep -r "profile?: ConfigProfileName" lib/` の結果が空
+- [ ] `grep -r "ConfigProfile.*DirectiveType\|DirectiveType.*ConfigProfile" lib/` の結果が空
+- [ ] `grep -r "ConfigProfile.*LayerType\|LayerType.*ConfigProfile" lib/` の結果が空
+- [ ] `grep -r "profile?: ConfigProfile" lib/` の結果が空
 - [ ] `grep -r "getCommonLayerTypes.*profile\|getKnownLayerTypes.*profile" lib/` の結果が空
 - [ ] BreakdownParams統合フローが正しく動作する
 - [ ] 設定変更でパターンマッチングが正しく動作する
@@ -371,11 +371,11 @@ if (result.type === "two") {
 ## 禁止事項（絶対厳守）
 
 ### 絶対禁止
-- **ConfigProfileName依存の存続**: いかなる理由があってもDirectiveType/LayerType型でのConfigProfileName使用を残存させない
+- **ConfigProfile依存の存続**: いかなる理由があってもDirectiveType/LayerType型でのConfigProfile使用を残存させない
 - **profile accessorの維持**: `get profile()` アクセサの名前変更による回避も禁止
 - **設定検証の型内実装**: DirectiveType/LayerType内での設定ベース検証の実装禁止
-- **テストでのConfigProfileName**: テストコード内でのConfigProfileName注入も禁止
-- **中途半端な分離**: 一部だけConfigProfileName除去も禁止
+- **テストでのConfigProfile**: テストコード内でのConfigProfile注入も禁止
+- **中途半端な分離**: 一部だけConfigProfile除去も禁止
 
 ### 制限事項
 - lib/ 配下のファイル変更は設計原則準拠に限定
@@ -385,7 +385,7 @@ if (result.type === "two") {
 ## タスクの進め方
 
 - **Git**: 現在のブランチで作業する
-- **緊急性**: ConfigProfileName依存の除去を最優先で実行
+- **緊急性**: ConfigProfile依存の除去を最優先で実行
 - **段階性**: BreakdownParams統合設計実装 → 依存除去 → 分離実現 → 検証
 - **並列性**: ファイル単位での並列リファクタリングで効率化
 
@@ -400,14 +400,14 @@ if (result.type === "two") {
 
 ### 緊急タスク開始
 1. **チーム立ち上げ**: 全pane稼働、緊急事態モード
-2. **即座調査**: ConfigProfileName依存の完全リスト作成
+2. **即座調査**: ConfigProfile依存の完全リスト作成
 3. **BreakdownParams実装**: コンストラクタベース実装
-4. **依存除去**: ConfigProfileName依存の段階的除去
+4. **依存除去**: ConfigProfile依存の段階的除去
 
 ### 成功の鍵
-**BreakdownParams検証済み値統合設計の完全実装**が絶対条件。ConfigProfileName依存の完全除去により、`domain_boundaries_flow.ja.md` と `two_params_types.ja.md` で定義されたドメイン境界分離を完全実現する。
+**BreakdownParams検証済み値統合設計の完全実装**が絶対条件。ConfigProfile依存の完全除去により、`domain_boundaries_flow.ja.md` と `two_params_types.ja.md` で定義されたドメイン境界分離を完全実現する。
 
 ### 重要提言
-この緊急リファクタリングは、**ドメイン境界の明確化**のための必須作業である。妥協や部分的対応は許されない。ConfigProfileName依存の完全除去により、真のBreakdownParams検証済み値統合設計を実現せよ。
+この緊急リファクタリングは、**ドメイン境界の明確化**のための必須作業である。妥協や部分的対応は許されない。ConfigProfile依存の完全除去により、真のBreakdownParams検証済み値統合設計を実現せよ。
 
-**開始指示**: 直ちにチームを緊急事態モードで立ち上げ、ConfigProfileName依存の完全除去作業を開始せよ。設計原則違反の状態を即座に解消し、BreakdownParams統合設計の完全実装を達成せよ。
+**開始指示**: 直ちにチームを緊急事態モードで立ち上げ、ConfigProfile依存の完全除去作業を開始せよ。設計原則違反の状態を即座に解消し、BreakdownParams統合設計の完全実装を達成せよ。

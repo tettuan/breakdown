@@ -14,20 +14,30 @@ import {
   DirectiveType,
   TwoParamsDirectivePattern,
 } from "../domain/core/value_objects/directive_type.ts";
-import { ConfigProfileName } from "../config/config_profile_name.ts";
 import type { TwoParams_Result } from "../deps.ts";
+import {
+  getDirectiveTypes,
+  getLayerTypes,
+} from "../test_helpers/config_test_helper.ts";
 
-// Test data setup
-const _createValidTwoParamsResult = (
-  directiveType = "to",
-  layerType = "project",
-): TwoParams_Result => ({
-  type: "two" as const,
-  directiveType,
-  layerType,
-  params: [directiveType, layerType],
-  options: {},
-});
+// Test data setup - async version using config helper
+const _createValidTwoParamsResult = async (
+  directiveType?: string,
+  layerType?: string,
+): Promise<TwoParams_Result> => {
+  const directiveTypes = await getDirectiveTypes();
+  const layerTypes = await getLayerTypes();
+  const defaultDirective = directiveType || directiveTypes[0] || "to";
+  const defaultLayer = layerType || layerTypes[0] || "project";
+  
+  return {
+    type: "two" as const,
+    directiveType: defaultDirective,
+    layerType: defaultLayer,
+    params: [defaultDirective, defaultLayer],
+    options: {},
+  };
+};
 
 Deno.test("2_structure: TwoParamsDirectivePattern follows Smart Constructor pattern", () => {
   // Test that constructor is private - can only create via static method
@@ -101,8 +111,7 @@ Deno.test("2_structure: TwoParamsDirectivePattern ensures regex safety", () => {
 
 Deno.test("2_structure: DirectiveType follows Smart Constructor pattern strictly", () => {
   // Test that constructor is private - can only create via static method
-  const profile = ConfigProfileName.createDefault();
-  const directiveResult = DirectiveType.create("to", profile);
+  const directiveResult = DirectiveType.create("to");
 
   assertEquals(directiveResult.ok, true);
   if (directiveResult.ok) {
@@ -116,13 +125,12 @@ Deno.test("2_structure: DirectiveType follows Smart Constructor pattern strictly
     assertEquals(typeof directiveResult.data.value, "string");
     assertEquals(typeof directiveResult.data.equals, "function");
     assertEquals(typeof directiveResult.data.toString, "function");
-    assertEquals(typeof directiveResult.data.profile, "object");
+    assertEquals(typeof directiveResult.data.validatedByPattern, "boolean");
   }
 });
 
 Deno.test("2_structure: DirectiveType ensures immutability", () => {
-  const profile = ConfigProfileName.createDefault();
-  const directiveResult = DirectiveType.create("summary", profile);
+  const directiveResult = DirectiveType.create("summary");
 
   assertEquals(directiveResult.ok, true);
   if (directiveResult.ok) {
@@ -131,10 +139,8 @@ Deno.test("2_structure: DirectiveType ensures immutability", () => {
     // Test that value is read-only
     assertEquals(directiveType.value, "summary");
 
-    // Test that profile is readonly
-    const profileAccess = directiveType.profile;
-    assertExists(profileAccess);
-    assertEquals(profileAccess.value, "default");
+    // Test that validatedByPattern is readonly
+    assertEquals(typeof directiveType.validatedByPattern, "boolean");
 
     // DirectiveType is immutable value object
     assertEquals(directiveType.value, "summary");
@@ -143,10 +149,9 @@ Deno.test("2_structure: DirectiveType ensures immutability", () => {
 
 Deno.test("2_structure: DirectiveType maintains value object characteristics", () => {
   // Test equality based on value, not reference
-  const profile = ConfigProfileName.createDefault();
-  const directive1Result = DirectiveType.create("to", profile);
-  const directive2Result = DirectiveType.create("to", profile);
-  const directive3Result = DirectiveType.create("summary", profile);
+  const directive1Result = DirectiveType.create("to");
+  const directive2Result = DirectiveType.create("to");
+  const directive3Result = DirectiveType.create("summary");
 
   assertEquals(directive1Result.ok, true);
   assertEquals(directive2Result.ok, true);
@@ -170,16 +175,11 @@ Deno.test("2_structure: DirectiveType maintains value object characteristics", (
   }
 });
 
-Deno.test("2_structure: DirectiveType value property maintains type safety", () => {
-  const profile = ConfigProfileName.createDefault();
-  const testCases = [
-    "to",
-    "summary",
-    "defect",
-  ];
+Deno.test("2_structure: DirectiveType value property maintains type safety", async () => {
+  const testCases = await getDirectiveTypes();
 
   for (const testValue of testCases) {
-    const directiveResult = DirectiveType.create(testValue, profile);
+    const directiveResult = DirectiveType.create(testValue);
 
     assertEquals(directiveResult.ok, true);
     if (directiveResult.ok) {
@@ -193,20 +193,15 @@ Deno.test("2_structure: DirectiveType value property maintains type safety", () 
   }
 
   // Test edge case: empty string should fail
-  const emptyResult = DirectiveType.create("", profile);
+  const emptyResult = DirectiveType.create("");
   assertEquals(emptyResult.ok, false);
 });
 
-Deno.test("2_structure: DirectiveType toString provides consistent representation", () => {
-  const profile = ConfigProfileName.createDefault();
-  const validTestCases = [
-    "to",
-    "summary",
-    "defect",
-  ];
+Deno.test("2_structure: DirectiveType toString provides consistent representation", async () => {
+  const validTestCases = await getDirectiveTypes();
 
   for (const directiveType of validTestCases) {
-    const directiveResult = DirectiveType.create(directiveType, profile);
+    const directiveResult = DirectiveType.create(directiveType);
 
     assertEquals(directiveResult.ok, true);
     if (directiveResult.ok) {
@@ -221,36 +216,26 @@ Deno.test("2_structure: DirectiveType toString provides consistent representatio
   }
 });
 
-Deno.test("2_structure: DirectiveType profile provides safe read-only access", () => {
-  const profile = ConfigProfileName.createDefault();
-  const directiveResult = DirectiveType.create("to", profile);
+Deno.test("2_structure: DirectiveType validatedByPattern provides state information", () => {
+  const directiveResult = DirectiveType.create("to");
 
   assertEquals(directiveResult.ok, true);
   if (directiveResult.ok) {
     const directiveType = directiveResult.data;
-    const profileAccess = directiveType.profile;
 
-    // Test that profile data is accessible
-    assertEquals(profileAccess.value, "default");
-    assertEquals(profileAccess.isDefault(), true);
+    // Test that validatedByPattern is accessible
+    assertEquals(typeof directiveType.validatedByPattern, "boolean");
 
-    // Test that it's readonly (TypeScript level - structural verification)
-    assertEquals(typeof profileAccess, "object");
-    assertEquals(profileAccess !== null, true);
-
-    // Test that the returned object is consistent
-    const profileAccess2 = directiveType.profile;
-    assertEquals(profileAccess.value, profileAccess2.value);
-    assertEquals(profileAccess.isDefault(), profileAccess2.isDefault());
+    // Test consistency
+    assertEquals(directiveType.validatedByPattern, directiveType.validatedByPattern);
   }
 });
 
-Deno.test("2_structure: DirectiveType maintains consistency across all access methods", () => {
-  const profile = ConfigProfileName.createDefault();
-  const testValues = ["to", "summary", "defect"];
+Deno.test("2_structure: DirectiveType maintains consistency across all access methods", async () => {
+  const testValues = await getDirectiveTypes();
 
   for (const value of testValues) {
-    const directiveResult = DirectiveType.create(value, profile);
+    const directiveResult = DirectiveType.create(value);
 
     assertEquals(directiveResult.ok, true);
     if (directiveResult.ok) {
@@ -258,41 +243,38 @@ Deno.test("2_structure: DirectiveType maintains consistency across all access me
 
       // All access methods should return the same value
       assertEquals(directiveType.value, value);
-      assertEquals(directiveType.profile.value, "default");
 
       // toString should return the value
       assertEquals(directiveType.toString(), value);
+
+      // validatedByPattern should be consistent
+      assertEquals(typeof directiveType.validatedByPattern, "boolean");
     }
   }
 });
 
-Deno.test("2_structure: DirectiveType supports complex profile configurations", () => {
-  // Test with custom profile
-  const customProfile = ConfigProfileName.create("production");
-  const directiveResult = DirectiveType.create("to", customProfile);
+Deno.test("2_structure: DirectiveType as pure Value Object", () => {
+  // Test DirectiveType as pure Value Object without profile dependency
+  const directiveResult = DirectiveType.create("to");
 
-  // Since "to" is valid for production profile too
   assertEquals(directiveResult.ok, true);
   if (directiveResult.ok) {
     const directiveType = directiveResult.data;
 
-    // Core functionality should work with custom profile
+    // Core functionality should work as pure Value Object
     assertEquals(directiveType.value, "to");
-    assertEquals(directiveType.profile.value, "production");
-    assertEquals(directiveType.profile.isDefault(), false);
+    assertEquals(typeof directiveType.validatedByPattern, "boolean");
 
-    // Profile configuration should be preserved
-    assertEquals(directiveType.validatedByPattern, true);
-    assertEquals(directiveType.isValidForProfile(customProfile), true);
+    // No profile-specific methods should exist
+    assertEquals("profile" in directiveType, false);
   }
 });
 
 Deno.test("2_structure: DirectiveType equality is value-based, not reference-based", () => {
-  // Create identical DirectiveTypes from same profile
-  const profile = ConfigProfileName.createDefault();
-  const directive1Result = DirectiveType.create("to", profile);
-  const directive2Result = DirectiveType.create("to", profile);
-  const directive3Result = DirectiveType.create("summary", profile);
+  // Create identical DirectiveTypes
+  const directive1Result = DirectiveType.create("to");
+  const directive2Result = DirectiveType.create("to");
+  const directive3Result = DirectiveType.create("summary");
 
   assertEquals(directive1Result.ok, true);
   assertEquals(directive2Result.ok, true);
@@ -303,7 +285,7 @@ Deno.test("2_structure: DirectiveType equality is value-based, not reference-bas
     const directive2 = directive2Result.data;
     const directive3 = directive3Result.data;
 
-    // Same directiveType and profile should be equal
+    // Same directiveType should be equal
     assertEquals(directive1.equals(directive2), true);
 
     // Different directiveType should not be equal

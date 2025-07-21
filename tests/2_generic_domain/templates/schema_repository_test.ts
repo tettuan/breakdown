@@ -34,7 +34,6 @@ import {
 } from "../../../lib/domain/templates/schema_management_aggregate.ts";
 import { DirectiveType } from "../../../lib/domain/core/value_objects/directive_type.ts";
 import { LayerType } from "../../../lib/domain/core/value_objects/layer_type.ts";
-import { ConfigProfileName } from "../../../lib/config/config_profile_name.ts";
 
 const logger = new BreakdownLogger("schema-repository-integration");
 
@@ -271,15 +270,13 @@ function createMockSchema(
 
 // Mock DirectiveType and LayerType
 const createMockDirective = (value: string): DirectiveType => {
-  const profile = ConfigProfileName.create("test");
-  const result = DirectiveType.create(value, profile);
+  const result = DirectiveType.create(value);
   if (!result.ok) throw new Error(`Failed to create DirectiveType: ${value}`);
   return result.data;
 };
 
 const createMockLayer = (value: string): LayerType => {
-  const profile = ConfigProfileName.create("test");
-  const result = LayerType.create(value, profile);
+  const result = LayerType.create(value);
   if (!result.ok) throw new Error(`Failed to create LayerType: ${value}`);
   return result.data;
 };

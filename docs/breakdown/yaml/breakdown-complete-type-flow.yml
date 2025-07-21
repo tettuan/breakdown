@@ -15,12 +15,12 @@ complete_flow:
     - phase: "Config Detection"
       description: "CLI引数からの設定プロファイル抽出"
       yaml_file: "breakdown-config-profile-detection.yml"
-      key_transformation: "string[] → ConfigProfileName"
+      key_transformation: "string[] → ConfigProfile"
 
     - phase: "Config Loading"
       description: "設定プロファイルに基づく設定読み込み"
       yaml_file: "breakdown-config-loading-flow.yml"
-      key_transformation: "ConfigProfileName → CustomConfig | undefined"
+      key_transformation: "ConfigProfile → CustomConfig | undefined"
 
     - phase: "Params Processing"
       description: "パラメータ解析からプロンプト生成"
@@ -37,7 +37,7 @@ key_components:
 
   internal_modules:
     - "ConfigPrefixDetector: 設定プレフィックス検出"
-    - "ConfigProfileName: 設定プロファイル名型"
+    - "ConfigProfile: 設定プロファイル名型"
     - "ParamsCustomConfig: 設定変換"
     - "TwoParamsOrchestrator: 処理オーケストレーション"
 

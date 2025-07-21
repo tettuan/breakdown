@@ -11,5 +11,8 @@
 export { ConfigLoader, loadConfig } from "./loader.ts";
 export type { ConfigLoadError, CustomConfig } from "./loader.ts";
 
+// Export ConfigProfile from local file (renamed from ConfigProfileName)
+export { ConfigProfile } from "./config_profile_name.ts";
+
 // Export other configuration utilities if they exist
 // Add more exports as needed

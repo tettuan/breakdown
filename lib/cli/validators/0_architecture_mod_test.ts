@@ -46,12 +46,12 @@ describe("Architecture: Module Export Design", () => {
     logger.debug("Validator class exports verification completed");
   });
 
-  it("should export required type interfaces", () => {
+  it("should export required type interfaces", async () => {
     logger.debug("Testing type interface exports");
 
     // Type interfaces should be available for import
     const validator = new TwoParamsValidator();
-    const result = validator.validate(["to", "project"]);
+    const result = await validator.validate(["to", "project"]);
 
     if (result.ok) {
       // ValidatedParams interface should be available

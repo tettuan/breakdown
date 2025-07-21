@@ -99,7 +99,7 @@ export type ValidationError =
   }
   | { readonly kind: "LayerPatternMismatch"; readonly value: string; readonly pattern: string }
   // Configuration errors
-  | { readonly kind: "ConfigurationNotFound"; readonly profile: string }
+  | { readonly kind: "ConfigurationNotFound"; readonly profile: string; readonly message?: string }
   | { readonly kind: "InvalidConfiguration"; readonly message: string; readonly details?: unknown }
   | {
     readonly kind: "PatternNotDefined";
@@ -376,10 +376,10 @@ export class TwoParamsValidator {
    * @param profile - Optional profile name (defaults to constructor profile)
    * @returns Result with validated parameters or error
    */
-  validate(
+  async validate(
     params: readonly string[],
     profile?: string,
-  ): Result<ValidatedParams, ValidationError> {
+  ): Promise<Result<ValidatedParams, ValidationError>> {
     // 1. Validate parameter count
     if (!params || params.length < 2) {
       return error({
@@ -399,7 +399,7 @@ export class TwoParamsValidator {
     }
 
     // 3. Get validation patterns
-    const patternsResult = this.getValidationPatterns(profileResult.data);
+    const patternsResult = await this.getValidationPatterns(profileResult.data);
     if (!patternsResult.ok) {
       return error(patternsResult.error);
     }
@@ -483,9 +483,9 @@ export class TwoParamsValidator {
   /**
    * Get validation patterns with caching
    */
-  private getValidationPatterns(
+  private async getValidationPatterns(
     profile: ProfileName,
-  ): Result<ValidationPatterns, ValidationError> {
+  ): Promise<Result<ValidationPatterns, ValidationError>> {
     // Check cache first
     const cached = this.cachedPatterns.get(ProfileName.value(profile));
     if (cached) {
@@ -498,7 +498,7 @@ export class TwoParamsValidator {
       configData = this.config as Record<string, unknown>;
     } else {
       // Fallback to default patterns if no config provided
-      return this.getDefaultPatterns(profile);
+      return await this.getDefaultPatterns(profile);
     }
 
     // Extract patterns from config
@@ -513,27 +513,41 @@ export class TwoParamsValidator {
   }
 
   /**
-   * Get default patterns (fallback for testing or when config is not available)
+   * Get default patterns from configuration files (no hardcoded fallback)
+   * This method should read from config/default-user.yml or return error
    */
-  private getDefaultPatterns(profile: ProfileName): Result<ValidationPatterns, ValidationError> {
-    const profileName = ProfileName.value(profile);
-
-    switch (profileName) {
-      case "breakdown":
-        return ok({
-          directivePatterns: ["to", "summary", "defect", "init", "find"],
-          layerPatterns: ["project", "issue", "task", "bugs", "temp"],
-        });
-      case "search":
-        return ok({
-          directivePatterns: ["web", "rag", "db"],
-          layerPatterns: ["query", "index", "data"],
-        });
-      default:
-        return error({
-          kind: "ConfigurationNotFound",
-          profile: profileName,
-        });
+  private async getDefaultPatterns(profile: ProfileName): Promise<Result<ValidationPatterns, ValidationError>> {
+    try {
+      // BreakdownConfigから設定を取得
+      if (!this.config) {
+        throw new Error("Configuration is required but not available");
+      }
+      
+      // 設定からパターンを取得（BreakdownConfigのAPIを使用）
+      const configData = (typeof this.config === 'object' && this.config && 'getConfig' in this.config && typeof this.config.getConfig === 'function') ? await this.config.getConfig() : this.config;
+      const directivePatterns = configData?.params?.two?.directiveType?.pattern?.split('|') || [];
+      const layerPatterns = configData?.params?.two?.layerType?.pattern?.split('|') || [];
+      
+      if (!directivePatterns || directivePatterns.length === 0) {
+        throw new Error("Configuration must define directive types");
+      }
+      if (!layerPatterns || layerPatterns.length === 0) {
+        throw new Error("Configuration must define layer types");
+      }
+      
+      const patterns: ValidationPatterns = {
+        directivePatterns: [...directivePatterns],
+        layerPatterns: [...layerPatterns]
+      };
+      
+      return ok(patterns);
+    } catch (err) {
+      const profileName = ProfileName.value(profile);
+      return error({
+        kind: "ConfigurationNotFound",
+        profile: profileName,
+        message: `Failed to load default patterns: ${err instanceof Error ? err.message : "Unknown error"}`
+      });
     }
   }
 
@@ -563,9 +577,9 @@ export class TwoParamsValidator {
   /**
    * Get available patterns for a profile
    */
-  getAvailablePatterns(
+  async getAvailablePatterns(
     profile?: string,
-  ): Result<ValidationPatterns, ValidationError> {
+  ): Promise<Result<ValidationPatterns, ValidationError>> {
     const profileResult: Result<ProfileName, ValidationError> = profile
       ? ProfileName.create(profile)
       : ok<ProfileName, ValidationError>(this.defaultProfile);
@@ -574,7 +588,7 @@ export class TwoParamsValidator {
       return error(profileResult.error);
     }
 
-    return this.getValidationPatterns(profileResult.data);
+    return await this.getValidationPatterns(profileResult.data);
   }
 
   /**

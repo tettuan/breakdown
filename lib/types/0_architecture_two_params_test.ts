@@ -13,15 +13,13 @@
 import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import { describe, it } from "@std/testing/bdd";
 import { TwoParams } from "../domain/core/aggregates/two_params_optimized.ts";
-import { ConfigProfileName } from "../config/config_profile_name.ts";
 
 describe("TwoParams Architecture", () => {
   describe("Smart Constructor Pattern", () => {
     it("should have private constructor", () => {
       // The constructor should not be directly accessible
       // We test this indirectly by ensuring we can only create instances through static methods
-      const profile = ConfigProfileName.createDefault();
-      const result = TwoParams.create("to", "project", profile);
+      const result = TwoParams.create("to", "project");
 
       assertEquals(result.ok, true);
       if (result.ok) {
@@ -31,8 +29,7 @@ describe("TwoParams Architecture", () => {
     });
 
     it("should provide create static method with Result type", () => {
-      const profile = ConfigProfileName.createDefault();
-      const result = TwoParams.create("to", "project", profile);
+      const result = TwoParams.create("to", "project");
 
       // Should return Result type
       assertExists(result);
@@ -52,7 +49,7 @@ describe("TwoParams Architecture", () => {
       assertEquals(result.ok, true);
       if (result.ok) {
         assertExists(result.data);
-        assertEquals(result.data.profile.isDefault(), true);
+        assertEquals(result.data.profile.value, "default");
       }
     });
 
@@ -64,16 +61,15 @@ describe("TwoParams Architecture", () => {
       assertEquals(resultUndefined.ok, true);
 
       if (resultNull.ok && resultUndefined.ok) {
-        assertEquals(resultNull.data.profile.isDefault(), true);
-        assertEquals(resultUndefined.data.profile.isDefault(), true);
+        assertEquals(resultNull.data.profile.value, "default");
+        assertEquals(resultUndefined.data.profile.value, "default");
       }
     });
   });
 
   describe("Immutable Value Object", () => {
     it("should create immutable instances", () => {
-      const profile = ConfigProfileName.createDefault();
-      const result = TwoParams.create("to", "project", profile);
+      const result = TwoParams.create("to", "project");
 
       assertEquals(result.ok, true);
       if (result.ok) {
@@ -90,8 +86,7 @@ describe("TwoParams Architecture", () => {
     });
 
     it("should have readonly properties", () => {
-      const profile = ConfigProfileName.createDefault();
-      const result = TwoParams.create("to", "project", profile);
+      const result = TwoParams.create("to", "project");
 
       assertEquals(result.ok, true);
       if (result.ok) {
@@ -113,8 +108,7 @@ describe("TwoParams Architecture", () => {
 
   describe("Result Type Usage", () => {
     it("should return ok Result for valid inputs", () => {
-      const profile = ConfigProfileName.createDefault();
-      const result = TwoParams.create("to", "project", profile);
+      const result = TwoParams.create("to", "project");
 
       assertEquals(result.ok, true);
       if (result.ok) {
@@ -124,22 +118,19 @@ describe("TwoParams Architecture", () => {
     });
 
     it("should return error Result for invalid directive", () => {
-      const profile = ConfigProfileName.createDefault();
-      const result = TwoParams.create("", "project", profile);
+      const result = TwoParams.create("", "project");
 
       assertEquals(result.ok, false);
       if (!result.ok) {
         assertEquals(result.error.kind, "InvalidDirective");
         if (result.error.kind === "InvalidDirective") {
           assertExists(result.error.directive);
-          assertExists(result.error.profile);
         }
       }
     });
 
     it("should return error Result for invalid layer", () => {
-      const profile = ConfigProfileName.createDefault();
-      const result = TwoParams.create("to", "", profile);
+      const result = TwoParams.create("to", "");
 
       assertEquals(result.ok, false);
       if (!result.ok) {
@@ -151,13 +142,12 @@ describe("TwoParams Architecture", () => {
     });
 
     it("should never throw exceptions from create methods", () => {
-      const profile = ConfigProfileName.createDefault();
 
       // These should all return Result types, never throw
       let didThrow = false;
       try {
-        TwoParams.create("", "", profile);
-        TwoParams.create("invalid", "invalid", profile);
+        TwoParams.create("", "");
+        TwoParams.create("invalid", "invalid");
         TwoParams.createWithCliOption("", "", "invalid");
       } catch {
         didThrow = true;
@@ -169,8 +159,7 @@ describe("TwoParams Architecture", () => {
 
   describe("Type Safety", () => {
     it("should provide type guard", () => {
-      const profile = ConfigProfileName.createDefault();
-      const result = TwoParams.create("to", "project", profile);
+      const result = TwoParams.create("to", "project");
 
       assertEquals(result.ok, true);
       if (result.ok) {
@@ -183,8 +172,7 @@ describe("TwoParams Architecture", () => {
     });
 
     it("should maintain type safety through operations", () => {
-      const profile = ConfigProfileName.createDefault();
-      const result = TwoParams.create("to", "project", profile);
+      const result = TwoParams.create("to", "project");
 
       assertEquals(result.ok, true);
       if (result.ok) {
@@ -209,8 +197,7 @@ describe("TwoParams Architecture", () => {
 
   describe("Domain Method Architecture", () => {
     it("should provide domain operations", () => {
-      const profile = ConfigProfileName.createDefault();
-      const result = TwoParams.create("to", "project", profile);
+      const result = TwoParams.create("to", "project");
 
       assertEquals(result.ok, true);
       if (result.ok) {
@@ -239,8 +226,7 @@ describe("TwoParams Architecture", () => {
     });
 
     it("should have path resolution methods return Result types", () => {
-      const profile = ConfigProfileName.createDefault();
-      const result = TwoParams.create("to", "project", profile);
+      const result = TwoParams.create("to", "project");
 
       assertEquals(result.ok, true);
       if (result.ok) {
@@ -269,10 +255,9 @@ describe("TwoParams Architecture", () => {
 
   describe("Factory Functions", () => {
     it("should use safe factory methods with Result types", () => {
-      const profile = ConfigProfileName.createDefault();
 
       // Should work for valid inputs via static create method
-      const result = TwoParams.create("to", "project", profile);
+      const result = TwoParams.create("to", "project");
       assertEquals(result.ok, true);
       if (result.ok) {
         assertExists(result.data);
@@ -281,10 +266,9 @@ describe("TwoParams Architecture", () => {
     });
 
     it("should return error for invalid inputs via safe factory", () => {
-      const profile = ConfigProfileName.createDefault();
 
       // Should return error result for invalid inputs
-      const result = TwoParams.create("", "project", profile);
+      const result = TwoParams.create("", "project");
       assertEquals(result.ok, false);
       if (!result.ok) {
         assertExists(result.error);

@@ -110,7 +110,7 @@ Deno.test("LayerType Architecture - Error Type Coverage", () => {
   }
 });
 
-Deno.test("LayerType Architecture - Factory Method Contracts", () => {
+Deno.test("LayerType Architecture - Factory Method Contracts", async () => {
   // Test that factory methods honor their contracts
 
   // 1. fromString should accept unknown input and optional pattern
@@ -119,18 +119,18 @@ Deno.test("LayerType Architecture - Factory Method Contracts", () => {
   assertEquals(typeof result1.ok, "boolean", "Result should have boolean ok property");
 
   // 2. isValidLayer should accept string and return boolean
-  const isValid = LayerType.isValidLayer("project");
+  const isValid = await LayerType.isValidLayer("project");
   assertEquals(typeof isValid, "boolean", "isValidLayer should return boolean");
 
   // 3. getKnownLayerTypes should return readonly array
-  const knownLayers = LayerType.getKnownLayerTypes();
+  const knownLayers = await LayerType.getKnownLayerTypes();
   assertEquals(Array.isArray(knownLayers), true, "getKnownLayerTypes should return array");
   assertEquals(knownLayers.length > 0, true, "Should have at least one known layer");
 });
 
-Deno.test("LayerType Architecture - Immutability Constraints", () => {
+Deno.test("LayerType Architecture - Immutability Constraints", async () => {
   // Test that known layers cannot be modified
-  const knownLayers = LayerType.getKnownLayerTypes();
+  const knownLayers = await LayerType.getKnownLayerTypes();
   const originalLength = knownLayers.length;
 
   // Attempt to modify the returned array should not affect internal state
@@ -142,7 +142,7 @@ Deno.test("LayerType Architecture - Immutability Constraints", () => {
   }
 
   // Get fresh copy to verify immutability
-  const freshKnownLayers = LayerType.getKnownLayerTypes();
+  const freshKnownLayers = await LayerType.getKnownLayerTypes();
   assertEquals(freshKnownLayers.length, originalLength, "Known layers should remain unchanged");
 });
 

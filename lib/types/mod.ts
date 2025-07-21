@@ -60,16 +60,16 @@
  * });
  * ```
  *
- * @example Using ConfigProfileName for profile management
+ * @example Using TwoParams with Result types
  * ```typescript
- * import { ConfigProfileName } from "./mod.ts";
+ * import { createTwoParamsType } from "./mod.ts";
  *
- * // Create a profile name (Totality-compliant with validation)
- * const profileResult = ConfigProfileName.create({ type: "two", DirectiveType: "to", layerType: "project", directiveType: "to",
-    directiveType: "to", params: ["to", "project"], options: {} });
+ * // Create TwoParams with validation
+ * const paramsResult = createTwoParamsType("to", "project");
  *
- * if (profileResult.ok) {
- *   console.log("Profile:", profileResult.data.value);
+ * if (paramsResult.ok) {
+ *   console.log("Directive:", paramsResult.data.directive.value);
+ *   console.log("Layer:", paramsResult.data.layer.value);
  * }
  * ```
  *
@@ -88,7 +88,6 @@ export {
   type LayerTypeError,
   TwoParamsLayerTypePattern,
 } from "../domain/core/value_objects/layer_type.ts";
-export { ConfigProfileName } from "../config/config_profile_name.ts";
 
 // TwoParams type implementation with Smart Constructor pattern
 export { createTwoParamsType, TwoParamsType, type TwoParamsTypeError } from "./two_params.ts";
@@ -138,6 +137,7 @@ export { _defaultConfigTwoParams } from "./defaults/config_two_params.ts";
 
 // Configuration types
 export { ConfigError, ParamsCustomConfig } from "./params_custom_config.ts";
+export { ConfigProfile } from "../config/config_profile_name.ts";
 export { ResultStatus } from "./enums.ts";
 export type { Result as EnumResult } from "./enums.ts";
 

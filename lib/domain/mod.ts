@@ -48,11 +48,11 @@ export class DomainFactory {
     return {
       async createTwoParams(directive: string, layer: string, profile?: string) {
         const { TwoParams } = await import("./core/mod.ts");
-        const { ConfigProfileName } = await import("./core/mod.ts");
+        const { ConfigProfile } = await import("./core/mod.ts");
         const profileName = profile
-          ? ConfigProfileName.create(profile)
-          : ConfigProfileName.create("default");
-        return TwoParams.create(directive, layer, profileName);
+          ? ConfigProfile.create(profile)
+          : ConfigProfile.create("default");
+        return TwoParams.create(directive, layer);
       },
 
       async createDirectiveType(value: string) {

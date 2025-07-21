@@ -238,10 +238,7 @@ describe("Prompts_Architecture", () => {
       const expectedLayers = ["project", "issue", "task"];
 
       for (const [directive, layers] of coverage) {
-        if (directive === "find") continue; // Special case for find directive
-
         for (const expectedLayer of expectedLayers) {
-          if (directive === "summary" && expectedLayer === "task") continue; // Some combinations may not exist
 
           // Check if layer is covered or if there's a reasonable alternative
           const hasStandardLayer = layers.has(expectedLayer);

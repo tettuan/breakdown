@@ -32,21 +32,20 @@ Deno.test("defaultConfigTwoParams - Architecture Validation", async (t) => {
     assertEquals(typeof layerType.pattern, "string");
   });
 
-  await t.step("should have validation configuration", () => {
-    const validation = _defaultConfigTwoParams.params.two.validation;
-    assertExists(validation);
-    assertExists(validation.allowedFlagOptions);
-    assertExists(validation.allowedValueOptions);
-    assertExists(validation.userVariableOption);
-    assertExists(validation.stdinAllowed);
+  await t.step("should have required param configuration", () => {
+    // The configuration now only contains param patterns, not validation properties
+    const twoParams = _defaultConfigTwoParams.params.two;
+    assertExists(twoParams);
+    assertExists(twoParams.directiveType);
+    assertExists(twoParams.layerType);
   });
 
-  await t.step("should have correct validation option types", () => {
-    const validation = _defaultConfigTwoParams.params.two.validation;
-    assertEquals(Array.isArray(validation.allowedFlagOptions), true);
-    assertEquals(Array.isArray(validation.allowedValueOptions), true);
-    assertEquals(typeof validation.userVariableOption, "boolean");
-    assertEquals(typeof validation.stdinAllowed, "boolean");
+  await t.step("should have correct param types", () => {
+    const twoParams = _defaultConfigTwoParams.params.two;
+    assertEquals(typeof twoParams.directiveType.pattern, "string");
+    assertEquals(typeof twoParams.directiveType.errorMessage, "string");
+    assertEquals(typeof twoParams.layerType.pattern, "string");
+    assertEquals(typeof twoParams.layerType.errorMessage, "string");
   });
 
   await t.step("should have valid regex patterns", () => {
@@ -72,18 +71,10 @@ Deno.test("defaultConfigTwoParams - Architecture Validation", async (t) => {
     const config = _defaultConfigTwoParams.params.two;
 
     // Test directiveType pattern contains expected values
-    assertEquals(config.directiveType.pattern, "^(to|summary|defect)$");
+    assertEquals(config.directiveType.pattern, "^(to|summary|defect|find|analyze|extract)$");
 
     // Test layerType pattern contains expected values
-    assertEquals(config.layerType.pattern, "^(project|issue|task|bugs)$");
-
-    // Test validation configuration
-    assertObjectMatch(config.validation, {
-      allowedFlagOptions: [],
-      allowedValueOptions: ["from", "destination", "input", "config"],
-      userVariableOption: true,
-      stdinAllowed: true,
-    });
+    assertEquals(config.layerType.pattern, "^(project|issue|task|component|module)$");
   });
 });
 
@@ -155,28 +146,30 @@ Deno.test("defaultConfigTwoParams - Pattern Validation", async (t) => {
 });
 
 /**
- * Test suite for defaultConfigTwoParams validation options
+ * Test suite for defaultConfigTwoParams configuration structure
  */
-Deno.test("defaultConfigTwoParams - Validation Options", async (t) => {
-  await t.step("should have empty allowedFlagOptions", () => {
-    const flagOptions = _defaultConfigTwoParams.params.two.validation.allowedFlagOptions;
-    assertEquals(Array.isArray(flagOptions), true);
-    assertEquals(flagOptions.length, 0);
+Deno.test("defaultConfigTwoParams - Configuration Structure", async (t) => {
+  await t.step("should have required directiveType configuration", () => {
+    const directiveType = _defaultConfigTwoParams.params.two.directiveType;
+    assertExists(directiveType);
+    assertExists(directiveType.pattern);
+    assertExists(directiveType.errorMessage);
+    assertEquals(typeof directiveType.pattern, "string");
+    assertEquals(typeof directiveType.errorMessage, "string");
   });
 
-  await t.step("should have expected allowedValueOptions", () => {
-    const valueOptions = _defaultConfigTwoParams.params.two.validation.allowedValueOptions;
-    assertEquals(Array.isArray(valueOptions), true);
-    assertEquals(valueOptions.length, 4);
-    assertEquals(valueOptions.includes("from"), true);
-    assertEquals(valueOptions.includes("destination"), true);
-    assertEquals(valueOptions.includes("input"), true);
-    assertEquals(valueOptions.includes("config"), true);
+  await t.step("should have required layerType configuration", () => {
+    const layerType = _defaultConfigTwoParams.params.two.layerType;
+    assertExists(layerType);
+    assertExists(layerType.pattern);
+    assertExists(layerType.errorMessage);
+    assertEquals(typeof layerType.pattern, "string");
+    assertEquals(typeof layerType.errorMessage, "string");
   });
 
-  await t.step("should have correct boolean options", () => {
-    const validation = _defaultConfigTwoParams.params.two.validation;
-    assertEquals(validation.userVariableOption, true);
-    assertEquals(validation.stdinAllowed, true);
+  await t.step("should have valid configuration structure", () => {
+    assertExists(_defaultConfigTwoParams.params);
+    assertExists(_defaultConfigTwoParams.params.two);
+    assertEquals(typeof _defaultConfigTwoParams, "object");
   });
 });

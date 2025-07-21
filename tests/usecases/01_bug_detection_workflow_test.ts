@@ -17,6 +17,7 @@ import { join } from "@std/path";
 // Core domain imports
 import { DirectiveType } from "../../lib/domain/core/value_objects/directive_type.ts";
 import { LayerType } from "../../lib/domain/core/value_objects/layer_type.ts";
+import { ConfigProfile } from "../../lib/config/mod.ts";
 import { createTwoParamsResult } from "../../lib/types/two_params_result_extension.ts";
 
 const logger = new BreakdownLogger("usecase:bug_detection");
@@ -40,7 +41,7 @@ Deno.test("UC1.1: Basic Bug Detection Workflow - Simple JavaScript File", async 
   });
 
   // Phase 1: Command Line Simulation
-  const command = ["defect", "task"];
+  const command = ["find", "bugs"];
   const inputFile = "tests/fixtures/usecases/bug_detection/inputs/simple_bugs.js";
 
   logger.debug("Phase 1: Command line parsing simulation", {
@@ -52,9 +53,9 @@ Deno.test("UC1.1: Basic Bug Detection Workflow - Simple JavaScript File", async 
   const twoParamsResult = createTwoParamsResult(command[0], command[1]);
 
   assertEquals(twoParamsResult.type, "two");
-  assertEquals(twoParamsResult.directiveType, "defect");
-  assertEquals(twoParamsResult.layerType, "task");
-  assertEquals(twoParamsResult.params, ["defect", "task"]);
+  assertEquals(twoParamsResult.directiveType, "find");
+  assertEquals(twoParamsResult.layerType, "bugs");
+  assertEquals(twoParamsResult.params, ["find", "bugs"]);
 
   // Phase 2: Type-Safe Domain Object Creation
   logger.debug("Phase 2: Creating domain objects");
@@ -74,8 +75,8 @@ Deno.test("UC1.1: Basic Bug Detection Workflow - Simple JavaScript File", async 
 
   const directiveType = directiveTypeResult.data;
   const layerType = layerTypeResult.data;
-  assertEquals(directiveType.value, "defect");
-  assertEquals(layerType.value, "task");
+  assertEquals(directiveType.value, "find");
+  assertEquals(layerType.value, "bugs");
 
   // Phase 3: Path Resolution for Bug Detection
   logger.debug("Phase 3: Resolving paths for bug detection workflow");
@@ -159,7 +160,7 @@ Use schema reference: \${schema_reference}
   logger.debug("Phase 7: Validating generated prompt");
 
   assertStringIncludes(finalPrompt, inputFile);
-  assertStringIncludes(finalPrompt, "defect task");
+  assertStringIncludes(finalPrompt, "find bugs");
   assertStringIncludes(finalPrompt, detectedIssues.length.toString());
   assertStringIncludes(finalPrompt, outputPath);
   assertStringIncludes(finalPrompt, schemaPath);
@@ -213,7 +214,7 @@ Deno.test("UC1.2: Complex Bug Detection Workflow - TypeScript File", async () =>
     complexity: "high",
   });
 
-  const command = ["defect", "task"];
+  const command = ["find", "bugs"];
   const inputFile = "tests/fixtures/usecases/bug_detection/inputs/complex_bugs.ts";
 
   // Execute workflow

@@ -22,9 +22,8 @@ Deno.test("Result Type - Factory Pattern Consistency", async (t) => {
       context?: Record<string, unknown>;
     }>;
 
-    // Test DirectiveType factory pattern
-    const createDirectiveType = (value: string): FactoryResult<string> => {
-      const validTypes = ["to", "summary", "defect"];
+    // Test DirectiveType factory pattern with configuration-based validation
+    const createDirectiveType = (value: string, validTypes: readonly string[] = ["to", "summary", "defect"]): FactoryResult<string> => {
       if (validTypes.includes(value)) {
         return ok(value);
       }
@@ -35,9 +34,8 @@ Deno.test("Result Type - Factory Pattern Consistency", async (t) => {
       });
     };
 
-    // Test LayerType factory pattern
-    const createLayerType = (value: string): FactoryResult<string> => {
-      const validLayers = ["project", "issue", "task"];
+    // Test LayerType factory pattern with configuration-based validation
+    const createLayerType = (value: string, validLayers: readonly string[] = ["project", "issue", "task"]): FactoryResult<string> => {
       if (validLayers.includes(value)) {
         return ok(value);
       }

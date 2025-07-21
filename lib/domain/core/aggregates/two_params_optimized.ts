@@ -16,7 +16,7 @@
 
 import type { Result } from "$lib/types/result.ts";
 import { error, ok } from "$lib/types/result.ts";
-import { ConfigProfileName } from "$lib/config/config_profile_name.ts";
+import { ConfigProfile } from "../../../config/config_profile_name.ts";
 import { DirectiveType, type DirectiveTypeError } from "../value_objects/directive_type.ts";
 import { LayerType, type LayerTypeError } from "../value_objects/layer_type.ts";
 import type { BaseError } from "$lib/types/unified_error_types.ts";
@@ -32,7 +32,6 @@ export type TwoParamsValidationError =
     | {
       kind: "InvalidDirective";
       directive: string;
-      profile: string;
       pattern: string;
       cause: DirectiveTypeError;
       message: string;
@@ -48,10 +47,9 @@ export type TwoParamsValidationError =
       kind: "UnsupportedCombination";
       directive: string;
       layer: string;
-      profile: string;
       message: string;
     }
-    | { kind: "PatternNotFound"; profile: string; configPath: string; message: string }
+    | { kind: "PatternNotFound"; configPath: string; message: string }
   );
 
 /**
@@ -78,8 +76,7 @@ export interface PathConfig {
  *
  * @example Basic usage
  * ```typescript
- * const profile = ConfigProfileName.createDefault();
- * const twoParamsResult = TwoParams.create("to", "issue", profile);
+ * const twoParamsResult = TwoParams.create("to", "issue");
  * if (twoParamsResult.ok) {
  *   const twoParams = twoParamsResult.data;
  *   const promptPath = twoParams.resolvePromptPath("prompts", "issue");
@@ -115,7 +112,7 @@ export class TwoParams {
   private constructor(
     private readonly _directive: DirectiveType,
     private readonly _layer: LayerType,
-    private readonly _profile: ConfigProfileName,
+    private readonly _profile: ConfigProfile, // Profile name as ConfigProfile
   ) {
     Object.freeze(this);
   }
@@ -135,9 +132,9 @@ export class TwoParams {
   }
 
   /**
-   * ConfigProfileName accessor
+   * ConfigProfile accessor
    */
-  get profile(): ConfigProfileName {
+  get profile(): ConfigProfile {
     return this._profile;
   }
 
@@ -149,22 +146,21 @@ export class TwoParams {
    *
    * @param directive - Directive type string
    * @param layer - Layer type string
-   * @param profile - Configuration profile
    * @returns Result with TwoParams or detailed error
    */
   static create(
     directive: string,
     layer: string,
-    profile: ConfigProfileName,
   ): Result<TwoParams, TwoParamsValidationError> {
+    // Use default profile internally
+    const profile = ConfigProfile.createDefault();
     // Validate DirectiveType
-    const directiveResult = DirectiveType.create(directive, profile);
+    const directiveResult = DirectiveType.create(directive);
     if (!directiveResult.ok) {
       return error({
         kind: "InvalidDirective",
         directive,
-        profile: profile.value,
-        pattern: "ConfigProfileName pattern validation",
+        pattern: "DirectiveType pattern validation",
         cause: directiveResult.error,
         message: `DirectiveType validation failed: ${directiveResult.error.message}`,
       });
@@ -191,9 +187,8 @@ export class TwoParams {
         kind: "UnsupportedCombination",
         directive,
         layer,
-        profile: profile.value,
         message:
-          `Combination of directive "${directive}" and layer "${layer}" is not supported for profile "${profile.value}"`,
+          `Combination of directive "${directive}" and layer "${layer}" is not supported`,
       });
     }
 
@@ -217,8 +212,47 @@ export class TwoParams {
     layer: string,
     profileOption: string | null | undefined,
   ): Result<TwoParams, TwoParamsValidationError> {
-    const profile = ConfigProfileName.fromCliOption(profileOption);
-    return TwoParams.create(directive, layer, profile);
+    const profile = ConfigProfile.create(profileOption);
+    // Validate DirectiveType
+    const directiveResult = DirectiveType.create(directive);
+    if (!directiveResult.ok) {
+      return error({
+        kind: "InvalidDirective",
+        directive,
+        pattern: "DirectiveType pattern validation",
+        cause: directiveResult.error,
+        message: `DirectiveType validation failed: ${directiveResult.error.message}`,
+      });
+    }
+
+    // Validate LayerType
+    const layerResult = LayerType.create(layer);
+    if (!layerResult.ok) {
+      return error({
+        kind: "InvalidLayer",
+        layer,
+        pattern: "LayerType pattern validation",
+        cause: layerResult.error,
+        message: `LayerType validation failed: ${layerResult.error.message}`,
+      });
+    }
+
+    // Check combination compatibility
+    const directiveType = directiveResult.data;
+    const layerType = layerResult.data;
+
+    if (!layerType.isValidForDirective(directiveType)) {
+      return error({
+        kind: "UnsupportedCombination",
+        directive,
+        layer,
+        message:
+          `Combination of directive "${directive}" and layer "${layer}" is not supported`,
+      });
+    }
+
+    // Success: create TwoParams
+    return ok(new TwoParams(directiveType, layerType, profile));
   }
 
   /**
@@ -227,42 +261,13 @@ export class TwoParams {
    * @returns Result indicating validation success or failure
    */
   validate(): Result<void, TwoParamsValidationError> {
-    // Check if directive is still valid for the profile
-    if (!this._directive.isValidForProfile(this._profile)) {
-      return error({
-        kind: "InvalidDirective",
-        directive: this._directive.value,
-        profile: this._profile.value,
-        pattern: "Profile validation",
-        cause: {
-          kind: "PatternMismatch",
-          value: this._directive.value,
-          profile: this._profile.value,
-          validDirectives: this._profile.getDirectiveTypes(),
-          message: "Directive no longer valid for profile",
-        } as DirectiveTypeError,
-        message:
-          `Directive "${this._directive.value}" is no longer valid for profile "${this._profile.value}"`,
-      });
-    }
+    // Profile validation is handled at application layer
+    // DirectiveType basic validation is performed during creation
 
     // Check if layer is still valid for the profile
-    if (!this._layer.isValidForProfile(this._profile)) {
-      return error({
-        kind: "InvalidLayer",
-        layer: this._layer.value,
-        pattern: "Profile validation",
-        cause: {
-          kind: "PatternMismatch",
-          value: this._layer.value,
-          profile: this._profile.value,
-          validLayers: this._profile.getLayerTypes(),
-          message: "Layer no longer valid for profile",
-        } as LayerTypeError,
-        message:
-          `Layer "${this._layer.value}" is no longer valid for profile "${this._profile.value}"`,
-      });
-    }
+    // Profile validation is handled at application layer
+    // LayerType basic validation is performed during creation
+    // Profile-specific validation removed - LayerType is now a pure Value Object
 
     // Check layer-directive compatibility
     if (!this._layer.isValidForDirective(this._directive)) {
@@ -270,7 +275,6 @@ export class TwoParams {
         kind: "UnsupportedCombination",
         directive: this._directive.value,
         layer: this._layer.value,
-        profile: this._profile.value,
         message: "Layer and directive combination is no longer valid",
       });
     }

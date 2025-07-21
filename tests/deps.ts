@@ -18,7 +18,6 @@ export {
   chain,
   // Configuration types
   ConfigError,
-  ConfigProfileName,
   type ConfigurationError,
   // Variable types
   // createPromptParams, // REMOVED - not exported from mod.ts

@@ -20,7 +20,7 @@ import { handleOneParams } from "$lib/cli/handlers/one_params_handler.ts";
 import { handleTwoParams } from "$lib/cli/handlers/two_params_handler.ts";
 import { ParamsCustomConfig } from "$lib/types/params_custom_config.ts";
 import { ResultStatus } from "$lib/types/enums.ts";
-import { ConfigProfileName } from "$lib/config/config_profile_name.ts";
+import { ConfigProfile } from "$lib/config/config_profile_name.ts";
 import { formatError as _formatError, handleTwoParamsError } from "$lib/cli/error_handler.ts";
 import type { Result } from "$lib/types/result.ts";
 import type {
@@ -107,18 +107,18 @@ export async function runBreakdown(
 ): Promise<Result<void, BreakdownError>> {
   // 1. Extract and create config profile name with Result pattern matching
   const detectedPrefix = ConfigPrefixDetector.detect(args);
-  const configProfileNameResult = ConfigProfileName.createOrError(
+  const configProfileResult = ConfigProfile.createOrError(
     detectedPrefix ?? DEFAULT_CONFIG_PROFILE,
   );
 
-  if (!configProfileNameResult.ok) {
-    const validationError = configProfileNameResult.error;
+  if (!configProfileResult.ok) {
+    const validationError = configProfileResult.error;
     let errorMessage = "Invalid config profile name";
 
-    if (validationError.kind === "InvalidInput") {
-      errorMessage = validationError.reason;
-    } else if (validationError.kind === "EmptyValue") {
-      errorMessage = `Empty value for field: ${validationError.field}`;
+    if (validationError && validationError.kind === "InvalidInput") {
+      errorMessage = validationError.message || "Invalid input";
+    } else if (validationError && validationError.kind === "EmptyValue") {
+      errorMessage = `Empty value for field: ${validationError.field || "unknown"}`;
     }
 
     return {
@@ -131,12 +131,22 @@ export async function runBreakdown(
     };
   }
 
-  const configProfileName = configProfileNameResult.data;
+  const configProfile = configProfileResult.data;
+  if (!configProfile) {
+    return {
+      ok: false,
+      error: {
+        kind: "ConfigProfileError",
+        message: "Failed to create config profile",
+        cause: configProfileResult.error,
+      },
+    };
+  }
 
   // 2. Initialize BreakdownConfig with profile name (with error handling)
   let config: Record<string, unknown> = {};
   const breakdownConfigResult = await ConfigLoader.loadBreakdownConfig(
-    configProfileName.value,
+    configProfile.value,
     Deno.cwd(),
   );
   if (!breakdownConfigResult.ok) {
@@ -159,7 +169,7 @@ export async function runBreakdown(
     console.warn(
       "⚠️ Configuration not found, using defaults:",
       errorMessage,
-      configProfileName.value ? `profile: ${configProfileName.value}` : "no profile",
+      configProfile.value ? `profile: ${configProfile.value}` : "no profile",
     );
     // Use empty configuration - ParamsCustomConfig will handle defaults appropriately
     config = {};

@@ -349,7 +349,7 @@ Deno.test("TypeFactory Structure - Immutability and consistency", () => {
     assertEquals(result1.data.value, result2.data.value);
     assertEquals(result1.data.toString(), result2.data.toString());
 
-    // equals メソッドで比較可能（ConfigProfileNameの実装に依存）
+    // equals メソッドで比較可能（ConfigProfileの実装に依存）
     // assertEquals(result1.data.equals(result2.data), true);
   }
 

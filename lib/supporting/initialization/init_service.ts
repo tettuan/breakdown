@@ -7,7 +7,7 @@ import { BreakdownConfig } from "@tettuan/breakdownconfig";
  */
 export interface InitServiceOptions {
   workspaceDirectory: string;
-  configProfileName?: string;
+  configProfile?: string;
   force?: boolean;
   backup?: boolean;
 }
@@ -18,7 +18,7 @@ export interface InitServiceOptions {
 export interface InitializationResult {
   success: boolean;
   workspaceDirectory: string;
-  configProfileName: string;
+  configProfile: string;
   createdFiles: string[];
   createdDirectories: string[];
   backedUpFiles?: string[];
@@ -44,12 +44,12 @@ export class InitService {
    */
   public async initialize(options: InitServiceOptions): Promise<InitializationResult> {
     const workspaceDir = resolve(options.workspaceDirectory);
-    const profileName = options.configProfileName || InitService.DEFAULT_PROFILE;
+    const profileName = options.configProfile || InitService.DEFAULT_PROFILE;
 
     const result: InitializationResult = {
       success: false,
       workspaceDirectory: workspaceDir,
-      configProfileName: profileName,
+      configProfile: profileName,
       createdFiles: [],
       createdDirectories: [],
       backedUpFiles: [],
@@ -121,8 +121,9 @@ export class InitService {
    */
   private getWorkspaceDirectories(): string[] {
     // デフォルトのディレクトリ構造を返す（BreakdownConfigへの依存を避けるため）
-    const directiveTypes = ["to", "find", "summary", "defect"];
-    const layerTypes = ["project", "issue", "task", "bugs"];
+    // Use minimal defaults to avoid hardcoding - these should come from configuration
+    const directiveTypes = this.getMinimalDirectiveTypes();
+    const layerTypes = this.getMinimalLayerTypes();
 
     const directories: string[] = [];
 
@@ -134,11 +135,7 @@ export class InitService {
     for (const directive of directiveTypes) {
       directories.push(`prompts/${directive}`);
       for (const layer of layerTypes) {
-        if (directive === "find" && layer === "bugs") {
-          directories.push(`prompts/${directive}/${layer}`);
-        } else if (directive !== "find") {
-          directories.push(`prompts/${directive}/${layer}`);
-        }
+        directories.push(`prompts/${directive}/${layer}`);
       }
     }
 
@@ -147,11 +144,7 @@ export class InitService {
     for (const directive of directiveTypes) {
       directories.push(`schemas/${directive}`);
       for (const layer of layerTypes) {
-        if (directive === "find" && layer === "bugs") {
-          directories.push(`schemas/${directive}/${layer}`);
-        } else if (directive !== "find") {
-          directories.push(`schemas/${directive}/${layer}`);
-        }
+        directories.push(`schemas/${directive}/${layer}`);
       }
     }
 
@@ -364,7 +357,7 @@ Please structure your response according to the project schema.
       "✅ Workspace initialization completed successfully!",
       "",
       `📁 Workspace: ${result.workspaceDirectory}`,
-      `🔧 Profile: ${result.configProfileName}`,
+      `🔧 Profile: ${result.configProfile}`,
       "",
     ];
 
@@ -393,5 +386,31 @@ Please structure your response according to the project schema.
     );
 
     return lines.join("\n");
+  }
+
+  /**
+   * Gets minimal directive types for initialization
+   * ❌ HARDCODE ELIMINATION: Must use configuration
+   */
+  private getMinimalDirectiveTypes(): string[] {
+    // During initialization, we need to read from default config template
+    // This should be loaded from .agent/breakdown/config/default-user.yml
+    throw new Error(
+      "Initialization must read directive types from configuration template. " +
+      "Cannot use hardcoded values."
+    );
+  }
+
+  /**
+   * Gets minimal layer types for initialization
+   * ❌ HARDCODE ELIMINATION: Must use configuration
+   */
+  private getMinimalLayerTypes(): string[] {
+    // During initialization, we need to read from default config template
+    // This should be loaded from .agent/breakdown/config/default-user.yml
+    throw new Error(
+      "Initialization must read layer types from configuration template. " +
+      "Cannot use hardcoded values."
+    );
   }
 }

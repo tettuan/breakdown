@@ -11,17 +11,27 @@
 
 import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import { DirectiveType, TwoParamsDirectivePattern } from "./mod.ts";
+import { ConfigProfile } from "../config/mod.ts";
 import type { TwoParams_Result } from "../deps.ts";
 import { isError, isOk } from "./result.ts";
+import {
+  getDirectiveTypes,
+  getLayerTypes,
+} from "../test_helpers/config_test_helper.ts";
 
-// Test helper
-const _createTwoParamsResult = (directiveType: string): TwoParams_Result => ({
-  type: "two",
-  directiveType,
-  layerType: "project",
-  params: [directiveType, "project"],
-  options: {},
-});
+// Test helper - async version using config helper
+const _createTwoParamsResult = async (directiveType: string): Promise<TwoParams_Result> => {
+  const layerTypes = await getLayerTypes();
+  const defaultLayer = layerTypes[0] || "project";
+  
+  return {
+    type: "two",
+    directiveType,
+    layerType: defaultLayer,
+    params: [directiveType, defaultLayer],
+    options: {},
+  };
+};
 
 Deno.test("2_structure: TwoParamsDirectivePattern.createOrError follows Result pattern", () => {
   // Success case with valid pattern

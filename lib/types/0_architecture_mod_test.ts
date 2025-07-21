@@ -15,7 +15,7 @@ import { describe, it } from "@std/testing/bdd";
 
 // Import the types module and related implementations
 import {
-  ConfigProfileName,
+  ConfigProfile,
   DefaultTypePatternProvider,
   DirectiveType,
   error,
@@ -83,8 +83,9 @@ describe("0_architecture_mod_test", () => {
       }
     });
 
-    it("should implement Smart Constructor for ConfigProfileName", () => {
-      const result = ConfigProfileName.create("production");
+    it("should implement Smart Constructor for configuration profile", () => {
+      const profileName = "production";
+      const result = ConfigProfile.create(profileName);
 
       assertExists(result);
       assertEquals(typeof result, "object");
@@ -105,23 +106,23 @@ describe("0_architecture_mod_test", () => {
 
   describe("Result Type Pattern Compliance", () => {
     it("should never throw exceptions in public APIs", () => {
-      // Test ConfigProfileName with invalid input (doesn't throw)
-      const invalidResult = ConfigProfileName.create("INVALID");
+      // Test ConfigProfile with invalid input (doesn't throw)
+      const invalidResult = ConfigProfile.create("INVALID");
 
-      // ConfigProfileName.create always returns a valid instance, never throws
+      // ConfigProfile.create always returns a valid instance, never throws
       assertExists(invalidResult);
       assertEquals(typeof invalidResult, "object");
-      assertEquals(invalidResult instanceof ConfigProfileName, true);
+      assertEquals(invalidResult instanceof ConfigProfile, true);
 
       // Test createOrError for Result pattern
-      const errorResult = ConfigProfileName.createOrError("");
+      const errorResult = ConfigProfile.createOrError("");
       assertEquals(typeof errorResult, "object");
       assertEquals("ok" in errorResult, true);
     });
 
     it("should provide meaningful error messages", () => {
-      // ConfigProfileName.create() always returns valid object, use createOrError for error testing
-      const result = ConfigProfileName.createOrError("");
+      // ConfigProfile.create() always returns valid object, use createOrError for error testing
+      const result = ConfigProfile.createOrError("");
 
       if (!result.ok) {
         assertExists(result.error);
@@ -180,7 +181,7 @@ describe("0_architecture_mod_test", () => {
 
     it("should integrate with domain boundaries properly", () => {
       // Test that types integrate correctly with domain boundaries
-      const profileResult = ConfigProfileName.create("test");
+      const profileResult = ConfigProfile.create("test");
 
       assertExists(profileResult);
       assertEquals(typeof profileResult, "object");
@@ -194,7 +195,7 @@ describe("0_architecture_mod_test", () => {
       // Core types
       assertExists(DirectiveType);
       assertExists(LayerType);
-      assertExists(ConfigProfileName);
+      assertExists(ConfigProfile);
 
       // Factory types
       assertExists(TypeFactory);
@@ -216,7 +217,7 @@ describe("0_architecture_mod_test", () => {
       const coreExports = [
         DirectiveType,
         LayerType,
-        ConfigProfileName,
+        ConfigProfile,
         TypeFactory,
         ok,
         error,
@@ -235,10 +236,10 @@ describe("0_architecture_mod_test", () => {
 
   describe("Totality Principle Validation", () => {
     it("should handle all possible input cases", () => {
-      // Test boundary conditions with ConfigProfileName
-      const emptyResult = ConfigProfileName.create("");
-      const nullResult = ConfigProfileName.create(null);
-      const undefinedResult = ConfigProfileName.create(undefined);
+      // Test boundary conditions with ConfigProfile
+      const emptyResult = ConfigProfile.create("");
+      const nullResult = ConfigProfile.create(null);
+      const undefinedResult = ConfigProfile.create(undefined);
 
       // Should return Results, not undefined/null
       assertExists(emptyResult);
@@ -250,7 +251,7 @@ describe("0_architecture_mod_test", () => {
     });
 
     it("should provide exhaustive error handling", () => {
-      // ConfigProfileName.create() always returns valid object, testing defaults
+      // ConfigProfile.create() always returns valid object, testing defaults
       const scenarios = [
         "", // Empty string -> default
         null, // Null -> default
@@ -261,9 +262,9 @@ describe("0_architecture_mod_test", () => {
       ];
 
       scenarios.forEach((scenario) => {
-        const result = ConfigProfileName.create(scenario as string);
+        const result = ConfigProfile.create(scenario as string);
 
-        // Each scenario should return a ConfigProfileName
+        // Each scenario should return a ConfigProfile
         assertExists(result);
         assertEquals(typeof result, "object");
         assertEquals(typeof result.value, "string");

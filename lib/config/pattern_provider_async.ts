@@ -258,8 +258,9 @@ export class AsyncConfigPatternProvider implements TypePatternProvider {
       return validation.directive.pattern;
     }
 
-    // Default fallback pattern for common directive types
-    return "^(to|summary|defect)$";
+    // ❌ HARDCODE ELIMINATION: No fallback patterns allowed
+    // Configuration MUST define patterns explicitly
+    return null;
   }
 
   /**
@@ -286,8 +287,9 @@ export class AsyncConfigPatternProvider implements TypePatternProvider {
       return validation.layer.pattern;
     }
 
-    // Default fallback pattern for common layer types
-    return "^(project|issue|task|bugs|temp)$";
+    // ❌ HARDCODE ELIMINATION: No fallback patterns allowed
+    // Configuration MUST define patterns explicitly
+    return null;
   }
 
   /**
@@ -313,10 +315,11 @@ export class AsyncConfigPatternProvider implements TypePatternProvider {
     const pattern = this.getDirectivePattern();
     if (!pattern) return [];
 
-    // パターンから取りうる値を推定（基本的なもの）
+    // パターンから取りうる値を動的に抽出
     const patternStr = pattern.getPattern();
-    if (patternStr.includes("to|summary|defect")) {
-      return ["to", "summary", "defect"];
+    const extractedValues = this.extractValuesFromPattern(patternStr);
+    if (extractedValues.length > 0) {
+      return extractedValues;
     }
 
     // 設定から直接取得する場合の処理
@@ -327,7 +330,7 @@ export class AsyncConfigPatternProvider implements TypePatternProvider {
       }
     }
 
-    return ["to", "summary", "defect"]; // デフォルト値
+    return []; // デフォルトは空配列
   }
 
   /**
@@ -337,10 +340,11 @@ export class AsyncConfigPatternProvider implements TypePatternProvider {
     const pattern = this.getLayerTypePattern();
     if (!pattern) return [];
 
-    // パターンから取りうる値を推定（基本的なもの）
+    // パターンから取りうる値を動的に抽出
     const patternStr = pattern.getPattern();
-    if (patternStr.includes("project|issue|task|bugs|temp")) {
-      return ["project", "issue", "task", "bugs", "temp"];
+    const extractedValues = this.extractValuesFromPattern(patternStr);
+    if (extractedValues.length > 0) {
+      return extractedValues;
     }
 
     // 設定から直接取得する場合の処理
@@ -351,7 +355,20 @@ export class AsyncConfigPatternProvider implements TypePatternProvider {
       }
     }
 
-    return ["project", "issue", "task", "bugs", "temp"]; // デフォルト値
+    return []; // デフォルトは空配列
+  }
+
+  /**
+   * パターン文字列から値を抽出
+   */
+  private extractValuesFromPattern(pattern: string): string[] {
+    // 正規表現パターンから値を抽出
+    // 例: "^(to|summary|defect)$" -> ["to", "summary", "defect"]
+    const match = pattern.match(/^\^?\(([^)]+)\)\$?$/);
+    if (match && match[1]) {
+      return match[1].split('|').map(v => v.trim()).filter(v => v.length > 0);
+    }
+    return [];
   }
 
   /**
@@ -440,15 +457,44 @@ export class DefaultPatternProvider implements TypePatternProvider {
   private layerPattern: TwoParamsLayerTypePattern | null;
 
   constructor() {
-    this.directivePattern = TwoParamsDirectivePattern.create("^(to|summary|defect)$");
-    this.layerPattern = TwoParamsLayerTypePattern.create("^(project|issue|task|bugs|temp)$");
+    // ❌ HARDCODE ELIMINATION: DefaultPatternProvider must load from config
+    // No hardcoded patterns allowed - use AsyncConfigPatternProvider instead
+    console.warn("DefaultPatternProvider should not be used - use AsyncConfigPatternProvider.create() instead");
+    this.directivePattern = null;
+    this.layerPattern = null;
+  }
+
+  /**
+   * ❌ HARDCODE ELIMINATION: All patterns must come from configuration
+   * This method should not contain hardcoded patterns
+   */
+  private loadDirectivePattern(): TwoParamsDirectivePattern | null {
+    console.warn("DefaultPatternProvider.loadDirectivePattern: Hardcoded patterns not allowed");
+    return null;
+  }
+
+  /**
+   * ❌ HARDCODE ELIMINATION: All patterns must come from configuration
+   * This method should not contain hardcoded patterns
+   */
+  private loadLayerPattern(): TwoParamsLayerTypePattern | null {
+    console.warn("DefaultPatternProvider.loadLayerPattern: Hardcoded patterns not allowed");
+    return null;
   }
 
   getDirectivePattern(): TwoParamsDirectivePattern | null {
+    if (!this.directivePattern) {
+      // Emergency: Attempt to reload pattern instead of throwing error
+      this.directivePattern = this.loadDirectivePattern();
+    }
     return this.directivePattern;
   }
 
   getLayerTypePattern(): TwoParamsLayerTypePattern | null {
+    if (!this.layerPattern) {
+      // Emergency: Attempt to reload pattern instead of throwing error
+      this.layerPattern = this.loadLayerPattern();
+    }
     return this.layerPattern;
   }
 
@@ -456,28 +502,48 @@ export class DefaultPatternProvider implements TypePatternProvider {
    * DirectiveType用バリデーション結果を取得
    */
   validateDirectiveType(value: string): boolean {
-    return this.directivePattern ? this.directivePattern.test(value) : false;
+    const pattern = this.getDirectivePattern();
+    return pattern ? pattern.test(value) : false;
   }
 
   /**
    * LayerType用バリデーション結果を取得
    */
   validateLayerType(value: string): boolean {
-    return this.layerPattern ? this.layerPattern.test(value) : false;
+    const pattern = this.getLayerTypePattern();
+    return pattern ? pattern.test(value) : false;
   }
 
   /**
    * 利用可能なDirectiveType値を取得
    */
   getValidDirectiveTypes(): readonly string[] {
-    return ["to", "summary", "defect"];
+    // デフォルトパターンから動的に抽出
+    const pattern = this.getDirectivePattern();
+    if (pattern) {
+      const patternStr = pattern.getPattern();
+      const match = patternStr.match(/^\^?\(([^)]+)\)\$?$/);
+      if (match && match[1]) {
+        return match[1].split('|').map(v => v.trim()).filter(v => v.length > 0);
+      }
+    }
+    return [];
   }
 
   /**
    * 利用可能なLayerType値を取得
    */
   getValidLayerTypes(): readonly string[] {
-    return ["project", "issue", "task", "bugs", "temp"];
+    // デフォルトパターンから動的に抽出
+    const pattern = this.getLayerTypePattern();
+    if (pattern) {
+      const patternStr = pattern.getPattern();
+      const match = patternStr.match(/^\^?\(([^)]+)\)\$?$/);
+      if (match && match[1]) {
+        return match[1].split('|').map(v => v.trim()).filter(v => v.length > 0);
+      }
+    }
+    return [];
   }
 }
 
@@ -490,7 +556,11 @@ export async function createPatternProvider(
   workspacePath?: string,
 ): Promise<TypePatternProvider> {
   if (!useConfig) {
-    return new DefaultPatternProvider();
+    // ❌ HARDCODE ELIMINATION: DefaultPatternProvider with hardcoded patterns not allowed
+    throw new Error(
+      "Configuration-based pattern provider is required. " +
+      "Hardcoded pattern fallback is forbidden by design."
+    );
   }
 
   const result = await AsyncConfigPatternProvider.create(configSetName, workspacePath);
@@ -498,9 +568,14 @@ export async function createPatternProvider(
     return result.data;
   }
 
-  console.warn(
-    "Failed to create config-based pattern provider, falling back to defaults:",
-    result.error,
+  // ❌ HARDCODE ELIMINATION: No fallback to DefaultPatternProvider allowed
+  // Configuration must be available - throw error instead of using hardcoded patterns
+  const errorMsg = result.error.kind === "ConfigLoadFailed" 
+    ? result.error.message 
+    : `${result.error.kind}`;
+  
+  throw new Error(
+    `Failed to create config-based pattern provider: ${errorMsg}. ` +
+    `Configuration file must be available at default-user.yml or ${configSetName}-user.yml`
   );
-  return new DefaultPatternProvider();
 }

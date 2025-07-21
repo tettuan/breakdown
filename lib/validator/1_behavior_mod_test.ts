@@ -41,30 +41,36 @@ function createMockConfigValidator(): ConfigValidator {
   };
 }
 
-function createMockTypePatternProvider() {
+function createMockTypePatternProvider(
+  customDirectives?: readonly string[],
+  customLayers?: readonly string[]
+) {
+  const directiveTypes = customDirectives || ["to", "summary", "defect"];
+  const layerTypes = customLayers || ["project", "issue", "task"];
+  
   const directivePattern = {
-    pattern: /^(to|summary|defect)$/,
-    test: (value: string) => /^(to|summary|defect)$/.test(value),
-    getPattern: () => "^(to|summary|defect)$",
-    toString: () => "/^(to|summary|defect)$/",
-    getDirectivePattern: () => "^(to|summary|defect)$",
+    pattern: new RegExp(`^(${directiveTypes.join("|")})$`),
+    test: (value: string) => new RegExp(`^(${directiveTypes.join("|")})$`).test(value),
+    getPattern: () => `^(${directiveTypes.join("|")})$`,
+    toString: () => `/^(${directiveTypes.join("|")})$/`,
+    getDirectivePattern: () => `^(${directiveTypes.join("|")})$`,
   };
 
   const layerPattern = {
-    pattern: /^(project|issue|task)$/,
-    test: (value: string) => /^(project|issue|task)$/.test(value),
-    getPattern: () => "^(project|issue|task)$",
-    toString: () => "/^(project|issue|task)$/",
-    getLayerTypePattern: () => "^(project|issue|task)$",
+    pattern: new RegExp(`^(${layerTypes.join("|")})$`),
+    test: (value: string) => new RegExp(`^(${layerTypes.join("|")})$`).test(value),
+    getPattern: () => `^(${layerTypes.join("|")})$`,
+    toString: () => `/^(${layerTypes.join("|")})$/`,
+    getLayerTypePattern: () => `^(${layerTypes.join("|")})$`,
   };
 
   return {
     getDirectivePattern: () => directivePattern as unknown as TwoParamsDirectivePattern,
     getLayerTypePattern: () => layerPattern as unknown as TwoParamsLayerTypePattern,
-    validateDirectiveType: (value: string) => /^(to|summary|defect)$/.test(value),
-    validateLayerType: (value: string) => /^(project|issue|task)$/.test(value),
-    getValidDirectiveTypes: () => ["to", "summary", "defect"] as readonly string[],
-    getValidLayerTypes: () => ["project", "issue", "task"] as readonly string[],
+    validateDirectiveType: (value: string) => directiveTypes.includes(value),
+    validateLayerType: (value: string) => layerTypes.includes(value),
+    getValidDirectiveTypes: () => directiveTypes,
+    getValidLayerTypes: () => layerTypes,
   };
 }
 

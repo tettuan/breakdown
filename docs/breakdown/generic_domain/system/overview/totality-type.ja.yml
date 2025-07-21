@@ -77,19 +77,19 @@ LayerType:
   受け入れ不可型:
     - 値なし # 未検証文字列は受け入れない
 
-ConfigProfileNameResult:
+ConfigProfileResult:
   Success:
-    - data: ConfigProfileName
+    - data: ConfigProfile
   Failure:
-    - error: ConfigProfileNameError
+    - error: ConfigProfileError
 
-ConfigProfileName:
+ConfigProfile:
   受け入れ可能型:
     - string # 検証済み設定プロファイル名（例: "production", "staging"）
   受け入れ不可型:
     - 値なし # 未検証文字列、null、undefined等は受け入れない
 
-ConfigProfileNameError:
+ConfigProfileError:
   EmptyInput:
     - message: string
   InvalidFormat:
@@ -223,7 +223,7 @@ FilePath:
 # 6. 共通エラー型を使用してDRYな実装を実現
 #
 # 例:
-# ConfigProfileName.create(input: string): Result<ConfigProfileName, ConfigProfileNameError>
+# ConfigProfile.create(input: string): Result<ConfigProfile, ConfigProfileError>
 # DirectiveType.create(twoParamsResult: TwoParams_Result): DirectiveType
 # LayerType.create(twoParamsResult: TwoParams_Result): LayerType
 # PromptPath.create(path: string): Result<PromptPath, InvalidPathError>

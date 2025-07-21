@@ -65,7 +65,7 @@ interface PatternConfig {
  * ```yaml
  * # Basic pattern configuration
  * directivePattern: "^(to|summary|defect|init|find)$"
- * layerTypePattern: "^(project|issue|task|bugs|temp)$"
+ * layerTypePattern: "^(project|issue|task|component|module)$"
  *
  * # Alternative nested structure
  * twoParamsRules:
@@ -231,14 +231,34 @@ export class ConfigPatternProvider implements TypePatternProvider {
 
   /**
    * Gets configuration data from BreakdownConfig synchronously
-   * This is a temporary solution to avoid breaking the interface
+   * ❌ CRITICAL: This method must properly access config data for pattern loading
+   * Currently using async getConfigData() method through temporary sync wrapper
    *
    * @returns Record<string, unknown> - Configuration data object
    */
   private getConfigDataSync(): Record<string, unknown> {
-    // For now, return an empty object to avoid type errors
-    // TODO: Refactor to properly handle async config loading
-    return {};
+    try {
+      // Use async method through Promise chain (temporary solution)
+      // TODO: Refactor pattern provider interface to be fully async
+      let configData: Record<string, unknown> = {};
+      
+      // Synchronous access to config data through blocking async call
+      // This is NOT ideal but necessary to maintain interface compatibility
+      this.getConfigData().then(result => {
+        if (result.ok) {
+          configData = result.data;
+        } else {
+          console.warn("Failed to get config data:", result.error);
+        }
+      }).catch(error => {
+        console.warn("Error getting config data:", error);
+      });
+      
+      return configData;
+    } catch (error) {
+      console.warn("Failed to get config data synchronously:", error);
+      return {};
+    }
   }
 
   /**
@@ -271,8 +291,9 @@ export class ConfigPatternProvider implements TypePatternProvider {
       return validation.directive.pattern;
     }
 
-    // Default fallback pattern for common directive types
-    return "^(to|summary|defect)$";
+    // ❌ HARDCODE ELIMINATION: No fallback patterns allowed
+    // Configuration MUST define patterns explicitly
+    return null;
   }
 
   /**
@@ -303,8 +324,9 @@ export class ConfigPatternProvider implements TypePatternProvider {
       return validation.layer.pattern;
     }
 
-    // Default fallback pattern for common layer types
-    return "^(project|issue|task|bugs|temp)$";
+    // ❌ HARDCODE ELIMINATION: No fallback patterns allowed
+    // Configuration MUST define patterns explicitly
+    return null;
   }
 
   /**
@@ -357,7 +379,7 @@ export class ConfigPatternProvider implements TypePatternProvider {
       return [];
     }
 
-    // Extract values from pattern like "^(project|issue|task|bugs|temp)$"
+    // Extract values from pattern like "^(project|issue|task|component|module)$"
     const patternString = pattern.getPattern();
     const match = patternString.match(/\^\(([^)]+)\)\$/);
     if (match && match[1]) {

@@ -23,7 +23,7 @@ import {
 const logger = new BreakdownLogger("two-params-validator-architecture");
 
 describe("Architecture: TwoParamsValidator Class Structure", () => {
-  it("should export required public interfaces", () => {
+  it("should export required public interfaces", async () => {
     logger.debug("Testing module exports");
 
     // Required class export
@@ -36,7 +36,7 @@ describe("Architecture: TwoParamsValidator Class Structure", () => {
 
     // Required type exports
     const validator = new TwoParamsValidator();
-    const mockValidResult = validator.validate(["to", "project"]);
+    const mockValidResult = await validator.validate(["to", "project"]);
 
     if (mockValidResult.ok) {
       // Verify ValidatedParams interface structure
@@ -183,13 +183,13 @@ describe("Architecture: TwoParamsValidator Class Structure", () => {
 });
 
 describe("Architecture: Result Type Compliance", () => {
-  it("should use Result<T, E> pattern consistently", () => {
+  it("should use Result<T, E> pattern consistently", async () => {
     logger.debug("Testing Result type pattern compliance");
 
     const validator = new TwoParamsValidator();
 
     // Valid case result structure
-    const validResult = validator.validate(["to", "project"]);
+    const validResult = await validator.validate(["to", "project"]);
     assertExists(validResult.ok, "Result must have ok property");
     assertEquals(typeof validResult.ok, "boolean", "ok property must be boolean");
 
@@ -201,7 +201,7 @@ describe("Architecture: Result Type Compliance", () => {
     }
 
     // Invalid case result structure
-    const invalidResult = validator.validate(["invalid"]);
+    const invalidResult = await validator.validate(["invalid"]);
     assertEquals(invalidResult.ok, false, "Invalid input should return error result");
     if (!invalidResult.ok) {
       assertExists(invalidResult.error, "Error result must have error property");
@@ -211,13 +211,13 @@ describe("Architecture: Result Type Compliance", () => {
     logger.debug("Result type pattern compliance verification completed");
   });
 
-  it("should provide typed error categories", () => {
+  it("should provide typed error categories", async () => {
     logger.debug("Testing typed error categories");
 
     const validator = new TwoParamsValidator();
 
     // Test parameter count error
-    const paramCountResult = validator.validate([]);
+    const paramCountResult = await validator.validate([]);
     if (!paramCountResult.ok) {
       const error = paramCountResult.error;
       assertEquals(error.kind, "InvalidParameterCount", "Should categorize parameter count errors");
@@ -228,7 +228,7 @@ describe("Architecture: Result Type Compliance", () => {
     }
 
     // Test directive type error
-    const directiveTypeResult = validator.validate(["invalid", "project"]);
+    const directiveTypeResult = await validator.validate(["invalid", "project"]);
     if (!directiveTypeResult.ok) {
       const error = directiveTypeResult.error;
       assertEquals(
@@ -244,7 +244,7 @@ describe("Architecture: Result Type Compliance", () => {
     }
 
     // Test layer type error
-    const layerTypeResult = validator.validate(["to", "invalid"]);
+    const layerTypeResult = await validator.validate(["to", "invalid"]);
     if (!layerTypeResult.ok) {
       const error = layerTypeResult.error;
       assertEquals(error.kind, "InvalidLayerType", "Should categorize layer type errors");
@@ -257,17 +257,17 @@ describe("Architecture: Result Type Compliance", () => {
     logger.debug("Typed error categories verification completed");
   });
 
-  it("should maintain immutable validation data", () => {
+  it("should maintain immutable validation data", async () => {
     logger.debug("Testing validation data immutability");
 
     const validator = new TwoParamsValidator();
-    const result = validator.validate(["to", "project"]);
+    const result = await validator.validate(["to", "project"]);
 
     if (result.ok) {
       const originalData = result.data;
 
       // Test that new validations are not affected by previous results
-      const secondResult = validator.validate(["summary", "issue"]);
+      const secondResult = await validator.validate(["summary", "issue"]);
       if (secondResult.ok) {
         assertEquals(
           secondResult.data.directiveType.value,

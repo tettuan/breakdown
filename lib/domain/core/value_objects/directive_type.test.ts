@@ -7,24 +7,21 @@
 
 import { assertEquals, assertStrictEquals } from "jsr:@std/assert@0.224.0";
 import { DirectiveType } from "./directive_type.ts";
-import { ConfigProfileName } from "$lib/config/config_profile_name.ts";
 
 Deno.test("DirectiveType - Smart Constructor Tests", async (t) => {
-  const defaultProfile = ConfigProfileName.createDefault();
 
   await t.step("should create valid DirectiveType with valid input", () => {
-    const result = DirectiveType.create("to", defaultProfile);
+    const result = DirectiveType.create("to");
 
     assertEquals(result.ok, true);
     if (result.ok) {
       assertEquals(result.data.value, "to");
       assertEquals(result.data.validatedByPattern, true);
-      assertStrictEquals(result.data.profile, defaultProfile);
     }
   });
 
   await t.step("should reject empty input", () => {
-    const result = DirectiveType.create("", defaultProfile);
+    const result = DirectiveType.create("");
 
     assertEquals(result.ok, false);
     if (!result.ok) {
@@ -34,7 +31,7 @@ Deno.test("DirectiveType - Smart Constructor Tests", async (t) => {
   });
 
   await t.step("should reject null input", () => {
-    const result = DirectiveType.create(null, defaultProfile);
+    const result = DirectiveType.create(null);
 
     assertEquals(result.ok, false);
     if (!result.ok) {
@@ -43,7 +40,7 @@ Deno.test("DirectiveType - Smart Constructor Tests", async (t) => {
   });
 
   await t.step("should reject undefined input", () => {
-    const result = DirectiveType.create(undefined, defaultProfile);
+    const result = DirectiveType.create(undefined);
 
     assertEquals(result.ok, false);
     if (!result.ok) {
@@ -53,7 +50,7 @@ Deno.test("DirectiveType - Smart Constructor Tests", async (t) => {
 
   await t.step("should reject input that is too long", () => {
     const longValue = "a".repeat(21); // Exceeds MAX_LENGTH (20)
-    const result = DirectiveType.create(longValue, defaultProfile);
+    const result = DirectiveType.create(longValue);
 
     assertEquals(result.ok, false);
     if (!result.ok && result.error.kind === "TooLong") {
@@ -63,7 +60,7 @@ Deno.test("DirectiveType - Smart Constructor Tests", async (t) => {
   });
 
   await t.step("should reject invalid format", () => {
-    const result = DirectiveType.create("TO_INVALID", defaultProfile);
+    const result = DirectiveType.create("TO_INVALID");
 
     assertEquals(result.ok, false);
     if (!result.ok && result.error.kind === "InvalidFormat") {
@@ -71,21 +68,21 @@ Deno.test("DirectiveType - Smart Constructor Tests", async (t) => {
     }
   });
 
-  await t.step("should reject directive not valid for profile", () => {
-    // Create a directive that is valid in format but not in the profile's directive list
-    const result = DirectiveType.create("nonexistent", defaultProfile);
+  await t.step("should accept valid format strings", () => {
+    // Create a directive that is valid in format
+    const result = DirectiveType.create("nonexistent");
 
-    assertEquals(result.ok, false);
-    if (!result.ok && result.error.kind === "PatternMismatch") {
-      assertEquals(result.error.value, "nonexistent");
-      assertEquals(result.error.profile, "default");
+    // Pattern validation is now handled at application layer
+    // Basic format validation should pass for valid format
+    assertEquals(result.ok, true);
+    if (result.ok) {
+      assertEquals(result.data.value, "nonexistent");
     }
   });
 });
 
 Deno.test("DirectiveType - Domain Operations", async (t) => {
-  const defaultProfile = ConfigProfileName.createDefault();
-  const directiveResult = DirectiveType.create("to", defaultProfile);
+  const directiveResult = DirectiveType.create("to");
 
   if (!directiveResult.ok) {
     // Test setup error - should not happen with valid test data
@@ -95,9 +92,6 @@ Deno.test("DirectiveType - Domain Operations", async (t) => {
 
   const directive = directiveResult.data;
 
-  await t.step("should validate against profile", () => {
-    assertEquals(directive.isValidForProfile(defaultProfile), true);
-  });
 
   await t.step("should generate prompt directory path", () => {
     const layer = { value: "issue" };
@@ -119,16 +113,14 @@ Deno.test("DirectiveType - Domain Operations", async (t) => {
 
   await t.step("should provide debug string", () => {
     const debugString = directive.toDebugString();
-    assertEquals(debugString, 'DirectiveType(value="to", profile="default", validated=true)');
+    assertEquals(debugString, 'DirectiveType(value="to", validated=true)');
   });
 });
 
 Deno.test("DirectiveType - Equality and Comparison", async (t) => {
-  const defaultProfile = ConfigProfileName.createDefault();
-
   await t.step("should be equal to itself", () => {
-    const directive1Result = DirectiveType.create("to", defaultProfile);
-    const directive2Result = DirectiveType.create("to", defaultProfile);
+    const directive1Result = DirectiveType.create("to");
+    const directive2Result = DirectiveType.create("to");
 
     if (!directive1Result.ok || !directive2Result.ok) {
       throw new Error("Failed to create test DirectiveTypes");
@@ -138,8 +130,8 @@ Deno.test("DirectiveType - Equality and Comparison", async (t) => {
   });
 
   await t.step("should not be equal to different directive", () => {
-    const directive1Result = DirectiveType.create("to", defaultProfile);
-    const directive2Result = DirectiveType.create("summary", defaultProfile);
+    const directive1Result = DirectiveType.create("to");
+    const directive2Result = DirectiveType.create("summary");
 
     if (!directive1Result.ok || !directive2Result.ok) {
       throw new Error("Failed to create test DirectiveTypes");
@@ -149,7 +141,7 @@ Deno.test("DirectiveType - Equality and Comparison", async (t) => {
   });
 
   await t.step("should have correct string representation", () => {
-    const directiveResult = DirectiveType.create("defect", defaultProfile);
+    const directiveResult = DirectiveType.create("defect");
 
     if (!directiveResult.ok) {
       throw new Error("Failed to create test DirectiveType");
@@ -160,10 +152,8 @@ Deno.test("DirectiveType - Equality and Comparison", async (t) => {
 });
 
 Deno.test("DirectiveType - Edge Cases", async (t) => {
-  const defaultProfile = ConfigProfileName.createDefault();
-
   await t.step("should reject input with leading/trailing whitespace", () => {
-    const result = DirectiveType.create("  to  ", defaultProfile);
+    const result = DirectiveType.create("  to  ");
 
     assertEquals(result.ok, false);
     if (!result.ok) {
@@ -174,7 +164,7 @@ Deno.test("DirectiveType - Edge Cases", async (t) => {
 
   await t.step("should handle boundary length values", () => {
     const maxLengthValue = "a".repeat(20); // Exactly MAX_LENGTH
-    const result = DirectiveType.create(maxLengthValue, defaultProfile);
+    const result = DirectiveType.create(maxLengthValue);
 
     // This might fail due to pattern mismatch, but shouldn't fail on length
     if (!result.ok) {
@@ -184,7 +174,7 @@ Deno.test("DirectiveType - Edge Cases", async (t) => {
   });
 
   await t.step("should handle whitespace-only input", () => {
-    const result = DirectiveType.create("   ", defaultProfile);
+    const result = DirectiveType.create("   ");
 
     assertEquals(result.ok, false);
     if (!result.ok) {
@@ -193,7 +183,7 @@ Deno.test("DirectiveType - Edge Cases", async (t) => {
   });
 
   await t.step("should reject input with tabs and newlines", () => {
-    const result = DirectiveType.create("\t\nto\t\n", defaultProfile);
+    const result = DirectiveType.create("\t\nto\t\n");
 
     assertEquals(result.ok, false);
     if (!result.ok) {
@@ -204,14 +194,14 @@ Deno.test("DirectiveType - Edge Cases", async (t) => {
 
   await t.step("should reject non-string types", () => {
     // Test with number
-    const numberResult = DirectiveType.create(123 as unknown as string, defaultProfile);
+    const numberResult = DirectiveType.create(123 as unknown as string);
     assertEquals(numberResult.ok, false);
     if (!numberResult.ok) {
       assertEquals(numberResult.error.kind, "EmptyInput");
     }
 
     // Test with object
-    const objectResult = DirectiveType.create({ value: "to" } as unknown as string, defaultProfile);
+    const objectResult = DirectiveType.create({ value: "to" } as unknown as string);
     assertEquals(objectResult.ok, false);
     if (!objectResult.ok) {
       assertEquals(objectResult.error.kind, "EmptyInput");
@@ -220,10 +210,9 @@ Deno.test("DirectiveType - Edge Cases", async (t) => {
 });
 
 Deno.test("DirectiveType - Pattern Validation Edge Cases", async (t) => {
-  const defaultProfile = ConfigProfileName.createDefault();
 
   await t.step("should reject uppercase letters", () => {
-    const result = DirectiveType.create("TO", defaultProfile);
+    const result = DirectiveType.create("TO");
 
     assertEquals(result.ok, false);
     if (!result.ok) {
@@ -235,7 +224,7 @@ Deno.test("DirectiveType - Pattern Validation Edge Cases", async (t) => {
   });
 
   await t.step("should reject mixed case", () => {
-    const result = DirectiveType.create("To", defaultProfile);
+    const result = DirectiveType.create("To");
 
     assertEquals(result.ok, false);
     if (!result.ok) {
@@ -250,7 +239,7 @@ Deno.test("DirectiveType - Pattern Validation Edge Cases", async (t) => {
     const specialChars = ["@", "#", "$", "%", "^", "&", "*", "(", ")", "+", "=", "!", "?"];
 
     for (const char of specialChars) {
-      const result = DirectiveType.create(`to${char}`, defaultProfile);
+      const result = DirectiveType.create(`to${char}`);
       assertEquals(result.ok, false);
       if (!result.ok) {
         assertEquals(result.error.kind, "InvalidFormat");
@@ -262,8 +251,8 @@ Deno.test("DirectiveType - Pattern Validation Edge Cases", async (t) => {
     const validChars = ["a", "z", "0", "9", "_", "-"];
 
     for (const char of validChars) {
-      const result = DirectiveType.create(char, defaultProfile);
-      // May fail due to pattern mismatch with profile, but not due to format
+      const result = DirectiveType.create(char);
+      // May fail due to pattern mismatch, but not due to format
       if (!result.ok && result.error.kind !== "PatternMismatch") {
         throw new Error(
           `Character '${char}' should be valid format, but got: ${result.error.kind}`,
@@ -273,7 +262,7 @@ Deno.test("DirectiveType - Pattern Validation Edge Cases", async (t) => {
   });
 
   await t.step("should reject empty after trimming", () => {
-    const result = DirectiveType.create("", defaultProfile);
+    const result = DirectiveType.create("");
 
     assertEquals(result.ok, false);
     if (!result.ok) {
@@ -283,35 +272,32 @@ Deno.test("DirectiveType - Pattern Validation Edge Cases", async (t) => {
 });
 
 Deno.test("DirectiveType - Profile Validation Comprehensive", async (t) => {
-  const defaultProfile = ConfigProfileName.createDefault();
 
-  await t.step("should provide detailed error for profile mismatch", () => {
-    const result = DirectiveType.create("invalid-directive", defaultProfile);
+  await t.step("should accept valid format strings", () => {
+    const result = DirectiveType.create("invalid-directive");
 
-    assertEquals(result.ok, false);
-    if (!result.ok && result.error.kind === "PatternMismatch") {
-      assertEquals(result.error.value, "invalid-directive");
-      assertEquals(result.error.profile, "default");
-      assertEquals(Array.isArray(result.error.validDirectives), true);
-      assertEquals(result.error.validDirectives.length > 0, true);
-      assertEquals(result.error.message.includes("Valid options:"), true);
+    // Pattern validation moved to application layer, format validation should pass
+    assertEquals(result.ok, true);
+    if (result.ok) {
+      assertEquals(result.data.value, "invalid-directive");
+      // Profile validation is handled at application layer
     }
   });
 
-  await t.step("should validate against different profiles", () => {
-    // Test with custom profile
-    const customProfile = ConfigProfileName.create("custom");
-    const result = DirectiveType.create("to", customProfile);
+  await t.step("should accept valid format strings", () => {
+    // Test with different directive
+    const result = DirectiveType.create("summary");
 
-    // Result depends on what directives are available for custom profile
-    // The test should pass regardless, as long as the validation is attempted
-    assertEquals(typeof result.ok, "boolean");
+    // Result should be successful for valid format
+    assertEquals(result.ok, true);
+    if (result.ok) {
+      assertEquals(result.data.value, "summary");
+    }
   });
 });
 
 Deno.test("DirectiveType - Domain Operations Comprehensive", async (t) => {
-  const defaultProfile = ConfigProfileName.createDefault();
-  const directiveResult = DirectiveType.create("to", defaultProfile);
+  const directiveResult = DirectiveType.create("to");
 
   if (!directiveResult.ok) {
     throw new Error("Failed to create test DirectiveType");
@@ -350,17 +336,16 @@ Deno.test("DirectiveType - Domain Operations Comprehensive", async (t) => {
     assertEquals(directive.isValidForResourcePath(), true);
 
     // Create an invalid directive for comparison
-    const invalidDirectiveResult = DirectiveType.create("invalid", defaultProfile);
+    const invalidDirectiveResult = DirectiveType.create("invalid");
     if (!invalidDirectiveResult.ok && invalidDirectiveResult.error.kind === "PatternMismatch") {
-      // This is expected - "invalid" is not in the default profile
+      // This is expected - "invalid" might not match pattern
       // We can't test invalid DirectiveType's isValidForResourcePath because we can't create one
     }
   });
 });
 
 Deno.test("DirectiveType - Immutability and Thread Safety", async (t) => {
-  const defaultProfile = ConfigProfileName.createDefault();
-  const directiveResult = DirectiveType.create("to", defaultProfile);
+  const directiveResult = DirectiveType.create("to");
 
   if (!directiveResult.ok) {
     throw new Error("Failed to create test DirectiveType");
@@ -370,14 +355,12 @@ Deno.test("DirectiveType - Immutability and Thread Safety", async (t) => {
 
   await t.step("should be immutable", () => {
     const originalValue = directive.value;
-    const originalProfile = directive.profile;
     const originalValidated = directive.validatedByPattern;
 
     // Attempt to modify (should fail silently due to Object.freeze)
     try {
       // Access using bracket notation to test immutability
       (directive as unknown as Record<string, unknown>)["_value"] = "modified";
-      (directive as unknown as Record<string, unknown>)["_profile"] = null;
       (directive as unknown as Record<string, unknown>)["_validatedByPattern"] = false;
     } catch {
       // Expected to throw in strict mode
@@ -385,11 +368,10 @@ Deno.test("DirectiveType - Immutability and Thread Safety", async (t) => {
 
     // Values should remain unchanged
     assertEquals(directive.value, originalValue);
-    assertEquals(directive.profile, originalProfile);
     assertEquals(directive.validatedByPattern, originalValidated);
   });
 
-  await t.step("should support concurrent access", () => {
+  await t.step("should support concurrent access", async () => {
     // Simulate concurrent access patterns
     const promises = Array.from({ length: 10 }, (_, i) =>
       Promise.resolve().then(() => {
@@ -397,34 +379,33 @@ Deno.test("DirectiveType - Immutability and Thread Safety", async (t) => {
         return directive.getPromptDirectory("concurrent", layer);
       }));
 
-    return Promise.all(promises).then((results) => {
-      // All results should be valid and consistent
-      results.forEach((result, i) => {
-        assertEquals(result, `concurrent/to/layer${i}`);
-      });
+    const results = await Promise.all(promises);
+    
+    // All results should be valid and consistent
+    results.forEach((result, i) => {
+      assertEquals(result, `concurrent/to/layer${i}`);
     });
   });
 });
 
 Deno.test("DirectiveType - Error Message Quality", async (t) => {
-  const defaultProfile = ConfigProfileName.createDefault();
 
   await t.step("should provide actionable error messages", () => {
-    const tooLongResult = DirectiveType.create("a".repeat(21), defaultProfile);
+    const tooLongResult = DirectiveType.create("a".repeat(21));
     assertEquals(tooLongResult.ok, false);
     if (!tooLongResult.ok) {
       assertEquals(tooLongResult.error.message.includes("exceeds maximum length"), true);
       assertEquals(tooLongResult.error.message.includes("20"), true);
     }
 
-    const invalidFormatResult = DirectiveType.create("INVALID", defaultProfile);
+    const invalidFormatResult = DirectiveType.create("INVALID");
     assertEquals(invalidFormatResult.ok, false);
     if (!invalidFormatResult.ok) {
       assertEquals(invalidFormatResult.error.message.includes("invalid characters"), true);
       assertEquals(invalidFormatResult.error.message.includes("lowercase"), true);
     }
 
-    const emptyResult = DirectiveType.create("", defaultProfile);
+    const emptyResult = DirectiveType.create("");
     assertEquals(emptyResult.ok, false);
     if (!emptyResult.ok) {
       assertEquals(emptyResult.error.message.includes("cannot be empty"), true);
@@ -432,31 +413,26 @@ Deno.test("DirectiveType - Error Message Quality", async (t) => {
   });
 
   await t.step("should include context in error messages", () => {
-    const patternMismatchResult = DirectiveType.create("nonexistent", defaultProfile);
-    assertEquals(patternMismatchResult.ok, false);
-    if (!patternMismatchResult.ok && patternMismatchResult.error.kind === "PatternMismatch") {
+    const patternMismatchResult = DirectiveType.create("nonexistent");
+    // Pattern validation moved to application layer, basic format validation should pass
+    assertEquals(patternMismatchResult.ok, true);
+    if (patternMismatchResult.ok) {
       assertEquals(
-        patternMismatchResult.error.message.includes(patternMismatchResult.error.value),
-        true,
+        patternMismatchResult.data.value,
+        "nonexistent",
       );
-      assertEquals(
-        patternMismatchResult.error.message.includes(patternMismatchResult.error.profile),
-        true,
-      );
-      assertEquals(patternMismatchResult.error.message.includes("Valid options:"), true);
     }
   });
 });
 
 Deno.test("DirectiveType - Performance and Memory", async (t) => {
-  const defaultProfile = ConfigProfileName.createDefault();
 
   await t.step("should handle large number of instances", () => {
     const instances: DirectiveType[] = [];
 
     // Create many instances
     for (let i = 0; i < 1000; i++) {
-      const result = DirectiveType.create("to", defaultProfile);
+      const result = DirectiveType.create("to");
       if (result.ok) {
         instances.push(result.data);
       }
@@ -471,8 +447,8 @@ Deno.test("DirectiveType - Performance and Memory", async (t) => {
   });
 
   await t.step("should have consistent hash-like behavior", () => {
-    const directive1 = DirectiveType.create("to", defaultProfile);
-    const directive2 = DirectiveType.create("to", defaultProfile);
+    const directive1 = DirectiveType.create("to");
+    const directive2 = DirectiveType.create("to");
 
     if (!directive1.ok || !directive2.ok) {
       throw new Error("Failed to create test DirectiveTypes");

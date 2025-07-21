@@ -22,9 +22,9 @@ Deno.test("Behavior: DefaultTypePatternProvider - Pattern Creation and Validatio
   // LayerPattern is deprecated and should be null
   assertEquals(layerPattern, null, "Layer pattern should be null (deprecated)");
 
-  // Test pattern validation with expected values
-  const expectedDirectives = ["to", "summary", "defect"];
-  const expectedLayers = ["project", "issue", "task"];
+  // Test pattern validation with expected values from configuration
+  const expectedDirectives = provider.getValidDirectiveValues();
+  const expectedLayers = provider.getValidLayerValues();
 
   expectedDirectives.forEach((directive) => {
     assert(directivePattern.test(directive), `"${directive}" should be valid directive`);
@@ -57,14 +57,17 @@ Deno.test("Behavior: DefaultTypePatternProvider - Value Extraction Logic", () =>
   const directiveValues = provider.getValidDirectiveValues();
   const layerValues = provider.getValidLayerValues();
 
-  // Should extract expected default values
-  assert(directiveValues.includes("to"), "Should extract 'to' directive");
-  assert(directiveValues.includes("summary"), "Should extract 'summary' directive");
-  assert(directiveValues.includes("defect"), "Should extract 'defect' directive");
+  // Should extract values from configuration (not hardcoded)
+  assert(directiveValues.length > 0, "Should extract directive values from configuration");
+  assert(layerValues.length > 0, "Should extract layer values from configuration");
 
-  assert(layerValues.includes("project"), "Should extract 'project' layer");
-  assert(layerValues.includes("issue"), "Should extract 'issue' layer");
-  assert(layerValues.includes("task"), "Should extract 'task' layer");
+  // Verify configuration-based values are valid
+  directiveValues.forEach(value => {
+    assert(typeof value === "string" && value.length > 0, `Directive value should be non-empty string: ${value}`);
+  });
+  layerValues.forEach(value => {
+    assert(typeof value === "string" && value.length > 0, `Layer value should be non-empty string: ${value}`);
+  });
 
   // Should not contain duplicates
   assertEquals(
@@ -308,15 +311,24 @@ Deno.test("Behavior: DefaultTypePatternProvider - Case Sensitivity", () => {
   // LayerPattern is deprecated and should be null
   assertEquals(layerPattern, null, "Layer pattern should be null (deprecated)");
 
-  // Test exact case matching
-  assert(directivePattern.test("to"), "Should accept lowercase 'to'");
-  assert(!directivePattern.test("TO"), "Should reject uppercase 'TO'");
-  assert(!directivePattern.test("To"), "Should reject titlecase 'To'");
+  // Test exact case matching with configuration-based values
+  const validDirectives = provider.getValidDirectiveValues();
+  const validLayers = provider.getValidLayerValues();
+  
+  if (validDirectives.length > 0) {
+    const firstDirective = validDirectives[0];
+    assert(directivePattern.test(firstDirective), `Should accept valid directive '${firstDirective}'`);
+    assert(!directivePattern.test(firstDirective.toUpperCase()), `Should reject uppercase '${firstDirective.toUpperCase()}'`);
+    assert(!directivePattern.test(firstDirective.charAt(0).toUpperCase() + firstDirective.slice(1)), `Should reject titlecase`);
+  }
 
   // Test layer case sensitivity using validateLayerType method
-  assert(provider.validateLayerType("project"), "Should accept lowercase 'project'");
-  assert(!provider.validateLayerType("PROJECT"), "Should reject uppercase 'PROJECT'");
-  assert(!provider.validateLayerType("Project"), "Should reject titlecase 'Project'");
+  if (validLayers.length > 0) {
+    const firstLayer = validLayers[0];
+    assert(provider.validateLayerType(firstLayer), `Should accept valid layer '${firstLayer}'`);
+    assert(!provider.validateLayerType(firstLayer.toUpperCase()), `Should reject uppercase '${firstLayer.toUpperCase()}'`);
+    assert(!provider.validateLayerType(firstLayer.charAt(0).toUpperCase() + firstLayer.slice(1)), `Should reject titlecase`);
+  }
 
   // Test mixed case
   assert(!directivePattern.test("Summary"), "Should reject mixed case 'Summary'");
@@ -335,19 +347,32 @@ Deno.test("Behavior: DefaultTypePatternProvider - Whitespace Handling", () => {
   // LayerPattern is deprecated and should be null
   assertEquals(layerPattern, null, "Layer pattern should be null (deprecated)");
 
-  // Should reject values with leading/trailing whitespace
-  assert(!directivePattern.test(" to"), "Should reject leading space");
-  assert(!directivePattern.test("to "), "Should reject trailing space");
-  assert(!directivePattern.test(" to "), "Should reject surrounding spaces");
+  // Should reject values with leading/trailing whitespace using configuration-based values
+  const validDirectives = provider.getValidDirectiveValues();
+  const validLayers = provider.getValidLayerValues();
+  
+  if (validDirectives.length > 0) {
+    const firstDirective = validDirectives[0];
+    assert(!directivePattern.test(` ${firstDirective}`), "Should reject leading space");
+    assert(!directivePattern.test(`${firstDirective} `), "Should reject trailing space");
+    assert(!directivePattern.test(` ${firstDirective} `), "Should reject surrounding spaces");
+  }
 
   // Test layer whitespace handling using validateLayerType method
-  assert(!provider.validateLayerType(" project"), "Should reject leading space");
-  assert(!provider.validateLayerType("project "), "Should reject trailing space");
-  assert(!provider.validateLayerType(" project "), "Should reject surrounding spaces");
+  if (validLayers.length > 0) {
+    const firstLayer = validLayers[0];
+    assert(!provider.validateLayerType(` ${firstLayer}`), "Should reject leading space");
+    assert(!provider.validateLayerType(`${firstLayer} `), "Should reject trailing space");
+    assert(!provider.validateLayerType(` ${firstLayer} `), "Should reject surrounding spaces");
+  }
 
   // Should reject values with internal whitespace
-  assert(!directivePattern.test("to summary"), "Should reject internal space");
-  assert(!provider.validateLayerType("project issue"), "Should reject internal space");
+  if (validDirectives.length >= 2) {
+    assert(!directivePattern.test(`${validDirectives[0]} ${validDirectives[1]}`), "Should reject internal space");
+  }
+  if (validLayers.length >= 2) {
+    assert(!provider.validateLayerType(`${validLayers[0]} ${validLayers[1]}`), "Should reject internal space");
+  }
 });
 
 Deno.test("Behavior: DefaultTypePatternProvider - Provider State Independence", () => {

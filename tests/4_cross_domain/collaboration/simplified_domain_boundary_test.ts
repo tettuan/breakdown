@@ -14,7 +14,7 @@ import { BreakdownLogger } from "@tettuan/breakdownlogger";
 // Core Domain imports
 import { TypeFactory } from "../../../lib/types/type_factory.ts";
 import { DefaultTypePatternProvider } from "../../../lib/types/defaults/default_type_pattern_provider.ts";
-import { ConfigProfileName } from "../../../lib/config/config_profile_name.ts";
+import { ConfigProfile } from "../../../lib/config/mod.ts";
 import { isOk } from "../../../lib/types/result.ts";
 
 // Supporting Domain imports
@@ -61,9 +61,9 @@ describe("Simplified Domain Boundary Integration", () => {
     it("should enforce value object boundaries", () => {
       logger.debug("Testing value object boundary enforcement");
 
-      // Test ConfigProfileName boundary
-      const validConfig = ConfigProfileName.createOrError("development");
-      const invalidConfig = ConfigProfileName.createOrError("");
+      // Test ConfigProfile boundary
+      const validConfig = ConfigProfile.createOrError("development");
+      const invalidConfig = ConfigProfile.createOrError("");
 
       assertEquals(validConfig.ok, true);
       assertEquals(invalidConfig.ok, false);
@@ -84,7 +84,7 @@ describe("Simplified Domain Boundary Integration", () => {
       logger.debug("Testing Result pattern consistency");
 
       // All domain operations should return Result types
-      const configResult = ConfigProfileName.createOrError("test");
+      const configResult = ConfigProfile.createOrError("test");
       const workDirResult = WorkingDirectoryPath.create(".");
 
       // All should implement the same Result pattern
@@ -116,7 +116,7 @@ describe("Simplified Domain Boundary Integration", () => {
 
       if (isOk(typesResult)) {
         // Supporting domain value objects should be compatible
-        const config = ConfigProfileName.create("test");
+        const config = ConfigProfile.create("test");
         const workDirResult = WorkingDirectoryPath.create(".");
 
         assertExists(config.value);
@@ -150,7 +150,7 @@ describe("Simplified Domain Boundary Integration", () => {
         "invalid_directive",
       );
 
-      const configError = ConfigProfileName.createOrError("");
+      const configError = ConfigProfile.createOrError("");
       const workDirError = WorkingDirectoryPath.create("");
 
       // All should return consistent error structures
@@ -185,10 +185,10 @@ describe("Simplified Domain Boundary Integration", () => {
       logger.debug("Testing boundary violation detection");
 
       // Test that different value objects are truly different types
-      const config = ConfigProfileName.create("test");
+      const config = ConfigProfile.create("test");
       const workDirResult = WorkingDirectoryPath.create(".");
 
-      // ConfigProfileName and WorkingDirectoryPath are different types
+      // ConfigProfile and WorkingDirectoryPath are different types
       if (isOk(workDirResult)) {
         const configValue = config;
         const workDirValue = workDirResult.data;
@@ -216,7 +216,7 @@ describe("Simplified Domain Boundary Integration", () => {
 
       // Test that interfaces enforce their contracts
       const violations = [
-        ConfigProfileName.createOrError(""), // Empty string violation
+        ConfigProfile.createOrError(""), // Empty string violation
         WorkingDirectoryPath.create(""), // Empty path violation
       ];
 
@@ -251,7 +251,7 @@ describe("Simplified Domain Boundary Integration", () => {
 
       if (isOk(typesResult)) {
         // Step 2: Supporting Domain - Value Object Creation
-        const config = ConfigProfileName.create("integration-test");
+        const config = ConfigProfile.create("integration-test");
         const workDirResult = WorkingDirectoryPath.create(".");
 
         assertExists(config.value);
@@ -288,8 +288,8 @@ describe("Simplified Domain Boundary Integration", () => {
 
       // Test that all operations return Results (no exceptions)
       const operations = [
-        () => ConfigProfileName.createOrError("test"),
-        () => ConfigProfileName.createOrError(""),
+        () => ConfigProfile.createOrError("test"),
+        () => ConfigProfile.createOrError(""),
         () => WorkingDirectoryPath.create("."),
         () => WorkingDirectoryPath.create(""),
         () => {

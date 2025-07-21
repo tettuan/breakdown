@@ -49,20 +49,20 @@ Deno.test("defaultConfigTwoParams - Runtime Behavior", async (t) => {
     });
   });
 
-  await t.step("should support validation option checking", () => {
-    const validation = _defaultConfigTwoParams.params.two.validation;
+  await t.step("should support pattern checking", () => {
+    const twoParams = _defaultConfigTwoParams.params.two;
 
-    // Test allowedValueOptions behavior
-    const allowedOptions = validation.allowedValueOptions;
-    assertEquals(allowedOptions.includes("from"), true);
-    assertEquals(allowedOptions.includes("destination"), true);
-    assertEquals(allowedOptions.includes("input"), true);
-    assertEquals(allowedOptions.includes("config"), true);
-    assertEquals(allowedOptions.includes("invalid"), false);
+    // Test directiveType pattern behavior
+    const directivePattern = new RegExp(twoParams.directiveType.pattern);
+    assertEquals(directivePattern.test("to"), true);
+    assertEquals(directivePattern.test("summary"), true);
+    assertEquals(directivePattern.test("invalid"), false);
 
-    // Test boolean options behavior
-    assertEquals(validation.userVariableOption, true);
-    assertEquals(validation.stdinAllowed, true);
+    // Test layerType pattern behavior
+    const layerPattern = new RegExp(twoParams.layerType.pattern);
+    assertEquals(layerPattern.test("project"), true);
+    assertEquals(layerPattern.test("task"), true);
+    assertEquals(layerPattern.test("invalid"), false);
   });
 
   await t.step("should maintain pattern extraction capability", () => {
@@ -71,35 +71,33 @@ Deno.test("defaultConfigTwoParams - Runtime Behavior", async (t) => {
     // Test directiveType pattern extraction
     const directiveMatch = config.directiveType.pattern.match(/^\^\(([^)]+)\)\$$/);
     assertExists(directiveMatch);
-    assertEquals(directiveMatch[1], "to|summary|defect");
+    assertEquals(directiveMatch[1], "to|summary|defect|find|analyze|extract");
 
     const directiveValues = directiveMatch[1].split("|");
-    assertEquals(directiveValues.length, 3);
-    assertEquals(directiveValues, ["to", "summary", "defect"]);
+    assertEquals(directiveValues.length, 6);
+    assertEquals(directiveValues, ["to", "summary", "defect", "find", "analyze", "extract"]);
 
     // Test layerType pattern extraction
     const layerMatch = config.layerType.pattern.match(/^\^\(([^)]+)\)\$$/);
     assertExists(layerMatch);
-    assertEquals(layerMatch[1], "project|issue|task|bugs");
+    assertEquals(layerMatch[1], "project|issue|task|component|module");
 
     const layerValues = layerMatch[1].split("|");
-    assertEquals(layerValues.length, 4);
-    assertEquals(layerValues, ["project", "issue", "task", "bugs"]);
+    assertEquals(layerValues.length, 5);
+    assertEquals(layerValues, ["project", "issue", "task", "component", "module"]);
   });
 
   await t.step("should support deep object traversal", () => {
     // Test nested access patterns
     const paths = [
       ["params", "two", "directiveType", "pattern"],
+      ["params", "two", "directiveType", "errorMessage"],
       ["params", "two", "layerType", "pattern"],
-      ["params", "two", "validation", "allowedFlagOptions"],
-      ["params", "two", "validation", "allowedValueOptions"],
-      ["params", "two", "validation", "userVariableOption"],
-      ["params", "two", "validation", "stdinAllowed"],
+      ["params", "two", "layerType", "errorMessage"],
     ];
 
     paths.forEach((path) => {
-      let current: Record<string, unknown> = _defaultConfigTwoParams;
+      let current: Record<string, unknown> = _defaultConfigTwoParams as unknown as Record<string, unknown>;
       for (const key of path) {
         assertExists(current[key], `Path ${path.join(".")} should exist`);
         current = current[key] as Record<string, unknown>;
@@ -155,26 +153,20 @@ Deno.test("defaultConfigTwoParams - Integration Behavior", async (t) => {
     assertEquals(customConfig.params.two.directiveType.pattern, "^(custom|pattern)$");
 
     // Verify other properties are preserved
-    assertEquals(customConfig.params.two.layerType.pattern, "^(project|issue|task|bugs)$");
-    assertEquals(customConfig.params.two.validation.userVariableOption, true);
+    assertEquals(customConfig.params.two.layerType.pattern, "^(project|issue|task|component|module)$");
   });
 
-  await t.step("should support validation option filtering", () => {
-    const validation = _defaultConfigTwoParams.params.two.validation;
+  await t.step("should support pattern validation", () => {
+    const config = _defaultConfigTwoParams.params.two;
 
-    // Test filtering behavior
-    const isValidOption = (option: string) => validation.allowedValueOptions.includes(option);
+    // Test pattern validation behavior
+    const directivePattern = new RegExp(config.directiveType.pattern);
+    const layerPattern = new RegExp(config.layerType.pattern);
 
-    assertEquals(isValidOption("from"), true);
-    assertEquals(isValidOption("destination"), true);
-    assertEquals(isValidOption("input"), true);
-    assertEquals(isValidOption("config"), true);
-    assertEquals(isValidOption("invalid"), false);
-    assertEquals(isValidOption(""), false);
-
-    // Test boolean option checking
-    assertEquals(validation.userVariableOption, true);
-    assertEquals(validation.stdinAllowed, true);
+    assertEquals(directivePattern.test("to"), true);
+    assertEquals(directivePattern.test("invalid"), false);
+    assertEquals(layerPattern.test("project"), true);
+    assertEquals(layerPattern.test("invalid"), false);
   });
 });
 

@@ -82,7 +82,7 @@ main_flow:
   # 骨格の中心経路（最短距離）
   core_path:
     - mod.ts:16 → cli/breakdown.ts:runBreakdown()
-    - ConfigPrefixDetector.detect() → ConfigProfileName.create()
+    - ConfigPrefixDetector.detect() → ConfigProfile.create()
     - ConfigLoader.loadBreakdownConfig() → ParamsCustomConfig.create()
     - ParamsParser.parse() → result分岐
     - handleTwoParams/OneParams/ZeroParams → プロンプト出力
@@ -149,11 +149,11 @@ hierarchy:
         return: "Promise<Result<void, TwoParamsHandlerError>>"
         role: 2パラメータ処理オーケストレーション
         
-      - name: ConfigProfileName
+      - name: ConfigProfile
         type: class
         initializer: create()
         args: "value: string | null | undefined"
-        return: "Result<ConfigProfileName, ConfigProfileNameError>"
+        return: "Result<ConfigProfile, ConfigProfileError>"
         role: 設定プロファイル名管理
         
       - name: ConfigLoader
@@ -166,7 +166,7 @@ hierarchy:
       - name: DirectiveType
         type: class
         initializer: create()
-        args: "result: TwoParams_Result, profile?: ConfigProfileName"
+        args: "result: TwoParams_Result, profile?: ConfigProfile"
         return: DirectiveType
         role: 処理方向型（to/summary/defect）
         
@@ -245,14 +245,14 @@ type_declarations:
 
   domain_types:
     - name: DirectiveType
-      structure: "Smart constructor class with value: string, profile: ConfigProfileName"
+      structure: "Smart constructor class with value: string, profile: ConfigProfile"
       description: "Processing direction (to/summary/defect)"
       
     - name: LayerType
       structure: "Smart constructor class with value: string, validatedByPattern: TwoParamsLayerTypePattern"
       description: "Hierarchical layer (project/issue/task)"
       
-    - name: ConfigProfileName
+    - name: ConfigProfile
       structure: "Smart constructor class with value: string, isDefault: boolean"
       description: "Configuration profile management"
 

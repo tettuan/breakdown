@@ -17,10 +17,12 @@ import {
   LayerType,
   TwoParamsLayerTypePattern,
 } from "../../../../lib/domain/core/value_objects/layer_type.ts";
+import { ConfigProfile } from "../../../../lib/config/mod.ts";
 import { createTwoParamsResult } from "../../../../lib/types/two_params_result_extension.ts";
 import type { TwoParams_Result } from "../../../../lib/types/two_params_result_extension.ts";
 
 const logger = new BreakdownLogger("integration:directive_layer");
+const defaultProfile = ConfigProfile.createDefault();
 
 /**
  * Scenario 1: Normal Flow - DirectiveType と LayerType の基本的な統合
@@ -112,10 +114,14 @@ Deno.test("DirectiveType and LayerType Integration: Pattern Validation", () => {
   const invalidResult = createTwoParamsResult("invalid_directive", "invalid_layer");
 
   const invalidDirectiveResult = DirectiveType.create(invalidResult.directiveType);
-  assertEquals(invalidDirectiveResult.ok, false);
+  // Note: DirectiveType now accepts any valid format string
+  // Profile-based pattern validation is handled at application layer
+  assertEquals(invalidDirectiveResult.ok, true);
+  /*
   if (!invalidDirectiveResult.ok) {
     assertEquals(invalidDirectiveResult.error.kind, "PatternMismatch");
   }
+  */
 
   const invalidLayerResult = LayerType.create(invalidResult.layerType);
   // LayerType.create without profile doesn't validate against pattern

@@ -414,10 +414,10 @@ layerTypes:
   - task`;
       case "config-type-mismatch":
         if (this.context?.field === "directiveTypes") {
-          return `directiveTypes: ["to", "summary", "defect"]  # Must be an array`;
+          return `directiveTypes: []  # Must be an array - see config file for valid values`;
         }
         if (this.context?.field === "layerTypes") {
-          return `layerTypes: ["project", "issue", "task"]  # Must be an array`;
+          return `layerTypes: []  # Must be an array - see config file for valid values`;
         }
         return `# Correct type example for field: ${this.context?.field}
 ${this.context?.field}: ${

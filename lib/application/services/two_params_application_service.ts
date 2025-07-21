@@ -10,7 +10,7 @@
 
 import type { Result } from "$lib/types/result.ts";
 import { error, ok } from "$lib/types/result.ts";
-import type { ConfigProfileName as _ConfigProfileName } from "$lib/config/config_profile_name.ts";
+import type { ConfigProfile as _ConfigProfile } from "../../config/config_profile_name.ts";
 import {
   TwoParams,
   type TwoParamsValidationError,
@@ -344,13 +344,13 @@ Timestamp: ${new Date().toISOString()}
   private formatValidationError(validationError: TwoParamsValidationError): string {
     switch (validationError.kind) {
       case "InvalidDirective":
-        return `Invalid directive "${validationError.directive}" for profile "${validationError.profile}"`;
+        return `Invalid directive "${validationError.directive}"`;
       case "InvalidLayer":
         return `Invalid layer "${validationError.layer}"`;
       case "UnsupportedCombination":
-        return `Unsupported combination: "${validationError.directive}" + "${validationError.layer}" for profile "${validationError.profile}"`;
+        return `Unsupported combination: "${validationError.directive}" + "${validationError.layer}"`;
       case "PatternNotFound":
-        return `Pattern not found for profile "${validationError.profile}" at "${validationError.configPath}"`;
+        return `Pattern not found at "${validationError.configPath}"`;
       default:
         return "Unknown validation error";
     }

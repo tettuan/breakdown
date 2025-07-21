@@ -17,6 +17,7 @@ import {
   LayerType,
   TwoParamsLayerTypePattern,
 } from "../../../lib/domain/core/value_objects/layer_type.ts";
+import { ConfigProfile } from "../../../lib/config/mod.ts";
 import { createTwoParamsResult } from "../../../lib/types/two_params_result_extension.ts";
 
 const logger = new BreakdownLogger("e2e:configuration");
@@ -128,15 +129,15 @@ Deno.test("E2E Configuration: S2.1 - Profile Switching", () => {
     // Phase 4: プロファイル制約の検証
     if (testCase.shouldSucceed) {
       // 基本的な型制約（DirectiveType.createの制約）とプロファイル制約の両方をチェック
-      const isValidForProfile = directiveResult.ok && layerResult.ok && profileDirectiveValid &&
+      const allValidationsPassed = directiveResult.ok && layerResult.ok && profileDirectiveValid &&
         profileLayerValid;
       assertEquals(
-        isValidForProfile,
+        allValidationsPassed,
         true,
         `${testCase.directive}-${testCase.layer} should be valid in ${testCase.profile} profile`,
       );
 
-      if (isValidForProfile) {
+      if (allValidationsPassed) {
         // Phase 5: プロファイル固有の出力フォーマット適用
         const promptPath = directiveResult.data.getPromptPath(layerResult.data);
         const outputPath = directiveResult.data.resolveOutputPath("test.md", layerResult.data);

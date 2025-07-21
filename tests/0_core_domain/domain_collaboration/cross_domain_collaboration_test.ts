@@ -15,7 +15,6 @@ import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { TwoParams } from "$lib/domain/core/aggregates/two_params.ts";
 import { DirectiveType } from "$lib/domain/core/value_objects/directive_type.ts";
 import { LayerType } from "$lib/domain/core/value_objects/layer_type.ts";
-import { ConfigProfileName } from "$lib/config/config_profile_name.ts";
 
 // Generic domain imports (factory collaborations)
 import { PromptVariablesFactory as _PromptVariablesFactory } from "$lib/factory/prompt_variables_factory.ts";
@@ -29,8 +28,8 @@ describe("Cross Domain Collaboration Tests", () => {
       logger.debug("Testing TwoParams-PromptVariablesFactory integration");
 
       // Arrange
-      const profile = ConfigProfileName.createDefault();
-      const twoParamsResult = TwoParams.create("to", "issue", profile);
+      const profile = "default";
+      const twoParamsResult = TwoParams.create("to", "issue");
       if (!twoParamsResult.ok) {
         throw new Error(`TwoParams creation failed: ${JSON.stringify(twoParamsResult.error)}`);
       }
@@ -42,7 +41,7 @@ describe("Cross Domain Collaboration Tests", () => {
       const collaborationData = {
         directive: twoParams.directive.value,
         layer: twoParams.layer.value,
-        profile: twoParams.profile.value,
+        profile: twoParams.profile,
         inputFilePath: "test-input.md",
         outputFilePath: "test-output.json",
         stdinData: "test stdin content",
@@ -70,8 +69,8 @@ describe("Cross Domain Collaboration Tests", () => {
       logger.debug("Testing TwoParams-PromptTemplatePathResolver integration");
 
       // Arrange
-      const profile = ConfigProfileName.createDefault();
-      const twoParamsResult = TwoParams.create("to", "project", profile);
+      const profile = "default";
+      const twoParamsResult = TwoParams.create("to", "project");
       if (!twoParamsResult.ok) {
         throw new Error(`TwoParams creation failed: ${JSON.stringify(twoParamsResult.error)}`);
       }
@@ -122,11 +121,11 @@ describe("Cross Domain Collaboration Tests", () => {
       logger.debug("Testing data consistency across domain boundaries");
 
       // Arrange: Create TwoParams instances with different profiles
-      const defaultProfile = ConfigProfileName.createDefault();
-      const customProfile = ConfigProfileName.fromCliOption("custom");
+      const defaultProfile = "default";
+      const customProfile = "custom";
 
-      const defaultResult = TwoParams.create("to", "issue", defaultProfile);
-      const customResult = TwoParams.create("to", "issue", customProfile);
+      const defaultResult = TwoParams.create("to", "issue");
+      const customResult = TwoParams.create("to", "issue");
       if (!defaultResult.ok || !customResult.ok) {
         throw new Error("Failed to create test TwoParams");
       }
@@ -137,7 +136,7 @@ describe("Cross Domain Collaboration Tests", () => {
       const defaultData = {
         directive: defaultTwoParams.directive.value,
         layer: defaultTwoParams.layer.value,
-        profile: defaultTwoParams.profile.value,
+        profile: defaultTwoParams.profile,
         promptPath: defaultTwoParams.resolvePromptFilePath("prompts", "project"),
         schemaPath: defaultTwoParams.resolveSchemaFilePath("schemas"),
         command: defaultTwoParams.toCommand(),
@@ -146,7 +145,7 @@ describe("Cross Domain Collaboration Tests", () => {
       const customData = {
         directive: customTwoParams.directive.value,
         layer: customTwoParams.layer.value,
-        profile: customTwoParams.profile.value,
+        profile: customTwoParams.profile,
         promptPath: customTwoParams.resolvePromptFilePath("prompts", "project"),
         schemaPath: customTwoParams.resolveSchemaFilePath("schemas"),
         command: customTwoParams.toCommand(),
@@ -192,7 +191,7 @@ describe("Cross Domain Collaboration Tests", () => {
       logger.debug("Testing validation error propagation");
 
       // Arrange: Invalid inputs that should propagate errors
-      const profile = ConfigProfileName.createDefault();
+      const profile = "default";
 
       const invalidCases = [
         { directive: "", layer: "issue" },
@@ -203,7 +202,7 @@ describe("Cross Domain Collaboration Tests", () => {
 
       for (const invalidCase of invalidCases) {
         // Act: Attempt to create TwoParams with invalid data
-        const result = TwoParams.create(invalidCase.directive, invalidCase.layer, profile);
+        const result = TwoParams.create(invalidCase.directive, invalidCase.layer);
         assertFalse(result.ok, `Invalid case should fail: ${JSON.stringify(invalidCase)}`);
 
         if (!result.ok) {
@@ -216,7 +215,6 @@ describe("Cross Domain Collaboration Tests", () => {
           // Check that error contains enough information for other domains
           if (error.kind === "InvalidDirective") {
             assertExists(error.directive, "DirectiveType error should include directive");
-            assertExists(error.profile, "DirectiveType error should include profile");
           } else if (error.kind === "InvalidLayer") {
             assertExists(error.layer, "LayerType error should include layer");
           }
@@ -232,12 +230,12 @@ describe("Cross Domain Collaboration Tests", () => {
       logger.debug("Testing error context maintenance");
 
       // Arrange
-      const profile = ConfigProfileName.createDefault();
+      const profile = "default";
 
       // Act: Create error scenarios
-      const directiveError = DirectiveType.create("", profile);
+      const directiveError = DirectiveType.create("");
       const layerError = LayerType.create("");
-      const twoParamsError = TwoParams.create("", "issue", profile);
+      const twoParamsError = TwoParams.create("", "issue");
 
       // Assert: All errors should fail as expected
       assertFalse(directiveError.ok, "DirectiveType error should fail");
@@ -274,14 +272,14 @@ describe("Cross Domain Collaboration Tests", () => {
       logger.debug("Testing cross-domain performance");
 
       // Arrange
-      const profile = ConfigProfileName.createDefault();
+      const profile = "default";
       const operations = [];
 
       const startTime = Date.now();
 
       // Act: Perform cross-domain operations
       for (let i = 0; i < 50; i++) {
-        const twoParamsResult = TwoParams.create("to", "issue", profile);
+        const twoParamsResult = TwoParams.create("to", "issue");
         if (!twoParamsResult.ok) {
           throw new Error(`TwoParams creation failed: ${JSON.stringify(twoParamsResult.error)}`);
         }
@@ -291,7 +289,7 @@ describe("Cross Domain Collaboration Tests", () => {
         const crossDomainData = {
           directive: twoParams.directive.value,
           layer: twoParams.layer.value,
-          profile: twoParams.profile.value,
+          profile: twoParams.profile,
           promptPath: twoParams.resolvePromptFilePath("prompts", "project"),
           schemaPath: twoParams.resolveSchemaFilePath("schemas"),
           command: twoParams.toCommand(),
@@ -326,7 +324,7 @@ describe("Cross Domain Collaboration Tests", () => {
       logger.debug("Testing concurrent cross-domain operations");
 
       // Arrange
-      const profile = ConfigProfileName.createDefault();
+      const profile = "default";
 
       // Act: Simulate concurrent operations
       const concurrentOperations = Promise.all([
@@ -367,19 +365,19 @@ describe("Cross Domain Collaboration Tests", () => {
 
       // Arrange: Multiple profiles
       const profiles = [
-        ConfigProfileName.createDefault(),
-        ConfigProfileName.fromCliOption("development"),
-        ConfigProfileName.fromCliOption("production"),
-        ConfigProfileName.fromCliOption("testing"),
+        "default",
+        "development",
+        "production",
+        "testing",
       ];
 
       // Act: Create TwoParams with each profile
       const profileResults = [];
       for (const profile of profiles) {
-        const result = TwoParams.create("to", "issue", profile);
+        const result = TwoParams.create("to", "issue");
         if (result.ok) {
           profileResults.push({
-            profile: profile.value,
+            profile: profile,
             twoParams: result.data,
             promptPath: result.data.resolvePromptFilePath("prompts", "project"),
             command: result.data.toCommand(),
@@ -390,7 +388,7 @@ describe("Cross Domain Collaboration Tests", () => {
       // Assert: Profile consistency
       for (const result of profileResults) {
         assertEquals(
-          result.twoParams.profile.value,
+          result.twoParams.profile,
           result.profile,
           "TwoParams profile should match input profile",
         );
@@ -421,7 +419,7 @@ describe("Cross Domain Collaboration Tests", () => {
 async function createAndProcessTwoParams(
   directive: string,
   layer: string,
-  profile: ConfigProfileName,
+  profile: string,
 ): Promise<{
   twoParams: TwoParams;
   promptPath: string;
@@ -431,7 +429,7 @@ async function createAndProcessTwoParams(
   // Simulate some async processing delay
   await new Promise((resolve) => setTimeout(resolve, Math.random() * 10));
 
-  const result = TwoParams.create(directive, layer, profile);
+  const result = TwoParams.create(directive, layer);
   if (!result.ok) {
     throw new Error(`Failed to create TwoParams: ${directive}/${layer}`);
   }

@@ -16,7 +16,8 @@
 import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import { describe, it } from "@std/testing/bdd";
 import { TwoParams } from "./two_params_optimized.ts";
-import { ConfigProfileName } from "$lib/config/config_profile_name.ts";
+import { ConfigProfile } from "../../../config/config_profile_name.ts";
+import { DefaultTypePatternProvider } from "$lib/types/defaults/default_type_pattern_provider.ts";
 
 // BreakdownLogger usage - conditional to support test runs without --allow-env
 let logger: {
@@ -45,16 +46,24 @@ try {
 // Valid DirectiveType and LayerType constants removed as they were unused
 
 /**
- * Valid combinations based on business rules (conservative subset)
+ * Get valid combinations from configuration files
  */
-const VALID_COMBINATIONS = [
-  // Known working combinations
-  { directive: "to", layer: "project" },
-  { directive: "to", layer: "issue" },
-  { directive: "to", layer: "task" },
-  { directive: "summary", layer: "project" },
-  { directive: "summary", layer: "issue" },
-] as const;
+function getValidCombinations() {
+  const patternProvider = new DefaultTypePatternProvider();
+  const directives = patternProvider.getDirectiveTypes();
+  const layers = patternProvider.getLayerTypes();
+  
+  // Return a conservative subset of valid combinations from config
+  const combinations = [];
+  for (const directive of directives.slice(0, 2)) { // Limit to first 2 directives
+    for (const layer of layers.slice(0, 3)) { // Limit to first 3 layers
+      combinations.push({ directive, layer });
+    }
+  }
+  return combinations;
+}
+
+const VALID_COMBINATIONS = getValidCombinations();
 
 // ============================================================================
 // Flexible Pattern Data (migrated from 2_structure_two_params_flexible_test.ts)
@@ -71,8 +80,7 @@ describe("TwoParams Integrated - Basic Functionality", () => {
     logger?.debug("Testing standard valid combinations");
 
     for (const combo of VALID_COMBINATIONS) {
-      const profile = ConfigProfileName.createDefault();
-      const result = TwoParams.create(combo.directive, combo.layer, profile);
+      const result = TwoParams.create(combo.directive, combo.layer);
 
       assertEquals(
         result.ok,
@@ -83,6 +91,7 @@ describe("TwoParams Integrated - Basic Functionality", () => {
       if (result.ok) {
         assertEquals(result.data.directive.value, combo.directive);
         assertEquals(result.data.layer.value, combo.layer);
+        // TwoParams still has profile property, DirectiveType/LayerType don't
         assertExists(result.data.profile);
       }
     }
@@ -91,11 +100,14 @@ describe("TwoParams Integrated - Basic Functionality", () => {
   it("should reject invalid directive values", () => {
     logger?.debug("Testing invalid directive rejection");
 
+    const patternProvider = new DefaultTypePatternProvider();
+    const validLayers = patternProvider.getLayerTypes();
+    const firstValidLayer = validLayers[0] || "project";
+    
     const invalidDirectives = ["INVALID", "", "   ", "toolong".repeat(10)];
 
     for (const invalidDirective of invalidDirectives) {
-      const profile = ConfigProfileName.createDefault();
-      const result = TwoParams.create(invalidDirective, "project", profile);
+      const result = TwoParams.create(invalidDirective, firstValidLayer);
 
       assertEquals(result.ok, false, `Invalid directive '${invalidDirective}' should be rejected`);
 
@@ -108,11 +120,14 @@ describe("TwoParams Integrated - Basic Functionality", () => {
   it("should reject invalid layer values", () => {
     logger?.debug("Testing invalid layer rejection");
 
+    const patternProvider = new DefaultTypePatternProvider();
+    const validDirectives = patternProvider.getDirectiveTypes();
+    const firstValidDirective = validDirectives[0] || "to";
+    
     const invalidLayers = ["INVALID", "", "   ", "toolong".repeat(10)];
 
     for (const invalidLayer of invalidLayers) {
-      const profile = ConfigProfileName.createDefault();
-      const result = TwoParams.create("to", invalidLayer, profile);
+      const result = TwoParams.create(firstValidDirective, invalidLayer);
 
       assertEquals(result.ok, false, `Invalid layer '${invalidLayer}' should be rejected`);
 
@@ -131,27 +146,33 @@ describe("TwoParams Integrated - Edge Cases", () => {
   it("should handle boundary length values correctly", () => {
     logger?.debug("Testing boundary length validation");
 
-    const profile = ConfigProfileName.createDefault();
+    const patternProvider = new DefaultTypePatternProvider();
+    const validDirectives = patternProvider.getDirectiveTypes();
+    const validLayers = patternProvider.getLayerTypes();
 
     // Test with minimum length values
     // Note: Testing boundary conditions without unused variables
 
     // Test with maximum length values (within valid patterns)
-    const maxDirective = "summary"; // Known working directive
-    const maxLayer = "project"; // Known working layer
+    const maxDirective = validDirectives[1] || "summary"; // Second directive from config
+    const maxLayer = validLayers[0] || "project"; // First layer from config
 
-    const maxResult = TwoParams.create(maxDirective, maxLayer, profile);
+    const maxResult = TwoParams.create(maxDirective, maxLayer);
     assertEquals(maxResult.ok, true, "Maximum valid length should work");
   });
 
   it("should handle whitespace validation consistently", () => {
     logger?.debug("Testing whitespace validation");
 
-    const profile = ConfigProfileName.createDefault();
+    const patternProvider = new DefaultTypePatternProvider();
+    const validDirectives = patternProvider.getDirectiveTypes();
+    const validLayers = patternProvider.getLayerTypes();
+    const firstDirective = validDirectives[0] || "to";
+    const firstLayer = validLayers[0] || "project";
 
     // Test with leading/trailing whitespace - should fail due to strict validation
-    const result1 = TwoParams.create("  to  ", "  project  ", profile);
-    const result2 = TwoParams.create("to", "project", profile);
+    const result1 = TwoParams.create(`  ${firstDirective}  `, `  ${firstLayer}  `);
+    const result2 = TwoParams.create(firstDirective, firstLayer);
 
     // Whitespace inputs should fail, clean inputs should succeed
     assertEquals(result1.ok, false, "Leading/trailing whitespace should be rejected");
@@ -173,11 +194,15 @@ describe("TwoParams Integrated - Edge Cases", () => {
   it("should handle null and undefined inputs gracefully", () => {
     logger?.debug("Testing null/undefined input handling");
 
-    const profile = ConfigProfileName.createDefault();
+    const patternProvider = new DefaultTypePatternProvider();
+    const validDirectives = patternProvider.getDirectiveTypes();
+    const validLayers = patternProvider.getLayerTypes();
+    const firstDirective = validDirectives[0] || "to";
+    const firstLayer = validLayers[0] || "project";
 
     // These should fail gracefully without throwing
-    const nullDirectiveResult = TwoParams.create(null as unknown as string, "project", profile);
-    const undefinedLayerResult = TwoParams.create("to", undefined as unknown as string, profile);
+    const nullDirectiveResult = TwoParams.create(null as unknown as string, firstLayer);
+    const undefinedLayerResult = TwoParams.create(firstDirective, undefined as unknown as string);
 
     assertEquals(nullDirectiveResult.ok, false);
     assertEquals(undefinedLayerResult.ok, false);
@@ -192,8 +217,12 @@ describe("TwoParams Integrated - Path Resolution", () => {
   it("should resolve prompt paths correctly", () => {
     logger?.debug("Testing prompt path resolution");
 
-    const profile = ConfigProfileName.createDefault();
-    const result = TwoParams.create("to", "project", profile);
+    const patternProvider = new DefaultTypePatternProvider();
+    const validDirectives = patternProvider.getDirectiveTypes();
+    const validLayers = patternProvider.getLayerTypes();
+    const firstDirective = validDirectives[0] || "to";
+    const firstLayer = validLayers[0] || "project";
+    const result = TwoParams.create(firstDirective, firstLayer);
 
     if (!result.ok) {
       throw new Error("Failed to create test TwoParams");
@@ -203,15 +232,19 @@ describe("TwoParams Integrated - Path Resolution", () => {
     const promptPath = twoParams.resolvePromptPath();
 
     assertEquals(typeof promptPath, "string");
-    assertEquals(promptPath.includes("to"), true);
-    assertEquals(promptPath.includes("project"), true);
+    assertEquals(promptPath.includes(firstDirective), true);
+    assertEquals(promptPath.includes(firstLayer), true);
   });
 
   it("should resolve schema paths correctly", () => {
     logger?.debug("Testing schema path resolution");
 
-    const profile = ConfigProfileName.createDefault();
-    const result = TwoParams.create("summary", "issue", profile);
+    const patternProvider = new DefaultTypePatternProvider();
+    const validDirectives = patternProvider.getDirectiveTypes();
+    const validLayers = patternProvider.getLayerTypes();
+    const secondDirective = validDirectives[1] || "summary";
+    const secondLayer = validLayers[1] || "issue";
+    const result = TwoParams.create(secondDirective, secondLayer);
 
     if (!result.ok) {
       throw new Error("Failed to create test TwoParams");
@@ -221,15 +254,19 @@ describe("TwoParams Integrated - Path Resolution", () => {
     const schemaPath = twoParams.resolveSchemaPath();
 
     assertEquals(typeof schemaPath, "string");
-    assertEquals(schemaPath.includes("summary"), true);
-    assertEquals(schemaPath.includes("issue"), true);
+    assertEquals(schemaPath.includes(secondDirective), true);
+    assertEquals(schemaPath.includes(secondLayer), true);
   });
 
   it("should generate command structures correctly", () => {
     logger?.debug("Testing command structure generation");
 
-    const profile = ConfigProfileName.createDefault();
-    const result = TwoParams.create("defect", "bugs", profile);
+    const patternProvider = new DefaultTypePatternProvider();
+    const validDirectives = patternProvider.getDirectiveTypes();
+    const validLayers = patternProvider.getLayerTypes();
+    const lastDirective = validDirectives[validDirectives.length - 1] || "defect";
+    const lastLayer = validLayers[validLayers.length - 1] || "bugs";
+    const result = TwoParams.create(lastDirective, lastLayer);
 
     if (!result.ok) {
       throw new Error("Failed to create test TwoParams");
@@ -238,8 +275,8 @@ describe("TwoParams Integrated - Path Resolution", () => {
     const twoParams = result.data;
     const command = twoParams.toCommand();
 
-    assertEquals(command.directive, "defect");
-    assertEquals(command.layer, "bugs");
+    assertEquals(command.directive, lastDirective);
+    assertEquals(command.layer, lastLayer);
     assertEquals(typeof command.timestamp, "object");
     assertEquals(command.timestamp instanceof Date, true);
   });
@@ -253,10 +290,12 @@ describe("TwoParams Integrated - Error Handling", () => {
   it("should provide discriminated union error types", () => {
     logger?.debug("Testing error type discrimination");
 
-    const profile = ConfigProfileName.createDefault();
+    const patternProvider = new DefaultTypePatternProvider();
+    const validLayers = patternProvider.getLayerTypes();
+    const firstLayer = validLayers[0] || "project";
 
     // Test InvalidDirective error
-    const invalidDirectiveResult = TwoParams.create("INVALID_DIRECTIVE", "project", profile);
+    const invalidDirectiveResult = TwoParams.create("INVALID_DIRECTIVE", firstLayer);
     assertEquals(invalidDirectiveResult.ok, false);
 
     if (!invalidDirectiveResult.ok) {
@@ -265,14 +304,15 @@ describe("TwoParams Integrated - Error Handling", () => {
 
       if (error.kind === "InvalidDirective") {
         assertEquals(error.directive, "INVALID_DIRECTIVE");
-        assertExists(error.profile);
         assertExists(error.pattern);
         assertExists(error.cause);
       }
     }
 
     // Test InvalidLayer error
-    const invalidLayerResult = TwoParams.create("to", "INVALID_LAYER", profile);
+    const validDirectives = patternProvider.getDirectiveTypes();
+    const firstDirective = validDirectives[0] || "to";
+    const invalidLayerResult = TwoParams.create(firstDirective, "INVALID_LAYER");
     assertEquals(invalidLayerResult.ok, false);
 
     if (!invalidLayerResult.ok) {
@@ -290,15 +330,19 @@ describe("TwoParams Integrated - Error Handling", () => {
   it("should handle unsupported combinations gracefully", () => {
     logger?.debug("Testing unsupported combination handling");
 
-    const profile = ConfigProfileName.createDefault();
+    const patternProvider = new DefaultTypePatternProvider();
+    const validDirectives = patternProvider.getDirectiveTypes();
+    const validLayers = patternProvider.getLayerTypes();
+    const testDirective = validDirectives[1] || "summary";
+    const testLayer = validLayers[validLayers.length - 1] || "bugs";
 
     // Test a combination that might not be supported
     // Note: This depends on the actual business rules implementation
-    const result = TwoParams.create("summary", "bugs", profile);
+    const result = TwoParams.create(testDirective, testLayer);
 
     if (!result.ok && result.error.kind === "UnsupportedCombination") {
-      assertEquals(result.error.directive, "summary");
-      assertEquals(result.error.layer, "bugs");
+      assertEquals(result.error.directive, testDirective);
+      assertEquals(result.error.layer, testLayer);
       assertExists(result.error.message);
     }
   });
@@ -312,13 +356,12 @@ describe("TwoParams Integrated - Performance", () => {
   it("should handle repeated creation efficiently", () => {
     logger?.debug("Testing repeated creation performance");
 
-    const profile = ConfigProfileName.createDefault();
     const startTime = Date.now();
 
     // Create 100 instances to test performance (reduced for faster testing)
     for (let i = 0; i < 100; i++) {
       const combo = VALID_COMBINATIONS[i % VALID_COMBINATIONS.length];
-      const result = TwoParams.create(combo.directive, combo.layer, profile);
+      const result = TwoParams.create(combo.directive, combo.layer);
       if (!result.ok) {
         throw new Error(
           `Failed to create TwoParams for ${combo.directive}/${combo.layer}: ${
@@ -338,8 +381,12 @@ describe("TwoParams Integrated - Performance", () => {
   it("should maintain immutability across operations", () => {
     logger?.debug("Testing immutability properties");
 
-    const profile = ConfigProfileName.createDefault();
-    const result = TwoParams.create("to", "project", profile);
+    const patternProvider = new DefaultTypePatternProvider();
+    const validDirectives = patternProvider.getDirectiveTypes();
+    const validLayers = patternProvider.getLayerTypes();
+    const firstDirective = validDirectives[0] || "to";
+    const firstLayer = validLayers[0] || "project";
+    const result = TwoParams.create(firstDirective, firstLayer);
 
     if (!result.ok) {
       throw new Error("Failed to create test TwoParams");

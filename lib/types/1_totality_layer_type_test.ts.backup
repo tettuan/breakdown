@@ -12,9 +12,8 @@
 
 import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import { LayerType } from "./mod.ts";
-import { ConfigProfile } from "../config/mod.ts";
+import { ConfigProfile } from "@tettuan/breakdownconfig";
 import type { TwoParams_Result } from "../deps.ts";
-import { getLayerTypes } from "../test_helpers/config_test_helper.ts";
 
 // Test helper to create valid TwoParams_Result
 const createTwoParamsResult = (
@@ -29,12 +28,16 @@ const createTwoParamsResult = (
   options,
 });
 
-Deno.test("1_totality: LayerType.create handles all input cases exhaustively", async () => {
-  // Test all valid cases - configuration-based approach
-  const configLayerTypes = await getLayerTypes();
+Deno.test("1_totality: LayerType.create handles all input cases exhaustively", () => {
+  // Test all valid cases
   const validInputs = [
-    ...configLayerTypes,
-    // Additional valid test cases
+    "project",
+    "issue",
+    "task",
+    "bugs",
+    "feature",
+    "epic",
+    "temp",
     "a", // minimum length
     "a".repeat(30), // maximum length
     "test-layer",
@@ -75,12 +78,15 @@ Deno.test("1_totality: LayerType.create handles all input cases exhaustively", a
   }
 });
 
-Deno.test("1_totality: LayerType.create with TwoParams_Result compatibility", async () => {
-  // Test valid TwoParams_Result cases - configuration-based approach
-  const configLayerTypes = await getLayerTypes();
-  const validTwoParamsResults = configLayerTypes.map(layerType => 
-    createTwoParamsResult(layerType, "to")
-  );
+Deno.test("1_totality: LayerType.create with TwoParams_Result compatibility", () => {
+  // Test valid TwoParams_Result cases
+  const validTwoParamsResults = [
+    createTwoParamsResult("project"),
+    createTwoParamsResult("issue", "summary"),
+    createTwoParamsResult("task", "defect"),
+    createTwoParamsResult("bugs"),
+    createTwoParamsResult("feature"),
+  ];
 
   for (const twoParamsResult of validTwoParamsResults) {
     const result = LayerType.create(twoParamsResult);
@@ -115,18 +121,19 @@ Deno.test("1_totality: LayerType.create with TwoParams_Result compatibility", as
   }
 });
 
-Deno.test("1_totality: LayerType.fromString with comprehensive error handling", async () => {
-  // Test all valid string inputs - configuration-based approach
-  const configLayerTypes = await getLayerTypes();
+Deno.test("1_totality: LayerType.fromString with comprehensive error handling", () => {
+  // Test all valid string inputs
   const validStringInputs = [
-    ...configLayerTypes,
+    "project",
+    "issue",
+    "task",
     "custom-layer",
-    "layer_type", 
+    "layer_type",
     "test123",
   ];
 
   for (const input of validStringInputs) {
-    const result = await LayerType.fromString(input);
+    const result = LayerType.fromString(input);
     assertEquals(result.ok, true, `String input "${input}" should be valid`);
     if (result.ok) {
       assertEquals(result.data.value, input);
@@ -145,7 +152,7 @@ Deno.test("1_totality: LayerType.fromString with comprehensive error handling", 
   ];
 
   for (const testCase of invalidInputs) {
-    const result = await LayerType.fromString(testCase.input);
+    const result = LayerType.fromString(testCase.input);
     assertEquals(result.ok, false, `Input "${testCase.input}" should be invalid`);
     if (!result.ok) {
       assertEquals(result.error.kind, testCase.expectedKind);
@@ -235,9 +242,9 @@ Deno.test("1_totality: LayerType domain methods have total behavior", () => {
   }
 });
 
-Deno.test("1_totality: LayerType static methods provide complete coverage", async () => {
+Deno.test("1_totality: LayerType static methods provide complete coverage", () => {
   // getCommonLayerTypes should return consistent array
-  const commonTypes = await LayerType.getCommonLayerTypes();
+  const commonTypes = LayerType.getCommonLayerTypes();
   assertEquals(Array.isArray(commonTypes), true);
   assertEquals(commonTypes.length > 0, true);
   for (const type of commonTypes) {
@@ -247,19 +254,21 @@ Deno.test("1_totality: LayerType static methods provide complete coverage", asyn
   }
 
   // getKnownLayerTypes should include all common types
-  const knownTypes = await LayerType.getKnownLayers();
+  const knownTypes = LayerType.getKnownLayerTypes();
   assertEquals(Array.isArray(knownTypes), true);
   for (const commonType of commonTypes) {
     assertEquals(knownTypes.includes(commonType), true);
   }
 
-  // isValidLayer should handle all validation cases
-  assertEquals(await LayerType.isValidLayer("project"), true);
-  assertEquals(await LayerType.isValidLayer("invalid"), false);
-  assertEquals(await LayerType.isValidLayer(""), false);
+  // isValidLayer should handle all string inputs
+  assertEquals(typeof LayerType.isValidLayer("project"), "boolean");
+  assertEquals(typeof LayerType.isValidLayer("invalid"), "boolean");
+  assertEquals(typeof LayerType.isValidLayer(""), "boolean");
+  assertEquals(LayerType.isValidLayer("project"), true);
+  assertEquals(LayerType.isValidLayer("invalid"), false);
 });
 
-Deno.test("1_totality: LayerType instance methods provide complete behavior", async () => {
+Deno.test("1_totality: LayerType instance methods provide complete behavior", () => {
   const layerResult = LayerType.create("project");
   assertEquals(layerResult.ok, true);
 
@@ -267,10 +276,10 @@ Deno.test("1_totality: LayerType instance methods provide complete behavior", as
     const layer = layerResult.data;
 
     // isCommonLayerType should be total
-    assertEquals(typeof await layer.isCommonLayerType(), "boolean");
+    assertEquals(typeof layer.isCommonLayerType(), "boolean");
 
     // isKnownLayerType should be total
-    assertEquals(typeof await layer.isKnownLayerType(), "boolean");
+    assertEquals(typeof layer.isKnownLayerType(), "boolean");
 
     // toString should always return string
     assertEquals(typeof layer.toString(), "string");
@@ -298,8 +307,10 @@ Deno.test("1_totality: LayerType factory methods handle edge cases completely", 
   const unknownResult = LayerType.fromString("INVALID LAYER");
   assertEquals(unknownResult.ok, false);
   if (!unknownResult.ok) {
-    // Error should have message
-    assertExists(unknownResult.error.message);
-    assertEquals(typeof unknownResult.error.message, "string");
+    // Should have suggestions for invalid layer types
+    assertEquals("suggestions" in unknownResult.error, true);
+    if ("suggestions" in unknownResult.error) {
+      assertEquals(Array.isArray(unknownResult.error.suggestions), true);
+    }
   }
 });

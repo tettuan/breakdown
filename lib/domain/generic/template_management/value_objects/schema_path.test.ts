@@ -8,6 +8,7 @@ import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import { SchemaPath, type SchemaPathResult } from "./schema_path.ts";
 import { DirectiveType } from "../../../core/value_objects/directive_type.ts";
 import { LayerType } from "../../../../domain/core/value_objects/layer_type.ts";
+import { ConfigProfile } from "../../../../config/config_profile_name.ts";
 import type { TwoParams_Result } from "../../../../deps.ts";
 
 // Test fixtures

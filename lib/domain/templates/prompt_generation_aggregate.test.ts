@@ -14,6 +14,7 @@ import {
   TemplateVariables,
 } from "./prompt_generation_aggregate.ts";
 import { DirectiveType, LayerType } from "../../types/mod.ts";
+import { ConfigProfile } from "../../config/config_profile_name.ts";
 import type { TwoParams_Result } from "../../deps.ts";
 
 // Test fixtures

@@ -11,8 +11,8 @@
 // Value Objects
 export * from "./value_objects/mod.ts";
 
-// Config Profile Name (moved from types module)
-export { ConfigProfileName } from "../../config/config_profile_name.ts";
+// Config Profile (moved from types module)
+export { ConfigProfile } from "../../config/config_profile_name.ts";
 
 // Domain Aggregates - Using optimized integrated implementation
 export { TwoParams, type TwoParamsValidationError } from "./aggregates/two_params_optimized.ts";

@@ -15,7 +15,6 @@ import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { TwoParams } from "../../../lib/domain/core/aggregates/two_params_optimized.ts";
 import { DirectiveType as _DirectiveType } from "../../../lib/domain/core/value_objects/directive_type.ts";
 import { LayerType as _LayerType } from "../../../lib/domain/core/value_objects/layer_type.ts";
-import { ConfigProfileName } from "../../../lib/config/config_profile_name.ts";
 
 const logger = new BreakdownLogger("two-params-comprehensive");
 
@@ -25,7 +24,7 @@ describe("TwoParams Aggregate Comprehensive Tests", () => {
       logger.debug("Testing comprehensive TwoParams creation");
 
       // Arrange: Common combinations
-      const profile = ConfigProfileName.createDefault();
+      const profile = "default";
       const validCombinations = [
         { directive: "to", layer: "project" },
         { directive: "to", layer: "issue" },
@@ -37,7 +36,7 @@ describe("TwoParams Aggregate Comprehensive Tests", () => {
 
       // Act & Assert: Test each combination
       for (const combo of validCombinations) {
-        const result = TwoParams.create(combo.directive, combo.layer, profile);
+        const result = TwoParams.create(combo.directive, combo.layer);
         assert(result.ok, `Combination ${combo.directive}/${combo.layer} should succeed`);
 
         if (result.ok) {
@@ -63,7 +62,7 @@ describe("TwoParams Aggregate Comprehensive Tests", () => {
     it("should handle edge cases in TwoParams creation", () => {
       logger.debug("Testing TwoParams edge cases");
 
-      const profile = ConfigProfileName.createDefault();
+      const profile = "default";
 
       // Test edge cases
       const edgeCases = [
@@ -91,7 +90,6 @@ describe("TwoParams Aggregate Comprehensive Tests", () => {
         const result = TwoParams.create(
           edgeCase.directive as string,
           edgeCase.layer as string,
-          profile,
         );
         assertFalse(result.ok, `Edge case ${edgeCase.directive}/${edgeCase.layer} should fail`);
 
@@ -109,8 +107,8 @@ describe("TwoParams Aggregate Comprehensive Tests", () => {
       logger.debug("Testing aggregate invariants maintenance");
 
       // Arrange
-      const profile = ConfigProfileName.createDefault();
-      const result = TwoParams.create("to", "issue", profile);
+      const profile = "default";
+      const result = TwoParams.create("to", "issue");
       assert(result.ok, "Setup should succeed");
 
       const twoParams = result.data;
@@ -159,8 +157,8 @@ describe("TwoParams Aggregate Comprehensive Tests", () => {
       logger.debug("Testing path resolution consistency");
 
       // Arrange
-      const profile = ConfigProfileName.createDefault();
-      const result = TwoParams.create("to", "issue", profile);
+      const profile = "default";
+      const result = TwoParams.create("to", "issue");
       assert(result.ok, "Setup should succeed");
 
       const twoParams = result.data;
@@ -192,8 +190,8 @@ describe("TwoParams Aggregate Comprehensive Tests", () => {
       logger.debug("Testing adaptation parameter handling");
 
       // Arrange
-      const profile = ConfigProfileName.createDefault();
-      const result = TwoParams.create("to", "task", profile);
+      const profile = "default";
+      const result = TwoParams.create("to", "task");
       assert(result.ok, "Setup should succeed");
 
       const twoParams = result.data;
@@ -234,14 +232,14 @@ describe("TwoParams Aggregate Comprehensive Tests", () => {
       logger.debug("Testing file system path validity");
 
       // Arrange
-      const profile = ConfigProfileName.createDefault();
+      const profile = "default";
       const directives = ["to", "summary", "defect"];
       const layers = ["project", "issue", "task", "epic"];
 
       // Test all combinations
       for (const directive of directives) {
         for (const layer of layers) {
-          const result = TwoParams.create(directive, layer, profile);
+          const result = TwoParams.create(directive, layer);
           if (!result.ok) continue; // Skip invalid combinations
 
           const twoParams = result.data;
@@ -288,8 +286,8 @@ describe("TwoParams Aggregate Comprehensive Tests", () => {
       logger.debug("Testing BreakdownCommand generation");
 
       // Arrange
-      const profile = ConfigProfileName.createDefault();
-      const result = TwoParams.create("to", "project", profile);
+      const profile = "default";
+      const result = TwoParams.create("to", "project");
       assert(result.ok, "Setup should succeed");
 
       const twoParams = result.data;
@@ -368,15 +366,15 @@ describe("TwoParams Aggregate Comprehensive Tests", () => {
       logger.debug("Testing equality semantics");
 
       // Arrange
-      const profile1 = ConfigProfileName.createDefault();
-      const profile2 = ConfigProfileName.fromCliOption("custom");
+      const profile1 = "default";
+      const profile2 = "custom";
 
       // Create various TwoParams instances
-      const result1a = TwoParams.create("to", "issue", profile1);
-      const result1b = TwoParams.create("to", "issue", profile1);
-      const result2 = TwoParams.create("summary", "issue", profile1);
-      const result3 = TwoParams.create("to", "project", profile1);
-      const result4 = TwoParams.create("to", "issue", profile2);
+      const result1a = TwoParams.create("to", "issue");
+      const result1b = TwoParams.create("to", "issue");
+      const result2 = TwoParams.create("summary", "issue");
+      const result3 = TwoParams.create("to", "project");
+      const result4 = TwoParams.create("to", "issue");
 
       assert(
         result1a.ok && result1b.ok && result2.ok && result3.ok && result4.ok,
@@ -423,8 +421,8 @@ describe("TwoParams Aggregate Comprehensive Tests", () => {
       logger.debug("Testing string representations");
 
       // Arrange
-      const profile = ConfigProfileName.createDefault();
-      const result = TwoParams.create("to", "issue", profile);
+      const profile = "default";
+      const result = TwoParams.create("to", "issue");
       assert(result.ok, "Setup should succeed");
 
       const twoParams = result.data;
@@ -462,14 +460,14 @@ describe("TwoParams Aggregate Comprehensive Tests", () => {
     it("should demonstrate efficient creation and operation patterns", () => {
       logger.debug("Testing performance characteristics");
 
-      const profile = ConfigProfileName.createDefault();
+      const profile = "default";
 
       // Test creation performance
       const startTime = Date.now();
       const twoParamsInstances = [];
 
       for (let i = 0; i < 100; i++) {
-        const result = TwoParams.create("to", "issue", profile);
+        const result = TwoParams.create("to", "issue");
         if (result.ok) {
           twoParamsInstances.push(result.data);
         }

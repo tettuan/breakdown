@@ -34,7 +34,7 @@ Breakdown本体は、4つの外部モジュールを持っている。
 1. configオプションを取得し、カスタム設定を取得 → Breakdown本体で実施
 2. argsを受け取って、パラメータとオプションを分けて把握 → BreakdownParams へ移譲
 2-1. このとき、ConfigProfileDetector にて、パラメータをカスタム設定するprofileが必要（任意）
-2-1-1. ConfigProfileDetectorは、ConfigProfileName型として型安全性を保証し、有効性検証済みのprofile名を返す
+2-1-1. ConfigProfileDetectorは、ConfigProfile型として型安全性を保証し、有効性検証済みのprofile名を返す
 3. BreakdownParams から Result を受け取り、パラメータの数で分岐（zero,one,two）
 4. zero,one,two の処理に分岐して実施
 
@@ -52,7 +52,7 @@ Breakdown本体は、4つの外部モジュールを持っている。
 - **DirectiveType**: 「何をするか」を表す処理方向（to=変換, summary=要約, defect=欠陥検出）
 - **LayerType**: 「どのレベルで」を表す階層（project=プロジェクト全体, issue=課題単位, task=タスク単位）
 
-両方ともパターンベースバリデーションにより信頼性を確保し、ConfigProfileNameによる設定切り替えに対応している。
+両方ともパターンベースバリデーションにより信頼性を確保し、ConfigProfileによる設定切り替えに対応している。
 
 詳細は `docs/breakdown/domain_core/two_params_types.ja.md` を参照。
 

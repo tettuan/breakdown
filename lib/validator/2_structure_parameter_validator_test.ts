@@ -31,19 +31,25 @@ import { createTwoParamsResult } from "../types/two_params_result_extension.ts";
 // Test Utilities
 // =============================================================================
 
-function createMockTypePatternProvider(): TypePatternProvider {
+function createMockTypePatternProvider(
+  customDirectives?: readonly string[],
+  customLayers?: readonly string[]
+): TypePatternProvider {
+  const directiveTypes = customDirectives || ["to", "summary", "defect"];
+  const layerTypes = customLayers || ["project", "issue", "task"];
+  
   return {
-    validateDirectiveType: (value: string) => ["to", "summary", "defect"].includes(value),
-    validateLayerType: (value: string) => ["project", "issue", "task"].includes(value),
-    getValidDirectiveTypes: () => ["to", "summary", "defect"],
-    getValidLayerTypes: () => ["project", "issue", "task"],
+    validateDirectiveType: (value: string) => directiveTypes.includes(value),
+    validateLayerType: (value: string) => layerTypes.includes(value),
+    getValidDirectiveTypes: () => directiveTypes,
+    getValidLayerTypes: () => layerTypes,
     getDirectivePattern: () => {
-      const pattern = TwoParamsDirectivePattern.create("^(to|summary|defect)$");
+      const pattern = TwoParamsDirectivePattern.create(`^(${directiveTypes.join("|")})$`);
       if (!pattern) throw new Error("Failed to create directive pattern");
       return pattern;
     },
     getLayerTypePattern: () => {
-      const pattern = TwoParamsLayerTypePattern.create("^(project|issue|task)$");
+      const pattern = TwoParamsLayerTypePattern.create(`^(${layerTypes.join("|")})$`);
       return pattern;
     },
   };

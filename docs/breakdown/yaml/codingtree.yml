@@ -16,13 +16,13 @@ type_flow:
 
     - step: 2
       from: "string | null"
-      to: "ConfigProfileName"
-      operation: "ConfigProfileName.create()"
+      to: "ConfigProfile"
+      operation: "ConfigProfile.create()"
       description: "Smart Constructor パターンで検証済み型を作成"
-      totality_principle: "null → ConfigProfileName { value: null }"
+      totality_principle: "null → ConfigProfile { value: null }"
 
     - step: 3
-      from: "ConfigProfileName"
+      from: "ConfigProfile"
       to: "Record<string, unknown>"
       operation: "loadBreakdownConfig()"
       description: "BreakdownConfig経由で設定を読み込み"
@@ -37,13 +37,13 @@ type_flow:
 
 # 全域性原則適用の主要型
 totality_types:
-  ConfigProfileName:
+  ConfigProfile:
     pattern: "Smart Constructor"
-    file: "lib/types/config_profile_name.ts"
+    file: "lib/config/config_profile_name.ts"
     principle: "null許可でありえない状態を排除"
     structure:
       private_constructor: true
-      static_create: "string | null → ConfigProfileName"
+      static_create: "string | null → ConfigProfile"
       value_property: "string | null"
     validation:
       pattern: "^[a-z0-9_-]{1,50}$"
@@ -71,7 +71,7 @@ totality_types:
 type_safety:
   input_validation:
     - "ConfigPrefixDetector: 引数パターンマッチング"
-    - "ConfigProfileName: 正規表現による制約"
+    - "ConfigProfile: 正規表現による制約"
     - "ParamsCustomConfig: 設定構造の検証"
 
   error_as_values:
@@ -80,19 +80,19 @@ type_safety:
     - "undefined: 設定なしの明示的表現"
 
   impossible_states_elimination:
-    - "ConfigProfileName.value: null or valid string (無効文字列の排除)"
+    - "ConfigProfile.value: null or valid string (無効文字列の排除)"
     - "Result: success or error (曖昧な状態の排除)"
     - "CustomConfig: undefined or valid config (部分的無効設定の排除)"
 
 # 主要な型受け渡しポイント
 key_handoffs:
   cli_to_config:
-    type: "string[] → ConfigProfileName"
+    type: "string[] → ConfigProfile"
     responsibility: "CLI引数から型安全な設定名へ"
-    files: ["cli/breakdown.ts", "lib/types/config_profile_name.ts"]
+    files: ["cli/breakdown.ts", "lib/config/config_profile.ts"]
 
   config_to_breakdown:
-    type: "ConfigProfileName → Record<string, unknown>"
+    type: "ConfigProfile → Record<string, unknown>"
     responsibility: "設定名から実際の設定値へ"
     files: ["lib/config/loader.ts"]
     external_dependency: "jsr:@tettuan/breakdownconfig@^1.1.4"

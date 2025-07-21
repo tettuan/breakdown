@@ -16,7 +16,7 @@ import {
 import { describe, it } from "@std/testing/bdd";
 import type { TwoParams_Result } from "../../deps.ts";
 import { DirectiveType, LayerType } from "../../types/mod.ts";
-import { ConfigProfileName } from "../../config/config_profile_name.ts";
+// ConfigProfile import removed - using BreakdownConfig directly
 import {
   PromptTemplate as _PromptTemplate,
   TemplateContent as _TemplateContent,
@@ -82,7 +82,6 @@ describe("FileTemplateRepository - Architecture", () => {
       const directive = directiveResult.data;
       const layerResult = LayerType.create(
         mockTwoParams_Result.layerType,
-        ConfigProfileName.createDefault(),
       );
       if (!layerResult.ok) {
         throw new Error(`Failed to create LayerType: ${layerResult.error.message}`);
@@ -138,7 +137,6 @@ describe("FileTemplateRepository - Architecture", () => {
       const directive = directiveResult.data;
       const layerResult = LayerType.create(
         mockTwoParams_Result.layerType,
-        ConfigProfileName.createDefault(),
       );
       if (!layerResult.ok) {
         throw new Error(`Failed to create LayerType: ${layerResult.error.message}`);
@@ -244,7 +242,6 @@ describe("FileTemplateRepository - Architecture", () => {
       const directive = directiveResult.data;
       const layerResult = LayerType.create(
         mockTwoParams_Result.layerType,
-        ConfigProfileName.createDefault(),
       );
       if (!layerResult.ok) {
         throw new Error(`Failed to create LayerType: ${layerResult.error.message}`);
@@ -287,7 +284,6 @@ describe("FileTemplateRepository - Architecture", () => {
       const directive = directiveResult.data;
       const layerResult = LayerType.create(
         mockTwoParams_Result.layerType,
-        ConfigProfileName.createDefault(),
       );
       if (!layerResult.ok) {
         throw new Error(`Failed to create LayerType: ${layerResult.error.message}`);
@@ -339,7 +335,6 @@ describe("FileTemplateRepository - Architecture", () => {
       const directive = directiveResult.data;
       const layerResult = LayerType.create(
         mockTwoParams_Result.layerType,
-        ConfigProfileName.createDefault(),
       );
       if (!layerResult.ok) {
         throw new Error(`Failed to create LayerType: ${layerResult.error.message}`);
@@ -479,7 +474,6 @@ describe("FileTemplateRepository - Architecture", () => {
       const directive = directiveResult.data;
       const layerResult = LayerType.create(
         mockTwoParams_Result.layerType,
-        ConfigProfileName.createDefault(),
       );
       if (!layerResult.ok) {
         throw new Error(`Failed to create LayerType: ${layerResult.error.message}`);

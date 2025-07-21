@@ -176,7 +176,7 @@ export class DefaultTypePatternProvider implements TypePatternProvider {
    *
    * @returns Readonly array of valid DirectiveType string values
    */
-  getValidDirectiveTypes(): string[] {
+  getValidDirectiveTypes(): readonly string[] {
     return this.getValidDirectiveValues();
   }
 
@@ -185,7 +185,7 @@ export class DefaultTypePatternProvider implements TypePatternProvider {
    *
    * @returns Readonly array of valid LayerType string values
    */
-  getValidLayerTypes(): string[] {
+  getValidLayerTypes(): readonly string[] {
     return this.getValidLayerValues();
   }
 
@@ -217,6 +217,24 @@ export class DefaultTypePatternProvider implements TypePatternProvider {
       return match[1].split("|");
     }
     return [];
+  }
+
+  /**
+   * Get LayerType values (legacy compatibility method)
+   *
+   * @returns Array of valid LayerType string values
+   */
+  getLayerTypes(): string[] {
+    return this.getValidLayerValues();
+  }
+
+  /**
+   * Get DirectiveType values (legacy compatibility method)
+   *
+   * @returns Array of valid DirectiveType string values
+   */
+  getDirectiveTypes(): string[] {
+    return this.getValidDirectiveValues();
   }
 
   /**

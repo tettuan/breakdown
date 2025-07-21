@@ -1,4 +1,4 @@
-# プロジェクト: 包括的クリーンアップの完全達成 - ハードコード排除・ConfigProfileName依存除去の最終確認と実行
+# プロジェクト: 包括的クリーンアップの完全達成 - ハードコード排除・ConfigProfile依存除去の最終確認と実行
 
 ## チームの構成
 
@@ -22,10 +22,10 @@ const directiveTypes = ["to", "find", "summary", "defect"];     // domain/templa
 const directivePatterns = ["to", "summary", "defect"];          // cli/validators/
 ```
 
-#### 2. ConfigProfileName依存の部分残存
+#### 2. ConfigProfile依存の部分残存
 ```typescript
 // ❌ 残存中：lib/factory/input_file_path_resolver_totality.ts
-readonly profile?: ConfigProfileName;                            // 2箇所
+readonly profile?: ConfigProfile;                            // 2箇所
 ```
 
 #### 3. テストの設定ファイル化未完了
@@ -34,15 +34,15 @@ readonly profile?: ConfigProfileName;                            // 2箇所
 ## タスクとゴール
 
 ```yml
-- 緊急対応の背景: 先行作業では部分的成果にとどまり、20箇所以上のハードコード配列とConfigProfileName依存が残存している状態
+- 緊急対応の背景: 先行作業では部分的成果にとどまり、20箇所以上のハードコード配列とConfigProfile依存が残存している状態
 - 緊急対応タスク: |
   1. lib/内の全ハードコード配列（20箇所以上）の完全排除 |
-  2. 残存するConfigProfileName依存（input_file_path_resolver_totality.ts等）の完全除去 |
+  2. 残存するConfigProfile依存（input_file_path_resolver_totality.ts等）の完全除去 |
   3. 全テストファイルの設定ファイルベース実装への完全移行 |
   4. 条件分岐ハードコード（directive === "find"等）の完全排除 |
   5. BreakdownParams統合設計の完全実装確認 |
   6. 全テストの成功確認とCLI動作検証 |
-- ゴール: lib/内からハードコード配列・ConfigProfileName依存・条件分岐ハードコードが完全に除去され、BreakdownParams統合設計に完全準拠した状態を実現する
+- ゴール: lib/内からハードコード配列・ConfigProfile依存・条件分岐ハードコードが完全に除去され、BreakdownParams統合設計に完全準拠した状態を実現する
 ```
 
 ## 実装要件
@@ -64,10 +64,10 @@ lib/templates/1_behavior_prompts_test.ts
 lib/types/1_behavior_type_factory_test.ts
 ```
 
-#### 残存ConfigProfileName依存
+#### 残存ConfigProfile依存
 ```
-lib/factory/input_file_path_resolver_totality.ts    # profile?: ConfigProfileName (2箇所)
-lib/types/mod.ts                                     # コメント内のConfigProfileName参照
+lib/factory/input_file_path_resolver_totality.ts    # profile?: ConfigProfile (2箇所)
+lib/types/mod.ts                                     # コメント内のConfigProfile参照
 ```
 
 ### 2. 調査・実行方針
@@ -79,10 +79,10 @@ lib/types/mod.ts                                     # コメント内のConfigP
    grep -r "getDirectiveTypes\|getLayerTypes" lib/
    ```
 
-2. **ConfigProfileName依存の完全調査**
+2. **ConfigProfile依存の完全調査**
    ```bash
-   grep -r "ConfigProfileName" lib/ --exclude-dir=node_modules
-   grep -r "profile\?\s*:\s*ConfigProfileName" lib/
+   grep -r "ConfigProfile" lib/ --exclude-dir=node_modules
+   grep -r "profile\?\s*:\s*ConfigProfile" lib/
    ```
 
 3. **条件分岐ハードコードの調査**
@@ -108,7 +108,7 @@ lib/types/mod.ts                                     # コメント内のConfigP
 # ❌ これらの検索結果が空でなければ作業未完了
 grep -r "\[\"to\".*\"summary\".*\"defect\"\]" lib/
 grep -r "\[\"project\".*\"issue\".*\"task\"\]" lib/
-grep -r "ConfigProfileName" lib/ --exclude="*.md"
+grep -r "ConfigProfile" lib/ --exclude="*.md"
 grep -r "getDirectiveTypes\|getLayerTypes" lib/
 grep -r "directive.*===.*\"find\"" lib/
 ```
@@ -143,7 +143,7 @@ function fromTwoParamsResult(result: TwoParamsResult): TwoParams {
 #### 設定ファイルベーステスト
 ```typescript
 // ✅ テストでの正しいパターン
-const userConfig = await loadUserConfig(ConfigProfileName.createDefault());
+const userConfig = await loadUserConfig(ConfigProfile.createDefault());
 const customConfig = ParamsCustomConfig.create(userConfig);
 const result = await breakdownParams(args, customConfig);
 ```
@@ -152,12 +152,12 @@ const result = await breakdownParams(args, customConfig);
 
 ### Step 1: 緊急調査（5分）
 - ハードコード配列の完全箇所リスト作成
-- ConfigProfileName依存の残存箇所特定
+- ConfigProfile依存の残存箇所特定
 - 条件分岐ハードコードの残存箇所特定
 
 ### Step 2: 優先度1実行（15分）
 - DirectiveType/LayerType value objectsの純粋化
-- ConfigProfileName依存の完全除去
+- ConfigProfile依存の完全除去
 - fromTwoParamsResult()関数実装
 
 ### Step 3: 優先度2実行（20分）
@@ -174,7 +174,7 @@ const result = await breakdownParams(args, customConfig);
 
 ### 必須条件（全て満たすこと）
 - [ ] `grep -r "\[\"to\".*\"summary\"" lib/` の結果が空
-- [ ] `grep -r "ConfigProfileName" lib/ --exclude="*.md"` の結果が空
+- [ ] `grep -r "ConfigProfile" lib/ --exclude="*.md"` の結果が空
 - [ ] `grep -r "getDirectiveTypes\|getLayerTypes" lib/` の結果が空
 - [ ] `grep -r "directive.*===.*\"find\"" lib/` の結果が空
 - [ ] `deno task test` が全てpass
@@ -195,6 +195,6 @@ const result = await breakdownParams(args, customConfig);
 
 この作業は**設計原則への完全準拠**を実現するための最終段階である。先行作業では部分的成果にとどまったため、**完全性の確保**が絶対条件となる。
 
-**20箇所以上のハードコード配列**と**ConfigProfileName依存**の完全除去により、真のBreakdownParams統合設計を実現せよ。妥協は許されない。
+**20箇所以上のハードコード配列**と**ConfigProfile依存**の完全除去により、真のBreakdownParams統合設計を実現せよ。妥協は許されない。
 
 **開始指示**: 直ちに残存問題の完全調査を実行し、段階的完全排除により設計原則違反を根絶せよ。

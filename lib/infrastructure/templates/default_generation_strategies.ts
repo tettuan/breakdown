@@ -2,7 +2,7 @@
  * @fileoverview Default Generation Strategies - Infrastructure implementations
  *
  * This module provides default implementations of generation strategies
- * for variable resolution and template selection.
+ * for variable resolution and template selection with BreakdownConfig-based configuration.
  *
  * @module infrastructure/templates/default_generation_strategies
  */
@@ -18,12 +18,113 @@ import type {
 import type { Result } from "../../types/result.ts";
 import { join } from "@std/path";
 import { exists } from "@std/fs";
+import { BreakdownConfig } from "../../deps.ts";
+
+/**
+ * Configuration structure for generation strategies
+ */
+interface GenerationStrategiesConfig {
+  variableResolution?: {
+    environment?: {
+      prefix?: string;
+      priority?: number;
+    };
+    filePath?: {
+      priority?: number;
+    };
+    defaultValues?: {
+      priority?: number;
+      variables?: Record<string, string>;
+    };
+  };
+  templateSelection?: {
+    standard?: {
+      defaultFilename?: string;
+    };
+    fallback?: {
+      enabled?: boolean;
+      mappings?: Record<string, string>;
+    };
+  };
+}
+
+/**
+ * Configuration loader for generation strategies
+ */
+class GenerationStrategiesConfigLoader {
+  private config: GenerationStrategiesConfig = {};
+
+  constructor(private readonly configProfile: string) {}
+
+  async loadConfig(): Promise<void> {
+    try {
+      const configResult = await BreakdownConfig.create(this.configProfile, Deno.cwd());
+      if (!configResult.success) {
+        this.config = {};
+        return;
+      }
+      
+      const breakdownConfig = configResult.data;
+      await breakdownConfig.loadConfig();
+      const mergedConfig = await breakdownConfig.getConfig();
+      
+      // Extract generation_strategies configuration
+      this.config = (mergedConfig as any)?.generation_strategies || {};
+    } catch (error) {
+      // If config loading fails, use empty config (defaults will be applied)
+      this.config = {};
+    }
+  }
+
+  getEnvironmentConfig() {
+    return {
+      prefix: this.config.variableResolution?.environment?.prefix || "BREAKDOWN_",
+      priority: this.config.variableResolution?.environment?.priority || 10,
+    };
+  }
+
+  getFilePathConfig() {
+    return {
+      priority: this.config.variableResolution?.filePath?.priority || 50,
+    };
+  }
+
+  getDefaultValuesConfig() {
+    return {
+      priority: this.config.variableResolution?.defaultValues?.priority || 1,
+      variables: this.config.variableResolution?.defaultValues?.variables || {
+        schema_file: "",
+        adaptation: "",
+      },
+    };
+  }
+
+  getStandardTemplateConfig() {
+    return {
+      defaultFilename: this.config.templateSelection?.standard?.defaultFilename || "f_",
+    };
+  }
+
+  getFallbackConfig() {
+    return {
+      enabled: this.config.templateSelection?.fallback?.enabled ?? true,
+      mappings: this.config.templateSelection?.fallback?.mappings || {
+        "defect/project": "f_project.md",
+        "defect/issue": "f_issue.md",
+        "defect/task": "f_task.md",
+      },
+    };
+  }
+}
 
 /**
  * Environment variable resolution strategy
  */
 export class EnvironmentVariableStrategy implements VariableResolutionStrategy {
-  constructor(private readonly prefix: string = "BREAKDOWN_") {}
+  constructor(
+    private readonly prefix: string = "BREAKDOWN_",
+    private readonly priority: number = 10,
+  ) {}
 
   resolve(variableName: string, context: ResolutionContext): Promise<string | undefined> {
     const envName = this.prefix + variableName.toUpperCase();
@@ -41,7 +142,7 @@ export class EnvironmentVariableStrategy implements VariableResolutionStrategy {
   }
 
   getPriority(): number {
-    return 10; // Low priority
+    return this.priority;
   }
 }
 
@@ -49,6 +150,8 @@ export class EnvironmentVariableStrategy implements VariableResolutionStrategy {
  * File path resolution strategy
  */
 export class FilePathResolutionStrategy implements VariableResolutionStrategy {
+  constructor(private readonly priority: number = 50) {}
+
   async resolve(variableName: string, context: ResolutionContext): Promise<string | undefined> {
     // Ensure providedVariables exists and is an object
     if (!context.providedVariables || typeof context.providedVariables !== "object") {
@@ -81,7 +184,7 @@ export class FilePathResolutionStrategy implements VariableResolutionStrategy {
   }
 
   getPriority(): number {
-    return 50; // Medium priority
+    return this.priority;
   }
 }
 
@@ -91,7 +194,10 @@ export class FilePathResolutionStrategy implements VariableResolutionStrategy {
 export class DefaultValueStrategy implements VariableResolutionStrategy {
   private readonly defaults: Map<string, string>;
 
-  constructor(defaults: Record<string, string> = {}) {
+  constructor(
+    defaults: Record<string, string> = {},
+    private readonly priority: number = 1,
+  ) {
     this.defaults = new Map(Object.entries({
       schema_file: "",
       adaptation: "",
@@ -104,7 +210,7 @@ export class DefaultValueStrategy implements VariableResolutionStrategy {
   }
 
   getPriority(): number {
-    return 1; // Lowest priority
+    return this.priority;
   }
 }
 
@@ -172,27 +278,81 @@ export class FallbackTemplateSelectionStrategy implements TemplateSelectionStrat
 /**
  * Create default variable resolution strategies
  */
-export function createDefaultVariableStrategies(): VariableResolutionStrategy[] {
+export function createDefaultVariableStrategies(
+  configProfile: string = "default",
+): VariableResolutionStrategy[] {
+  const configLoader = new GenerationStrategiesConfigLoader(configProfile);
+  
+  // Note: This is synchronous creation with default values
+  // For async config loading, use createDefaultVariableStrategiesAsync
+  const envConfig = configLoader.getEnvironmentConfig();
+  const fileConfig = configLoader.getFilePathConfig();
+  const defaultConfig = configLoader.getDefaultValuesConfig();
+
   return [
-    new FilePathResolutionStrategy(),
-    new EnvironmentVariableStrategy(),
-    new DefaultValueStrategy(),
+    new FilePathResolutionStrategy(fileConfig.priority),
+    new EnvironmentVariableStrategy(envConfig.prefix, envConfig.priority),
+    new DefaultValueStrategy(defaultConfig.variables, defaultConfig.priority),
+  ];
+}
+
+/**
+ * Create default variable resolution strategies with async config loading
+ */
+export async function createDefaultVariableStrategiesAsync(
+  configProfile: string = "default",
+): Promise<VariableResolutionStrategy[]> {
+  const configLoader = new GenerationStrategiesConfigLoader(configProfile);
+  await configLoader.loadConfig();
+  
+  const envConfig = configLoader.getEnvironmentConfig();
+  const fileConfig = configLoader.getFilePathConfig();
+  const defaultConfig = configLoader.getDefaultValuesConfig();
+
+  return [
+    new FilePathResolutionStrategy(fileConfig.priority),
+    new EnvironmentVariableStrategy(envConfig.prefix, envConfig.priority),
+    new DefaultValueStrategy(defaultConfig.variables, defaultConfig.priority),
   ];
 }
 
 /**
  * Create default template selection strategy
  */
-export function createDefaultSelectionStrategy(): TemplateSelectionStrategy {
-  const fallbackMappings = new Map([
-    // Add any default fallback mappings here
-    ["defect/project", "f_project.md"],
-    ["defect/issue", "f_issue.md"],
-    ["defect/task", "f_task.md"],
-  ]);
+export function createDefaultSelectionStrategy(
+  configProfile: string = "default",
+): TemplateSelectionStrategy {
+  const configLoader = new GenerationStrategiesConfigLoader(configProfile);
+  
+  // Note: This is synchronous creation with default values
+  // For async config loading, use createDefaultSelectionStrategyAsync
+  const standardConfig = configLoader.getStandardTemplateConfig();
+  const fallbackConfig = configLoader.getFallbackConfig();
+  
+  const fallbackMappings = new Map(Object.entries(fallbackConfig.mappings));
 
   return new FallbackTemplateSelectionStrategy(
-    new StandardTemplateSelectionStrategy(),
+    new StandardTemplateSelectionStrategy(standardConfig.defaultFilename),
+    fallbackMappings,
+  );
+}
+
+/**
+ * Create default template selection strategy with async config loading
+ */
+export async function createDefaultSelectionStrategyAsync(
+  configProfile: string = "default",
+): Promise<TemplateSelectionStrategy> {
+  const configLoader = new GenerationStrategiesConfigLoader(configProfile);
+  await configLoader.loadConfig();
+  
+  const standardConfig = configLoader.getStandardTemplateConfig();
+  const fallbackConfig = configLoader.getFallbackConfig();
+  
+  const fallbackMappings = new Map(Object.entries(fallbackConfig.mappings));
+
+  return new FallbackTemplateSelectionStrategy(
+    new StandardTemplateSelectionStrategy(standardConfig.defaultFilename),
     fallbackMappings,
   );
 }

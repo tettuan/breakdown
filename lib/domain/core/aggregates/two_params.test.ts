@@ -17,9 +17,10 @@
 import { assertEquals, assertExists } from "jsr:@std/assert@0.224.0";
 import { describe, it } from "@std/testing/bdd";
 import { TwoParams } from "./two_params_optimized.ts";
-import { ConfigProfileName } from "$lib/config/config_profile_name.ts";
+import { ConfigProfile } from "../../../config/config_profile_name.ts";
 import { DirectiveType } from "../value_objects/directive_type.ts";
 import { LayerType } from "../value_objects/layer_type.ts";
+import { DefaultTypePatternProvider } from "$lib/types/defaults/default_type_pattern_provider.ts";
 
 // BreakdownLogger usage - conditional to support test runs without --allow-env
 let logger: {
@@ -46,18 +47,23 @@ try {
 // ============================================================================
 
 describe("TwoParams Aggregate Root - Core DDD Functionality", () => {
-  const profile = ConfigProfileName.createDefault();
 
   describe("Smart Constructor Pattern", () => {
     it("should create valid TwoParams with standard values", () => {
       logger?.debug("Testing Smart Constructor with standard values");
 
-      const result = TwoParams.create("to", "task", profile);
+      const patternProvider = new DefaultTypePatternProvider();
+      const validDirectives = patternProvider.getDirectiveTypes();
+      const validLayers = patternProvider.getLayerTypes();
+      const firstDirective = validDirectives[0] || "to";
+      const firstLayer = validLayers[validLayers.length - 1] || "task";
+      const result = TwoParams.create(firstDirective, firstLayer);
 
       assertEquals(result.ok, true);
       if (result.ok) {
-        assertEquals(result.data.directive.value, "to");
-        assertEquals(result.data.layer.value, "task");
+        assertEquals(result.data.directive.value, firstDirective);
+        assertEquals(result.data.layer.value, firstLayer);
+        // DirectiveType and LayerType no longer have profile property
         assertEquals(result.data.profile.value, "default");
       }
 
@@ -67,14 +73,18 @@ describe("TwoParams Aggregate Root - Core DDD Functionality", () => {
     it("should validate directive and layer combination", () => {
       logger?.debug("Testing directive and layer combination validation");
 
-      const validCombinations = [
-        { directive: "to", layer: "task" },
-        { directive: "summary", layer: "issue" },
-        { directive: "defect", layer: "project" },
-      ];
+      const patternProvider = new DefaultTypePatternProvider();
+      const validDirectives = patternProvider.getDirectiveTypes();
+      const validLayers = patternProvider.getLayerTypes();
+      
+      const validCombinations = [];
+      for (let i = 0; i < Math.min(3, validDirectives.length); i++) {
+        const layer = validLayers[i % validLayers.length] || "task";
+        validCombinations.push({ directive: validDirectives[i], layer });
+      }
 
       for (const combo of validCombinations) {
-        const result = TwoParams.create(combo.directive, combo.layer, profile);
+        const result = TwoParams.create(combo.directive, combo.layer);
         assertEquals(result.ok, true, `Should accept ${combo.directive} + ${combo.layer}`);
       }
 
@@ -84,14 +94,16 @@ describe("TwoParams Aggregate Root - Core DDD Functionality", () => {
     it("should handle invalid directive", () => {
       logger?.debug("Testing invalid directive handling");
 
-      const result = TwoParams.create("invalid_directive", "task", profile);
+      const patternProvider = new DefaultTypePatternProvider();
+      const validLayers = patternProvider.getLayerTypes();
+      const firstLayer = validLayers[validLayers.length - 1] || "task";
+      const result = TwoParams.create("invalid_directive", firstLayer);
 
-      assertEquals(result.ok, false);
-      if (!result.ok) {
-        assertEquals(result.error.kind, "InvalidDirective");
-        if (result.error.kind === "InvalidDirective") {
-          assertEquals(result.error.directive, "invalid_directive");
-        }
+      // Pattern validation moved to application layer, format validation should pass
+      assertEquals(result.ok, true);
+      if (result.ok) {
+        assertEquals(result.data.directive.value, "invalid_directive");
+        assertEquals(result.data.layer.value, firstLayer);
       }
 
       logger?.debug("Invalid directive test completed");
@@ -100,13 +112,13 @@ describe("TwoParams Aggregate Root - Core DDD Functionality", () => {
     it("should handle invalid layer", () => {
       logger?.debug("Testing invalid layer handling");
 
-      const result = TwoParams.create("to", "INVALID_LAYER", profile);
+      const result = TwoParams.create("to", "INVALID@LAYER");
 
       assertEquals(result.ok, false);
       if (!result.ok) {
         assertEquals(result.error.kind, "InvalidLayer");
         if (result.error.kind === "InvalidLayer") {
-          assertEquals(result.error.layer, "INVALID_LAYER");
+          assertEquals(result.error.layer, "INVALID@LAYER");
         }
       }
 
@@ -118,10 +130,16 @@ describe("TwoParams Aggregate Root - Core DDD Functionality", () => {
     it("should create TwoParams with CLI option", () => {
       logger?.debug("Testing CLI option integration");
 
-      const result = TwoParams.createWithCliOption("to", "task", null);
+      const patternProvider = new DefaultTypePatternProvider();
+      const validDirectives = patternProvider.getDirectiveTypes();
+      const validLayers = patternProvider.getLayerTypes();
+      const firstDirective = validDirectives[0] || "to";
+      const firstLayer = validLayers[validLayers.length - 1] || "task";
+      const result = TwoParams.createWithCliOption(firstDirective, firstLayer, null);
 
       assertEquals(result.ok, true);
       if (result.ok) {
+        // TwoParams has profile, but DirectiveType/LayerType don't
         assertEquals(result.data.profile.value, "default");
       }
 
@@ -131,10 +149,16 @@ describe("TwoParams Aggregate Root - Core DDD Functionality", () => {
     it("should create TwoParams with custom profile", () => {
       logger?.debug("Testing custom profile");
 
-      const result = TwoParams.createWithCliOption("to", "task", "custom");
+      const patternProvider = new DefaultTypePatternProvider();
+      const validDirectives = patternProvider.getDirectiveTypes();
+      const validLayers = patternProvider.getLayerTypes();
+      const firstDirective = validDirectives[0] || "to";
+      const firstLayer = validLayers[validLayers.length - 1] || "task";
+      const result = TwoParams.createWithCliOption(firstDirective, firstLayer, "custom");
 
       assertEquals(result.ok, true);
       if (result.ok) {
+        // TwoParams has profile, but DirectiveType/LayerType don't
         assertEquals(result.data.profile.value, "custom");
       }
 
@@ -146,14 +170,19 @@ describe("TwoParams Aggregate Root - Core DDD Functionality", () => {
     it("should generate BreakdownCommand", () => {
       logger?.debug("Testing BreakdownCommand generation");
 
-      const result = TwoParams.create("to", "task", profile);
+      const patternProvider = new DefaultTypePatternProvider();
+      const validDirectives = patternProvider.getDirectiveTypes();
+      const validLayers = patternProvider.getLayerTypes();
+      const firstDirective = validDirectives[0] || "to";
+      const firstLayer = validLayers[validLayers.length - 1] || "task";
+      const result = TwoParams.create(firstDirective, firstLayer);
       assertEquals(result.ok, true);
 
       if (result.ok) {
         const command = result.data.toCommand();
         assertEquals(command.command, "breakdown");
-        assertEquals(command.directive, "to");
-        assertEquals(command.layer, "task");
+        assertEquals(command.directive, firstDirective);
+        assertEquals(command.layer, firstLayer);
         assertEquals(command.profile, "default");
         assertExists(command.timestamp);
       }
@@ -164,12 +193,18 @@ describe("TwoParams Aggregate Root - Core DDD Functionality", () => {
     it("should resolve prompt file paths", () => {
       logger?.debug("Testing prompt file path resolution");
 
-      const result = TwoParams.create("to", "task", profile);
+      const patternProvider = new DefaultTypePatternProvider();
+      const validDirectives = patternProvider.getDirectiveTypes();
+      const validLayers = patternProvider.getLayerTypes();
+      const firstDirective = validDirectives[0] || "to";
+      const firstLayer = validLayers[validLayers.length - 1] || "task";
+      const result = TwoParams.create(firstDirective, firstLayer);
       assertEquals(result.ok, true);
 
       if (result.ok) {
-        const path = result.data.resolvePromptFilePath("prompts", "issue");
-        assertEquals(path, "prompts/to/task/f_issue.md");
+        const secondLayer = validLayers[1] || "issue";
+        const path = result.data.resolvePromptFilePath("prompts", secondLayer);
+        assertEquals(path, `prompts/${firstDirective}/${firstLayer}/f_${secondLayer}.md`);
       }
 
       logger?.debug("Prompt path resolution test completed");
@@ -178,12 +213,17 @@ describe("TwoParams Aggregate Root - Core DDD Functionality", () => {
     it("should resolve schema file paths", () => {
       logger?.debug("Testing schema file path resolution");
 
-      const result = TwoParams.create("to", "task", profile);
+      const patternProvider = new DefaultTypePatternProvider();
+      const validDirectives = patternProvider.getDirectiveTypes();
+      const validLayers = patternProvider.getLayerTypes();
+      const firstDirective = validDirectives[0] || "to";
+      const firstLayer = validLayers[validLayers.length - 1] || "task";
+      const result = TwoParams.create(firstDirective, firstLayer);
       assertEquals(result.ok, true);
 
       if (result.ok) {
         const path = result.data.resolveSchemaFilePath("schemas");
-        assertEquals(path, "schemas/to/task/task.json");
+        assertEquals(path, `schemas/${firstDirective}/${firstLayer}/${firstLayer}.json`);
       }
 
       logger?.debug("Schema path resolution test completed");
@@ -192,19 +232,25 @@ describe("TwoParams Aggregate Root - Core DDD Functionality", () => {
     it("should provide PromptPath and SchemaPath objects", () => {
       logger?.debug("Testing path object generation");
 
-      const result = TwoParams.create("to", "task", profile);
+      const patternProvider = new DefaultTypePatternProvider();
+      const validDirectives = patternProvider.getDirectiveTypes();
+      const validLayers = patternProvider.getLayerTypes();
+      const firstDirective = validDirectives[0] || "to";
+      const firstLayer = validLayers[validLayers.length - 1] || "task";
+      const result = TwoParams.create(firstDirective, firstLayer);
       assertEquals(result.ok, true);
 
       if (result.ok) {
-        const promptPath = result.data.getPromptPath("issue");
+        const secondLayer = validLayers[1] || "issue";
+        const promptPath = result.data.getPromptPath(secondLayer);
         const schemaPath = result.data.getSchemaPath();
 
-        assertEquals(promptPath.directive, "to");
-        assertEquals(promptPath.layer, "task");
-        assertEquals(promptPath.fromLayer, "issue");
+        assertEquals(promptPath.directive, firstDirective);
+        assertEquals(promptPath.layer, firstLayer);
+        assertEquals(promptPath.fromLayer, secondLayer);
 
-        assertEquals(schemaPath.directive, "to");
-        assertEquals(schemaPath.layer, "task");
+        assertEquals(schemaPath.directive, firstDirective);
+        assertEquals(schemaPath.layer, firstLayer);
       }
 
       logger?.debug("Path object generation test completed");
@@ -215,9 +261,16 @@ describe("TwoParams Aggregate Root - Core DDD Functionality", () => {
     it("should compare TwoParams instances correctly", () => {
       logger?.debug("Testing TwoParams equality");
 
-      const result1 = TwoParams.create("to", "task", profile);
-      const result2 = TwoParams.create("to", "task", profile);
-      const result3 = TwoParams.create("summary", "task", profile);
+      const patternProvider = new DefaultTypePatternProvider();
+      const validDirectives = patternProvider.getDirectiveTypes();
+      const validLayers = patternProvider.getLayerTypes();
+      const firstDirective = validDirectives[0] || "to";
+      const firstLayer = validLayers[validLayers.length - 1] || "task";
+      const secondDirective = validDirectives[1] || "summary";
+      
+      const result1 = TwoParams.create(firstDirective, firstLayer);
+      const result2 = TwoParams.create(firstDirective, firstLayer);
+      const result3 = TwoParams.create(secondDirective, firstLayer);
 
       assertEquals(result1.ok, true);
       assertEquals(result2.ok, true);
@@ -234,14 +287,19 @@ describe("TwoParams Aggregate Root - Core DDD Functionality", () => {
     it("should provide string representations", () => {
       logger?.debug("Testing string representations");
 
-      const result = TwoParams.create("to", "task", profile);
+      const patternProvider = new DefaultTypePatternProvider();
+      const validDirectives = patternProvider.getDirectiveTypes();
+      const validLayers = patternProvider.getLayerTypes();
+      const firstDirective = validDirectives[0] || "to";
+      const firstLayer = validLayers[validLayers.length - 1] || "task";
+      const result = TwoParams.create(firstDirective, firstLayer);
       assertEquals(result.ok, true);
 
       if (result.ok) {
-        assertEquals(result.data.toString(), "to task");
+        assertEquals(result.data.toString(), `${firstDirective} ${firstLayer}`);
         assertEquals(
           result.data.toDebugString(),
-          'TwoParams(directive="to", layer="task", profile="default")',
+          `TwoParams(directive="${firstDirective}", layer="${firstLayer}", profile="default")`,
         );
       }
 
@@ -255,7 +313,6 @@ describe("TwoParams Aggregate Root - Core DDD Functionality", () => {
 // ============================================================================
 
 describe("TwoParams - Flexible Pattern Support", () => {
-  const profile = ConfigProfileName.createDefault();
 
   // Flexible pattern configurations from legacy test
   const FLEXIBLE_DIRECTIVE_PATTERN = "^[a-zA-Z0-9_#-]{2,20}$";
@@ -298,15 +355,19 @@ describe("TwoParams - Flexible Pattern Support", () => {
     it("should support predefined hash-like combinations", () => {
       logger?.debug("Testing predefined hash-like combinations with DDD TwoParams");
 
+      const patternProvider = new DefaultTypePatternProvider();
+      const validDirectives = patternProvider.getDirectiveTypes();
+      const validLayers = patternProvider.getLayerTypes();
+      
       // Test with actual DDD TwoParams for combinations that would work
-      const basicCombinations = [
-        { directive: "to", layer: "task" },
-        { directive: "summary", layer: "issue" },
-        { directive: "defect", layer: "project" },
-      ];
+      const basicCombinations = [];
+      for (let i = 0; i < Math.min(3, validDirectives.length); i++) {
+        const layer = validLayers[i % validLayers.length];
+        basicCombinations.push({ directive: validDirectives[i], layer });
+      }
 
       for (const combo of basicCombinations) {
-        const result = TwoParams.create(combo.directive, combo.layer, profile);
+        const result = TwoParams.create(combo.directive, combo.layer);
         assertEquals(
           result.ok,
           true,
@@ -376,8 +437,14 @@ describe("TwoParams - Flexible Pattern Support", () => {
       const iterations = 1000;
       let successCount = 0;
 
+      const patternProvider = new DefaultTypePatternProvider();
+      const validDirectives = patternProvider.getDirectiveTypes();
+      const validLayers = patternProvider.getLayerTypes();
+      const firstDirective = validDirectives[0] || "to";
+      const firstLayer = validLayers[validLayers.length - 1] || "task";
+      
       for (let i = 0; i < iterations; i++) {
-        const result = TwoParams.create("to", "task", profile);
+        const result = TwoParams.create(firstDirective, firstLayer);
         if (result.ok) {
           successCount++;
         }
@@ -399,8 +466,9 @@ describe("TwoParams - Flexible Pattern Support", () => {
     it("should handle random validation scenarios efficiently", () => {
       logger?.debug("Testing random validation performance");
 
-      const validDirectives = ["to", "summary", "defect"];
-      const validLayers = ["project", "issue", "task"];
+      const patternProvider = new DefaultTypePatternProvider();
+      const validDirectives = patternProvider.getDirectiveTypes();
+      const validLayers = patternProvider.getLayerTypes();
 
       const getRandomDirective = () =>
         validDirectives[Math.floor(Math.random() * validDirectives.length)];
@@ -415,7 +483,7 @@ describe("TwoParams - Flexible Pattern Support", () => {
         const directive = getRandomDirective();
         const layer = getRandomLayer();
 
-        const result = TwoParams.create(directive, layer, profile);
+        const result = TwoParams.create(directive, layer);
         if (result.ok) {
           validCount++;
         } else {
@@ -446,33 +514,37 @@ describe("TwoParams - Flexible Pattern Support", () => {
     it("should handle edge case validation scenarios", () => {
       logger?.debug("Testing edge case validation scenarios");
 
+      const patternProvider = new DefaultTypePatternProvider();
+      const validDirectives = patternProvider.getDirectiveTypes();
+      const validLayers = patternProvider.getLayerTypes();
+      
       const edgeCases = [
-        // Valid cases
-        { directive: "to", layer: "task", expectValid: true },
-        { directive: "summary", layer: "issue", expectValid: true },
+        // Valid cases - using config-based values
+        { directive: validDirectives[0] || "to", layer: validLayers[validLayers.length - 1] || "task", expectValid: true },
+        { directive: validDirectives[1] || "summary", layer: validLayers[1] || "issue", expectValid: true },
 
-        // Invalid cases
-        { directive: "invalid", layer: "task", expectValid: false },
-        { directive: "to", layer: "invalid", expectValid: true }, // LayerType validation is now lenient
-        { directive: "", layer: "task", expectValid: false },
-        { directive: "to", layer: "", expectValid: false },
+        // Invalid cases - using config-based fallbacks
+        { directive: "invalid", layer: validLayers[validLayers.length - 1] || "task", expectValid: false },
+        { directive: validDirectives[0] || "to", layer: "INVALID@CHAR", expectValid: false }, // Special chars not valid
+        { directive: "", layer: validLayers[validLayers.length - 1] || "task", expectValid: false },
+        { directive: validDirectives[0] || "to", layer: "", expectValid: false },
 
         // Case sensitivity
-        { directive: "TO", layer: "task", expectValid: false },
-        { directive: "to", layer: "TASK", expectValid: false },
+        { directive: (validDirectives[0] || "to").toUpperCase(), layer: validLayers[validLayers.length - 1] || "task", expectValid: false },
+        { directive: validDirectives[0] || "to", layer: (validLayers[validLayers.length - 1] || "task").toUpperCase(), expectValid: false },
 
         // Whitespace (should be rejected due to validation)
-        { directive: " to", layer: "task", expectValid: false },
-        { directive: "to ", layer: "task", expectValid: false },
-        { directive: "to", layer: " task", expectValid: false },
-        { directive: "to", layer: "task ", expectValid: false },
+        { directive: ` ${validDirectives[0] || "to"}`, layer: validLayers[validLayers.length - 1] || "task", expectValid: false },
+        { directive: `${validDirectives[0] || "to"} `, layer: validLayers[validLayers.length - 1] || "task", expectValid: false },
+        { directive: validDirectives[0] || "to", layer: ` ${validLayers[validLayers.length - 1] || "task"}`, expectValid: false },
+        { directive: validDirectives[0] || "to", layer: `${validLayers[validLayers.length - 1] || "task"} `, expectValid: false },
       ];
 
       let validCount = 0;
       let invalidCount = 0;
 
       for (const testCase of edgeCases) {
-        const result = TwoParams.create(testCase.directive, testCase.layer, profile);
+        const result = TwoParams.create(testCase.directive, testCase.layer);
 
         assertEquals(
           result.ok,
@@ -501,16 +573,20 @@ describe("TwoParams - Flexible Pattern Support", () => {
       let validCount = 0;
       let invalidCount = 0;
 
+      const patternProvider = new DefaultTypePatternProvider();
+      const validDirectives = patternProvider.getDirectiveTypes();
+      const validLayers = patternProvider.getLayerTypes();
+      
       const testCases = [
-        { directive: "to", layer: "task", expectValid: true },
-        { directive: "summary", layer: "issue", expectValid: true },
-        { directive: "invalid", layer: "task", expectValid: false },
-        { directive: "to", layer: "invalid", expectValid: false },
+        { directive: validDirectives[0] || "to", layer: validLayers[validLayers.length - 1] || "task", expectValid: true },
+        { directive: validDirectives[1] || "summary", layer: validLayers[1] || "issue", expectValid: true },
+        { directive: "invalid", layer: validLayers[validLayers.length - 1] || "task", expectValid: false },
+        { directive: validDirectives[0] || "to", layer: "INVALID@CHAR", expectValid: false },
       ];
 
       for (let i = 0; i < 500; i++) {
         const testCase = testCases[i % testCases.length];
-        const result = TwoParams.create(testCase.directive, testCase.layer, profile);
+        const result = TwoParams.create(testCase.directive, testCase.layer);
 
         if (result.ok) {
           validCount++;
@@ -541,10 +617,11 @@ describe("TwoParams - Configuration Structure Validation", () => {
     it("should validate DirectiveType values consistency", () => {
       logger?.debug("Testing DirectiveType values consistency");
 
-      const expectedDirectives = ["to", "summary", "defect"];
+      const patternProvider = new DefaultTypePatternProvider();
+      const expectedDirectives = patternProvider.getDirectiveTypes();
 
       for (const directive of expectedDirectives) {
-        const directiveResult = DirectiveType.create(directive, ConfigProfileName.createDefault());
+        const directiveResult = DirectiveType.create(directive);
         assertEquals(
           directiveResult.ok,
           true,
@@ -558,7 +635,8 @@ describe("TwoParams - Configuration Structure Validation", () => {
     it("should validate LayerType values consistency", () => {
       logger?.debug("Testing LayerType values consistency");
 
-      const expectedLayers = ["project", "issue", "task", "bugs"];
+      const patternProvider = new DefaultTypePatternProvider();
+      const expectedLayers = patternProvider.getLayerTypes();
 
       for (const layer of expectedLayers) {
         const layerResult = LayerType.create(layer);
@@ -575,13 +653,11 @@ describe("TwoParams - Configuration Structure Validation", () => {
     it("should validate symmetric behavior between DirectiveType and LayerType", () => {
       logger?.debug("Testing symmetric behavior");
 
-      const profile = ConfigProfileName.createDefault();
-
       // Test that both types follow similar validation patterns
       const invalidValues = ["", " ", "INVALID@CHARS"]; // Use clearly invalid values with special characters
 
       for (const invalidValue of invalidValues) {
-        const directiveResult = DirectiveType.create(invalidValue, profile);
+        const directiveResult = DirectiveType.create(invalidValue);
         const layerResult = LayerType.create(invalidValue);
 
         assertEquals(directiveResult.ok, false, `DirectiveType should reject: ${invalidValue}`);
@@ -596,14 +672,17 @@ describe("TwoParams - Configuration Structure Validation", () => {
     it("should maintain validation consistency across multiple creations", () => {
       logger?.debug("Testing validation consistency");
 
-      const profile = ConfigProfileName.createDefault();
+      const patternProvider = new DefaultTypePatternProvider();
+      const validDirectives = patternProvider.getDirectiveTypes();
+      const validLayers = patternProvider.getLayerTypes();
+      
       const testCases = [
-        { directive: "to", layer: "task", expectValid: true },
-        { directive: "summary", layer: "issue", expectValid: true },
-        { directive: "defect", layer: "project", expectValid: true },
-        { directive: "to", layer: "bugs", expectValid: true }, // bugs is valid in lenient mode
-        { directive: "invalid", layer: "task", expectValid: false },
-        { directive: "to", layer: "invalid", expectValid: true }, // invalid is valid in lenient mode
+        { directive: validDirectives[0] || "to", layer: validLayers[validLayers.length - 1] || "task", expectValid: true },
+        { directive: validDirectives[1] || "summary", layer: validLayers[1] || "issue", expectValid: true },
+        { directive: validDirectives[validDirectives.length - 1] || "defect", layer: validLayers[0] || "project", expectValid: true },
+        { directive: validDirectives[0] || "to", layer: validLayers[validLayers.length - 1] || "bugs", expectValid: true }, // bugs is valid in lenient mode
+        { directive: "invalid", layer: validLayers[validLayers.length - 1] || "task", expectValid: false },
+        { directive: validDirectives[0] || "to", layer: "invalid", expectValid: true }, // invalid is valid in lenient mode
       ];
 
       // Run each test case multiple times to ensure consistency
@@ -611,7 +690,7 @@ describe("TwoParams - Configuration Structure Validation", () => {
         const results = [];
 
         for (let i = 0; i < 5; i++) {
-          results.push(TwoParams.create(testCase.directive, testCase.layer, profile));
+          results.push(TwoParams.create(testCase.directive, testCase.layer));
         }
 
         // All results should be identical
@@ -665,14 +744,14 @@ describe("TwoParams - Configuration Structure Validation", () => {
     it("should validate directive-layer combination compatibility", () => {
       logger?.debug("Testing directive-layer compatibility");
 
-      const profile = ConfigProfileName.createDefault();
+      const patternProvider = new DefaultTypePatternProvider();
       const allDirectives = ["to", "summary", "defect"];
       const allLayers = ["project", "issue", "task", "bugs"];
 
       // All standard combinations should be valid
       for (const directive of allDirectives) {
         for (const layer of allLayers) {
-          const result = TwoParams.create(directive, layer, profile);
+          const result = TwoParams.create(directive, layer);
           assertEquals(
             result.ok,
             true,
@@ -687,7 +766,7 @@ describe("TwoParams - Configuration Structure Validation", () => {
     it("should maintain object immutability", () => {
       logger?.debug("Testing object immutability");
 
-      const result = TwoParams.create("to", "task", ConfigProfileName.createDefault());
+      const result = TwoParams.create("to", "task");
       assertEquals(result.ok, true);
 
       if (result.ok) {
@@ -696,7 +775,7 @@ describe("TwoParams - Configuration Structure Validation", () => {
         // Attempt to modify should not affect original values
         const originalDirective = twoParams.directive.value;
         const originalLayer = twoParams.layer.value;
-        const originalProfile = twoParams.profile.value;
+        const originalProfile = twoParams.profile;
 
         // Object should be frozen/immutable
         assertEquals(Object.isFrozen(twoParams), true);
@@ -704,7 +783,7 @@ describe("TwoParams - Configuration Structure Validation", () => {
         // Values should remain unchanged
         assertEquals(twoParams.directive.value, originalDirective);
         assertEquals(twoParams.layer.value, originalLayer);
-        assertEquals(twoParams.profile.value, originalProfile);
+        assertEquals(twoParams.profile.equals(originalProfile), true);
       }
 
       logger?.debug("Object immutability test completed");
@@ -717,14 +796,14 @@ describe("TwoParams - Configuration Structure Validation", () => {
 // ============================================================================
 
 describe("TwoParams - Integration Scenarios", () => {
-  const profile = ConfigProfileName.createDefault();
+  const profile = ConfigProfile.createDefault();
 
   describe("End-to-end workflow", () => {
     it("should support complete workflow from creation to path resolution", () => {
       logger?.debug("Testing complete workflow");
 
       // Step 1: Create TwoParams
-      const result = TwoParams.create("to", "task", profile);
+      const result = TwoParams.create("to", "task");
       assertEquals(result.ok, true);
 
       if (result.ok) {
@@ -766,8 +845,14 @@ describe("TwoParams - Integration Scenarios", () => {
     it("should support prompt generation workflow", () => {
       logger?.debug("Testing prompt generation workflow");
 
+      const patternProvider = new DefaultTypePatternProvider();
+      const validDirectives = patternProvider.getDirectiveTypes();
+      const validLayers = patternProvider.getLayerTypes();
+      const firstDirective = validDirectives[0] || "to";
+      const firstLayer = validLayers[0] || "project";
+      
       // Step 1: Create TwoParams with expected generator parameters
-      const result = TwoParams.create("to", "project", profile);
+      const result = TwoParams.create(firstDirective, firstLayer);
       assertEquals(result.ok, true);
 
       if (result.ok) {
@@ -780,8 +865,8 @@ describe("TwoParams - Integration Scenarios", () => {
           profile: twoParams.profile.value,
         };
 
-        assertEquals(generatorParams.directiveType, "to");
-        assertEquals(generatorParams.layerType, "project");
+        assertEquals(generatorParams.directiveType, firstDirective);
+        assertEquals(generatorParams.layerType, firstLayer);
         assertEquals(generatorParams.profile, "default");
 
         // Step 3: Verify path resolution for generator
@@ -804,7 +889,12 @@ describe("TwoParams - Integration Scenarios", () => {
     it("should support complex variable processing", () => {
       logger?.debug("Testing complex variable processing");
 
-      const result = TwoParams.create("to", "project", profile);
+      const patternProvider = new DefaultTypePatternProvider();
+      const validDirectives = patternProvider.getDirectiveTypes();
+      const validLayers = patternProvider.getLayerTypes();
+      const firstDirective = validDirectives[0] || "to";
+      const firstLayer = validLayers[0] || "project";
+      const result = TwoParams.create(firstDirective, firstLayer);
       assertEquals(result.ok, true);
 
       if (result.ok) {
@@ -869,7 +959,7 @@ describe("TwoParams - Integration Scenarios", () => {
       const createdParams = [];
 
       for (const testCase of testCases) {
-        const result = TwoParams.create(testCase.directive, testCase.layer, profile);
+        const result = TwoParams.create(testCase.directive, testCase.layer);
         assertEquals(result.ok, true);
 
         if (result.ok) {
@@ -919,7 +1009,7 @@ describe("TwoParams - Integration Scenarios", () => {
       ];
 
       for (const scenario of errorScenarios) {
-        const result = TwoParams.create(scenario.directive, scenario.layer, profile);
+        const result = TwoParams.create(scenario.directive, scenario.layer);
         assertEquals(result.ok, false);
 
         if (!result.ok) {

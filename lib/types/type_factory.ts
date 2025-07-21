@@ -14,7 +14,6 @@ import type { TwoParams_Result as _TwoParams_Result } from "../deps.ts";
 import type { Result } from "./result.ts";
 import type { ProcessingError } from "./unified_error_types.ts";
 import { ErrorFactory } from "./unified_error_types.ts";
-import { ConfigProfileName } from "../config/config_profile_name.ts";
 
 /**
  * 設定ファイルからバリデーションパターンを提供するインターフェース
@@ -105,12 +104,10 @@ export class TypeFactory {
   /**
    * DirectiveType を安全に構築
    * @param value 構築対象の値
-   * @param profile 設定プロファイル名（オプション）
    * @returns 成功した場合は DirectiveType、失敗した場合は Error
    */
   createDirectiveType(
     value: string,
-    profile?: ConfigProfileName,
   ): TypeCreationResult<DirectiveType> {
     // TypePatternProviderによるバリデーション
     if (!this.patternProvider.validateDirectiveType(value)) {
@@ -125,7 +122,7 @@ export class TypeFactory {
     }
 
     // 新しいDirectiveTypeのcreateメソッドを使用
-    const directiveResult = DirectiveType.create(value, profile);
+    const directiveResult = DirectiveType.create(value);
 
     if (!directiveResult.ok) {
       return {
@@ -146,10 +143,9 @@ export class TypeFactory {
   /**
    * LayerType を安全に構築
    * @param value 構築対象の値
-   * @param profile 設定プロファイル名（オプション）
    * @returns 成功した場合は LayerType、失敗した場合は Error
    */
-  createLayerType(value: string, profile?: ConfigProfileName): TypeCreationResult<LayerType> {
+  createLayerType(value: string): TypeCreationResult<LayerType> {
     // TypePatternProviderによるバリデーション
     if (!this.patternProvider.validateLayerType(value)) {
       return {
@@ -163,7 +159,7 @@ export class TypeFactory {
     }
 
     // 新しいLayerTypeのcreateメソッドを使用
-    const layerResult = LayerType.create(value, profile);
+    const layerResult = LayerType.create(value);
 
     if (!layerResult.ok) {
       return {
@@ -194,14 +190,13 @@ export class TypeFactory {
   createBothTypes(
     directiveValue: string,
     layerValue: string,
-    profile?: ConfigProfileName,
   ): TypeCreationResult<{ directive: DirectiveType; layer: LayerType }> {
-    const directiveResult = this.createDirectiveType(directiveValue, profile);
+    const directiveResult = this.createDirectiveType(directiveValue);
     if (!directiveResult.ok) {
       return directiveResult;
     }
 
-    const layerResult = this.createLayerType(layerValue, profile);
+    const layerResult = this.createLayerType(layerValue);
     if (!layerResult.ok) {
       return layerResult;
     }

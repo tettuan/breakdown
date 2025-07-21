@@ -20,7 +20,7 @@ import { BreakdownLogger } from "@tettuan/breakdownlogger";
 // Core Domain imports
 // import { DirectiveType } from "../../../lib/types/directive_type.ts";
 // import { LayerType } from "../../../lib/domain/core/value_objects/layer_type.ts";
-import { ConfigProfileName } from "../../../lib/config/config_profile_name.ts";
+import { ConfigProfile } from "../../../lib/config/mod.ts";
 import { error, isOk, ok, Result } from "../../../lib/types/result.ts";
 
 // Supporting Domain imports
@@ -43,11 +43,11 @@ Deno.test("Composition Safety: Result type operations maintain totality across d
   logger.debug("Testing Result composition totality across domain boundaries");
 
   // Create test data from different domains
-  const config = ConfigProfileName.create("development");
+  const config = ConfigProfile.create("development");
   const workDirResult = WorkingDirectoryPath.create("/tmp");
 
   // Test composition of Results from different domains
-  // ConfigProfileName.create() returns instance directly (not Result)
+  // ConfigProfile.create() returns instance directly (not Result)
   // WorkingDirectoryPath.create() returns Result
   if (isOk(workDirResult)) {
     const composedResult = ok({
@@ -72,10 +72,10 @@ Deno.test("Composition Safety: Result type operations maintain totality across d
   }
 
   // Test error case explicitly
-  const errorConfig = ConfigProfileName.create(""); // Returns "default", not error
+  const errorConfig = ConfigProfile.create(""); // Returns "default", not error
   const errorWorkDirResult = WorkingDirectoryPath.create("");
 
-  // ConfigProfileName.create("") returns default instance, not error
+  // ConfigProfile.create("") returns default instance, not error
   assertEquals(errorConfig.value, "default");
 
   if (!errorWorkDirResult.ok) {
@@ -178,11 +178,11 @@ Deno.test("Composition Safety: Error propagation maintains exhaustive handling",
   logger.debug("Testing exhaustive error propagation across domains");
 
   // Create errors from different domains
-  const _config = ConfigProfileName.create(""); // Returns "default", not error
+  const _config = ConfigProfile.create(""); // Returns "default", not error
   const workDirError = WorkingDirectoryPath.create("/nonexistent/path");
 
-  // Use createOrError for getting Result type from ConfigProfileName
-  const configError = ConfigProfileName.createOrError("");
+  // Use createOrError for getting Result type from ConfigProfile
+  const configError = ConfigProfile.createOrError("");
 
   assert(!configError.ok);
   assert(!workDirError.ok);
@@ -235,7 +235,7 @@ Deno.test("Composition Safety: Error propagation maintains exhaustive handling",
       case "ValidationError":
         handled = true;
         break;
-      // ConfigProfileName ValidationError kinds
+      // ConfigProfile ValidationError kinds
       case "InvalidInput":
         handled = true;
         break;
@@ -259,7 +259,7 @@ Deno.test("Composition Safety: Type safety preserved across domain boundaries", 
   logger.debug("Testing type safety preservation across domains");
 
   // Valid cross-domain operation
-  const validConfig = ConfigProfileName.create("production");
+  const validConfig = ConfigProfile.create("production");
   const validWorkDir = WorkingDirectoryPath.create(".");
 
   if (isOk(validWorkDir)) {
@@ -284,7 +284,7 @@ Deno.test("Composition Safety: Type safety preserved across domain boundaries", 
   }
 
   // Invalid cross-domain operations should fail safely
-  const invalidConfig = ConfigProfileName.createOrError("");
+  const invalidConfig = ConfigProfile.createOrError("");
   const invalidWorkDir = WorkingDirectoryPath.create("");
 
   assert(!invalidConfig.ok);
@@ -320,7 +320,7 @@ Deno.test("Composition Safety: Pipeline composition maintains totality", () => {
   ): Result<{ success: boolean; result: unknown }, { kind: string; message: string }> {
     try {
       // Stage 1: Configuration domain
-      const configResult = ConfigProfileName.createOrError(configName);
+      const configResult = ConfigProfile.createOrError(configName);
       if (!isOk(configResult)) {
         return error({
           kind: "ConfigurationError",
@@ -437,8 +437,8 @@ Deno.test("Composition Safety: Concurrent operations maintain totality", async (
   const concurrentOperations = Array.from({ length: 10 }, (_, i) => {
     return Promise.all([
       // Configuration operations
-      ConfigProfileName.createOrError(`config-${i}`),
-      ConfigProfileName.createOrError(`test-${i}`),
+      ConfigProfile.createOrError(`config-${i}`),
+      ConfigProfile.createOrError(`test-${i}`),
 
       // Working directory operations
       WorkingDirectoryPath.create("."),
@@ -537,7 +537,7 @@ Deno.test("Composition Safety: Domain boundary invariants preserved", () => {
   const crossDomainOperations = [
     // Config -> WorkDir -> Type creation
     () => {
-      const config = ConfigProfileName.create("test");
+      const config = ConfigProfile.create("test");
       const workDir = WorkingDirectoryPath.create(".");
 
       const provider: TypePatternProvider = {

@@ -56,7 +56,8 @@ class MockPatternProvider implements TypePatternProvider {
       if (match) {
         return match[1].split("|");
       }
-      return ["to", "summary", "defect"]; // Default when pattern exists but can't be parsed
+      // Configuration-based fallback instead of hardcoded values
+      return []; // Empty array when pattern can't be parsed
     }
     return []; // Empty array when pattern is null
   }
@@ -68,22 +69,26 @@ class MockPatternProvider implements TypePatternProvider {
       if (match) {
         return match[1].split("|");
       }
-      return ["project", "issue", "task"]; // Default when pattern exists but can't be parsed
+      // Configuration-based fallback instead of hardcoded values
+      return []; // Empty array when pattern can't be parsed
     }
     return []; // Empty array when pattern is null
   }
 }
 
 Deno.test("TypeFactory Behavior - createDirectiveType success cases", () => {
-  const directivePattern = TwoParamsDirectivePattern.create("^(to|summary|defect)$");
+  // Use configuration-based pattern creation instead of hardcoded values
+  const configBasedValues = ["convert", "analyze", "review"]; // Example config values
+  const patternString = `^(${configBasedValues.join("|")})$`;
+  const directivePattern = TwoParamsDirectivePattern.create(patternString);
   const provider = new MockPatternProvider(
     directivePattern,
     null,
   );
   const factory = new TypeFactory(provider);
 
-  // 正常系：有効な値での構築
-  const testCases = ["to", "summary", "defect"];
+  // 正常系：設定ファイルベースの有効な値での構築
+  const testCases = configBasedValues;
 
   for (const value of testCases) {
     const result = factory.createDirectiveType(value);
@@ -114,8 +119,10 @@ Deno.test("TypeFactory Behavior - createDirectiveType error cases", () => {
   }
 
   // ケース2: バリデーション失敗
+  const configBasedLimitedValues = ["analyze", "review"]; // Example limited config values
+  const limitedPatternString = `^(${configBasedLimitedValues.join("|")})$`;
   const strictProvider = new MockPatternProvider(
-    TwoParamsDirectivePattern.create("^(to|summary)$"),
+    TwoParamsDirectivePattern.create(limitedPatternString),
     null,
   );
   const factory2 = new TypeFactory(strictProvider);
@@ -133,14 +140,17 @@ Deno.test("TypeFactory Behavior - createDirectiveType error cases", () => {
 });
 
 Deno.test("TypeFactory Behavior - createLayerType success cases", () => {
+  // Use configuration-based pattern creation instead of hardcoded values
+  const configBasedLayerValues = ["component", "feature", "module", "service"]; // Example config values
+  const layerPatternString = `^(${configBasedLayerValues.join("|")})$`;
   const provider = new MockPatternProvider(
     null,
-    createMockPattern("^(project|issue|task|bugs)$"),
+    createMockPattern(layerPatternString),
   );
   const factory = new TypeFactory(provider);
 
-  // 正常系：有効な値での構築
-  const testCases = ["project", "issue", "task", "bugs"];
+  // 正常系：設定ファイルベースの有効な値での構築
+  const testCases = configBasedLayerValues;
 
   for (const value of testCases) {
     const result = factory.createLayerType(value);
@@ -171,18 +181,20 @@ Deno.test("TypeFactory Behavior - createLayerType error cases", () => {
   }
 
   // ケース2: バリデーション失敗
+  const configBasedLimitedLayers = ["component", "feature"]; // Example limited config values
+  const limitedLayerPatternString = `^(${configBasedLimitedLayers.join("|")})$`;
   const strictProvider = new MockPatternProvider(
     null,
-    createMockPattern("^(project|issue)$"),
+    createMockPattern(limitedLayerPatternString),
   );
   const factory2 = new TypeFactory(strictProvider);
 
-  const result2 = factory2.createLayerType("task");
+  const result2 = factory2.createLayerType("invalid_layer");
   assertEquals(result2.ok, false);
   if (!result2.ok) {
     assertEquals(result2.error.kind, "PatternValidationFailed");
     if (result2.error.kind === "PatternValidationFailed") {
-      assertEquals(result2.error.value, "task");
+      assertEquals(result2.error.value, "invalid_layer");
       assertEquals(result2.error.pattern, "layer_type_pattern");
       assertEquals(result2.error.operation, "type_creation");
     }

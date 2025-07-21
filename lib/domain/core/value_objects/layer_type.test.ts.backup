@@ -7,6 +7,7 @@
 
 import { assertEquals } from "jsr:@std/assert@0.224.0";
 import { LayerType } from "./layer_type.ts";
+import { ConfigProfile } from "../../config/config_profile_name.ts";
 
 Deno.test("LayerType - Smart Constructor Tests", async (t) => {
   await t.step("should create valid LayerType with valid input", () => {
@@ -122,15 +123,15 @@ Deno.test("LayerType - Domain Operations", async (t) => {
 });
 
 Deno.test("LayerType - Common Layer Types", async (t) => {
-  await t.step("should identify common layer types", async () => {
-    const commonTypes = await LayerType.getCommonLayerTypes();
+  await t.step("should identify common layer types", () => {
+    const commonTypes = LayerType.getCommonLayerTypes();
     assertEquals(commonTypes.includes("project"), true);
     assertEquals(commonTypes.includes("issue"), true);
     assertEquals(commonTypes.includes("task"), true);
     assertEquals(commonTypes.includes("bugs"), true);
   });
 
-  await t.step("should identify if layer type is common", async () => {
+  await t.step("should identify if layer type is common", () => {
     const projectResult = LayerType.create("project");
     const customResult = LayerType.create("custom-layer");
 
@@ -138,8 +139,8 @@ Deno.test("LayerType - Common Layer Types", async (t) => {
       throw new Error("Failed to create test LayerTypes");
     }
 
-    assertEquals(await projectResult.data.isCommonLayerType(), true);
-    assertEquals(await customResult.data.isCommonLayerType(), false);
+    assertEquals(projectResult.data.isCommonLayerType(), true);
+    assertEquals(customResult.data.isCommonLayerType(), false);
   });
 });
 
@@ -417,8 +418,8 @@ Deno.test("LayerType - Domain Operations Comprehensive", async (t) => {
 });
 
 Deno.test("LayerType - Common Layer Types Comprehensive", async (t) => {
-  await t.step("should maintain consistent common layer types list", async () => {
-    const commonTypes = await LayerType.getCommonLayerTypes();
+  await t.step("should maintain consistent common layer types list", () => {
+    const commonTypes = LayerType.getCommonLayerTypes();
 
     // Verify it's an array
     assertEquals(Array.isArray(commonTypes), true);
@@ -436,14 +437,14 @@ Deno.test("LayerType - Common Layer Types Comprehensive", async (t) => {
     }
   });
 
-  await t.step("should correctly identify common vs custom layer types", async () => {
-    const commonTypes = await LayerType.getCommonLayerTypes();
+  await t.step("should correctly identify common vs custom layer types", () => {
+    const commonTypes = LayerType.getCommonLayerTypes();
 
     for (const commonType of commonTypes) {
       const result = LayerType.create(commonType);
       if (result.ok) {
         assertEquals(
-          await result.data.isCommonLayerType(),
+          result.data.isCommonLayerType(),
           true,
           `${commonType} should be identified as common`,
         );
@@ -456,7 +457,7 @@ Deno.test("LayerType - Common Layer Types Comprehensive", async (t) => {
       const result = LayerType.create(customType);
       if (result.ok) {
         assertEquals(
-          await result.data.isCommonLayerType(),
+          result.data.isCommonLayerType(),
           false,
           `${customType} should not be identified as common`,
         );
@@ -492,32 +493,32 @@ Deno.test("LayerType - Immutability and Thread Safety", async (t) => {
     assertEquals(layer.validatedByPattern, originalValidated);
   });
 
-  await t.step("should support concurrent access", async () => {
+  await t.step("should support concurrent access", () => {
     // Simulate concurrent access patterns
     const promises = Array.from({ length: 10 }, (_, i) =>
       Promise.resolve().then(() => {
         return layer.getPromptFilename("concurrent", `test${i}`);
       }));
 
-    const results = await Promise.all(promises);
-    
-    // All results should be valid and consistent
-    results.forEach((result, i) => {
-      assertEquals(result, `f_concurrent_test${i}.md`);
+    return Promise.all(promises).then((results) => {
+      // All results should be valid and consistent
+      results.forEach((result, i) => {
+        assertEquals(result, `f_concurrent_test${i}.md`);
+      });
     });
   });
 
-  await t.step("should handle concurrent common type checks", async () => {
+  await t.step("should handle concurrent common type checks", () => {
     const promises = Array.from(
       { length: 100 },
       () => Promise.resolve().then(() => layer.isCommonLayerType()),
     );
 
-    const results = await Promise.all(promises);
-    
-    // All results should be the same
-    const firstResult = results[0];
-    assertEquals(results.every((result) => result === firstResult), true);
+    return Promise.all(promises).then((results) => {
+      // All results should be the same
+      const firstResult = results[0];
+      assertEquals(results.every((result) => result === firstResult), true);
+    });
   });
 });
 

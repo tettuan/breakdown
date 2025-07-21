@@ -10,7 +10,7 @@
 2. **DirectiveType/LayerType簡素化**: BreakdownParams検証済み値として、独自のパス解決メソッド削除
 3. **プロンプトパス決定ドメイン分離**: パス解決責務の明確な分離
 4. **BreakdownParams統合**: ParamsCustomConfigによる設定パターンベース検証
-5. **ConfigProfileName短寿命化**: 設定読み込み専用オブジェクトへの責務縮小
+5. **ConfigProfile短寿命化**: 設定読み込み専用オブジェクトへの責務縮小
 
 ### 影響を受ける実装領域
 - **Core Domain**: `lib/domain/` 配下のTwoParams, DirectiveType, LayerType関連
@@ -40,7 +40,7 @@
    - `lib/processor/` - パス解決処理分離
 
 2. **中優先度**: 設定とファクトリー
-   - `lib/config/` - ConfigProfileName責務変更
+   - `lib/config/` - ConfigProfile責務変更
    - `lib/factory/` - オブジェクト生成方式変更
 
 3. **低優先度**: 支援機能
@@ -95,7 +95,7 @@
 - **エラーハンドリング簡素化**: BreakdownParams依存エラーのみ残存
 - **影響ファイル**: `lib/commands/parameter_parser.ts`
 
-#### 2-5. ConfigProfileName短寿命化 (中優先度)
+#### 2-5. ConfigProfile短寿命化 (中優先度)
 - **責務削除**: DirectiveType/LayerType提供機能の除去
 - **設定読み込み専用化**: `getConfigPath()`以外の機能削除
 - **寿命管理**: 設定読み込み後の即時解放

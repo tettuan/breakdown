@@ -14,6 +14,7 @@ import type {
   PromptTemplate,
   TemplateVariables,
 } from "../domain/templates/prompt_generation_aggregate.ts";
+import { BreakdownConfig } from "@tettuan/breakdownconfig";
 
 /**
  * Experimental prompt enhancement options
@@ -116,10 +117,10 @@ export class PromptHelperPrototype {
   /**
    * Detect variables in template content
    */
-  detectVariables(
+  async detectVariables(
     template: PromptTemplate,
     providedVariables?: TemplateVariables,
-  ): VariableDetectionResult {
+  ): Promise<VariableDetectionResult> {
     if (!this.options.autoDetectVariables) {
       throw new PromptPrototypeError(
         "Variable detection is disabled",
@@ -149,7 +150,8 @@ export class PromptHelperPrototype {
     // Generate suggested defaults based on variable names
     const suggestedDefaults = new Map<string, string>();
     for (const varName of missing) {
-      suggestedDefaults.set(varName, this.generateDefaultValue(varName));
+      const defaultValue = await this.generateDefaultValue(varName);
+      suggestedDefaults.set(varName, defaultValue);
     }
 
     // Calculate confidence score
@@ -172,7 +174,7 @@ export class PromptHelperPrototype {
   /**
    * Enhance template with experimental features
    */
-  enhanceTemplate(
+  async enhanceTemplate(
     template: PromptTemplate,
     directive: DirectiveType,
     layer: LayerType,
@@ -210,14 +212,14 @@ export class PromptHelperPrototype {
 
       // Enhancement 3: Add output format instructions
       if (!content.includes("## Output") && !content.includes("## Format")) {
-        const outputFormat = this.generateOutputFormat(directive, layer);
+        const outputFormat = await this.generateOutputFormat(directive, layer);
         enhancedContent = `${enhancedContent}\n\n${outputFormat}`;
         appliedEnhancements.push("output_format");
       }
 
       // Enhancement 4: Language-specific improvements
       if (this.options.language === "ja") {
-        enhancedContent = this.applyJapaneseEnhancements(enhancedContent);
+        enhancedContent = await this.applyJapaneseEnhancements(enhancedContent);
         appliedEnhancements.push("japanese_enhancements");
       }
 
@@ -365,20 +367,46 @@ export class PromptHelperPrototype {
 
   // Private helper methods
 
-  private generateDefaultValue(varName: string): string {
-    const commonDefaults: Record<string, string> = {
-      "title": "Sample Title",
-      "name": "Sample Name",
-      "description": "Description",
-      "content": "Content",
-      "input": "Input Data",
-      "output": "Output Result",
-      "example": "Example",
-      "date": new Date().toISOString().split("T")[0],
-      "author": "System",
-    };
-
-    return commonDefaults[varName.toLowerCase()] || `{${varName} value}`;
+  private async generateDefaultValue(varName: string): Promise<string> {
+    try {
+      const configResult = await BreakdownConfig.create("default", Deno.cwd());
+      if (!configResult.success) {
+        return `{${varName} value}`;
+      }
+      await configResult.data.loadConfig();
+      const mergedConfig = await configResult.data.getConfig();
+      const variableDefaults = mergedConfig.variableDefaults || {};
+      const language = this.options.language || "en";
+      
+      // Check for specific variable default
+      if (typeof variableDefaults !== 'object' || variableDefaults === null) {
+        return `{${varName} value}`;
+      }
+      const varDefault = (variableDefaults as Record<string, unknown>)[varName.toLowerCase()] as Record<string, string> | undefined;
+      if (varDefault && typeof varDefault === 'object' && varDefault[language]) {
+        let value = varDefault[language];
+        // Handle special {date} placeholder
+        if (value === "{date}") {
+          value = new Date().toISOString().split("T")[0];
+        }
+        return value;
+      }
+      
+      // Use default template
+      const defaultTemplate = (variableDefaults as Record<string, unknown>).default as Record<string, string> | undefined;
+      if (defaultTemplate && typeof defaultTemplate === 'object' && defaultTemplate[language]) {
+        return defaultTemplate[language].replace("{varName}", varName);
+      }
+      
+      // Ultimate fallback
+      return `{${varName.toLowerCase()} value}`;
+    } catch (error) {
+      this.logger.warn("Failed to load variable defaults", {
+        varName,
+        error: String(error)
+      });
+      return `{${varName} value}`;
+    }
   }
 
   private generateContextHeader(directive: DirectiveType, layer: LayerType): string {
@@ -396,45 +424,97 @@ export class PromptHelperPrototype {
     }
   }
 
-  private generateOutputFormat(directive: DirectiveType, _layer: LayerType): string {
+  private async generateOutputFormat(directive: DirectiveType, _layer: LayerType): Promise<string> {
     const directiveValue = directive.value;
+    const language = this.options.language || "en";
 
-    if (this.options.language === "ja") {
-      switch (directiveValue) {
-        case "summary":
-          return "## Output Format\n- Summary (max 100 chars)\n- Key points (3-5 items)\n- Recommended actions";
-        case "to":
-          return "## Output Format\n- Converted content\n- Conversion rationale\n- Verification items";
-        case "defect":
-          return "## Output Format\n- Defect analysis\n- Root cause analysis\n- Suggested fixes";
-        default:
-          return "## Output Format\nProvide output in the specified format.";
+    try {
+      // Load configuration-based output formats instead of hardcoded switch statements
+      const configResult = await BreakdownConfig.create("default", Deno.cwd());
+      if (!configResult.success) {
+        throw new Error(`Config creation failed: ${configResult.error}`);
       }
-    } else {
-      switch (directiveValue) {
-        case "summary":
-          return "## Output Format\n- Summary (max 100 chars)\n- Key points (3-5 items)\n- Recommended actions";
-        case "to":
-          return "## Output Format\n- Converted content\n- Conversion rationale\n- Verification items";
-        case "defect":
-          return "## Output Format\n- Defect analysis\n- Root cause analysis\n- Suggested fixes";
-        default:
-          return "## Output Format\nProvide output in the specified format.";
+      await configResult.data.loadConfig();
+      const mergedConfig = await configResult.data.getConfig();
+      
+      // Access outputFormats from config (added to default-app.yml)
+      const outputFormats = mergedConfig.outputFormats || {};
+      
+      // Get format for this directive and language
+      if (typeof outputFormats !== 'object' || outputFormats === null) {
+        return "## Output Format\nProvide output in the specified format.";
       }
+      const directiveFormat = (outputFormats as Record<string, unknown>)[directiveValue] as Record<string, string> | undefined;
+      if (directiveFormat && typeof directiveFormat === 'object' && directiveFormat[language]) {
+        return directiveFormat[language];
+      }
+      
+      // Fallback to default format
+      const defaultFormat = (outputFormats as Record<string, unknown>).default as Record<string, string> | undefined;
+      if (defaultFormat && typeof defaultFormat === 'object' && defaultFormat[language]) {
+        return defaultFormat[language];
+      }
+      
+      // Ultimate fallback
+      return "## Output Format\nProvide output in the specified format.";
+      
+    } catch (error) {
+      // Fallback on configuration error
+      this.logger.warn("Failed to load output format configuration", { 
+        directive: directiveValue, 
+        language,
+        error: String(error)
+      });
+      return "## Output Format\nProvide output in the specified format.";
     }
   }
 
-  private applyJapaneseEnhancements(content: string): string {
-    // Apply Japanese-specific enhancements
-    let enhanced = content;
-
-    // Add polite forms (simple replacement for demonstration)
-    enhanced = enhanced.replace(/please/gi, "please");
-
-    // Improve readability
-    enhanced = enhanced.replace(/\n\n/g, "\n\n---\n\n");
-
-    return enhanced;
+  private async applyJapaneseEnhancements(content: string): Promise<string> {
+    try {
+      const configResult = await BreakdownConfig.create("default", Deno.cwd());
+      if (!configResult.success) {
+        return content;
+      }
+      await configResult.data.loadConfig();
+      const mergedConfig = await configResult.data.getConfig();
+      const textEnhancements = mergedConfig.textEnhancements || {};
+      const language = this.options.language || "en";
+      if (typeof textEnhancements !== 'object' || textEnhancements === null) {
+        return content;
+      }
+      const langEnhancements = (textEnhancements as Record<string, unknown>)[language] as Record<string, unknown> | undefined;
+      
+      if (!langEnhancements) {
+        return content;
+      }
+      
+      let enhanced = content;
+      
+      // Apply replacements from config
+      if (langEnhancements && typeof langEnhancements === 'object' && 'replacements' in langEnhancements && Array.isArray(langEnhancements.replacements)) {
+        for (const replacement of langEnhancements.replacements as Array<{from: string, to: string, flags?: string}>) {
+          const regex = new RegExp(replacement.from, replacement.flags || "g");
+          enhanced = enhanced.replace(regex, replacement.to);
+        }
+      }
+      
+      // Apply formatting from config
+      if (langEnhancements && typeof langEnhancements === 'object' && 'formatting' in langEnhancements && typeof langEnhancements.formatting === 'object' && langEnhancements.formatting !== null) {
+        const formatting = langEnhancements.formatting as {sectionSeparator?: string};
+        const { sectionSeparator } = formatting;
+        if (sectionSeparator) {
+          enhanced = enhanced.replace(/\n\n/g, sectionSeparator);
+        }
+      }
+      
+      return enhanced;
+    } catch (error) {
+      this.logger.warn("Failed to apply language enhancements", {
+        language: this.options.language,
+        error: String(error)
+      });
+      return content;
+    }
   }
 
   private generateDynamicInstruction(

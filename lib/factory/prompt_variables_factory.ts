@@ -14,6 +14,7 @@ import type { PromptParams } from "@tettuan/breakdownprompt";
 // import { BreakdownConfig as _BreakdownConfig } from "@tettuan/breakdownconfig";
 import { DirectiveType } from "../domain/core/value_objects/directive_type.ts";
 import { LayerType } from "../domain/core/value_objects/layer_type.ts";
+import { ConfigProfile } from "../config/mod.ts";
 import type { TwoParams_Result } from "../deps.ts";
 import {
   PromptVariableSource,
@@ -782,11 +783,14 @@ export class PromptVariablesFactory {
       ? PromptVariableSourceFactory.fromStdin(this.cliParams.options.input_text)
       : undefined;
 
+    // Create ConfigProfile instance for proper configuration management
+    const profileName = ConfigProfile.fromCliOption(this.cliParams.options.config);
+    
     const configSource = PromptVariableSourceFactory.fromConfig({
       directive: this.cliParams.directiveType,
       layer: this.cliParams.layerType,
       promptDir: this.config.app_prompt?.base_dir,
-      profile: this.cliParams.options.config,
+      profile: profileName.value,
     });
 
     // Merge sources with proper priority

@@ -8,13 +8,11 @@
 import { assertEquals } from "jsr:@std/assert@0.224.0";
 import { DirectiveType } from "./directive_type.ts";
 import { LayerType } from "./layer_type.ts";
-import { ConfigProfileName } from "$lib/config/config_profile_name.ts";
 
 Deno.test("DirectiveType and LayerType - Smart Constructor Consistency", async (t) => {
-  const defaultProfile = ConfigProfileName.createDefault();
 
   await t.step("should handle null inputs consistently", () => {
-    const directiveResult = DirectiveType.create(null, defaultProfile);
+    const directiveResult = DirectiveType.create(null);
     const layerResult = LayerType.create(null);
 
     assertEquals(directiveResult.ok, false);
@@ -27,7 +25,7 @@ Deno.test("DirectiveType and LayerType - Smart Constructor Consistency", async (
   });
 
   await t.step("should handle undefined inputs consistently", () => {
-    const directiveResult = DirectiveType.create(undefined, defaultProfile);
+    const directiveResult = DirectiveType.create(undefined);
     const layerResult = LayerType.create(undefined);
 
     assertEquals(directiveResult.ok, false);
@@ -40,7 +38,7 @@ Deno.test("DirectiveType and LayerType - Smart Constructor Consistency", async (
   });
 
   await t.step("should handle empty string inputs consistently", () => {
-    const directiveResult = DirectiveType.create("", defaultProfile);
+    const directiveResult = DirectiveType.create("");
     const layerResult = LayerType.create("");
 
     assertEquals(directiveResult.ok, false);
@@ -53,7 +51,7 @@ Deno.test("DirectiveType and LayerType - Smart Constructor Consistency", async (
   });
 
   await t.step("should handle whitespace-only inputs consistently", () => {
-    const directiveResult = DirectiveType.create("   ", defaultProfile);
+    const directiveResult = DirectiveType.create("   ");
     const layerResult = LayerType.create("   ");
 
     assertEquals(directiveResult.ok, false);
@@ -67,10 +65,9 @@ Deno.test("DirectiveType and LayerType - Smart Constructor Consistency", async (
 });
 
 Deno.test("DirectiveType and LayerType - Pattern Validation Consistency", async (t) => {
-  const defaultProfile = ConfigProfileName.createDefault();
 
   await t.step("should reject uppercase letters consistently", () => {
-    const directiveResult = DirectiveType.create("UPPERCASE", defaultProfile);
+    const directiveResult = DirectiveType.create("UPPERCASE");
     const layerResult = LayerType.create("UPPERCASE");
 
     assertEquals(directiveResult.ok, false);
@@ -93,7 +90,7 @@ Deno.test("DirectiveType and LayerType - Pattern Validation Consistency", async 
 
     for (const char of specialChars) {
       const testValue = `test${char}`;
-      const directiveResult = DirectiveType.create(testValue, defaultProfile);
+      const directiveResult = DirectiveType.create(testValue);
       const layerResult = LayerType.create(testValue);
 
       assertEquals(directiveResult.ok, false, `DirectiveType should reject '${testValue}'`);
@@ -114,7 +111,7 @@ Deno.test("DirectiveType and LayerType - Pattern Validation Consistency", async 
     const validChars = ["a", "z", "0", "9", "_", "-"];
 
     for (const char of validChars) {
-      const directiveResult = DirectiveType.create(char, defaultProfile);
+      const directiveResult = DirectiveType.create(char);
       const layerResult = LayerType.create(char);
 
       // LayerType should always accept valid characters
@@ -131,7 +128,6 @@ Deno.test("DirectiveType and LayerType - Pattern Validation Consistency", async 
 });
 
 Deno.test("DirectiveType and LayerType - Length Validation Consistency", async (t) => {
-  const defaultProfile = ConfigProfileName.createDefault();
 
   await t.step("should have different but reasonable length limits", () => {
     // DirectiveType has MAX_LENGTH = 20
@@ -142,7 +138,7 @@ Deno.test("DirectiveType and LayerType - Length Validation Consistency", async (
 
     // Test at directive limit
     const directiveLimitValue = "a".repeat(directiveLimit);
-    const directiveLimitResult = DirectiveType.create(directiveLimitValue, defaultProfile);
+    const directiveLimitResult = DirectiveType.create(directiveLimitValue);
 
     // Should not fail on length (might fail on pattern mismatch)
     if (!directiveLimitResult.ok) {
@@ -157,7 +153,7 @@ Deno.test("DirectiveType and LayerType - Length Validation Consistency", async (
 
     // Test exceeding directive limit
     const exceedsDirectiveLimit = "a".repeat(directiveLimit + 1);
-    const exceedsDirectiveResult = DirectiveType.create(exceedsDirectiveLimit, defaultProfile);
+    const exceedsDirectiveResult = DirectiveType.create(exceedsDirectiveLimit);
 
     assertEquals(exceedsDirectiveResult.ok, false);
     if (!exceedsDirectiveResult.ok) {
@@ -176,10 +172,9 @@ Deno.test("DirectiveType and LayerType - Length Validation Consistency", async (
 });
 
 Deno.test("DirectiveType and LayerType - Error Message Consistency", async (t) => {
-  const defaultProfile = ConfigProfileName.createDefault();
 
   await t.step("should provide consistent error structure", () => {
-    const directiveError = DirectiveType.create("", defaultProfile);
+    const directiveError = DirectiveType.create("");
     const layerError = LayerType.create("");
 
     assertEquals(directiveError.ok, false);
@@ -195,7 +190,7 @@ Deno.test("DirectiveType and LayerType - Error Message Consistency", async (t) =
   });
 
   await t.step("should provide consistent error information for length violations", () => {
-    const tooLongDirective = DirectiveType.create("a".repeat(21), defaultProfile);
+    const tooLongDirective = DirectiveType.create("a".repeat(21));
     const tooLongLayer = LayerType.create("a".repeat(31));
 
     assertEquals(tooLongDirective.ok, false);
@@ -219,10 +214,9 @@ Deno.test("DirectiveType and LayerType - Error Message Consistency", async (t) =
 });
 
 Deno.test("DirectiveType and LayerType - Immutability Consistency", async (t) => {
-  const defaultProfile = ConfigProfileName.createDefault();
 
   await t.step("should both be immutable after creation", () => {
-    const directiveResult = DirectiveType.create("to", defaultProfile);
+    const directiveResult = DirectiveType.create("to");
     const layerResult = LayerType.create("task");
 
     if (!directiveResult.ok || !layerResult.ok) {
@@ -252,10 +246,9 @@ Deno.test("DirectiveType and LayerType - Immutability Consistency", async (t) =>
 });
 
 Deno.test("DirectiveType and LayerType - String Representation Consistency", async (t) => {
-  const defaultProfile = ConfigProfileName.createDefault();
 
   await t.step("should provide consistent toString behavior", () => {
-    const directiveResult = DirectiveType.create("to", defaultProfile);
+    const directiveResult = DirectiveType.create("to");
     const layerResult = LayerType.create("task");
 
     if (!directiveResult.ok || !layerResult.ok) {
@@ -275,7 +268,7 @@ Deno.test("DirectiveType and LayerType - String Representation Consistency", asy
   });
 
   await t.step("should provide consistent debug string format", () => {
-    const directiveResult = DirectiveType.create("to", defaultProfile);
+    const directiveResult = DirectiveType.create("to");
     const layerResult = LayerType.create("task");
 
     if (!directiveResult.ok || !layerResult.ok) {
@@ -301,11 +294,10 @@ Deno.test("DirectiveType and LayerType - String Representation Consistency", asy
 });
 
 Deno.test("DirectiveType and LayerType - Equality Consistency", async (t) => {
-  const defaultProfile = ConfigProfileName.createDefault();
 
   await t.step("should have consistent equality behavior", () => {
-    const directive1 = DirectiveType.create("to", defaultProfile);
-    const directive2 = DirectiveType.create("to", defaultProfile);
+    const directive1 = DirectiveType.create("to");
+    const directive2 = DirectiveType.create("to");
     const layer1 = LayerType.create("task");
     const layer2 = LayerType.create("task");
 
@@ -318,7 +310,7 @@ Deno.test("DirectiveType and LayerType - Equality Consistency", async (t) => {
     assertEquals(layer1.data.equals(layer2.data), true);
 
     // Different instances of same value should still be equal
-    const directive3 = DirectiveType.create("to", defaultProfile);
+    const directive3 = DirectiveType.create("to");
     const layer3 = LayerType.create("task");
 
     if (!directive3.ok || !layer3.ok) {
@@ -330,8 +322,8 @@ Deno.test("DirectiveType and LayerType - Equality Consistency", async (t) => {
   });
 
   await t.step("should reject equality with different values", () => {
-    const directive1 = DirectiveType.create("to", defaultProfile);
-    const directive2 = DirectiveType.create("summary", defaultProfile);
+    const directive1 = DirectiveType.create("to");
+    const directive2 = DirectiveType.create("summary");
     const layer1 = LayerType.create("task");
     const layer2 = LayerType.create("issue");
 
@@ -346,10 +338,9 @@ Deno.test("DirectiveType and LayerType - Equality Consistency", async (t) => {
 });
 
 Deno.test("DirectiveType and LayerType - Path Generation Consistency", async (t) => {
-  const defaultProfile = ConfigProfileName.createDefault();
 
   await t.step("should generate consistent path structures", () => {
-    const directiveResult = DirectiveType.create("to", defaultProfile);
+    const directiveResult = DirectiveType.create("to");
     const layerResult = LayerType.create("issue");
 
     if (!directiveResult.ok || !layerResult.ok) {
@@ -375,7 +366,7 @@ Deno.test("DirectiveType and LayerType - Path Generation Consistency", async (t)
   });
 
   await t.step("should handle empty base directories consistently", () => {
-    const directiveResult = DirectiveType.create("to", defaultProfile);
+    const directiveResult = DirectiveType.create("to");
     const layerResult = LayerType.create("issue");
 
     if (!directiveResult.ok || !layerResult.ok) {
@@ -395,10 +386,9 @@ Deno.test("DirectiveType and LayerType - Path Generation Consistency", async (t)
 });
 
 Deno.test("DirectiveType and LayerType - Resource Path Validation Consistency", async (t) => {
-  const defaultProfile = ConfigProfileName.createDefault();
 
   await t.step("should provide consistent resource path validation", () => {
-    const directiveResult = DirectiveType.create("to", defaultProfile);
+    const directiveResult = DirectiveType.create("to");
     const layerResult = LayerType.create("task");
 
     if (!directiveResult.ok || !layerResult.ok) {

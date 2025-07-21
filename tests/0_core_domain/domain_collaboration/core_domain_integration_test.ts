@@ -15,7 +15,6 @@ import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { DirectiveType } from "$lib/domain/core/value_objects/directive_type.ts";
 import { LayerType } from "$lib/domain/core/value_objects/layer_type.ts";
 import { TwoParams } from "$lib/domain/core/aggregates/two_params.ts";
-import { ConfigProfileName } from "$lib/config/config_profile_name.ts";
 
 const logger = new BreakdownLogger("core-domain-integration");
 
@@ -25,10 +24,10 @@ describe("Core Domain Integration Tests", () => {
       logger.debug("Testing DirectiveType-LayerType basic collaboration");
 
       // Arrange
-      const profile = ConfigProfileName.createDefault();
+      const profile = "default";
 
       // Act: Create DirectiveType
-      const directiveResult = DirectiveType.create("to", profile);
+      const directiveResult = DirectiveType.create("to");
       assert(directiveResult.ok, "DirectiveType creation should succeed");
 
       // Act: Create LayerType
@@ -47,12 +46,11 @@ describe("Core Domain Integration Tests", () => {
 
       // Assert: Compatibility check
       assert(layer.isValidForDirective(directive), "Layer should be compatible with directive");
-      assert(directive.isValidForProfile(profile), "Directive should be valid for profile");
 
       logger.debug("DirectiveType-LayerType collaboration verified", {
         directive: directive.value,
         layer: layer.value,
-        profile: profile.value,
+        profile: profile,
       });
     });
 
@@ -60,10 +58,10 @@ describe("Core Domain Integration Tests", () => {
       logger.debug("Testing invalid DirectiveType-LayerType combinations");
 
       // Arrange
-      const profile = ConfigProfileName.createDefault();
+      const profile = "default";
 
       // Act: Invalid DirectiveType
-      const invalidDirectiveResult = DirectiveType.create("", profile);
+      const invalidDirectiveResult = DirectiveType.create("");
       assertFalse(invalidDirectiveResult.ok, "Empty directive should fail");
       assertEquals(invalidDirectiveResult.error.kind, "EmptyInput");
 
@@ -79,8 +77,8 @@ describe("Core Domain Integration Tests", () => {
       logger.debug("Testing path resolution consistency");
 
       // Arrange
-      const profile = ConfigProfileName.createDefault();
-      const directiveResult = DirectiveType.create("to", profile);
+      const profile = "default";
+      const directiveResult = DirectiveType.create("to");
       const layerResult = LayerType.create("project");
 
       assert(directiveResult.ok && layerResult.ok, "Setup should succeed");
@@ -117,10 +115,10 @@ describe("Core Domain Integration Tests", () => {
       logger.debug("Testing TwoParams aggregate creation");
 
       // Arrange
-      const profile = ConfigProfileName.createDefault();
+      const profile = "default";
 
       // Act: Create TwoParams aggregate
-      const twoParamsResult = TwoParams.create("to", "issue", profile);
+      const twoParamsResult = TwoParams.create("to", "issue");
       assert(twoParamsResult.ok, "TwoParams creation should succeed");
 
       if (!twoParamsResult.ok) throw new Error("TwoParams creation failed");
@@ -129,7 +127,7 @@ describe("Core Domain Integration Tests", () => {
       // Assert: Aggregate properties
       assertEquals(twoParams.directive.value, "to");
       assertEquals(twoParams.layer.value, "issue");
-      assertEquals(twoParams.profile.value, "default");
+      assertEquals(twoParams.profile, "default");
 
       // Assert: Aggregate operations
       const validateResult = twoParams.validate();
@@ -145,7 +143,7 @@ describe("Core Domain Integration Tests", () => {
       logger.debug("TwoParams aggregate created successfully", {
         directive: twoParams.directive.value,
         layer: twoParams.layer.value,
-        profile: twoParams.profile.value,
+        profile: twoParams.profile,
       });
     });
 
@@ -153,15 +151,15 @@ describe("Core Domain Integration Tests", () => {
       logger.debug("Testing TwoParams creation error handling");
 
       // Arrange
-      const profile = ConfigProfileName.createDefault();
+      const profile = "default";
 
       // Act: Invalid directive
-      const invalidDirectiveResult = TwoParams.create("", "issue", profile);
+      const invalidDirectiveResult = TwoParams.create("", "issue");
       assertFalse(invalidDirectiveResult.ok, "Invalid directive should fail");
       assertEquals(invalidDirectiveResult.error.kind, "InvalidDirective");
 
       // Act: Invalid layer
-      const invalidLayerResult = TwoParams.create("to", "", profile);
+      const invalidLayerResult = TwoParams.create("to", "");
       assertFalse(invalidLayerResult.ok, "Invalid layer should fail");
       assertEquals(invalidLayerResult.error.kind, "InvalidLayer");
 
@@ -172,8 +170,8 @@ describe("Core Domain Integration Tests", () => {
       logger.debug("Testing TwoParams path resolution capabilities");
 
       // Arrange
-      const profile = ConfigProfileName.createDefault();
-      const twoParamsResult = TwoParams.create("to", "task", profile);
+      const profile = "default";
+      const twoParamsResult = TwoParams.create("to", "task");
       assert(twoParamsResult.ok, "Setup should succeed");
 
       if (!twoParamsResult.ok) throw new Error("TwoParams creation failed");
@@ -210,8 +208,8 @@ describe("Core Domain Integration Tests", () => {
       logger.debug("Testing adaptation parameter handling");
 
       // Arrange
-      const profile = ConfigProfileName.createDefault();
-      const twoParamsResult = TwoParams.create("to", "issue", profile);
+      const profile = "default";
+      const twoParamsResult = TwoParams.create("to", "issue");
       assert(twoParamsResult.ok, "Setup should succeed");
 
       if (!twoParamsResult.ok) throw new Error("TwoParams creation failed");
@@ -238,10 +236,10 @@ describe("Core Domain Integration Tests", () => {
       logger.debug("Testing core domain boundary consistency");
 
       // Arrange: Multiple TwoParams instances
-      const profile = ConfigProfileName.createDefault();
-      const twoParams1Result = TwoParams.create("to", "project", profile);
-      const twoParams2Result = TwoParams.create("to", "issue", profile);
-      const twoParams3Result = TwoParams.create("summary", "project", profile);
+      const profile = "default";
+      const twoParams1Result = TwoParams.create("to", "project");
+      const twoParams2Result = TwoParams.create("to", "issue");
+      const twoParams3Result = TwoParams.create("summary", "project");
 
       assert(
         twoParams1Result.ok && twoParams2Result.ok && twoParams3Result.ok,
@@ -291,23 +289,23 @@ describe("Core Domain Integration Tests", () => {
       // Assert: CLI option handling
       assert(defaultProfileResult.ok, "Default profile should work");
       if (!defaultProfileResult.ok) throw new Error("Default profile creation failed");
-      assertEquals(defaultProfileResult.data.profile.value, "default");
+      assertEquals(defaultProfileResult.data.profile, "default");
 
       assert(explicitProfileResult.ok, "Explicit profile should work");
       if (!explicitProfileResult.ok) throw new Error("Explicit profile creation failed");
-      assertEquals(explicitProfileResult.data.profile.value, "custom");
+      assertEquals(explicitProfileResult.data.profile, "custom");
 
       assert(undefinedProfileResult.ok, "Undefined profile should default");
       if (!undefinedProfileResult.ok) throw new Error("Undefined profile creation failed");
-      assertEquals(undefinedProfileResult.data.profile.value, "default");
+      assertEquals(undefinedProfileResult.data.profile, "default");
 
       logger.debug("CLI option integration verified", {
-        defaultProfile: defaultProfileResult.ok ? defaultProfileResult.data.profile.value : "error",
+        defaultProfile: defaultProfileResult.ok ? defaultProfileResult.data.profile : "error",
         explicitProfile: explicitProfileResult.ok
-          ? explicitProfileResult.data.profile.value
+          ? explicitProfileResult.data.profile
           : "error",
         undefinedProfile: undefinedProfileResult.ok
-          ? undefinedProfileResult.data.profile.value
+          ? undefinedProfileResult.data.profile
           : "error",
       });
     });
@@ -316,8 +314,8 @@ describe("Core Domain Integration Tests", () => {
       logger.debug("Testing debugging information comprehensiveness");
 
       // Arrange
-      const profile = ConfigProfileName.createDefault();
-      const twoParamsResult = TwoParams.create("to", "issue", profile);
+      const profile = "default";
+      const twoParamsResult = TwoParams.create("to", "issue");
       assert(twoParamsResult.ok, "Setup should succeed");
 
       if (!twoParamsResult.ok) throw new Error("TwoParams creation failed");
@@ -357,11 +355,11 @@ describe("Core Domain Integration Tests", () => {
       logger.debug("Testing profile validation error consistency");
 
       // Arrange
-      const profile = ConfigProfileName.createDefault();
+      const profile = "default";
 
       // Mock scenario:假設某個指令對特定profile無效（需要實際的配置來測試）
       // 這裡我們測試基本的錯誤處理一致性
-      const validTwoParamsResult = TwoParams.create("to", "issue", profile);
+      const validTwoParamsResult = TwoParams.create("to", "issue");
       assert(validTwoParamsResult.ok, "Valid combination should succeed");
 
       if (!validTwoParamsResult.ok) throw new Error("Valid TwoParams creation failed");
@@ -376,15 +374,15 @@ describe("Core Domain Integration Tests", () => {
       logger.debug("Testing immutability across operations");
 
       // Arrange
-      const profile = ConfigProfileName.createDefault();
-      const twoParamsResult = TwoParams.create("to", "issue", profile);
+      const profile = "default";
+      const twoParamsResult = TwoParams.create("to", "issue");
       assert(twoParamsResult.ok, "Setup should succeed");
 
       if (!twoParamsResult.ok) throw new Error("TwoParams creation failed");
       const twoParams = twoParamsResult.data;
       const originalDirective = twoParams.directive.value;
       const originalLayer = twoParams.layer.value;
-      const originalProfile = twoParams.profile.value;
+      const originalProfile = twoParams.profile;
 
       // Act: Various operations that should not mutate
       twoParams.getPromptPath();
@@ -401,7 +399,7 @@ describe("Core Domain Integration Tests", () => {
         "Directive should remain unchanged",
       );
       assertEquals(twoParams.layer.value, originalLayer, "Layer should remain unchanged");
-      assertEquals(twoParams.profile.value, originalProfile, "Profile should remain unchanged");
+      assertEquals(twoParams.profile, originalProfile, "Profile should remain unchanged");
 
       logger.debug("Immutability maintained across all operations");
     });
@@ -410,8 +408,8 @@ describe("Core Domain Integration Tests", () => {
       logger.debug("Testing concurrent access safety");
 
       // Arrange
-      const profile = ConfigProfileName.createDefault();
-      const twoParamsResult = TwoParams.create("to", "project", profile);
+      const profile = "default";
+      const twoParamsResult = TwoParams.create("to", "project");
       assert(twoParamsResult.ok, "Setup should succeed");
 
       if (!twoParamsResult.ok) throw new Error("TwoParams creation failed");

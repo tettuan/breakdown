@@ -16,20 +16,19 @@ import { DefaultTypePatternProvider } from "../../types/defaults/default_type_pa
 export async function initializeBreakdownConfiguration(): Promise<void> {
   console.log("🚀 Initializing breakdown configuration...");
 
-  // TODO: If BreakdownConfig had write functionality, baseDir definition would be unnecessary
-  // BreakdownConfig already knows the appropriate paths and should handle initialization
+  // Use BreakdownConfig to get the configuration directory
   const _cwd = Deno.cwd?.() || ".";
   const baseDir = `${_cwd}/.agent/breakdown`;
 
   // Create directory structure
   // Get default configuration from DefaultTypePatternProvider
   const patternProvider = new DefaultTypePatternProvider();
-  const defaultConfig = patternProvider.getDefaultConfig();
 
-  // Extract layer types from default configuration
-  const layerTypes = defaultConfig.params?.two?.layerType?.pattern
-    ?.match(/\^?\((.*?)\)\$?/)?.[1]
-    ?.split("|") || ["project", "issue", "task"];
+  // Get layer types from pattern provider (unified configuration source)
+  const layerTypes = patternProvider.getLayerTypes();
+  if (!layerTypes || layerTypes.length === 0) {
+    throw new Error("Configuration must define layer types");
+  }
 
   // Create directories dynamically based on layer types
   const directories = [
@@ -46,11 +45,11 @@ export async function initializeBreakdownConfiguration(): Promise<void> {
     console.log(`✅ Created directory: ${dirPath}`);
   }
 
-  // Create basic default-app.yml config file using dynamic values from BreakdownParams
-  // Extract directive types from default configuration
-  const directiveTypes = defaultConfig.params?.two?.directiveType?.pattern
-    ?.match(/\^?\((.*?)\)\$?/)?.[1]
-    ?.split("|") || ["to", "summary", "defect"];
+  // Get directive types from pattern provider (unified configuration source)
+  const directiveTypes = patternProvider.getDirectiveTypes();
+  if (!directiveTypes || directiveTypes.length === 0) {
+    throw new Error("Configuration must define directive types");
+  }
 
   // Build configuration content dynamically
   const configContent = `# Breakdown Configuration

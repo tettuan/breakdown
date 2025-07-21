@@ -250,7 +250,7 @@ breakdown --show-config-path
 // DirectiveTypeの検証
 type DirectiveValidation = {
   pattern: string;
-  profile: ConfigProfileName;
+  profile: ConfigProfile;
   isValid: boolean;
   errorMessage?: string;
 };
@@ -258,7 +258,7 @@ type DirectiveValidation = {
 // LayerTypeの検証
 type LayerValidation = {
   pattern: string;
-  profile: ConfigProfileName;
+  profile: ConfigProfile;
   isValid: boolean;
   errorMessage?: string;
 };

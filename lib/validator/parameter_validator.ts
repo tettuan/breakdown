@@ -17,7 +17,7 @@ import { PathValidator } from "./path_validator.ts";
 import { OptionsNormalizer } from "./options_normalizer.ts";
 import { ParamsTypeValidator } from "./params_type_validator.ts";
 import { CustomVariableExtractor } from "../processor/custom_variable_extractor.ts";
-import { ConfigProfileName } from "../config/config_profile_name.ts";
+// ConfigProfile removed for BreakdownParams integration
 
 /**
  * Validated parameters after comprehensive validation
@@ -132,8 +132,8 @@ export class ParameterValidator {
   /**
    * Validate TwoParams_Result
    */
-  validateTwoParams(result: TwoParams_Result): Result<ValidatedParams, ValidationError> {
-    return this.validateParams({
+  async validateTwoParams(result: TwoParams_Result): Promise<Result<ValidatedParams, ValidationError>> {
+    return await this.validateParams({
       type: result.type,
       directiveType: result.directiveType,
       layerType: result.layerType,
@@ -145,8 +145,8 @@ export class ParameterValidator {
   /**
    * Validate OneParamsResult
    */
-  validateOneParams(result: OneParamsResult): Result<ValidatedParams, ValidationError> {
-    return this.validateParams({
+  async validateOneParams(result: OneParamsResult): Promise<Result<ValidatedParams, ValidationError>> {
+    return await this.validateParams({
       type: result.type,
       params: result.params,
       options: result.options,
@@ -156,8 +156,8 @@ export class ParameterValidator {
   /**
    * Validate ZeroParamsResult
    */
-  validateZeroParams(result: ZeroParamsResult): Result<ValidatedParams, ValidationError> {
-    return this.validateParams({
+  async validateZeroParams(result: ZeroParamsResult): Promise<Result<ValidatedParams, ValidationError>> {
+    return await this.validateParams({
       type: result.type,
       options: result.options,
     }, "ZeroParamsResult");
@@ -166,7 +166,7 @@ export class ParameterValidator {
   /**
    * Common validation logic
    */
-  private validateParams(
+  private async validateParams(
     result: {
       type: string;
       params?: string[];
@@ -175,9 +175,9 @@ export class ParameterValidator {
       layerType?: string;
     },
     source: "TwoParams_Result" | "OneParamsResult" | "ZeroParamsResult",
-  ): Result<ValidatedParams, ValidationError> {
+  ): Promise<Result<ValidatedParams, ValidationError>> {
     // 1. Validate params type and structure
-    const typeValidation = this.paramsValidator.validate(result);
+    const typeValidation = await this.paramsValidator.validate(result);
     if (!typeValidation.ok) {
       // Map specific ParamsTypeError to ValidationError
       const paramsError = typeValidation.error;
@@ -295,8 +295,7 @@ export class ParameterValidator {
 
     // Use DDD DirectiveType with Smart Constructor pattern
     const directiveResult = DirectiveType.create(
-      typeValidation.data.directiveType,
-      this.getConfigProfile(normalizedOptions.data.profile),
+      typeValidation.data.directiveType
     );
     if (!directiveResult.ok) {
       return error({
@@ -347,13 +346,13 @@ export class ParameterValidator {
   }
 
   /**
-   * Get ConfigProfileName from profile string with fallback to default
+   * Get profile name string with fallback to default
    */
-  private getConfigProfile(profileName?: string): ConfigProfileName {
+  private getConfigProfile(profileName?: string): string {
     if (!profileName) {
-      return ConfigProfileName.createDefault();
+      return "default"; // Default profile name
     }
 
-    return ConfigProfileName.create(profileName);
+    return profileName; // Return profile name as string
   }
 }

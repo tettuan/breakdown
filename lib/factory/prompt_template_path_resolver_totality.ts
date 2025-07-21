@@ -539,20 +539,14 @@ export class PromptTemplatePathResolverTotality {
       });
     }
 
-    // Common layer types to check for
-    const layerTypes = ["project", "issue", "task", "implementation"];
-
-    // Check if any layer type is contained in the filename
-    for (const layerType of layerTypes) {
-      if (baseName.toLowerCase().includes(layerType)) {
-        return resultOk(layerType);
-      }
-    }
-
+    // ❌ HARDCODE ELIMINATION: Layer types must come from configuration
+    // This is a fallback heuristic that should be replaced with proper configuration
+    // For now, return error to indicate configuration-based detection is required
     return resultError({
       kind: "InferenceFailure",
       fileName,
-      reason: "No known layer type found in filename",
+      reason: "Layer type inference from filename requires configuration-based implementation. " +
+        "Cannot use hardcoded layer type list.",
     });
   }
 }

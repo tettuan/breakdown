@@ -19,6 +19,7 @@ import {
   LayerType,
   TwoParamsLayerTypePattern,
 } from "../../../lib/domain/core/value_objects/layer_type.ts";
+import { ConfigProfile } from "../../../lib/config/mod.ts";
 import { createTwoParamsResult } from "../../../lib/types/two_params_result_extension.ts";
 
 const logger = new BreakdownLogger("e2e:error_handling");
@@ -41,11 +42,11 @@ Deno.test("E2E Error Handling: S3.1 - Invalid Arguments", () => {
   // 無効引数のテストケース（実際の実装に合わせて調整）
   const invalidArgumentCases = [
     {
-      name: "invalid_directive",
-      args: ["invalid_directive", "project", "input.md"],
+      name: "invalid_chars_directive",
+      args: ["INVALID-CHARS!", "project", "input.md"],
       expectedErrorStage: "directive_validation",
-      expectedErrorType: "PatternMismatch",
-      expectedErrorMessage: "is not valid for profile",
+      expectedErrorType: "InvalidFormat",
+      expectedErrorMessage: "contains invalid characters",
     },
     // NOTE: 現在の実装では一部の無効値がバリデーションを通過する
     // より具体的な無効ケースに限定
@@ -77,14 +78,27 @@ Deno.test("E2E Error Handling: S3.1 - Invalid Arguments", () => {
     const twoParamsResult = createTwoParamsResult(directive, layer);
 
     // Phase 3: DirectiveType生成とエラー検出
+    const defaultProfile = ConfigProfile.createDefault();
     const directiveResult = DirectiveType.create(
       twoParamsResult.directiveType,
     );
+
+    logger.debug("DirectiveType creation result", {
+      inputValue: twoParamsResult.directiveType,
+      result: directiveResult,
+      ok: directiveResult.ok,
+    });
 
     // Phase 4: LayerType生成とエラー検出
     const layerResult = LayerType.create(
       twoParamsResult.layerType,
     );
+
+    logger.debug("LayerType creation result", {
+      inputValue: twoParamsResult.layerType,
+      result: layerResult,
+      ok: layerResult.ok,
+    });
 
     // Phase 5: エラー段階の検証
     let actualErrorStage = "";

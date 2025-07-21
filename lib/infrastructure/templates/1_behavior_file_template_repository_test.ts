@@ -15,7 +15,7 @@ import { assert, assertEquals, assertRejects } from "jsr:@std/assert@0.224.0";
 import { join } from "@std/path";
 import { ensureDir } from "@std/fs";
 import { DirectiveType, LayerType } from "../../types/mod.ts";
-import { ConfigProfileName } from "../../config/config_profile_name.ts";
+// ConfigProfile import removed - using string directly
 import {
   FileTemplateRepository,
   type FileTemplateRepositoryConfig,
@@ -43,8 +43,8 @@ function createTestDirectiveType(value: string): DirectiveType {
 
 function createTestLayerType(directiveType: string, value: string): LayerType {
   const result = createTwoParamsResult(directiveType, value);
-  const profileName = ConfigProfileName.createDefault();
-  const layerResult = LayerType.create(result.layerType, profileName);
+  // Use default profile string instead of ConfigProfile
+  const layerResult = LayerType.create(result.layerType);
   if (!layerResult.ok) {
     throw new Error(`Failed to create LayerType: ${layerResult.error.message}`);
   }

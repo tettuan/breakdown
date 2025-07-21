@@ -34,14 +34,18 @@ import {
 } from "../../domain/templates/prompt_generation_aggregate.ts";
 import type { DirectiveType, LayerType } from "../../types/mod.ts";
 
-// Create a mock TypePatternProvider for tests
+// Import the default provider for dynamic validation
+import { DefaultTypePatternProvider } from "../../types/defaults/default_type_pattern_provider.ts";
+
+// Create a mock TypePatternProvider for tests using DefaultTypePatternProvider
+const defaultProvider = new DefaultTypePatternProvider();
 const mockTypePatternProvider = {
-  validateDirectiveType: (value: string) => ["to", "summary", "defect"].includes(value),
-  validateLayerType: (value: string) => ["task", "project", "issue"].includes(value),
-  getValidDirectiveTypes: () => ["to", "summary", "defect"],
-  getValidLayerTypes: () => ["task", "project", "issue"],
-  getDirectivePattern: () => TwoParamsDirectivePattern.create("to|summary|defect"),
-  getLayerTypePattern: () => TwoParamsLayerTypePattern.create("task|project|issue"),
+  validateDirectiveType: (value: string) => defaultProvider.validateDirectiveType(value),
+  validateLayerType: (value: string) => defaultProvider.validateLayerType(value),
+  getValidDirectiveTypes: () => defaultProvider.getValidDirectiveTypes(),
+  getValidLayerTypes: () => defaultProvider.getValidLayerTypes(),
+  getDirectivePattern: () => defaultProvider.getDirectivePattern(),
+  getLayerTypePattern: () => defaultProvider.getLayerTypePattern(),
 };
 
 // Create mock GenerationPolicyConfig

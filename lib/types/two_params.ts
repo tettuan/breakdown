@@ -10,7 +10,7 @@
 
 import type { Result } from "./result.ts";
 import { error, ok } from "./result.ts";
-import type { ConfigProfileName } from "../config/config_profile_name.ts";
+// ConfigProfile removed for BreakdownParams integration
 import type { TwoParams_Result as _TwoParams_Result } from "./two_params_result_extension.ts";
 import { isTwoParamsResult } from "./two_params_result_extension.ts";
 import type { ValidationError } from "./unified_error_types.ts";
@@ -223,7 +223,7 @@ export class TwoParamsType {
    * @returns Result containing TwoParams aggregate or domain error
    */
   async toAggregate(
-    profile: ConfigProfileName,
+    profile: string,
   ): Promise<
     Result<
       import("../domain/core/aggregates/two_params.ts").TwoParams,
@@ -231,7 +231,7 @@ export class TwoParamsType {
     >
   > {
     const { TwoParams } = await import("../domain/core/aggregates/two_params.ts");
-    return TwoParams.create(this._directive, this._layer, profile);
+    return TwoParams.create(this._directive, this._layer);
   }
 
   /**

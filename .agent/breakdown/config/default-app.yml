@@ -7,9 +7,138 @@ app_schema:
 params:
   two:
     directiveType:
-      pattern: "^(to|summary|defect)$"
+      pattern: "^(to|summary|defect|find|analyze|extract)$"
     layerType:
-      pattern: "^(project|issue|task|bugs)$"
+      pattern: "^(project|issue|task|component|module)$"
 workspace:
   working_dir: ".agent/breakdown"
   temp_dir: ".agent/breakdown/temp"
+outputFormats:
+  to:
+    ja: |
+      ## 出力形式
+      指定された形式で出力してください。
+      - 構造化されたデータ形式
+      - 明確な区切り文字の使用
+    en: |
+      ## Output Format
+      Please provide output in the specified format.
+      - Use structured data format
+      - Clear delimiters
+  summary:
+    ja: |
+      ## 要約形式
+      以下の形式で要約を提供してください：
+      1. 主要なポイント
+      2. 詳細な説明
+      3. 結論
+    en: |
+      ## Summary Format
+      Provide summary in the following format:
+      1. Key points
+      2. Detailed explanation
+      3. Conclusion
+  defect:
+    ja: |
+      ## 欠陥検出結果
+      検出された欠陥を以下の形式で報告：
+      - 欠陥の種類
+      - 発生箇所
+      - 修正提案
+    en: |
+      ## Defect Detection Results
+      Report detected defects in the following format:
+      - Defect type
+      - Location
+      - Fix suggestion
+  find:
+    ja: |
+      ## 検索結果形式
+      発見された項目を以下の形式で報告：
+      - 項目名
+      - 場所
+      - 関連情報
+    en: |
+      ## Search Results Format
+      Report found items in the following format:
+      - Item name
+      - Location
+      - Related information
+  analyze:
+    ja: |
+      ## 分析結果形式
+      分析結果を以下の構造で提供：
+      - 概要
+      - 詳細分析
+      - 推奨事項
+    en: |
+      ## Analysis Results Format
+      Provide analysis results in the following structure:
+      - Summary
+      - Detailed analysis
+      - Recommendations
+  extract:
+    ja: |
+      ## 抽出結果形式
+      抽出されたデータを以下の形式で提供：
+      - 抽出項目
+      - ソース情報
+      - メタデータ
+    en: |
+      ## Extraction Results Format
+      Provide extracted data in the following format:
+      - Extracted items
+      - Source information
+      - Metadata
+  default:
+    ja: |
+      ## 出力形式
+      指定された形式で出力してください。
+    en: |
+      ## Output Format
+      Provide output in the specified format.
+variableDefaults:
+  title:
+    ja: "サンプルタイトル"
+    en: "Sample Title"
+  name:
+    ja: "サンプル名"
+    en: "Sample Name"
+  description:
+    ja: "説明"
+    en: "Description"
+  content:
+    ja: "コンテンツ"
+    en: "Content"
+  input:
+    ja: "入力データ"
+    en: "Input Data"
+  output:
+    ja: "出力結果"
+    en: "Output Result"
+  example:
+    ja: "例"
+    en: "Example"
+  date:
+    ja: "{date}"
+    en: "{date}"
+  author:
+    ja: "システム"
+    en: "System"
+  default:
+    ja: "{{{varName}} の値}"
+    en: "{{varName} value}"
+textEnhancements:
+  ja:
+    replacements:
+      - from: "please"
+        to: "ください"
+        flags: "gi"
+    formatting:
+      sectionSeparator: "\n\n---\n\n"
+      politeEndings: true
+  en:
+    replacements: []
+    formatting:
+      sectionSeparator: "\n\n"
+      politeEndings: false

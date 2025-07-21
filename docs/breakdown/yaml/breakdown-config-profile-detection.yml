@@ -4,7 +4,7 @@
 # 核心的な型変換フロー
 type_flow:
   name: "Config Profile Detection Flow"
-  description: "CLI引数からConfigProfileNameへの変換"
+  description: "CLI引数からConfigProfileへの変換"
 
   steps:
     - step: 1
@@ -15,8 +15,8 @@ type_flow:
 
     - step: 2
       from: "string | null"
-      to: "ConfigProfileName"
-      operation: "ConfigProfileName.create()"
+      to: "ConfigProfile"
+      operation: "ConfigProfile.create()"
       principle: "Smart Constructor による制約と検証"
 
 # 主要型
@@ -30,7 +30,7 @@ key_types:
       - "--config filename"
       - "-c filename"
 
-  ConfigProfileName:
+  ConfigProfile:
     pattern: "Smart Constructor"
     responsibility: "設定プロファイル名の制約と検証"
     validation_rule: "/^[a-z0-9_-]{1,50}$/"
@@ -52,7 +52,7 @@ cli_patterns:
 # 設計パターン
 patterns:
   factory: "ConfigPrefixDetector による統一的な生成"
-  smart_constructor: "ConfigProfileName による制約"
+  smart_constructor: "ConfigProfile による制約"
   immutable_object: "生成後の変更不可"
 
 # 境界

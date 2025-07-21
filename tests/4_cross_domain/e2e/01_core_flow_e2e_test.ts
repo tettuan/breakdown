@@ -13,6 +13,7 @@ import { BreakdownLogger } from "@tettuan/breakdownlogger";
 // 各ドメインのコンポーネントをインポート
 import { DirectiveType } from "../../../lib/domain/core/value_objects/directive_type.ts";
 import { LayerType } from "../../../lib/domain/core/value_objects/layer_type.ts";
+import { ConfigProfile } from "../../../lib/config/mod.ts";
 import { createTwoParamsResult } from "../../../lib/types/two_params_result_extension.ts";
 
 const logger = new BreakdownLogger("e2e:core_flow");
@@ -52,6 +53,7 @@ Deno.test("E2E Core Flow: S1.1 - Basic Command Execution (to project)", () => {
   // Phase 2: 型安全変換
   logger.debug("Phase 2: Type-safe conversion");
 
+  const defaultProfile = ConfigProfile.createDefault();
   const directiveTypeResult = DirectiveType.create(twoParamsResult.directiveType);
   const layerTypeResult = LayerType.create(twoParamsResult.layerType);
 
@@ -219,7 +221,8 @@ Deno.test("E2E Core Flow: S1.2 - Different Combinations", () => {
 
     // E2E処理の実行
     const twoParamsResult = createTwoParamsResult(combo.directive, combo.layer);
-    const directiveTypeResult = DirectiveType.create(twoParamsResult.directiveType);
+    const defaultProfile = ConfigProfile.createDefault();
+  const directiveTypeResult = DirectiveType.create(twoParamsResult.directiveType);
     const layerTypeResult = LayerType.create(twoParamsResult.layerType);
 
     assertEquals(
@@ -282,6 +285,7 @@ Deno.test("E2E Core Flow: S1.3 - STDIN Input Processing", () => {
 
   // Phase 1: STDIN検出とCLI引数解析
   const twoParamsResult = createTwoParamsResult(cliArgs[0], cliArgs[1]);
+  const defaultProfile = ConfigProfile.createDefault();
   const directiveTypeResult = DirectiveType.create(twoParamsResult.directiveType);
   const layerTypeResult = LayerType.create(twoParamsResult.layerType);
 
@@ -391,7 +395,8 @@ Deno.test("E2E Core Flow: S1.4 - Basic Performance Measurement", () => {
 
     // 完全なE2E処理を実行
     const twoParamsResult = createTwoParamsResult("to", "project");
-    const directiveTypeResult = DirectiveType.create(twoParamsResult.directiveType);
+    const defaultProfile = ConfigProfile.createDefault();
+  const directiveTypeResult = DirectiveType.create(twoParamsResult.directiveType);
     const layerTypeResult = LayerType.create(twoParamsResult.layerType);
 
     assertEquals(directiveTypeResult.ok, true);

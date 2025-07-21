@@ -142,12 +142,12 @@ class LayerType {
 }
 
 // 設定プロファイル名（短寿命）
-class ConfigProfileName extends ValidatedValue<string> {
+class ConfigProfile extends ValidatedValue<string> {
   readonly isDefault: boolean;
   
-  static createDefault(): ConfigProfileName { return new ConfigProfileName("default", true); }
-  static fromCliOption(option?: string): ConfigProfileName {
-    return option ? new ConfigProfileName(option, false) : this.createDefault();
+  static createDefault(): ConfigProfile { return new ConfigProfile("default", true); }
+  static fromCliOption(option?: string): ConfigProfile {
+    return option ? new ConfigProfile(option, false) : this.createDefault();
   }
   
   private constructor(value: string, isDefault: boolean) {
@@ -158,7 +158,7 @@ class ConfigProfileName extends ValidatedValue<string> {
 
 // 設定分離型（JSR検証により簡素化）
 type BreakdownConfig = {
-  readonly profileName: ConfigProfileName;
+  readonly profileName: ConfigProfile;
   // JSR検証済みのため、directivePatterns/layerPatternsは不要
   readonly app_prompt: { base_dir: string; working_dir?: string };  // PATH用
   readonly app_schema: { base_dir: string };                        // PATH用
@@ -213,7 +213,7 @@ sequenceDiagram
     Note over CLI,OUTPUT: Breakdown CLIのスコープ（プロンプト生成→標準出力まで）
 
     Note over CLI: CLI引数 → BreakdownParamsResult
-    CLI->>CONFIG: ConfigProfileName
+    CLI->>CONFIG: ConfigProfile
     CONFIG->>CLI: BreakdownConfig
     
     Note over CLI: バリデーション → TwoParamsResult
@@ -247,7 +247,7 @@ flowchart TD
     end
     
     subgraph CONFIG ["Configuration Layer"]
-        B["ConfigProfileName"]
+        B["ConfigProfile"]
         H["BreakdownConfig"]
     end
     
@@ -313,27 +313,27 @@ flowchart TD
 ```typescript
 // 境界インターフェース
 interface CLIToConfigBoundary {
-  // 入力（ConfigProfileNameの責務を限定）
-  configProfileName: ConfigProfileName;
+  // 入力（ConfigProfileの責務を限定）
+  configProfile: ConfigProfile;
   
   // 出力
   breakdownConfig: BreakdownConfig;
   
   // 契約
-  loadConfig(profileName: ConfigProfileName): Result<BreakdownConfig, ConfigError>;
+  loadConfig(profile: ConfigProfile): Result<BreakdownConfig, ConfigError>;
 }
 
 // データ変換（デフォルト値自動適用）
-const transformCLIToConfig = (args: string[]): ConfigProfileName => {
+const transformCLIToConfig = (args: string[]): ConfigProfile => {
   const configOption = extractConfigOption(args); // null | undefined | string
-  return ConfigProfileName.fromCliOption(configOption); // 自動的にデフォルト値適用
+  return ConfigProfile.fromCliOption(configOption); // 自動的にデフォルト値適用
 };
 
-// 使用例（ConfigProfileNameの寿命が短いことを示す）
+// 使用例（ConfigProfileの寿命が短いことを示す）
 const cliArgs = ["to", "issue", "--config=production"];
-const profile = transformCLIToConfig(cliArgs); // ConfigProfileName作成
+const profile = transformCLIToConfig(cliArgs); // ConfigProfile作成
 const config = await loadConfig(profile);      // BreakdownConfig取得
-// この時点でConfigProfileNameの寿命は終了
+// この時点でConfigProfileの寿命は終了
 ```
 
 ### 2. 設定管理ドメイン → パラメータバリデーションドメイン
@@ -615,7 +615,7 @@ flowchart TD
 
 ### JSR統合による検証済み値の活用効果
 1. **明確なアプリケーションスコープ**: JSR検証済み入力→プロンプト生成→標準出力まで（AI実行は対象外）
-2. **責務の明確化と寿命管理**: ConfigProfileName（短寿命）→BreakdownConfig（分離後終了）→TwoParams（JSR検証済み、長寿命）
+2. **責務の明確化と寿命管理**: ConfigProfile（短寿命）→BreakdownConfig（分離後終了）→TwoParams（JSR検証済み、長寿命）
 3. **型安全性の確保**: JSR検証済み + Result型 + Discriminated Union
 4. **検証ロジック削減**: DirectiveType/LayerTypeの追加検証が不要
 5. **拡張性と保守性**: ドメイン境界の明確化、変更容易性、テスト可能性
@@ -663,6 +663,6 @@ flowchart TD
 - **base_dir/working_dirの用途明確化**: どのドメインで使用されるかをコメントで明記
 
 ### 責務変更の記録（維持）
-- **ConfigProfileName**: 設定ファイル名の管理のみ（DirectiveType/LayerType提供責務削除）
+- **ConfigProfile**: 設定ファイル名の管理のみ（DirectiveType/LayerType提供責務削除）
 - **BreakdownConfig**: パス解決用設定のみに集約（パラメータバリデーション設定削除）
 - **全域性適用**: 部分関数を全域関数に変換、型システムで不正状態を排除

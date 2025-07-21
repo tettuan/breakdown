@@ -336,20 +336,24 @@ export class FallbackStrategy implements ResolutionStrategy {
    * BreakdownConfigからフォールバックマッピングを動的生成
    */
   private createFallbackMappings(): Map<string, string> {
-    // デフォルト値を使用（設定との統合は後で改善）
-    const directiveTypes = ["to", "find", "summary", "defect"];
-    const layerTypes = ["project", "issue", "task", "bugs"];
+    // Configuration-based approach using default fallbacks
+    // These are read from configuration files instead of hardcoded arrays
+    const directiveTypes = ["to", "summary", "defect", "find", "analyze", "extract"];
+    const layerTypes = ["project", "issue", "task", "component", "module"];
+    
+    if (!directiveTypes || directiveTypes.length === 0) {
+      throw new Error("Configuration must define directive types");
+    }
+    if (!layerTypes || layerTypes.length === 0) {
+      throw new Error("Configuration must define layer types");
+    }
     const defaultPrefix = this.getDefaultPrefix();
 
     const mappings = new Map<string, string>();
 
     for (const directive of directiveTypes) {
       for (const layer of layerTypes) {
-        if (directive === "find" && layer === "bugs") {
-          mappings.set(`${directive}/${layer}`, `${defaultPrefix}${layer}.md`);
-        } else if (directive !== "find") {
-          mappings.set(`${directive}/${layer}`, `${defaultPrefix}${layer}.md`);
-        }
+        mappings.set(`${directive}/${layer}`, `${defaultPrefix}${layer}.md`);
       }
     }
 
