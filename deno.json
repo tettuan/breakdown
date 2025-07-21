@@ -34,7 +34,11 @@
     ],
     "exclude": [
       "**/日本語.*",
-      "**/*.ja.*"
+      "**/*.ja.*",
+      "examples/",
+      "tests/",
+      "*test.ts",
+      "draft/"
     ]
   },
   "tasks": {
@@ -77,7 +81,8 @@
   },
   "test": {
     "exclude": [
-      "tmp/"
+      "tmp/",
+      "examples/"
     ]
   },
   "exclude": [
