@@ -15,7 +15,11 @@ import { join } from "@std/path";
 import { ensureDir } from "@std/fs";
 
 // Test helper imports for CLI execution
-import { runCommand, setupTestEnvironment, cleanupTestEnvironment } from "../../../helpers/setup.ts";
+import {
+  cleanupTestEnvironment,
+  runCommand,
+  setupTestEnvironment,
+} from "../../../helpers/setup.ts";
 import type { TestEnvironment } from "../../../helpers/setup.ts";
 
 // TwoParamsResult の実装をインポート
@@ -45,7 +49,7 @@ function generateTestCases(count: number): Array<{ directive: string; layer: str
   // Use valid directive types instead of random strings
   const validDirectives = ["to", "summary", "defect"];
   const validLayers = ["project", "issue", "task"];
-  
+
   return Array.from({ length: count }, () => ({
     directive: validDirectives[Math.floor(Math.random() * validDirectives.length)],
     layer: validLayers[Math.floor(Math.random() * validLayers.length)],
@@ -237,7 +241,7 @@ Deno.test("Pattern Matching: TwoParamsResult structure validation", () => {
 async function setupPatternMatchingEnvironment(): Promise<TestEnvironment> {
   const baseDir = Deno.cwd();
   const testDir = join(baseDir, "tmp/pattern-matching-cli-test");
-  
+
   const env = await setupTestEnvironment({
     workingDir: testDir,
     skipDefaultConfig: true,
@@ -249,7 +253,10 @@ async function setupPatternMatchingEnvironment(): Promise<TestEnvironment> {
   await ensureDir(configDir);
 
   // Read fixture config files from absolute paths
-  const fixtureDir = join(baseDir, "tests/integration/directive_layer_types/fixtures/configs/pattern-matching");
+  const fixtureDir = join(
+    baseDir,
+    "tests/integration/directive_layer_types/fixtures/configs/pattern-matching",
+  );
   const appConfigPath = join(fixtureDir, "pattern-test-app.yml");
   const userConfigPath = join(fixtureDir, "pattern-test-user.yml");
 
@@ -328,13 +335,18 @@ Deno.test("CLI Pattern Matching: Valid random patterns execution", async () => {
       });
 
       // Verify successful execution (CLI completes with warnings)
-      assertEquals(result.success, true, `CLI should succeed for valid pattern: ${testCase.directive}/${testCase.layer}`);
-      
+      assertEquals(
+        result.success,
+        true,
+        `CLI should succeed for valid pattern: ${testCase.directive}/${testCase.layer}`,
+      );
+
       // Check if output contains the test prompt content or at least indicates successful processing
-      const hasPromptContent = result.output.includes(`Test Prompt for ${testCase.directive}/${testCase.layer}`) ||
-                              result.output.includes(`Pattern: ${testCase.directive}/${testCase.layer}`) ||
-                              result.output.includes("Breakdown execution completed");
-      
+      const hasPromptContent =
+        result.output.includes(`Test Prompt for ${testCase.directive}/${testCase.layer}`) ||
+        result.output.includes(`Pattern: ${testCase.directive}/${testCase.layer}`) ||
+        result.output.includes("Breakdown execution completed");
+
       assertEquals(
         hasPromptContent,
         true,
@@ -353,7 +365,11 @@ Deno.test("CLI Pattern Matching: Invalid patterns handling", async () => {
 
   try {
     const invalidCases = [
-      { directive: "invalid-directive", layer: "project", description: "invalid directive with hyphen" },
+      {
+        directive: "invalid-directive",
+        layer: "project",
+        description: "invalid directive with hyphen",
+      },
       { directive: "INVALID", layer: "issue", description: "uppercase directive" },
       { directive: "x", layer: "task", description: "too short directive" },
       { directive: "to", layer: "invalid-layer", description: "invalid layer with hyphen" },
@@ -404,7 +420,11 @@ Deno.test("CLI Pattern Matching: Boundary value patterns", async () => {
       { directive: "summary", layer: "issue", description: "summary directive with issue layer" },
       { directive: "defect", layer: "task", description: "defect directive with task layer" },
       { directive: "to", layer: "task", description: "to directive with task layer" },
-      { directive: "summary", layer: "project", description: "summary directive with project layer" },
+      {
+        directive: "summary",
+        layer: "project",
+        description: "summary directive with project layer",
+      },
     ];
 
     for (const testCase of boundaryTestCases) {
@@ -446,12 +466,12 @@ Deno.test("CLI Pattern Matching: Boundary value patterns", async () => {
         true,
         `Boundary case should succeed: ${testCase.description}`,
       );
-      
+
       // Check if output contains the test prompt content or completion indicator
       const hasValidOutput = result.output.includes(`Boundary Test: ${testCase.description}`) ||
-                            result.output.includes(`Directive: ${testCase.directive}`) ||
-                            result.output.includes("Breakdown execution completed");
-      
+        result.output.includes(`Directive: ${testCase.directive}`) ||
+        result.output.includes("Breakdown execution completed");
+
       assertEquals(
         hasValidOutput,
         true,
@@ -477,7 +497,11 @@ Deno.test("CLI Pattern Matching: Help and version commands", async () => {
     );
 
     assertEquals(helpResult.success, true, "Help command should succeed");
-    assertStringIncludes(helpResult.output, "Usage:", "Help output should contain usage information");
+    assertStringIncludes(
+      helpResult.output,
+      "Usage:",
+      "Help output should contain usage information",
+    );
 
     // Test version command (without config prefix to avoid parameter parsing issues)
     const versionResult = await runCommand(
@@ -540,12 +564,13 @@ Deno.test("CLI Pattern Matching: STDIN input with patterns", async () => {
     });
 
     assertEquals(result.success, true, "CLI should succeed with STDIN input");
-    
+
     // Check if output contains STDIN test content or completion indicator
-    const hasValidOutput = result.output.includes(`STDIN Test: ${testCase.directive}/${testCase.layer}`) ||
-                          result.output.includes("Pattern:") ||
-                          result.output.includes("Breakdown execution completed");
-    
+    const hasValidOutput =
+      result.output.includes(`STDIN Test: ${testCase.directive}/${testCase.layer}`) ||
+      result.output.includes("Pattern:") ||
+      result.output.includes("Breakdown execution completed");
+
     assertEquals(
       hasValidOutput,
       true,

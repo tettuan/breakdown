@@ -10,11 +10,11 @@ export function generateValidString(length?: number): string {
   const validLength = length ?? Math.floor(Math.random() * 6) + 3; // 3-8
   const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
   let result = "";
-  
+
   for (let i = 0; i < validLength; i++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
   }
-  
+
   return result;
 }
 
@@ -24,12 +24,12 @@ export function generateValidString(length?: number): string {
 export function generateValidStrings(count: number): string[] {
   const strings: string[] = [];
   const lengths = [3, 4, 5, 6, 7, 8]; // Cover all valid lengths
-  
+
   for (let i = 0; i < count; i++) {
     const length = lengths[i % lengths.length];
     strings.push(generateValidString(length));
   }
-  
+
   return strings;
 }
 
@@ -38,32 +38,32 @@ export function generateValidStrings(count: number): string[] {
  */
 export function generateInvalidString(invalidType?: InvalidType): string {
   const type = invalidType ?? randomInvalidType();
-  
+
   switch (type) {
     case InvalidType.TooShort:
       return generateValidString(Math.floor(Math.random() * 2) + 1); // 1-2 chars
-    
+
     case InvalidType.TooLong:
       return generateValidString(Math.floor(Math.random() * 5) + 9); // 9-13 chars
-    
+
     case InvalidType.UpperCase:
       return generateStringWithUpperCase();
-    
+
     case InvalidType.SpecialChar:
       return generateStringWithSpecialChar();
-    
+
     case InvalidType.Space:
       return generateStringWithSpace();
-    
+
     case InvalidType.Empty:
       return "";
-    
+
     case InvalidType.Hyphen:
       return generateStringWithHyphen();
-    
+
     case InvalidType.Underscore:
       return generateStringWithUnderscore();
-    
+
     default:
       return generateValidString(2); // Fallback to too short
   }
@@ -75,12 +75,12 @@ export function generateInvalidString(invalidType?: InvalidType): string {
 export function generateInvalidStrings(count: number): string[] {
   const strings: string[] = [];
   const types = Object.values(InvalidType);
-  
+
   for (let i = 0; i < count; i++) {
     const type = types[i % types.length];
     strings.push(generateInvalidString(type));
   }
-  
+
   return strings;
 }
 
@@ -165,17 +165,17 @@ export class PatternTestDataGenerator {
     invalid: { value: string; type: InvalidType }[];
   } {
     const validStrings = generateValidStrings(12); // 2 for each valid length
-    const invalidStrings = Object.values(InvalidType).map(type => ({
+    const invalidStrings = Object.values(InvalidType).map((type) => ({
       value: generateInvalidString(type),
       type,
     }));
-    
+
     return {
       valid: validStrings,
       invalid: invalidStrings,
     };
   }
-  
+
   /**
    * Generate edge case test data
    */
@@ -185,21 +185,21 @@ export class PatternTestDataGenerator {
   } {
     return {
       valid: [
-        "abc",      // Minimum length
+        "abc", // Minimum length
         "12345678", // Maximum length
-        "abc123",   // Mixed alphanumeric
-        "000",      // All numbers
-        "zzz",      // All letters
+        "abc123", // Mixed alphanumeric
+        "000", // All numbers
+        "zzz", // All letters
       ],
       invalid: [
-        "ab",       // Too short
+        "ab", // Too short
         "123456789", // Too long
-        "",         // Empty
-        "ABC",      // Uppercase
-        "a-b",      // Hyphen
-        "a_b",      // Underscore
-        "a b",      // Space
-        "a!b",      // Special char
+        "", // Empty
+        "ABC", // Uppercase
+        "a-b", // Hyphen
+        "a_b", // Underscore
+        "a b", // Space
+        "a!b", // Special char
       ],
     };
   }
@@ -216,12 +216,16 @@ export function isValidPattern(str: string): boolean {
  * Generate a test description for a pattern test
  */
 export function describePatternTest(value: string, expected: boolean): string {
-  const lengthInfo = value.length < 3 ? "too short" : 
-                     value.length > 8 ? "too long" : 
-                     "valid length";
-  const contentInfo = /[A-Z]/.test(value) ? "contains uppercase" :
-                      /[^a-z0-9]/.test(value) ? "contains invalid char" :
-                      "valid content";
-  
+  const lengthInfo = value.length < 3
+    ? "too short"
+    : value.length > 8
+    ? "too long"
+    : "valid length";
+  const contentInfo = /[A-Z]/.test(value)
+    ? "contains uppercase"
+    : /[^a-z0-9]/.test(value)
+    ? "contains invalid char"
+    : "valid content";
+
   return `"${value}" (${lengthInfo}, ${contentInfo}) should be ${expected ? "valid" : "invalid"}`;
 }

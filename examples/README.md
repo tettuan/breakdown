@@ -53,17 +53,16 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 11. `10_config_production_example.sh` - 本番環境設定とバグ検出例
 12. `11_config_production_custom.sh` - 本番環境カスタム設定とFind Bugs
 
-### 追加例 (12-18)
+### 追加例 (12-17)
 13. `12_summary_issue.sh` - summary issueコマンドの例
 14. `13_defect_patterns.sh` - defect issue/taskコマンドの例
 15. `14_custom_variables.sh` - カスタム変数とadaptationオプション
 16. `15_pipeline_processing.sh` - パイプライン処理の例
 17. `16_batch_processing.sh` - バッチ処理の例
 18. `17_error_handling.sh` - エラーハンドリングの例
-19. `18_cicd_integration.sh` - CI/CD統合の例
 
 ### クリーンアップ
-20. `19_clean.sh` - 生成されたファイルのクリーンアップ
+19. `18_clean.sh` - 生成されたファイルのクリーンアップ
 
 ## 前準備の詳細
 
@@ -234,18 +233,9 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 - リトライ機能の実装
 - フォールバック処理
 
-### 19. CI/CD統合の例
+### 19. クリーンアップ
 ```bash
-./examples/18_cicd_integration.sh
-```
-このスクリプトは以下を実行します：
-- GitHub Actions、GitLab CI、Jenkins、CircleCIの設定例
-- PR分析と自動ドキュメント生成
-- 品質メトリクスの追跡
-
-### 20. クリーンアップ
-```bash
-./examples/19_clean.sh
+./examples/18_clean.sh
 ```
 このスクリプトは以下を実行します：
 - 生成された全ての出力ファイルの削除
@@ -322,8 +312,7 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 | 15_pipeline_processing.sh | summary project<br/>defect task<br/>to issue | `.agent/breakdown/config/default-app.yml`<br/>`.agent/breakdown/config/default-user.yml` | デフォルト設定<br/>（プロファイル: default） | `.agent/breakdown/prompts/summary/project/f_project.md`<br/>`.agent/breakdown/prompts/defect/task/f_task.md`<br/>`.agent/breakdown/prompts/to/issue/f_issue.md` | ✅<br/>✅<br/>✅ |
 | 16_batch_processing.sh | to project<br/>defect issue<br/>summary project | `.agent/breakdown/config/default-app.yml`<br/>`.agent/breakdown/config/default-user.yml` | デフォルト設定<br/>（プロファイル: default） | `.agent/breakdown/prompts/to/project/f_project.md`<br/>`.agent/breakdown/prompts/defect/issue/f_issue.md`<br/>`.agent/breakdown/prompts/summary/project/f_project.md` | ✅<br/>✅<br/>✅ |
 | 17_error_handling.sh | to project<br/>summary task | `.agent/breakdown/config/default-app.yml`<br/>`.agent/breakdown/config/default-user.yml` | デフォルト設定<br/>（プロファイル: default） | `.agent/breakdown/prompts/to/project/f_project.md`<br/>`.agent/breakdown/prompts/summary/task/f_task.md` | ✅<br/>✅ |
-| 18_cicd_integration.sh | summary project<br/>defect project | `.agent/breakdown/config/default-app.yml`<br/>`.agent/breakdown/config/default-user.yml` | デフォルト設定<br/>（プロファイル: default） | `.agent/breakdown/prompts/summary/project/f_project.md`<br/>`.agent/breakdown/prompts/defect/project/f_project.md` | ✅<br/>✅ |
-| 19_clean.sh | - | - | クリーンアップ | - | - |
+| 18_clean.sh | - | - | クリーンアップ | - | - |
 
 ### テンプレート依存関係
 

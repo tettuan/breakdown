@@ -92,12 +92,12 @@ initialization:
   # Default prompt content
   default_prompt_content: |
     # ${directive_type}/${layer_type} Pattern Test
-    
+
     Input: ${input}
     Output: ${output}
-    
+
     Pattern validation test for DirectiveType: ${directive_type}, LayerType: ${layer_type}
-  
+
   # Default schema content
   default_schema_content: |
     {

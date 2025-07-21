@@ -19,10 +19,11 @@ directive_types:
   - create
   - update
   - delete
-  # Allow pattern matching for test generated strings
-  pattern_match: true
+  # Pattern matching configuration for test generated strings
+pattern_match_config:
+  enabled: true
 
-# Valid layer types (allow any 3-8 character alphanumeric string for testing)  
+# Valid layer types (allow any 3-8 character alphanumeric string for testing)
 layer_types:
   - project
   - issue
@@ -32,8 +33,9 @@ layer_types:
   - story
   - bug
   - feature
-  # Allow pattern matching for test generated strings
-  pattern_match: true
+  # Pattern matching configuration for test generated strings
+pattern_match_config:
+  enabled: true
 
 # Alternative pattern sets for different test scenarios
 pattern_sets:
@@ -41,27 +43,27 @@ pattern_sets:
   strict:
     directive: "^[a-z0-9]{3,8}$"
     layer: "^[a-z0-9]{3,8}$"
-  
+
   # Liberal patterns allowing more characters
   liberal:
     directive: "^[a-zA-Z0-9_-]{2,16}$"
     layer: "^[a-zA-Z0-9_-]{2,16}$"
-  
+
   # Minimal patterns for edge case testing
   minimal:
     directive: "^[a-z]{2,4}$"
     layer: "^[a-z]{2,4}$"
-  
+
   # Complex patterns with special rules
   complex:
     directive: "^(to|from|via|[a-z]{2}[0-9]{0,2}|test_[a-z]+)$"
     layer: "^(project|issue|[a-z]{3}_[0-9]{3})$"
-  
+
   # Version-based patterns
   versioned:
     directive: "^v[0-9]+\\.[0-9]+$"
     layer: "^release-[0-9]+\\.[0-9]+$"
-  
+
   # Hierarchical patterns
   hierarchical:
     directive: "^[a-z]+(-[a-z]+)*$"
@@ -94,7 +96,7 @@ aliases:
   c: "create"
   u: "update"
   del: "delete"
-  
+
   # DirectiveType aliases - testing
   t1: "test1"
   t2: "test2"
@@ -102,13 +104,13 @@ aliases:
   t123: "test123"
   tv1: "v1"
   tv2: "v2"
-  
+
   # DirectiveType aliases - special patterns
   rnd: "random"
   tst: "testing"
   dev: "develop"
   prd: "produce"
-  
+
   # LayerType aliases - basic
   p: "project"
   i: "issue"
@@ -118,14 +120,14 @@ aliases:
   s: "story"
   b: "bug"
   f: "feature"
-  
+
   # LayerType aliases - testing
   l1: "layer1"
   l2: "layer2"
   l3: "layer3"
   l99: "layer99"
   l100: "layer100"
-  
+
   # LayerType aliases - special patterns
   lr: "random"
   lt: "layertest"
@@ -147,7 +149,7 @@ test_cases:
     - directive: "v1"
       layer: "l1"
       description: "Version pattern"
-    
+
   invalid_patterns:
     - directive: "TO"
       layer: "PROJECT"
@@ -161,7 +163,7 @@ test_cases:
     - directive: "verylongdirectivetype"
       layer: "verylonglayertype"
       description: "Too long pattern"
-  
+
   edge_cases:
     - directive: "to"
       layer: "l1"
@@ -181,14 +183,14 @@ templates:
     Test Type: ${test_type}
     Directive Pattern: ${directive_pattern}
     Layer Pattern: ${layer_pattern}
-    
+
     Testing: ${directive_type}/${layer_type}
     Input: ${input}
     Output: ${output}
-    
+
     Validation Result: ${validation_result}
     Test Case: ${test_case_description}
-  
+
   validation_template: |
     Pattern Validation
     ==================
@@ -197,7 +199,7 @@ templates:
     Result: ${result}
     Match Details: ${match_details}
     Constraints: ${constraints}
-  
+
   error_template: |
     Pattern Validation Error
     ========================
@@ -207,7 +209,7 @@ templates:
     Expected Format: ${expected_format}
     Actual Format: ${actual_format}
     Suggestion: ${suggestion}
-  
+
   batch_test_template: |
     Batch Pattern Test Results
     ==========================
@@ -215,7 +217,7 @@ templates:
     Passed: ${passed_tests}
     Failed: ${failed_tests}
     Success Rate: ${success_rate}%
-    
+
     Failed Cases:
     ${failed_cases_list}
 
@@ -231,7 +233,7 @@ user:
     strictMode: true
     allowPatternOverride: false
     testMode: "comprehensive"
-    
+
 # Pattern validation rules and error messages
 validation:
   rules:
@@ -247,7 +249,7 @@ validation:
     - name: "reserved_word_check"
       description: "Check for reserved words"
       enabled: true
-      
+
   error_messages:
     invalid_length: "Value length must be between ${min_length} and ${max_length} characters"
     invalid_characters: "Value contains invalid characters. Allowed: ${allowed_chars}"

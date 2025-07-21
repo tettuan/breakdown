@@ -20,7 +20,11 @@ import { join } from "@std/path";
 import { ensureDir } from "@std/fs";
 
 // Test helper imports for CLI execution
-import { runCommand, setupTestEnvironment, cleanupTestEnvironment } from "../../../helpers/setup.ts";
+import {
+  cleanupTestEnvironment,
+  runCommand,
+  setupTestEnvironment,
+} from "../../../helpers/setup.ts";
 import type { TestEnvironment } from "../../../helpers/setup.ts";
 
 const logger = new BreakdownLogger("random-pattern-matching");
@@ -42,7 +46,9 @@ function generateRandomAlphaNumeric(minLength: number, maxLength: number): strin
  * @param count 生成するテストケース数
  * @returns DirectiveType/LayerType/fromLayerTypeのランダム組み合わせ
  */
-function generateRandomTestCases(count: number): Array<{ directive: string; layer: string; fromLayer: string }> {
+function generateRandomTestCases(
+  count: number,
+): Array<{ directive: string; layer: string; fromLayer: string }> {
   return Array.from({ length: count }, () => ({
     directive: generateRandomAlphaNumeric(3, 8),
     layer: generateRandomAlphaNumeric(3, 8),
@@ -145,7 +151,7 @@ async function cleanupDynamicFiles(filePaths: string[]): Promise<void> {
 async function setupRandomPatternMatchingEnvironment(): Promise<TestEnvironment> {
   const baseDir = Deno.cwd();
   const testDir = join(baseDir, "tmp/random-pattern-matching-cli-test");
-  
+
   const env = await setupTestEnvironment({
     workingDir: testDir,
     skipDefaultConfig: true,
@@ -157,7 +163,10 @@ async function setupRandomPatternMatchingEnvironment(): Promise<TestEnvironment>
   await ensureDir(configDir);
 
   // Read fixture config files from absolute paths
-  const fixtureDir = join(baseDir, "tests/integration/directive_layer_types/fixtures/configs/pattern-matching");
+  const fixtureDir = join(
+    baseDir,
+    "tests/integration/directive_layer_types/fixtures/configs/pattern-matching",
+  );
   const appConfigPath = join(fixtureDir, "pattern-test-app.yml");
   const userConfigPath = join(fixtureDir, "pattern-test-user.yml");
 
@@ -265,7 +274,7 @@ Deno.test("Random Pattern Matching: Dynamic prompt file creation and cleanup", a
         testCase.layer,
         testCase.fromLayer,
       );
-      
+
       createdFiles.push(promptPath);
 
       // Verify file was created
@@ -289,7 +298,6 @@ Deno.test("Random Pattern Matching: Dynamic prompt file creation and cleanup", a
       const fileExists = await Deno.stat(filePath).then(() => true).catch(() => false);
       assertEquals(fileExists, false, `File should be cleaned up: ${filePath}`);
     }
-
   } finally {
     // Ensure cleanup even if test fails
     await cleanupDynamicFiles(createdFiles);
@@ -346,11 +354,12 @@ Deno.test("Random Pattern Matching: Complete CLI workflow with random patterns",
       // What's important is that we test the complete workflow
       if (result.success) {
         // If successful, verify that the output contains expected elements
-        const hasValidOutput = result.output.includes(`Test Prompt Template for ${testCase.directive}`) ||
-                              result.output.includes(`DirectiveType: ${testCase.directive}`) ||
-                              result.output.includes("Generated at:") ||
-                              result.output.includes("Breakdown execution completed");
-        
+        const hasValidOutput =
+          result.output.includes(`Test Prompt Template for ${testCase.directive}`) ||
+          result.output.includes(`DirectiveType: ${testCase.directive}`) ||
+          result.output.includes("Generated at:") ||
+          result.output.includes("Breakdown execution completed");
+
         if (hasValidOutput) {
           logger.debug("CLI workflow succeeded with valid output", {
             directive: testCase.directive,
@@ -374,7 +383,6 @@ Deno.test("Random Pattern Matching: Complete CLI workflow with random patterns",
       assertExists(result.output !== undefined, "CLI should provide output");
       assertExists(result.error !== undefined, "CLI should provide error information");
     }
-
   } finally {
     // Cleanup all created files
     await cleanupDynamicFiles(createdFiles);
@@ -431,12 +439,15 @@ Deno.test("Random Pattern Matching: fromLayerType (-i=) option validation", asyn
       // Verify that the fromLayerType option is processed
       // The specific behavior depends on the pattern matching configuration
       assertExists(result, "CLI should return a result for fromLayerType option");
-      
+
       // Test that the generated prompt file name matches expected pattern
       const expectedFileName = `f_${testCase.fromLayer}.md`;
-      assertStringIncludes(promptPath, expectedFileName, "Prompt file should follow f_{fromLayerType}.md pattern");
+      assertStringIncludes(
+        promptPath,
+        expectedFileName,
+        "Prompt file should follow f_{fromLayerType}.md pattern",
+      );
     }
-
   } finally {
     await cleanupDynamicFiles(createdFiles);
     await cleanupTestEnvironment(env);
@@ -450,10 +461,10 @@ Deno.test("Random Pattern Matching: Pattern boundary testing", () => {
 
   // Test minimum length (3 characters)
   const minLengthCases = Array.from({ length: 10 }, () => generateRandomAlphaNumeric(3, 3));
-  
+
   // Test maximum length (8 characters)
   const maxLengthCases = Array.from({ length: 10 }, () => generateRandomAlphaNumeric(8, 8));
-  
+
   // Test various lengths within range
   const variableLengthCases = Array.from({ length: 20 }, () => generateRandomAlphaNumeric(3, 8));
 
@@ -461,14 +472,30 @@ Deno.test("Random Pattern Matching: Pattern boundary testing", () => {
 
   // Validate minimum length cases
   for (const testCase of minLengthCases) {
-    assertEquals(testCase.length, 3, `Minimum length case should be exactly 3 characters: ${testCase}`);
-    assertEquals(pattern.test(testCase), true, `Minimum length case should match pattern: ${testCase}`);
+    assertEquals(
+      testCase.length,
+      3,
+      `Minimum length case should be exactly 3 characters: ${testCase}`,
+    );
+    assertEquals(
+      pattern.test(testCase),
+      true,
+      `Minimum length case should match pattern: ${testCase}`,
+    );
   }
 
   // Validate maximum length cases
   for (const testCase of maxLengthCases) {
-    assertEquals(testCase.length, 8, `Maximum length case should be exactly 8 characters: ${testCase}`);
-    assertEquals(pattern.test(testCase), true, `Maximum length case should match pattern: ${testCase}`);
+    assertEquals(
+      testCase.length,
+      8,
+      `Maximum length case should be exactly 8 characters: ${testCase}`,
+    );
+    assertEquals(
+      pattern.test(testCase),
+      true,
+      `Maximum length case should match pattern: ${testCase}`,
+    );
   }
 
   // Validate variable length cases
@@ -478,7 +505,11 @@ Deno.test("Random Pattern Matching: Pattern boundary testing", () => {
       true,
       `Variable length case should be 3-8 characters: ${testCase}`,
     );
-    assertEquals(pattern.test(testCase), true, `Variable length case should match pattern: ${testCase}`);
+    assertEquals(
+      pattern.test(testCase),
+      true,
+      `Variable length case should match pattern: ${testCase}`,
+    );
   }
 
   logger.debug("Pattern boundary testing completed", {
@@ -498,8 +529,18 @@ Deno.test("Random Pattern Matching: Edge case validation", async () => {
     // Test edge cases
     const edgeCases = [
       { directive: "abc", layer: "123", fromLayer: "xyz", description: "minimum length all" },
-      { directive: "abcdefgh", layer: "12345678", fromLayer: "zyxwvuts", description: "maximum length all" },
-      { directive: "a1b2c3d4", layer: "z9y8x7w6", fromLayer: "1a2b3c4d", description: "mixed alphanumeric" },
+      {
+        directive: "abcdefgh",
+        layer: "12345678",
+        fromLayer: "zyxwvuts",
+        description: "maximum length all",
+      },
+      {
+        directive: "a1b2c3d4",
+        layer: "z9y8x7w6",
+        fromLayer: "1a2b3c4d",
+        description: "mixed alphanumeric",
+      },
       { directive: "123abc", layer: "789xyz", fromLayer: "456def", description: "numbers first" },
       { directive: "abc123", layer: "xyz789", fromLayer: "def456", description: "letters first" },
     ];
@@ -554,7 +595,6 @@ Deno.test("Random Pattern Matching: Edge case validation", async () => {
       // Verify that edge cases are handled properly
       assertExists(result, `Edge case should return a result: ${testCase.description}`);
     }
-
   } finally {
     await cleanupDynamicFiles(createdFiles);
     await cleanupTestEnvironment(env);
