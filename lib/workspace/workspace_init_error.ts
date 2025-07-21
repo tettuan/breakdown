@@ -10,6 +10,7 @@
  */
 export class WorkspaceInitError extends Error {
   public readonly code: string;
+  public readonly type: string = "workspace_init_error";
   public readonly details?: Record<string, unknown>;
 
   constructor(
