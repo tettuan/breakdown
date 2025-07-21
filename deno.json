@@ -30,7 +30,8 @@
       "LICENSE",
       "mod.ts",
       "lib/",
-      "cli/"
+      "cli/",
+      "CHANGELOG.md"
     ],
     "exclude": [
       "**/日本語.*",
@@ -38,7 +39,9 @@
       "examples/",
       "tests/",
       "*test.ts",
-      "draft/"
+      "draft/",
+      "CLAUDE.md",
+      "instructions/"
     ]
   },
   "tasks": {

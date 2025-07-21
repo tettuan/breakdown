@@ -87,8 +87,13 @@ tmp/*
 debug*.ts
 
 # agent files
+.agent
 .agent/
 .agent/*
 
 # tmp files
 instructions/project-worker.md
+
+# Claude specific
+.claude
+.claude/
