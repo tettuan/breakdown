@@ -8,7 +8,6 @@
  * @module helpers/prompt_helper_prototype
  */
 
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import type { DirectiveType, LayerType } from "../types/mod.ts";
 import type {
   PromptTemplate,
@@ -95,11 +94,9 @@ export class PromptPrototypeError extends Error {
  * Experimental prompt helper class
  */
 export class PromptHelperPrototype {
-  private readonly logger: BreakdownLogger;
   private readonly options: Required<PromptEnhancementOptions>;
 
   constructor(options: PromptEnhancementOptions = {}) {
-    this.logger = new BreakdownLogger("prompt-helper-prototype");
     this.options = {
       autoDetectVariables: true,
       validateTemplate: true,
@@ -109,9 +106,7 @@ export class PromptHelperPrototype {
       ...options,
     };
 
-    if (this.options.debug) {
-      this.logger.debug("PromptHelperPrototype initialized", { options: this.options });
-    }
+    // Debug information is available through getFeatureStatus() method
   }
 
   /**
@@ -164,9 +159,7 @@ export class PromptHelperPrototype {
       confidence,
     };
 
-    if (this.options.debug) {
-      this.logger.debug("Variable detection completed", { result });
-    }
+    // Variable detection result is returned to caller
 
     return result;
   }
@@ -223,12 +216,7 @@ export class PromptHelperPrototype {
         appliedEnhancements.push("japanese_enhancements");
       }
 
-      if (this.options.debug) {
-        this.logger.debug("Template enhancement completed", {
-          appliedEnhancements,
-          issues,
-        });
-      }
+      // Enhancement result is returned to caller
 
       return Promise.resolve({
         enhancedContent,
@@ -293,13 +281,7 @@ export class PromptHelperPrototype {
         language: this.options.language,
       };
 
-      if (this.options.debug) {
-        this.logger.debug("Dynamic content generated", {
-          contentCount: dynamicContent.size,
-          injectionPoints,
-          metadata,
-        });
-      }
+      // Dynamic content result is returned to caller
 
       return {
         dynamicContent,
@@ -404,11 +386,8 @@ export class PromptHelperPrototype {
 
       // Ultimate fallback
       return `{${varName.toLowerCase()} value}`;
-    } catch (error) {
-      this.logger.warn("Failed to load variable defaults", {
-        varName,
-        error: String(error),
-      });
+    } catch (_error) {
+      // Variable default fallback will be used
       return `{${varName} value}`;
     }
   }
@@ -465,13 +444,9 @@ export class PromptHelperPrototype {
 
       // Ultimate fallback
       return "## Output Format\nProvide output in the specified format.";
-    } catch (error) {
+    } catch (_error) {
       // Fallback on configuration error
-      this.logger.warn("Failed to load output format configuration", {
-        directive: directiveValue,
-        language,
-        error: String(error),
-      });
+      // Output format fallback will be used
       return "## Output Format\nProvide output in the specified format.";
     }
   }
@@ -528,11 +503,8 @@ export class PromptHelperPrototype {
       }
 
       return enhanced;
-    } catch (error) {
-      this.logger.warn("Failed to apply language enhancements", {
-        language: this.options.language,
-        error: String(error),
-      });
+    } catch (_error) {
+      // Language enhancement fallback will be used
       return content;
     }
   }

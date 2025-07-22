@@ -22,6 +22,8 @@ export interface PromptManagerAdapterConfig {
   debug?: boolean;
   /** Custom template directory */
   templateDir?: string;
+  /** Use internal variable replacement instead of external package */
+  useInternalReplacement?: boolean;
 }
 
 /**
@@ -48,6 +50,7 @@ export class PromptManagerAdapter {
   private readonly promptManager: PromptManager;
   private readonly debug: boolean;
   private readonly templateDir?: string;
+  private readonly useInternalReplacement: boolean;
 
   constructor(config: PromptManagerAdapterConfig = {}) {
     this.promptManager = config && "promptManager" in config && config.promptManager !== undefined
@@ -57,6 +60,10 @@ export class PromptManagerAdapter {
     this.templateDir = config && "templateDir" in config && config.templateDir !== undefined
       ? config.templateDir
       : undefined;
+    this.useInternalReplacement =
+      config && "useInternalReplacement" in config && config.useInternalReplacement !== undefined
+        ? config.useInternalReplacement
+        : false;
   }
 
   /**
@@ -88,11 +95,10 @@ export class PromptManagerAdapter {
         return validationResult;
       }
 
-      // Call BreakdownPrompt API
-      const content = await this.promptManager.generatePrompt(
-        templatePath,
-        variableDict,
-      );
+      // Use internal replacement or external package
+      const content = this.useInternalReplacement
+        ? await this.generatePromptInternally(templatePath, variableDict)
+        : await this.promptManager.generatePrompt(templatePath, variableDict);
 
       // Debug output to investigate the content type
       if (this.debug || Deno.env.get("LOG_LEVEL") === "debug") {
@@ -105,9 +111,19 @@ export class PromptManagerAdapter {
       }
 
       // Handle BreakdownPrompt response format
-      // Check if the response indicates an error
+      // BreakdownPrompt returns an object with success/error status
       if (content && typeof content === "object") {
-        const responseObj = content as { success?: boolean; error?: string; templatePath?: string };
+        const responseObj = content as {
+          success?: boolean;
+          error?: string;
+          templatePath?: string;
+          content?: string;
+          variables?: {
+            detected?: string[];
+            replaced?: string[];
+            remaining?: string[];
+          };
+        };
 
         // If BreakdownPrompt returns an error object instead of throwing
         if (responseObj.success === false && responseObj.error) {
@@ -133,18 +149,39 @@ export class PromptManagerAdapter {
             message: errorMessage,
           });
         }
+
+        // Handle successful response
+        if (responseObj.success === true && responseObj.content) {
+          // Debug: Check if variables were replaced
+          if (this.debug || Deno.env.get("LOG_LEVEL") === "debug") {
+            console.debug("PromptManager variable replacement info:", {
+              detected: responseObj.variables?.detected || [],
+              replaced: responseObj.variables?.replaced || [],
+              remaining: responseObj.variables?.remaining || [],
+            });
+          }
+
+          // Use the content from the successful response
+          const stringContent = responseObj.content;
+
+          // Create result
+          const promptResult: PromptResult = {
+            content: stringContent,
+            metadata: {
+              template: templatePath,
+              variables: variableDict,
+              timestamp: new Date(),
+            },
+          };
+
+          return resultOk(promptResult);
+        }
       }
 
-      // Ensure content is properly converted to string
+      // Fallback for unexpected response format
       let stringContent: string;
       if (typeof content === "string") {
         stringContent = content;
-      } else if (
-        content && typeof content === "object" && "success" in content && content.success === true
-      ) {
-        // Handle successful BreakdownPrompt response with content property
-        const successObj = content as { success: true; content?: string };
-        stringContent = successObj.content || "";
       } else if (content && typeof content === "object" && "toString" in content) {
         stringContent = content.toString();
       } else if (content && typeof content === "object") {
@@ -217,7 +254,7 @@ export class PromptManagerAdapter {
       try {
         await this.promptManager.generatePrompt(templatePath, {});
         return resultOk(true);
-      } catch (_error) {
+      } catch {
         return resultError({
           kind: "TemplateNotFound",
           path: templatePath,
@@ -292,6 +329,113 @@ export class PromptManagerAdapter {
     }
     // Standard variables: start with letter or underscore, contain letters, numbers, and underscores
     return /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name);
+  }
+
+  /**
+   * Internal variable replacement implementation
+   *
+   * @param templatePath - Path to the template file
+   * @param variables - Variables to replace in the template
+   * @returns Promise<string> The processed template content
+   */
+  private async generatePromptInternally(
+    templatePath: string,
+    variables: Record<string, string>,
+  ): Promise<string> {
+    try {
+      // Read template file
+      const templateContent = await Deno.readTextFile(templatePath);
+
+      if (this.debug) {
+        console.debug("Internal replacement - Template loaded:", {
+          path: templatePath,
+          contentLength: templateContent.length,
+          variables: Object.keys(variables),
+        });
+      }
+
+      // Replace variables using the internal logic
+      const processedContent = this.replaceVariables(templateContent, variables);
+
+      if (this.debug) {
+        console.debug("Internal replacement - Variables replaced:", {
+          originalLength: templateContent.length,
+          processedLength: processedContent.length,
+        });
+      }
+
+      return processedContent;
+    } catch (error) {
+      if (error instanceof Deno.errors.NotFound) {
+        throw new Error(`Template not found: ${templatePath}`);
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Replace variables in template content
+   *
+   * Supports multiple variable formats:
+   * - {{variable_name}} - Standard handlebars-style
+   * - ${variable_name} - Shell-style
+   * - {variable_name} - Simple brace format
+   *
+   * @param content - Template content
+   * @param variables - Variables to replace
+   * @returns Processed content with variables replaced
+   */
+  private replaceVariables(
+    content: string,
+    variables: Record<string, string>,
+  ): string {
+    let result = content;
+
+    // Track variable usage for debugging
+    const usedVariables: string[] = [];
+    const remainingVariables = new Set(Object.keys(variables));
+
+    // Replace handlebars-style variables {{variable_name}}
+    result = result.replace(/\{\{([^}]+)\}\}/g, (match, variableName) => {
+      const trimmedName = variableName.trim();
+      if (trimmedName in variables) {
+        usedVariables.push(trimmedName);
+        remainingVariables.delete(trimmedName);
+        return variables[trimmedName];
+      }
+      return match; // Keep original if variable not found
+    });
+
+    // Replace shell-style variables ${variable_name}
+    result = result.replace(/\$\{([^}]+)\}/g, (match, variableName) => {
+      const trimmedName = variableName.trim();
+      if (trimmedName in variables) {
+        usedVariables.push(trimmedName);
+        remainingVariables.delete(trimmedName);
+        return variables[trimmedName];
+      }
+      return match; // Keep original if variable not found
+    });
+
+    // Replace simple brace variables {variable_name}
+    result = result.replace(/\{([^{}]+)\}/g, (match, variableName) => {
+      const trimmedName = variableName.trim();
+      if (trimmedName in variables) {
+        usedVariables.push(trimmedName);
+        remainingVariables.delete(trimmedName);
+        return variables[trimmedName];
+      }
+      return match; // Keep original if variable not found
+    });
+
+    if (this.debug) {
+      console.debug("Internal replacement - Variable usage:", {
+        usedVariables: [...new Set(usedVariables)],
+        remainingVariables: [...remainingVariables],
+      });
+    }
+
+    return result;
   }
 
   /**

@@ -27,3 +27,25 @@ layerTypeValues:
   - "project"
   - "issue"
   - "task"
+
+# Test data for integration tests
+testData:
+  validDirectives:
+    - "to"
+    - "summary"
+    - "defect"
+  validLayers:
+    - "project"
+    - "issue"
+    - "task"
+  invalidDirectives:
+    - "invalid"
+    - "unknown"
+  invalidLayers:
+    - "invalid"
+    - "unknown"
+
+# Resource paths for test fixtures
+paths:
+  resourceDir: "./tests/fixtures"
+  templateDir: "./tests/fixtures/prompts"

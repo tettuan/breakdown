@@ -22,7 +22,6 @@ import type {
   TemplateRepository,
 } from "../../domain/templates/template_repository.ts";
 import { TemplateNotFoundError } from "../../domain/templates/template_repository.ts";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 /**
  * Repository configuration
@@ -48,7 +47,6 @@ interface CacheEntry {
  * File-based template repository implementation
  */
 export class FileTemplateRepository implements TemplateRepository {
-  private readonly logger: BreakdownLogger;
   private readonly cache: Map<string, CacheEntry>;
   private manifest?: TemplateManifest;
   private manifestLoadedAt?: Date;
@@ -56,7 +54,6 @@ export class FileTemplateRepository implements TemplateRepository {
   constructor(
     private readonly config: FileTemplateRepositoryConfig,
   ) {
-    this.logger = new BreakdownLogger("file-template-repository");
     this.cache = new Map();
 
     if (config.watchForChanges) {
@@ -71,7 +68,7 @@ export class FileTemplateRepository implements TemplateRepository {
     if (this.config.cacheEnabled) {
       const cached = this.getFromCache(pathString);
       if (cached) {
-        this.logger.debug("Template loaded from cache", { path: pathString });
+        // Template loaded from cache
         return cached;
       }
     }
@@ -100,7 +97,7 @@ export class FileTemplateRepository implements TemplateRepository {
         this.addToCache(pathString, template, stat.size);
       }
 
-      this.logger.debug("Template loaded from file", { path: pathString });
+      // Template loaded from file
       return template;
     } catch (error) {
       if (error instanceof Deno.errors.NotFound) {
@@ -146,7 +143,7 @@ export class FileTemplateRepository implements TemplateRepository {
     this.invalidateCache(path.getPath());
     this.manifest = undefined; // Force manifest rebuild
 
-    this.logger.info("Template saved", { path: path.getPath() });
+    // Template saved successfully
   }
 
   async delete(path: TemplatePath): Promise<void> {
@@ -158,7 +155,7 @@ export class FileTemplateRepository implements TemplateRepository {
       this.invalidateCache(path.getPath());
       this.manifest = undefined;
 
-      this.logger.info("Template deleted", { path: path.getPath() });
+      // Template deleted successfully
     } catch (error) {
       if (error instanceof Deno.errors.NotFound) {
         throw new TemplateNotFoundError(path);
@@ -172,7 +169,7 @@ export class FileTemplateRepository implements TemplateRepository {
     this.manifest = undefined;
     this.manifestLoadedAt = undefined;
 
-    this.logger.info("Repository cache cleared", "cache");
+    // Repository cache cleared
     return Promise.resolve();
   }
 
@@ -200,8 +197,8 @@ export class FileTemplateRepository implements TemplateRepository {
           });
         }
       }
-    } catch (error) {
-      this.logger.error("Failed to build manifest", { error });
+    } catch (_error) {
+      // Failed to build manifest - error silently ignored
       // Return empty manifest on error
     }
 
@@ -283,7 +280,7 @@ export class FileTemplateRepository implements TemplateRepository {
   private startWatching(): void {
     // Placeholder for file watching implementation
     // This would use Deno.watchFs to monitor template directory
-    this.logger.info("File watching not yet implemented", "watch");
+    // File watching not yet implemented
   }
 
   /**

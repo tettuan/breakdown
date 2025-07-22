@@ -269,7 +269,7 @@ export class ParamsTypeValidator {
         directive: "to", // デフォルト値（将来的に設定から動的取得）
         layer: "project", // デフォルト値（将来的に設定から動的取得）
       };
-    } catch (_error) {
+    } catch {
       // Fallback if config access fails
       return {
         directive: "to",

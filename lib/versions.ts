@@ -23,6 +23,6 @@ export const _JSR_VERSIONS = {
 export const JSR_IMPORT_PATHS = {
   BREAKDOWN_CONFIG: "jsr:@tettuan/breakdownconfig@^1.1.4",
   BREAKDOWN_PARAMS: "jsr:@tettuan/breakdownparams@^1.0.3",
-  BREAKDOWN_PROMPT: "jsr:@tettuan/breakdownprompt@1.2.3",
+  BREAKDOWN_PROMPT: "jsr:@tettuan/breakdownprompt@^1.2.4",
   BREAKDOWN_LOGGER: "jsr:@tettuan/breakdownlogger@^1.0.5",
 } as const;

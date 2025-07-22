@@ -6,8 +6,6 @@
  * @module
  */
 
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
-
 /**
  * Template error types
  */
@@ -109,7 +107,6 @@ export class TemplateError extends Error {
  * Template error detector and handler
  */
 export class TemplateErrorHandler {
-  private static logger = new BreakdownLogger("template-error-handler");
   /**
    * Detect and classify template-related errors
    */
@@ -199,8 +196,8 @@ export class TemplateErrorHandler {
   }> {
     const { autoResolve = false, projectRoot = Deno.cwd() } = options || {};
 
-    // Log detailed error information
-    this.logger.error(error.getDetailedMessage(), "error");
+    // Error information is passed through the error object itself
+    // No logging needed in production
 
     if (!autoResolve || !error.canAutoResolve) {
       return {
@@ -244,7 +241,7 @@ export class TemplateErrorHandler {
     resolved: boolean;
     message: string;
   }> {
-    this.logger.info("🔧 Attempting to auto-generate missing templates...", "recovery");
+    // Auto-generation status will be returned in the result
 
     const process = new Deno.Command("bash", {
       args: ["scripts/template_generator.sh", "generate"],
@@ -273,7 +270,7 @@ export class TemplateErrorHandler {
     resolved: boolean;
     message: string;
   }> {
-    this.logger.info("🔧 Validating and fixing templates...", "validation");
+    // Validation status will be returned in the result
 
     const process = new Deno.Command("bash", {
       args: ["examples/00_template_check.sh", "full"],
@@ -307,8 +304,6 @@ export async function withTemplateErrorHandling<T>(
     autoResolve?: boolean;
   },
 ): Promise<T> {
-  const logger = new BreakdownLogger("template-error-wrapper");
-
   try {
     return await operation();
   } catch (error) {
@@ -326,17 +321,12 @@ export async function withTemplateErrorHandling<T>(
       });
 
       if (result.resolved) {
-        logger.info(result.message, "recovery");
+        // Recovery result is returned to caller
         // Retry the operation after resolution
         return await operation();
       } else {
-        logger.error(result.message, "recovery");
-        if (result.commands) {
-          logger.error("\n🔧 Recovery commands:", "recovery");
-          for (const command of result.commands) {
-            logger.error(`   ${command}`, "recovery");
-          }
-        }
+        // Recovery commands are included in the thrown error
+        // No logging needed in production
         throw templateError;
       }
     } else {

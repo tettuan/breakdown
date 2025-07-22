@@ -342,7 +342,7 @@ export class ConfigLoader {
             path: configPath.value,
           });
         }
-      } catch {
+      } catch (_statError) {
         return error({
           kind: "FileNotFound",
           message: "Configuration file not found",

@@ -112,7 +112,9 @@ export type PromptGeneratorError =
  */
 export class TwoParamsPromptGenerator {
   constructor(
-    private readonly adapter: PromptManagerAdapter = new PromptManagerAdapter(),
+    private readonly adapter: PromptManagerAdapter = new PromptManagerAdapter({
+      useInternalReplacement: true,
+    }),
   ) {}
 
   /**

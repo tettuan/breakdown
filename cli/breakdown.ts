@@ -12,8 +12,8 @@
 
 import { ConfigPrefixDetector } from "$lib/factory/config_prefix_detector.ts";
 import { ConfigLoader } from "$lib/config/loader.ts";
-import { BreakdownConfig as _BreakdownConfig } from "jsr:@tettuan/breakdownconfig@^1.1.4";
-import { ParamsParser } from "jsr:@tettuan/breakdownparams@^1.0.7";
+import { BreakdownConfig as _BreakdownConfig } from "@tettuan/breakdownconfig";
+import { ParamsParser } from "@tettuan/breakdownparams";
 import { showHelp as _showHelp, showVersion as _showVersion } from "$lib/cli/help.ts";
 import { handleZeroParams } from "$lib/cli/handlers/zero_params_handler.ts";
 import { handleOneParams } from "$lib/cli/handlers/one_params_handler.ts";

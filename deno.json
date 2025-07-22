@@ -1,6 +1,6 @@
 {
   "name": "@tettuan/breakdown",
-  "version": "1.2.1",
+  "version": "1.2.4",
   "exports": {
     ".": "./mod.ts"
   },
@@ -18,7 +18,7 @@
     "@std/path": "jsr:@std/path@^1.0.9",
     "@std/yaml": "jsr:@std/yaml@^1.0.6",
     "@std/testing": "jsr:@std/testing@^0.224.0",
-    "@tettuan/breakdown": "jsr:@tettuan/breakdown@^0.1.4",
+    "@tettuan/breakdown": "jsr:@tettuan/breakdown@^1.2.4",
     "@tettuan/breakdownconfig": "jsr:@tettuan/breakdownconfig@^1.1.5",
     "@tettuan/breakdownparams": "jsr:@tettuan/breakdownparams@^1.1.0",
     "@tettuan/breakdownprompt": "jsr:@tettuan/breakdownprompt@^1.2.4",

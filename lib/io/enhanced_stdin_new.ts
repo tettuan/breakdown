@@ -139,7 +139,7 @@ export function detectEnvironment(config?: EnvironmentDetectionConfig): Environm
   } else {
     try {
       isTerminal = Deno.stdin.isTerminal();
-    } catch (_error) {
+    } catch {
       // Fallback: if we can't determine, assume non-terminal in CI
       isTerminal = !isCI;
     }

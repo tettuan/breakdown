@@ -77,7 +77,7 @@ class GenerationStrategiesConfigLoader {
 
       // Extract generation_strategies configuration
       this.config = (mergedConfig as ExtendedMergedConfig)?.generation_strategies || {};
-    } catch (_error) {
+    } catch {
       // If config loading fails, use empty config (defaults will be applied)
       this.config = {};
     }

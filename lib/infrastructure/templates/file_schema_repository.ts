@@ -23,7 +23,6 @@ import {
   SchemaNotFoundError,
   SchemaValidationError,
 } from "../../domain/templates/schema_repository.ts";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 /**
  * Schema repository configuration
@@ -51,7 +50,6 @@ export interface SchemaCacheEntry {
  * File-based schema repository implementation
  */
 export class FileSchemaRepository implements SchemaRepository {
-  private readonly logger: BreakdownLogger;
   private readonly cache: Map<string, SchemaCacheEntry>;
   private manifest?: SchemaManifest;
   private manifestLoadedAt?: Date;
@@ -60,7 +58,6 @@ export class FileSchemaRepository implements SchemaRepository {
   constructor(
     private readonly config: FileSchemaRepositoryConfig,
   ) {
-    this.logger = new BreakdownLogger("file-schema-repository");
     this.cache = new Map();
     this.schemaDir = join(
       config.baseDirectory,
@@ -75,7 +72,7 @@ export class FileSchemaRepository implements SchemaRepository {
     if (this.config.cacheEnabled) {
       const cached = this.getFromCache(pathString);
       if (cached) {
-        this.logger.debug("Schema loaded from cache", { path: pathString });
+        // Schema loaded from cache
         return cached;
       }
     }
@@ -122,7 +119,7 @@ export class FileSchemaRepository implements SchemaRepository {
         this.addToCache(pathString, schema, stat.size, dependencies);
       }
 
-      this.logger.debug("Schema loaded from file", { path: pathString });
+      // Schema loaded from file
       return schema;
     } catch (error) {
       if (error instanceof Deno.errors.NotFound) {
@@ -155,7 +152,7 @@ export class FileSchemaRepository implements SchemaRepository {
     await Promise.all(loadPromises);
 
     if (errors.length > 0) {
-      this.logger.warn("Some schemas failed to load", { errors });
+      // Some schemas failed to load - errors available in result
     }
 
     return result;
@@ -206,7 +203,7 @@ export class FileSchemaRepository implements SchemaRepository {
     this.invalidateCache(path.getPath());
     this.manifest = undefined; // Force manifest rebuild
 
-    this.logger.info("Schema saved", { path: path.getPath() });
+    // Schema saved successfully
   }
 
   async saveAll(schemas: Schema[]): Promise<SchemaBatchResult> {
@@ -239,7 +236,7 @@ export class FileSchemaRepository implements SchemaRepository {
       this.invalidateCache(path.getPath());
       this.manifest = undefined;
 
-      this.logger.info("Schema deleted", { path: path.getPath() });
+      // Schema deleted successfully
     } catch (error) {
       if (error instanceof Deno.errors.NotFound) {
         throw new SchemaNotFoundError(path);
@@ -331,7 +328,7 @@ export class FileSchemaRepository implements SchemaRepository {
     this.cache.clear();
     this.manifest = undefined;
     this.manifestLoadedAt = undefined;
-    this.logger.info("Schema repository cache cleared", "cache");
+    // Schema repository cache cleared
     return Promise.resolve();
   }
 
@@ -386,8 +383,8 @@ export class FileSchemaRepository implements SchemaRepository {
           }
         }
       }
-    } catch (error) {
-      this.logger.error("Failed to build schema manifest", { error });
+    } catch {
+      // Failed to build schema manifest - error silently ignored
     }
 
     return {

@@ -1,0 +1,39 @@
+# Default user configuration
+# User-specific patterns and settings
+
+params:
+  two:
+    directiveType:
+      patterns:
+        - "^to$"
+        - "^summary$"
+        - "^defect$"
+        - "^fix$"
+        - "^refactor$"
+        - "^design$"
+        - "^test$"
+    layerType:
+      patterns:
+        - "^project$"
+        - "^issue$"
+        - "^task$"
+        - "^feature$"
+        - "^module$"
+        - "^component$"
+
+# Test data for validation
+testData:
+  validDirectives:
+    - "to"
+    - "summary"
+    - "defect"
+  validLayers:
+    - "project"
+    - "issue"
+    - "task"
+  invalidDirectives:
+    - "invalid_directive"
+    - "123"
+  invalidLayers:
+    - "invalid_layer"
+    - "456"

@@ -7,7 +7,7 @@
  * @module prompt/prompt_generation_service_impl
  */
 
-import { PromptManager } from "jsr:@tettuan/breakdownprompt@1.1.2";
+import { PromptManager } from "@tettuan/breakdownprompt";
 import { basename } from "@std/path/basename";
 import { existsSync } from "@std/fs/exists";
 import type { Result } from "../types/result.ts";
@@ -106,26 +106,7 @@ export class PromptGenerationServiceImpl implements PromptGenerationService {
       // Generate prompt
       const result = await this.promptManager.generatePrompt(template, variables);
 
-      // Handle result
-      if (result && typeof result === "object" && "success" in result) {
-        if (result.success) {
-          return ok({
-            content: result.prompt ?? "",
-            metadata: {
-              template: context.promptFilePath,
-              variables,
-              timestamp: new Date(),
-            },
-          });
-        } else {
-          return resultError({
-            kind: "TemplateParseError",
-            template: context.promptFilePath,
-            error: result.error ?? "Unknown error",
-          });
-        }
-      }
-
+      // Handle result - PromptManager returns string content directly
       return ok({
         content: String(result),
         metadata: {

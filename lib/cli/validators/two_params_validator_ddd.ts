@@ -289,6 +289,18 @@ export const ProfileName = {
 // ============================================================================
 
 /**
+ * Extract alternatives from a regex pattern
+ * Converts "^(to|summary|defect)$" to ["to", "summary", "defect"]
+ */
+function extractAlternativesFromPattern(pattern: string): string[] {
+  // Remove regex anchors (^ and $)
+  const cleanPattern = pattern.replace(/^\^?\(/, "").replace(/\)\$?$/, "");
+
+  // Split by | to get alternatives
+  return cleanPattern.split("|").map((s) => s.trim()).filter((s) => s.length > 0);
+}
+
+/**
  * Extract validation patterns from configuration
  */
 function extractValidationPatterns(
@@ -296,29 +308,31 @@ function extractValidationPatterns(
   profile: ProfileName,
 ): Result<ValidationPatterns, ValidationError> {
   try {
-    // Navigate to profile-specific configuration
-    const profileConfig = config[ProfileName.value(profile)] as Record<string, unknown> | undefined;
-    if (!profileConfig) {
+    // Navigate to params.two configuration structure
+    const paramsConfig = config.params as Record<string, unknown> | undefined;
+    if (!paramsConfig) {
       return error({
         kind: "ConfigurationNotFound",
         profile: ProfileName.value(profile),
+        message: "No 'params' configuration found",
       });
     }
 
-    // Extract two params configuration
-    const twoConfig = profileConfig.two as Record<string, unknown> | undefined;
-    if (!twoConfig) {
+    const twoParamsConfig = paramsConfig.two as Record<string, unknown> | undefined;
+    if (!twoParamsConfig) {
       return error({
-        kind: "InvalidConfiguration",
-        message: `Missing 'two' configuration for profile '${ProfileName.value(profile)}'`,
-        details: profileConfig,
+        kind: "ConfigurationNotFound",
+        profile: ProfileName.value(profile),
+        message: "No 'params.two' configuration found",
       });
     }
 
-    // Extract directive patterns
-    const directiveConfig = twoConfig.directive as Record<string, unknown> | undefined;
-    const directivePatterns = directiveConfig?.patterns as string[] | undefined;
-    if (!directivePatterns || !Array.isArray(directivePatterns)) {
+    // Extract directive patterns from params.two.directiveType.pattern
+    const directiveTypeConfig = twoParamsConfig.directiveType as
+      | Record<string, unknown>
+      | undefined;
+    const directivePattern = directiveTypeConfig?.pattern as string | undefined;
+    if (!directivePattern) {
       return error({
         kind: "PatternNotDefined",
         patternType: "directive",
@@ -326,16 +340,21 @@ function extractValidationPatterns(
       });
     }
 
-    // Extract layer patterns
-    const layerConfig = twoConfig.layer as Record<string, unknown> | undefined;
-    const layerPatterns = layerConfig?.patterns as string[] | undefined;
-    if (!layerPatterns || !Array.isArray(layerPatterns)) {
+    // Extract layer patterns from params.two.layerType.pattern
+    const layerTypeConfig = twoParamsConfig.layerType as Record<string, unknown> | undefined;
+    const layerPattern = layerTypeConfig?.pattern as string | undefined;
+    if (!layerPattern) {
       return error({
         kind: "PatternNotDefined",
         patternType: "layer",
         profile: ProfileName.value(profile),
       });
     }
+
+    // Convert regex patterns to arrays by extracting alternatives
+    // Pattern like "^(to|summary|defect)$" becomes ["to", "summary", "defect"]
+    const directivePatterns = extractAlternativesFromPattern(directivePattern);
+    const layerPatterns = extractAlternativesFromPattern(layerPattern);
 
     return ok({
       directivePatterns: Object.freeze([...directivePatterns]),

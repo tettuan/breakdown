@@ -1,0 +1,20 @@
+# Default application configuration
+# This is the basic configuration for the Breakdown tool
+
+# Application metadata
+app_prompt:
+  base_dir: prompts
+
+app_schema:
+  base_dir: schema
+
+# Working directory (defaults to current directory)
+working_dir: .
+
+# Logging configuration
+log_level: info
+
+# Pattern validation settings
+validation:
+  strict_mode: false
+  allow_custom_patterns: true

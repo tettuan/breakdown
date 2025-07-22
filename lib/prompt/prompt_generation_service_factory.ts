@@ -7,7 +7,7 @@
  * @module prompt/prompt_generation_service_factory
  */
 
-import { PromptManager } from "jsr:@tettuan/breakdownprompt@1.1.2";
+import { PromptManager } from "@tettuan/breakdownprompt";
 import type {
   PromptGenerationService,
   PromptGenerationServiceFactory,

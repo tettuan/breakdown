@@ -219,15 +219,31 @@ export function fromTwoParamsResult(
       });
     }
 
-    // directiveType/layerTypeプロパティから直接取得（API調査で確認済み）
+    // TwoParamsResultの構造に基づいて値を取得
     const twoParamsResult = paramsResult as TwoParamsResult;
-    const directiveValue = twoParamsResult.directiveType;
-    const layerValue = twoParamsResult.layerType;
+
+    // 方法1: params配列から取得（実際のデータ構造）
+    let directiveValue: string | undefined;
+    let layerValue: string | undefined;
+
+    if (
+      "params" in twoParamsResult && Array.isArray(twoParamsResult.params) &&
+      twoParamsResult.params.length >= 2
+    ) {
+      directiveValue = twoParamsResult.params[0];
+      layerValue = twoParamsResult.params[1];
+    }
+
+    // 方法2: directiveType/layerTypeプロパティから取得（フォールバック）
+    if (!directiveValue || !layerValue) {
+      directiveValue = twoParamsResult.directiveType;
+      layerValue = twoParamsResult.layerType;
+    }
 
     if (!directiveValue || !layerValue) {
       return error({
         kind: "InvalidParamsType",
-        expectedType: "two params with directiveType and layerType properties",
+        expectedType: "two params with valid directiveType and layerType",
         actualType: `directiveType: ${directiveValue}, layerType: ${layerValue}`,
         message: "Invalid params structure for two params result",
       });

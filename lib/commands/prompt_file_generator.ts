@@ -65,7 +65,7 @@ async function getDefaultDirectiveType(profilePrefix = "default"): Promise<strin
 
     // Final fallback
     return "to";
-  } catch (_error) {
+  } catch {
     // Fallback on any error
     return "to";
   }

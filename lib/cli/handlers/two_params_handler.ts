@@ -58,9 +58,9 @@ class TwoParamsOrchestrator {
   private readonly promptGenerator: TwoParamsPromptGenerator;
   private readonly outputProcessor: TwoParamsOutputProcessor;
 
-  constructor(outputProcessor?: TwoParamsOutputProcessor) {
+  constructor(config?: Record<string, unknown>, outputProcessor?: TwoParamsOutputProcessor) {
     // Initialize all components using composition pattern
-    this.validator = new TwoParamsValidator();
+    this.validator = new TwoParamsValidator(config);
     this.stdinProcessor = new TwoParamsStdinProcessor();
     this.variableProcessor = new TwoParamsVariableProcessor();
     this.promptGenerator = new TwoParamsPromptGenerator();
@@ -368,9 +368,6 @@ class TwoParamsOrchestrator {
   }
 }
 
-// Static instance for reuse (optimization for performance)
-let orchestratorInstance: TwoParamsOrchestrator | null = null;
-
 /**
  * Two Params Handler - Main entry point function
  *
@@ -397,13 +394,11 @@ export async function twoParamsHandler(
     });
   }
 
-  // Create orchestrator instance if not exists (singleton pattern for efficiency)
-  if (!orchestratorInstance) {
-    orchestratorInstance = new TwoParamsOrchestrator();
-  }
+  // Create orchestrator instance for each call to ensure fresh config
+  const orchestrator = new TwoParamsOrchestrator(config);
 
   // Delegate to orchestrator with type-safe parameters
-  return await orchestratorInstance.execute(params, config, options);
+  return await orchestrator.execute(params, config, options);
 }
 
 /**

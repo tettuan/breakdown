@@ -318,14 +318,14 @@ export class PromptFileGeneratorDDD {
 
       // Convert to CommandResult
       return this.service.toCommandResult(response);
-    } catch (error) {
+    } catch (_error) {
       // Error logging removed - using standard error handling
       return {
         success: false,
         output: "",
         error: {
           type: PromptFileErrorType.Unknown,
-          message: `Unexpected error: ${error instanceof Error ? error.message : String(error)}`,
+          message: `Unexpected error: ${_error instanceof Error ? _error.message : String(_error)}`,
         },
       };
     }

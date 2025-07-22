@@ -14,8 +14,8 @@ logging:
 
 paths:
   workDir: "."
-  resourceDir: "./resources"
-  templateDir: "./templates"
+  resourceDir: "./tests/fixtures"
+  templateDir: "./tests/fixtures/prompts"
 
 # Test environment settings
 test:
