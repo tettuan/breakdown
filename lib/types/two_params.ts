@@ -223,7 +223,7 @@ export class TwoParamsType {
    * @returns Result containing TwoParams aggregate or domain error
    */
   async toAggregate(
-    profile: string,
+    _profile: string,
   ): Promise<
     Result<
       import("../domain/core/aggregates/two_params.ts").TwoParams,
@@ -231,7 +231,8 @@ export class TwoParamsType {
     >
   > {
     const { TwoParams } = await import("../domain/core/aggregates/two_params.ts");
-    return TwoParams.create(this._directive, this._layer);
+    const result = TwoParams.create(this._directive, this._layer);
+    return result; // TwoParams.create already returns Result
   }
 
   /**

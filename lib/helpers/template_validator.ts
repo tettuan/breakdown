@@ -231,37 +231,38 @@ export async function validateTemplatesForExamples(projectRoot?: string): Promis
   const validator = new TemplateValidator(root);
   const logger = new BreakdownLogger("template-validator-cli");
 
-  logger.info("🔍 Validating templates for examples execution...");
+  logger.info("🔍 Validating templates for examples execution...", "validation");
 
   const validation = await validator.validateTemplates();
 
   if (validation.isValid) {
-    logger.info(`✅ All ${validation.totalRequired} required templates are present`);
+    logger.info(`✅ All ${validation.totalRequired} required templates are present`, "validation");
   } else {
     logger.warn(
       `❌ ${validation.missingTemplates.length}/${validation.totalRequired} templates missing:`,
+      "validation",
     );
     for (const missing of validation.missingTemplates) {
-      logger.warn(`   - ${missing}`);
+      logger.warn(`   - ${missing}`, "validation");
     }
-    logger.info("\n💡 Run: bash scripts/template_generator.sh generate");
+    logger.info("\n💡 Run: bash scripts/template_generator.sh generate", "generator");
   }
 
   // Perform preflight check
   const preflight = await validator.preflightCheck();
 
   if (preflight.ready) {
-    logger.info("🚀 Examples are ready to run!");
+    logger.info("🚀 Examples are ready to run!", "validation");
   } else {
-    logger.warn("\n⚠️  Issues detected:");
+    logger.warn("\n⚠️  Issues detected:", "validation");
     for (const issue of preflight.issues) {
-      logger.warn(`   ${issue}`);
+      logger.warn(`   ${issue}`, "validation");
     }
 
     if (preflight.recommendations.length > 0) {
-      logger.info("\n💡 Recommendations:");
+      logger.info("\n💡 Recommendations:", "validation");
       for (const rec of preflight.recommendations) {
-        logger.info(`   ${rec}`);
+        logger.info(`   ${rec}`, "validation");
       }
     }
   }

@@ -17,6 +17,7 @@ import { PathValidator } from "./path_validator.ts";
 import { OptionsNormalizer } from "./options_normalizer.ts";
 import { ParamsTypeValidator } from "./params_type_validator.ts";
 import { CustomVariableExtractor } from "../processor/custom_variable_extractor.ts";
+import type { BreakdownConfig } from "@tettuan/breakdownconfig";
 // ConfigProfile removed for BreakdownParams integration
 
 /**
@@ -122,8 +123,9 @@ export class ParameterValidator {
   constructor(
     private readonly patternProvider: TypePatternProvider,
     private readonly configValidator: ConfigValidator,
+    private readonly config?: BreakdownConfig,
   ) {
-    this.paramsValidator = new ParamsTypeValidator(patternProvider);
+    this.paramsValidator = new ParamsTypeValidator(patternProvider, config);
     this.pathValidator = new PathValidator();
     this.optionsNormalizer = new OptionsNormalizer();
     this.customVariableExtractor = new CustomVariableExtractor();
@@ -132,7 +134,9 @@ export class ParameterValidator {
   /**
    * Validate TwoParams_Result
    */
-  async validateTwoParams(result: TwoParams_Result): Promise<Result<ValidatedParams, ValidationError>> {
+  async validateTwoParams(
+    result: TwoParams_Result,
+  ): Promise<Result<ValidatedParams, ValidationError>> {
     return await this.validateParams({
       type: result.type,
       directiveType: result.directiveType,
@@ -145,7 +149,9 @@ export class ParameterValidator {
   /**
    * Validate OneParamsResult
    */
-  async validateOneParams(result: OneParamsResult): Promise<Result<ValidatedParams, ValidationError>> {
+  async validateOneParams(
+    result: OneParamsResult,
+  ): Promise<Result<ValidatedParams, ValidationError>> {
     return await this.validateParams({
       type: result.type,
       params: result.params,
@@ -156,7 +162,9 @@ export class ParameterValidator {
   /**
    * Validate ZeroParamsResult
    */
-  async validateZeroParams(result: ZeroParamsResult): Promise<Result<ValidatedParams, ValidationError>> {
+  async validateZeroParams(
+    result: ZeroParamsResult,
+  ): Promise<Result<ValidatedParams, ValidationError>> {
     return await this.validateParams({
       type: result.type,
       options: result.options,
@@ -295,7 +303,7 @@ export class ParameterValidator {
 
     // Use DDD DirectiveType with Smart Constructor pattern
     const directiveResult = DirectiveType.create(
-      typeValidation.data.directiveType
+      typeValidation.data.directiveType,
     );
     if (!directiveResult.ok) {
       return error({

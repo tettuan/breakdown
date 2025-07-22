@@ -1,0 +1,18 @@
+# 厳格パターンテスト用設定
+params:
+  two:
+    directiveType:
+      pattern: "^(to|summary|defect)$" # 完全一致
+      errorMessage: "Directive must exactly match: to, summary, or defect"
+    layerType:
+      pattern: "^(project|issue|task)$" # 完全一致
+      errorMessage: "Layer must exactly match: project, issue, or task"
+
+# テスト用データセット（厳格版） - 動的生成されるため、ハードコード配列を除去
+# testData.validDirectives/validLayers は ConfigurationPatternGenerator により
+# params.two.directiveType.pattern および params.two.layerType.pattern から動的生成される
+testData:
+  # 厳格パターン ^(to|summary|defect)$ から生成される値
+  dynamicGeneration: true
+  patternBased: true
+  strictMode: true

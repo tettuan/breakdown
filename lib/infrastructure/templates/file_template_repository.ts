@@ -172,7 +172,7 @@ export class FileTemplateRepository implements TemplateRepository {
     this.manifest = undefined;
     this.manifestLoadedAt = undefined;
 
-    this.logger.info("Repository cache cleared");
+    this.logger.info("Repository cache cleared", "cache");
     return Promise.resolve();
   }
 
@@ -283,7 +283,7 @@ export class FileTemplateRepository implements TemplateRepository {
   private startWatching(): void {
     // Placeholder for file watching implementation
     // This would use Deno.watchFs to monitor template directory
-    this.logger.info("File watching not yet implemented");
+    this.logger.info("File watching not yet implemented", "watch");
   }
 
   /**

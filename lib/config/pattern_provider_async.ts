@@ -363,10 +363,10 @@ export class AsyncConfigPatternProvider implements TypePatternProvider {
    */
   private extractValuesFromPattern(pattern: string): string[] {
     // 正規表現パターンから値を抽出
-    // 例: "^(to|summary|defect)$" -> ["to", "summary", "defect"]
+    // 例: "^(値1|値2|値3)$" -> ["値1", "値2", "値3"]
     const match = pattern.match(/^\^?\(([^)]+)\)\$?$/);
     if (match && match[1]) {
-      return match[1].split('|').map(v => v.trim()).filter(v => v.length > 0);
+      return match[1].split("|").map((v) => v.trim()).filter((v) => v.length > 0);
     }
     return [];
   }
@@ -459,7 +459,9 @@ export class DefaultPatternProvider implements TypePatternProvider {
   constructor() {
     // ❌ HARDCODE ELIMINATION: DefaultPatternProvider must load from config
     // No hardcoded patterns allowed - use AsyncConfigPatternProvider instead
-    console.warn("DefaultPatternProvider should not be used - use AsyncConfigPatternProvider.create() instead");
+    console.warn(
+      "DefaultPatternProvider should not be used - use AsyncConfigPatternProvider.create() instead",
+    );
     this.directivePattern = null;
     this.layerPattern = null;
   }
@@ -524,7 +526,7 @@ export class DefaultPatternProvider implements TypePatternProvider {
       const patternStr = pattern.getPattern();
       const match = patternStr.match(/^\^?\(([^)]+)\)\$?$/);
       if (match && match[1]) {
-        return match[1].split('|').map(v => v.trim()).filter(v => v.length > 0);
+        return match[1].split("|").map((v) => v.trim()).filter((v) => v.length > 0);
       }
     }
     return [];
@@ -540,7 +542,7 @@ export class DefaultPatternProvider implements TypePatternProvider {
       const patternStr = pattern.getPattern();
       const match = patternStr.match(/^\^?\(([^)]+)\)\$?$/);
       if (match && match[1]) {
-        return match[1].split('|').map(v => v.trim()).filter(v => v.length > 0);
+        return match[1].split("|").map((v) => v.trim()).filter((v) => v.length > 0);
       }
     }
     return [];
@@ -559,7 +561,7 @@ export async function createPatternProvider(
     // ❌ HARDCODE ELIMINATION: DefaultPatternProvider with hardcoded patterns not allowed
     throw new Error(
       "Configuration-based pattern provider is required. " +
-      "Hardcoded pattern fallback is forbidden by design."
+        "Hardcoded pattern fallback is forbidden by design.",
     );
   }
 
@@ -570,12 +572,12 @@ export async function createPatternProvider(
 
   // ❌ HARDCODE ELIMINATION: No fallback to DefaultPatternProvider allowed
   // Configuration must be available - throw error instead of using hardcoded patterns
-  const errorMsg = result.error.kind === "ConfigLoadFailed" 
-    ? result.error.message 
+  const errorMsg = result.error.kind === "ConfigLoadFailed"
+    ? result.error.message
     : `${result.error.kind}`;
-  
+
   throw new Error(
     `Failed to create config-based pattern provider: ${errorMsg}. ` +
-    `Configuration file must be available at default-user.yml or ${configSetName}-user.yml`
+      `Configuration file must be available at default-user.yml or ${configSetName}-user.yml`,
   );
 }

@@ -1,0 +1,47 @@
+# Production profile test configuration
+# ConfigurationTestHelper用の本番環境設定ファイル
+
+# パターンベースの設定（制限的）
+params:
+  two:
+    directiveType:
+      pattern: "^(to|summary)$"
+    layerType:
+      pattern: "^(project|issue)$"
+
+# テストデータ
+testData:
+  validDirectives:
+    - "to"
+    - "summary"
+
+  validLayers:
+    - "project"
+    - "issue"
+
+  invalidDirectives:
+    - "defect" # production環境では制限
+    - "debug"
+    - "trace"
+    - "analyze"
+    - "invalid"
+    - ""
+
+  invalidLayers:
+    - "task" # production環境では制限
+    - "function"
+    - "test"
+    - "module"
+    - "INVALID@LAYER"
+    - ""
+
+# その他の設定
+outputFormat: "markdown-compact"
+debugMode: false
+directive_patterns: "to|summary"
+layer_patterns: "project|issue"
+
+custom_variables:
+  author: "Production Test Suite"
+  version: "1.0.0"
+  environment: "production"

@@ -1,0 +1,13 @@
+# breakdown-params-integration-app.yml
+# Application configuration for BreakdownParams integration tests
+
+promptDirectory: "app_prompt"
+schemaDirectory: "app_schema"
+enableDebugMode: false
+# requireSchema: true
+# mergeUserConfig: true
+
+# Additional app-specific settings
+defaultOptions:
+  verbose: false
+  quiet: false

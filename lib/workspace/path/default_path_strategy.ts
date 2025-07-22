@@ -154,10 +154,10 @@ export class DefaultPathStrategyTotality {
  */
 export class PathStrategyFactory {
   /**
-   * Creates the default strategy
+   * Creates strategy from configuration
    */
-  static createDefault(): Result<DefaultPathStrategyTotality, string> {
-    return DefaultPathStrategyTotality.create();
+  static createFromConfig(baseDir: string): Result<DefaultPathStrategyTotality, string> {
+    return DefaultPathStrategyTotality.create(baseDir);
   }
 
   /**

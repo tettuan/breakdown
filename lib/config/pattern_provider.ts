@@ -35,6 +35,11 @@ interface PatternConfig {
       errorMessage?: string;
     };
   };
+  /** Test data with invalid values for validation */
+  testData?: {
+    invalidDirectives?: string[];
+    invalidLayers?: string[];
+  };
 }
 
 /**
@@ -241,19 +246,19 @@ export class ConfigPatternProvider implements TypePatternProvider {
       // Use async method through Promise chain (temporary solution)
       // TODO: Refactor pattern provider interface to be fully async
       let configData: Record<string, unknown> = {};
-      
+
       // Synchronous access to config data through blocking async call
       // This is NOT ideal but necessary to maintain interface compatibility
-      this.getConfigData().then(result => {
+      this.getConfigData().then((result) => {
         if (result.ok) {
           configData = result.data;
         } else {
           console.warn("Failed to get config data:", result.error);
         }
-      }).catch(error => {
+      }).catch((error) => {
         console.warn("Error getting config data:", error);
       });
-      
+
       return configData;
     } catch (error) {
       console.warn("Failed to get config data synchronously:", error);
@@ -330,21 +335,43 @@ export class ConfigPatternProvider implements TypePatternProvider {
   }
 
   /**
-   * Validates DirectiveType value against configured pattern
+   * Validates DirectiveType value against configured pattern and invalid value list
    * @param value - Value to validate
-   * @returns boolean - True if value matches the pattern
+   * @returns boolean - True if value matches the pattern and is not in invalid list
    */
   validateDirectiveType(value: string): boolean {
+    if (!value || typeof value !== "string" || value.trim() === "") {
+      return false;
+    }
+
+    // Check if value is in invalid list from configuration
+    const invalidValues = this.getInvalidDirectiveValues();
+    if (invalidValues.includes(value.trim())) {
+      return false;
+    }
+
+    // Validate against pattern
     const pattern = this.getDirectivePattern();
     return pattern?.test(value) ?? false;
   }
 
   /**
-   * Validates LayerType value against configured pattern
+   * Validates LayerType value against configured pattern and invalid value list
    * @param value - Value to validate
-   * @returns boolean - True if value matches the pattern
+   * @returns boolean - True if value matches the pattern and is not in invalid list
    */
   validateLayerType(value: string): boolean {
+    if (!value || typeof value !== "string" || value.trim() === "") {
+      return false;
+    }
+
+    // Check if value is in invalid list from configuration
+    const invalidValues = this.getInvalidLayerValues();
+    if (invalidValues.includes(value.trim())) {
+      return false;
+    }
+
+    // Validate against pattern
     const pattern = this.getLayerTypePattern();
     return pattern?.test(value) ?? false;
   }
@@ -387,6 +414,50 @@ export class ConfigPatternProvider implements TypePatternProvider {
     }
 
     return [];
+  }
+
+  /**
+   * Gets list of invalid LayerType values from configuration
+   * @returns string[] - Array of invalid layer type values
+   */
+  getInvalidLayerValues(): string[] {
+    try {
+      const configData = this.getConfigDataSync();
+      const testData = configData.testData as PatternConfig["testData"];
+
+      if (testData?.invalidLayers && Array.isArray(testData.invalidLayers)) {
+        return testData.invalidLayers.filter((v: unknown): v is string => typeof v === "string");
+      }
+
+      // Fallback to empty array if no invalid values configured
+      return [];
+    } catch (error) {
+      console.warn("Failed to load invalid layer values from config:", error);
+      return [];
+    }
+  }
+
+  /**
+   * Gets list of invalid DirectiveType values from configuration
+   * @returns string[] - Array of invalid directive type values
+   */
+  getInvalidDirectiveValues(): string[] {
+    try {
+      const configData = this.getConfigDataSync();
+      const testData = configData.testData as PatternConfig["testData"];
+
+      if (testData?.invalidDirectives && Array.isArray(testData.invalidDirectives)) {
+        return testData.invalidDirectives.filter((v: unknown): v is string =>
+          typeof v === "string"
+        );
+      }
+
+      // Fallback to empty array if no invalid values configured
+      return [];
+    } catch (error) {
+      console.warn("Failed to load invalid directive values from config:", error);
+      return [];
+    }
   }
 
   /**

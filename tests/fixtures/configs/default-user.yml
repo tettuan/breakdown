@@ -1,0 +1,49 @@
+# Default test configuration - BreakdownParams統合対応
+# ハードコード除去のための動的設定ファイル
+
+# パラメータパターン定義
+params:
+  two:
+    directiveType:
+      pattern: "^(to|summary|defect|find|analyze|extract)$"
+    layerType:
+      pattern: "^(project|issue|task|component|module)$"
+
+# テストデータ定義
+testData:
+  # 有効な値（パターンから動的生成可能）
+  validDirectives: ["to", "summary", "defect", "find", "analyze", "extract"]
+  validLayers: ["project", "issue", "task", "component", "module"]
+
+  # 無効な値（テスト用）
+  invalidDirectives: ["invalid", "WRONG", "123", "", "null"]
+  invalidLayers: ["", "null", "undefined", "UPPERCASE", "123"]
+
+  # 動的生成フラグ
+  dynamicGeneration: true
+  patternBased: true
+
+# カスタム変数
+custom_variables:
+  author: "Integration Test Suite"
+  version: "1.0.0"
+  organization: "Breakdown Testing"
+
+# エイリアス定義
+aliases:
+  proj: "project"
+  iss: "issue"
+  t: "task"
+
+# テンプレート
+templates:
+  default_prompt: "Please process the following content:\n\n${input}\n\nOutput to: ${output}"
+  error_template: "Error occurred: ${error}\nSuggestion: ${suggestion}"
+
+# ユーザー設定
+user:
+  name: "Test User"
+  email: "test@example.com"
+  preferences:
+    verboseOutput: true
+    confirmActions: false

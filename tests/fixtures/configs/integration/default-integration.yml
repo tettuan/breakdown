@@ -1,0 +1,37 @@
+# 統合テスト用デフォルト設定
+params:
+  two:
+    directiveType:
+      pattern: "to|summary|defect|find|analyze|extract"
+      errorMessage: "Invalid directive type for integration test"
+    layerType:
+      pattern: "project|issue|task|epic|story|bug"
+      errorMessage: "Invalid layer type for integration test"
+
+# 統合テスト用データ
+integrationTests:
+  defaultCases:
+    - args: ["to", "project"]
+      expectedSuccess: true
+      expectedValues: { directive: "to", layer: "project" }
+    - args: ["summary", "issue"]
+      expectedSuccess: true
+      expectedValues: { directive: "summary", layer: "issue" }
+    - args: ["defect", "task"]
+      expectedSuccess: true
+      expectedValues: { directive: "defect", layer: "task" }
+    - args: ["invalid", "project"]
+      expectedSuccess: false
+    - args: ["to", "invalid"]
+      expectedSuccess: false
+
+  productionCases:
+    - args: ["find", "bug"]
+      shouldPass: true
+      expectedErrorType: null
+    - args: ["analyze", "epic"]
+      shouldPass: true
+      expectedErrorType: null
+    - args: ["FIND", "BUG"]
+      shouldPass: false
+      expectedErrorType: "VALIDATION_ERROR"

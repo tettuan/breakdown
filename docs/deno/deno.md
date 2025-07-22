@@ -9,7 +9,7 @@
 export * as path from "jsr:@std/path@1";
 export * as fs from "jsr:@std/fs@1";
 export { assertEquals } from "jsr:@std/assert@1";
-export { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@^1.0.0";
+export { BreakdownLogger } from "jsr:@tettuan/breakdownlogger@^1.0.8";
 ```
 
 ### Version Management

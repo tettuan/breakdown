@@ -18,7 +18,7 @@ import type {
 import type { Result } from "../../types/result.ts";
 import { join } from "@std/path";
 import { exists } from "@std/fs";
-import { BreakdownConfig } from "../../deps.ts";
+import { BreakdownConfig, type MergedConfig } from "../../deps.ts";
 
 /**
  * Configuration structure for generation strategies
@@ -49,6 +49,13 @@ interface GenerationStrategiesConfig {
 }
 
 /**
+ * Extended MergedConfig type to include generation_strategies
+ */
+interface ExtendedMergedConfig extends MergedConfig {
+  generation_strategies?: GenerationStrategiesConfig;
+}
+
+/**
  * Configuration loader for generation strategies
  */
 class GenerationStrategiesConfigLoader {
@@ -63,14 +70,14 @@ class GenerationStrategiesConfigLoader {
         this.config = {};
         return;
       }
-      
+
       const breakdownConfig = configResult.data;
       await breakdownConfig.loadConfig();
       const mergedConfig = await breakdownConfig.getConfig();
-      
+
       // Extract generation_strategies configuration
-      this.config = (mergedConfig as any)?.generation_strategies || {};
-    } catch (error) {
+      this.config = (mergedConfig as ExtendedMergedConfig)?.generation_strategies || {};
+    } catch (_error) {
       // If config loading fails, use empty config (defaults will be applied)
       this.config = {};
     }
@@ -282,7 +289,7 @@ export function createDefaultVariableStrategies(
   configProfile: string = "default",
 ): VariableResolutionStrategy[] {
   const configLoader = new GenerationStrategiesConfigLoader(configProfile);
-  
+
   // Note: This is synchronous creation with default values
   // For async config loading, use createDefaultVariableStrategiesAsync
   const envConfig = configLoader.getEnvironmentConfig();
@@ -304,7 +311,7 @@ export async function createDefaultVariableStrategiesAsync(
 ): Promise<VariableResolutionStrategy[]> {
   const configLoader = new GenerationStrategiesConfigLoader(configProfile);
   await configLoader.loadConfig();
-  
+
   const envConfig = configLoader.getEnvironmentConfig();
   const fileConfig = configLoader.getFilePathConfig();
   const defaultConfig = configLoader.getDefaultValuesConfig();
@@ -323,12 +330,12 @@ export function createDefaultSelectionStrategy(
   configProfile: string = "default",
 ): TemplateSelectionStrategy {
   const configLoader = new GenerationStrategiesConfigLoader(configProfile);
-  
+
   // Note: This is synchronous creation with default values
   // For async config loading, use createDefaultSelectionStrategyAsync
   const standardConfig = configLoader.getStandardTemplateConfig();
   const fallbackConfig = configLoader.getFallbackConfig();
-  
+
   const fallbackMappings = new Map(Object.entries(fallbackConfig.mappings));
 
   return new FallbackTemplateSelectionStrategy(
@@ -345,10 +352,10 @@ export async function createDefaultSelectionStrategyAsync(
 ): Promise<TemplateSelectionStrategy> {
   const configLoader = new GenerationStrategiesConfigLoader(configProfile);
   await configLoader.loadConfig();
-  
+
   const standardConfig = configLoader.getStandardTemplateConfig();
   const fallbackConfig = configLoader.getFallbackConfig();
-  
+
   const fallbackMappings = new Map(Object.entries(fallbackConfig.mappings));
 
   return new FallbackTemplateSelectionStrategy(

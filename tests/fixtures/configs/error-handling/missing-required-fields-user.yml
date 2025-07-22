@@ -1,0 +1,33 @@
+# Error handling test configuration - Missing required fields
+# 必要フィールドが欠如した設定ファイル
+
+# 不完全な設定（必要フィールドが欠如）
+params:
+  two:
+    # directiveTypeが欠如
+    layerType:
+      pattern: "^(project|issue|task)$"
+
+# testDataが不完全
+testData:
+  # validDirectivesが欠如
+  validLayers:
+    - "project"
+    - "issue"
+
+  # invalidArrays用のテストデータ
+  invalidDirectives: null # null値
+  invalidLayers: "not_an_array" # 配列ではない
+
+# メタデータ（必須フィールドも一部欠如）
+profile_metadata:
+  name: "missing-required-fields"
+  # descriptionが欠如
+  created_at: "2024-01-01T00:00:00Z"
+  # versionが欠如
+
+# カスタム変数
+custom_variables:
+  error_type: "missing_fields"
+  test_purpose: "validation_testing"
+  expected_failure: true

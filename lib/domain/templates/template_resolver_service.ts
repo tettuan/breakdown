@@ -19,7 +19,6 @@ import {
   TemplateId as _TemplateId,
   TemplateVersion,
 } from "./template_value_objects.ts";
-// BreakdownLogger は非テストファイルで使用禁止 (CLAUDE.md参照)
 import { BreakdownConfig } from "@tettuan/breakdownconfig";
 
 /**
@@ -323,157 +322,16 @@ export class StandardNamingStrategy implements ResolutionStrategy {
 }
 
 /**
- * Fallback resolution strategy
- */
-export class FallbackStrategy implements ResolutionStrategy {
-  private readonly config?: BreakdownConfig;
-
-  constructor(config?: BreakdownConfig) {
-    this.config = config;
-  }
-
-  /**
-   * BreakdownConfigからフォールバックマッピングを動的生成
-   */
-  private createFallbackMappings(): Map<string, string> {
-    // Configuration-based approach using default fallbacks
-    // These are read from configuration files instead of hardcoded arrays
-    const directiveTypes = ["to", "summary", "defect", "find", "analyze", "extract"];
-    const layerTypes = ["project", "issue", "task", "component", "module"];
-    
-    if (!directiveTypes || directiveTypes.length === 0) {
-      throw new Error("Configuration must define directive types");
-    }
-    if (!layerTypes || layerTypes.length === 0) {
-      throw new Error("Configuration must define layer types");
-    }
-    const defaultPrefix = this.getDefaultPrefix();
-
-    const mappings = new Map<string, string>();
-
-    for (const directive of directiveTypes) {
-      for (const layer of layerTypes) {
-        mappings.set(`${directive}/${layer}`, `${defaultPrefix}${layer}.md`);
-      }
-    }
-
-    return mappings;
-  }
-
-  /**
-   * BreakdownConfigからデフォルトプレフィクスを取得（FallbackStrategy用）
-   */
-  private getDefaultPrefix(): string {
-    // デフォルト値を直接返す（設定との統合は後で改善）
-    return "f_";
-  }
-
-  getPriority(): number {
-    return 50; // Medium priority
-  }
-
-  canHandle(request: TemplateResolutionRequest): boolean {
-    return request.options.fallbackEnabled ?? true;
-  }
-
-  async resolve(
-    request: TemplateResolutionRequest,
-    templateRepo: TemplateRepository,
-    schemaRepo: SchemaRepository,
-  ): Promise<TemplateResolutionResult> {
-    const key = `${request.directive.value}/${request.layer.value}`;
-    const fallbackMappings = this.createFallbackMappings();
-    const fallbackFilename = fallbackMappings.get(key);
-
-    if (!fallbackFilename) {
-      return error({
-        type: "template_not_found",
-        message: `No fallback mapping found for: ${key}`,
-      });
-    }
-
-    try {
-      const templatePathResult = TemplatePath.create(
-        request.directive,
-        request.layer,
-        fallbackFilename,
-      );
-      if (!templatePathResult.ok) {
-        return error({
-          type: "invalid_path",
-          message: `Failed to create template path: ${templatePathResult.error}`,
-        });
-      }
-
-      const templatePath = templatePathResult.data;
-
-      // Check if fallback template exists
-      const exists = await templateRepo.exists(templatePath);
-      if (!exists) {
-        return error({
-          type: "template_not_found",
-          message: `Fallback template not found: ${templatePath.getPath()}`,
-        });
-      }
-
-      // Load template
-      const template = await templateRepo.loadTemplate(templatePath);
-
-      // Try to load schema (optional for fallback)
-      let schema: Schema | undefined;
-      let schemaPath: SchemaPath | undefined;
-      try {
-        const schemaFilename = fallbackFilename.replace(".md", ".json");
-        const schemaPathResult = SchemaPath.create(
-          request.directive,
-          request.layer,
-          schemaFilename,
-        );
-        if (schemaPathResult.ok) {
-          schemaPath = schemaPathResult.data;
-          const schemaExists = await schemaRepo.exists(schemaPath);
-          if (schemaExists) {
-            schema = await schemaRepo.loadSchema(schemaPath);
-          }
-        }
-      } catch {
-        // Ignore schema loading errors for fallback
-      }
-
-      return ok({
-        template,
-        schema,
-        resolvedPath: templatePath,
-        schemaPath,
-        fallbackUsed: true,
-        warnings: [`Used fallback template: ${fallbackFilename}`],
-      });
-    } catch (catchError) {
-      return error({
-        type: "validation_failed",
-        message: `Fallback resolution failed: ${
-          catchError instanceof Error ? catchError.message : String(catchError)
-        }`,
-        details: catchError,
-      });
-    }
-  }
-}
-
-/**
  * Template resolver service
  */
 export class TemplateResolverService {
   private readonly strategies: ResolutionStrategy[];
-  // loggerはテストファイルでのみ使用可能 (CLAUDE.md参照)
-
   constructor(
     private readonly templateRepo: TemplateRepository,
     private readonly schemaRepo: SchemaRepository,
     private readonly config?: BreakdownConfig,
     strategies?: ResolutionStrategy[],
   ) {
-    // BreakdownLoggerの初期化を削除
     this.strategies = strategies || this.createDefaultStrategies();
 
     // Sort strategies by priority (highest first)
@@ -484,7 +342,6 @@ export class TemplateResolverService {
     return [
       new ExactPathStrategy(),
       new StandardNamingStrategy(this.config),
-      new FallbackStrategy(this.config),
     ];
   }
 
@@ -492,8 +349,6 @@ export class TemplateResolverService {
    * Resolve template and schema for given request
    */
   async resolve(request: TemplateResolutionRequest): Promise<TemplateResolutionResult> {
-    // デバッグログは削除 (BreakdownLoggerはテストファイルでのみ使用可能)
-
     const errors: string[] = [];
 
     // Try each strategy in order of priority
@@ -503,12 +358,9 @@ export class TemplateResolverService {
       }
 
       try {
-        // 戦略実行ログは削除
-
         const result = await strategy.resolve(request, this.templateRepo, this.schemaRepo);
 
         if (result.ok) {
-          // 成功ログは削除
           return result;
         } else {
           errors.push(`${strategy.constructor.name}: ${result.error.message}`);
@@ -516,12 +368,10 @@ export class TemplateResolverService {
       } catch (catchError) {
         const errorMessage = catchError instanceof Error ? catchError.message : String(catchError);
         errors.push(`${strategy.constructor.name}: ${errorMessage}`);
-        // エラーログは削除
       }
     }
 
     // All strategies failed
-    // 全戦略失敗ログは削除
     return error({
       type: "template_not_found",
       message: `Failed to resolve template: ${errors.join("; ")}`,

@@ -397,7 +397,7 @@ Please structure your response according to the project schema.
     // This should be loaded from .agent/breakdown/config/default-user.yml
     throw new Error(
       "Initialization must read directive types from configuration template. " +
-      "Cannot use hardcoded values."
+        "Cannot use hardcoded values.",
     );
   }
 
@@ -410,7 +410,7 @@ Please structure your response according to the project schema.
     // This should be loaded from .agent/breakdown/config/default-user.yml
     throw new Error(
       "Initialization must read layer types from configuration template. " +
-      "Cannot use hardcoded values."
+        "Cannot use hardcoded values.",
     );
   }
 }

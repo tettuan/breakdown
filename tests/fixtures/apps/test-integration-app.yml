@@ -1,0 +1,26 @@
+# 統合テスト用アプリケーション設定
+application:
+  name: "Breakdown Test Integration"
+  version: "1.0.0"
+
+paths:
+  workDir: "./tests/fixtures"
+  resourceDir: "./tests/fixtures"
+  promptDir: "./prompts"
+  schemaDir: "./schema"
+
+settings:
+  debug: true
+  logLevel: "debug"
+
+integrationTests:
+  defaultCases:
+    - args: ["to", "project"]
+      expectedSuccess: true
+      expectedValues: { directive: "to", layer: "project" }
+    - args: ["summary", "issue"]
+      expectedSuccess: true
+      expectedValues: { directive: "summary", layer: "issue" }
+    - args: ["invalid", "project"]
+      expectedSuccess: false
+      expectedErrorType: "VALIDATION_ERROR"

@@ -1,0 +1,24 @@
+# 基本パターンテスト用設定
+params:
+  two:
+    directiveType:
+      pattern: "^[a-z0-9_-]{1,20}$" # DirectiveTypeの実際のパターン
+      errorMessage: "Invalid directive type for basic test"
+    layerType:
+      pattern: "^[a-z0-9_-]{1,20}$" # LayerTypeの実際のパターン
+      errorMessage: "Invalid layer type for basic test"
+
+# テスト用データセット - 動的生成されるため、ハードコード配列を除去
+# testData.validDirectives/validLayers は ConfigurationPatternGenerator により
+# params.two.directiveType.pattern および params.two.layerType.pattern から動的生成される
+testData:
+  # パターンベースの動的生成を使用
+  # 基本パターン [a-z0-9_-]{1,20} から生成されるデフォルト値
+  dynamicGeneration: true
+  patternBased: true
+
+# 境界値テスト
+boundaryTests:
+  minLength: 2
+  maxLength: 10
+  edgeCases: ["", "a", "verylongstring"]

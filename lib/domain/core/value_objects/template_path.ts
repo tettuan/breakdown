@@ -310,35 +310,6 @@ export class TemplatePath extends BasePathValueObject {
   }
 
   /**
-   * Factory for common template types
-   */
-  static createSummaryTemplate(
-    layer: LayerType,
-    filename: string,
-  ): Result<TemplatePath, TemplatePathError> {
-    // This would need DirectiveType.createSummary() method to be implemented
-    // For now, we'll simulate it
-    const summaryResult = { value: "summary" } as DirectiveType;
-    return TemplatePath.create(summaryResult, layer, filename);
-  }
-
-  static createDefectTemplate(
-    layer: LayerType,
-    filename: string,
-  ): Result<TemplatePath, TemplatePathError> {
-    const defectResult = { value: "defect" } as DirectiveType;
-    return TemplatePath.create(defectResult, layer, filename);
-  }
-
-  static createToTemplate(
-    layer: LayerType,
-    filename: string,
-  ): Result<TemplatePath, TemplatePathError> {
-    const toResult = { value: "to" } as DirectiveType;
-    return TemplatePath.create(toResult, layer, filename);
-  }
-
-  /**
    * Get the directive component
    */
   getDirective(): DirectiveType {

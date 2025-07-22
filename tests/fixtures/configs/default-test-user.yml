@@ -1,0 +1,42 @@
+# Default test configuration
+# ConfigurationTestHelper用の基本設定ファイル
+
+# パターンベースの設定
+params:
+  two:
+    directiveType:
+      pattern: "^(to|summary|defect)$"
+    layerType:
+      pattern: "^(project|issue|task)$"
+
+# テストデータ
+testData:
+  validDirectives:
+    - "to"
+    - "summary"
+    - "defect"
+
+  validLayers:
+    - "project"
+    - "issue"
+    - "task"
+
+  invalidDirectives:
+    - "invalid"
+    - ""
+    - "a" # too short
+    - "test space"
+
+  invalidLayers:
+    - "INVALID@LAYER"
+    - ""
+    - "a" # too short
+    - "test space"
+
+# その他の設定（デフォルト設定との互換性のため）
+directive_patterns: "to|summary|defect"
+layer_patterns: "project|issue|task"
+
+custom_variables:
+  author: "Default Test Suite"
+  version: "1.0.0"

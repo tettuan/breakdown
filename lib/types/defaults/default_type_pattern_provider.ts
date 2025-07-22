@@ -1,13 +1,11 @@
 /**
- * @fileoverview Default implementation of TypePatternProvider using defaultConfigTwoParams
+ * @fileoverview BreakdownParams統合対応 TypePatternProvider
  *
- * This module provides a default implementation of TypePatternProvider that uses
- * the patterns defined in defaultConfigTwoParams. This allows TypeFactory to work
- * with sensible defaults without requiring external configuration.
+ * 設定ファイルベース実装により動的パターン読み込みを実現。
+ * ハードコードされたパターン定義は完全に排除されました。
  *
- * **DDD Version Priority Policy**: This implementation follows Domain Driven Design
- * principles and integrates with parameter_validator.ts, using the new createOrError
- * methods for Totality-compliant error handling instead of deprecated create methods.
+ * **BreakdownParams統合**: createCustomConfigFromProfile() を使用して
+ * 設定ファイルから動的にパターンを読み込む実装に移行。
  *
  * @module types/defaults/default_type_pattern_provider
  */
@@ -15,27 +13,27 @@
 import { TwoParamsDirectivePattern } from "../../domain/core/value_objects/directive_type.ts";
 // Note: TwoParamsLayerTypePattern has been removed (@deprecated)
 import type { TypePatternProvider } from "../type_factory.ts";
-import { _defaultConfigTwoParams } from "./config_two_params.ts";
+import { ConfigPatternProvider } from "../../config/pattern_provider.ts";
 
 /**
  * Default implementation of TypePatternProvider
  *
- * Uses patterns from defaultConfigTwoParams to provide sensible defaults
+ * Uses patterns from configuration files via ConfigPatternProvider
  * for DirectiveType and LayerType validation. This enables TypeFactory
- * to work out-of-the-box without requiring external configuration.
+ * to work with configuration-driven patterns instead of hardcoded values.
  *
- * **DDD Compliance**: This implementation uses createOrError methods for
- * Totality-compliant error handling, ensuring compatibility with
- * parameter_validator.ts and the DDD version priority policy.
+ * **Configuration-Driven**: This implementation uses ConfigPatternProvider
+ * to read patterns from user configuration files, eliminating hardcoded
+ * patterns and supporting dynamic pattern configuration.
  *
  * @example Basic usage
  * ```typescript
  * const _provider = new DefaultTypePatternProvider();
+ * await provider.initialize(); // Load patterns from config
  * const factory = new TypeFactory(provider);
  *
- * // These will work with default patterns:
- * // DirectiveType: "to", "summary", "defect"
- * // LayerType: "project", "issue", "task"
+ * // These will work with configured patterns from user.yml:
+ * // DirectiveType and LayerType patterns are read from configuration
  * const directiveResult = factory.createDirectiveType("to");
  * const layerResult = factory.createLayerType("project");
  * ```
@@ -52,62 +50,125 @@ import { _defaultConfigTwoParams } from "./config_two_params.ts";
  * ```
  */
 export class DefaultTypePatternProvider implements TypePatternProvider {
+  private configProvider: ConfigPatternProvider | null = null;
+  private initialized = false;
+
   /**
-   * Get DirectiveType validation pattern from default configuration (TypePatternProvider interface)
+   * Initialize the provider with configuration
+   * This method must be called before using the provider
+   */
+  async initialize(
+    configSetName: string = "default",
+    workspacePath: string = Deno.cwd(),
+  ): Promise<void> {
+    const result = await ConfigPatternProvider.create(configSetName, workspacePath);
+    if (result.ok) {
+      this.configProvider = result.data;
+      this.initialized = true;
+    } else {
+      console.warn(
+        "Failed to initialize ConfigPatternProvider, patterns will not be available:",
+        result.error,
+      );
+      this.configProvider = null;
+      this.initialized = true;
+    }
+  }
+
+  /**
+   * Get DirectiveType validation pattern from configuration
    *
-   * Uses the new createOrError implementation for Totality-compliant error handling.
-   * This method follows DDD principles by delegating to the domain object's factory method.
+   * Uses ConfigPatternProvider to read patterns from configuration files
+   * instead of hardcoded values.
    *
    * @returns Pattern object for validating DirectiveType values
    */
   getDirectivePattern(): { test(value: string): boolean; getPattern(): string } | null {
-    const pattern = _defaultConfigTwoParams.params.two.directiveType.pattern;
-    const result = TwoParamsDirectivePattern.createOrError(pattern);
-    if (!result.ok) {
+    if (!this.initialized) {
+      console.warn("DefaultTypePatternProvider not initialized. Call initialize() first.");
       return null;
     }
-    return result.data;
+
+    if (!this.configProvider) {
+      return null;
+    }
+
+    return this.configProvider.getDirectivePattern();
   }
 
   /**
-   * Get DirectiveType validation pattern from default configuration (internal method)
+   * Get DirectiveType validation pattern from configuration (internal method)
    *
    * @returns TwoParamsDirectivePattern for validating DirectiveType values
-   * @throws Error if pattern creation fails (should not happen with valid defaults)
+   * @throws Error if pattern creation fails or provider not initialized
    */
   getDirectivePatternObject(): TwoParamsDirectivePattern {
-    const pattern = _defaultConfigTwoParams.params.two.directiveType.pattern;
-    const result = TwoParamsDirectivePattern.createOrError(pattern);
-    if (!result.ok) {
+    const pattern = this.getDirectivePattern();
+    if (!pattern) {
       throw new Error(
-        `Failed to create directive pattern: ${result.error.kind} - ${
-          JSON.stringify(result.error)
-        }`,
+        "No directive pattern available. Ensure configuration is properly set up and initialize() was called.",
       );
     }
-    return result.data;
+    return pattern as TwoParamsDirectivePattern;
   }
 
   /**
-   * Get LayerType validation pattern from default configuration (TypePatternProvider interface)
+   * Get LayerType validation pattern from configuration
    *
-   * Note: TwoParamsLayerTypePattern has been removed (@deprecated).
-   * LayerType validation is now handled directly by LayerType.create() method.
+   * Uses ConfigPatternProvider to read patterns from configuration files
+   * instead of hardcoded values.
    *
-   * @returns Pattern object for validating LayerType values (null since pattern validation is deprecated)
+   * @returns Pattern object for validating LayerType values
    */
   getLayerTypePattern(): { test(value: string): boolean; getPattern(): string } | null {
-    // Pattern validation is now handled directly by LayerType.create() method
-    return null;
+    if (!this.initialized) {
+      console.warn("DefaultTypePatternProvider not initialized. Call initialize() first.");
+      return null;
+    }
+
+    if (!this.configProvider) {
+      return null;
+    }
+
+    return this.configProvider.getLayerTypePattern();
   }
 
   /**
-   * Get the underlying default configuration object
+   * Get the current configuration patterns
    *
-   * @returns The defaultConfigTwoParams object for inspection
+   * @returns The current configuration patterns from ConfigPatternProvider
    */
-  getDefaultConfig(): typeof _defaultConfigTwoParams {
-    return _defaultConfigTwoParams;
+  getDefaultConfig(): {
+    params: {
+      two: {
+        directiveType: { pattern: string };
+        layerType: { pattern: string };
+      };
+    };
+  } {
+    if (!this.initialized || !this.configProvider) {
+      // Return empty patterns if not initialized
+      return {
+        params: {
+          two: {
+            directiveType: { pattern: "" },
+            layerType: { pattern: "" },
+          },
+        },
+      };
+    }
+
+    const directivePattern = this.configProvider.getDirectivePattern();
+    const layerPattern = this.configProvider.getLayerTypePattern();
+
+    return {
+      params: {
+        two: {
+          directiveType: { pattern: directivePattern?.getPattern() || "" },
+          layerType: { pattern: layerPattern?.getPattern() || "" },
+        },
+      },
+    };
   }
 
   /**
@@ -117,8 +178,12 @@ export class DefaultTypePatternProvider implements TypePatternProvider {
    * @returns true if the value matches the pattern
    */
   validateDirectiveType(value: string): boolean {
-    const pattern = this.getDirectivePatternObject();
-    return pattern.test(value);
+    if (!this.initialized || !this.configProvider) {
+      console.warn("DefaultTypePatternProvider not initialized. Call initialize() first.");
+      return false;
+    }
+
+    return this.configProvider.validateDirectiveType(value);
   }
 
   /**
@@ -130,45 +195,12 @@ export class DefaultTypePatternProvider implements TypePatternProvider {
    * @returns true if the value passes LayerType validation
    */
   validateLayerType(value: string): boolean {
-    // Import at runtime to avoid circular dependencies
-    try {
-      // Basic validation logic extracted from LayerType.create()
-      if (!value || typeof value !== "string" || value.trim() === "") {
-        return false;
-      }
-
-      // Reject values with leading/trailing whitespace (no trimming allowed)
-      if (value !== value.trim()) {
-        return false;
-      }
-
-      const trimmedValue = value.trim();
-
-      // Length validation
-      if (trimmedValue.length > 30) {
-        return false;
-      }
-
-      // Reject common invalid values
-      if (["null", "undefined", "", "invalid", "1", "test"].includes(trimmedValue)) {
-        return false;
-      }
-
-      // Use the actual layerType pattern from configuration instead of basic pattern
-      const layerTypePattern = _defaultConfigTwoParams.params.two.layerType.pattern;
-      const patternMatch = layerTypePattern.match(/^\^\(([^)]+)\)\$$/);
-
-      if (patternMatch) {
-        const validValues = patternMatch[1].split("|");
-        return validValues.includes(trimmedValue);
-      }
-
-      // Fallback to basic pattern if pattern parsing fails
-      const basicPattern = /^[a-z0-9_-]{1,30}$/;
-      return basicPattern.test(trimmedValue);
-    } catch {
+    if (!this.initialized || !this.configProvider) {
+      console.warn("DefaultTypePatternProvider not initialized. Call initialize() first.");
       return false;
     }
+
+    return this.configProvider.validateLayerType(value);
   }
 
   /**
@@ -195,13 +227,17 @@ export class DefaultTypePatternProvider implements TypePatternProvider {
    * @returns Array of valid DirectiveType string values
    */
   getValidDirectiveValues(): string[] {
-    // Extract values from regex pattern: "^(to|summary|defect)$" -> ["to", "summary", "defect"]
-    const pattern = _defaultConfigTwoParams.params.two.directiveType.pattern;
-    const match = pattern.match(/^\^\(([^)]+)\)\$$/);
-    if (match) {
-      return match[1].split("|");
+    // Use configuration instead of hardcoded patterns
+    if (!this.initialized) {
+      console.warn("DefaultTypePatternProvider not initialized. Call initialize() first.");
+      return [];
     }
-    return [];
+
+    if (!this.configProvider) {
+      return [];
+    }
+
+    return Array.from(this.configProvider.getValidDirectiveTypes());
   }
 
   /**
@@ -210,13 +246,17 @@ export class DefaultTypePatternProvider implements TypePatternProvider {
    * @returns Array of valid LayerType string values
    */
   getValidLayerValues(): string[] {
-    // Extract values from regex pattern: "^(project|issue|task)$" -> ["project", "issue", "task"]
-    const pattern = _defaultConfigTwoParams.params.two.layerType.pattern;
-    const match = pattern.match(/^\^\(([^)]+)\)\$$/);
-    if (match) {
-      return match[1].split("|");
+    // Use configuration instead of hardcoded patterns
+    if (!this.initialized) {
+      console.warn("DefaultTypePatternProvider not initialized. Call initialize() first.");
+      return [];
     }
-    return [];
+
+    if (!this.configProvider) {
+      return [];
+    }
+
+    return Array.from(this.configProvider.getValidLayerTypes());
   }
 
   /**
@@ -249,10 +289,13 @@ export class DefaultTypePatternProvider implements TypePatternProvider {
     validDirectives: string[];
     validLayers: string[];
   } {
+    const directivePattern = this.getDirectivePattern();
+    const layerPattern = this.getLayerTypePattern();
+
     return {
       providerType: "DefaultTypePatternProvider",
-      directivePattern: _defaultConfigTwoParams.params.two.directiveType.pattern,
-      layerPattern: _defaultConfigTwoParams.params.two.layerType.pattern,
+      directivePattern: directivePattern?.getPattern() || "",
+      layerPattern: layerPattern?.getPattern() || "",
       validDirectives: this.getValidDirectiveValues(),
       validLayers: this.getValidLayerValues(),
     };

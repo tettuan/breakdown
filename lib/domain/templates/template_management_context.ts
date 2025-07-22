@@ -23,7 +23,6 @@ import {
   SchemaManagementAggregate,
   SchemaPath,
 } from "./schema_management_aggregate.ts";
-// BreakdownLogger は非テストファイルで使用禁止 (CLAUDE.md参照)
 
 /**
  * Template registry entry
@@ -178,11 +177,8 @@ export type TotalityInitializationResult = Result<
  */
 export class TemplateRegistry {
   private readonly entries: Map<string, TemplateRegistryEntry>;
-  // loggerはテストファイルでのみ使用可能 (CLAUDE.md参照)
-
   constructor() {
     this.entries = new Map();
-    // BreakdownLoggerの初期化を削除
   }
 
   /**
@@ -191,7 +187,6 @@ export class TemplateRegistry {
   register(entry: TemplateRegistryEntry): void {
     const key = entry.templatePath.getPath();
     this.entries.set(key, entry);
-    // テンプレート登録ログは削除
   }
 
   /**
@@ -216,22 +211,33 @@ export class TemplateRegistry {
   }
 
   /**
-   * Load default registry with proper error handling
+   * Create registry from configuration with proper error handling
    */
-  static createDefault(): Result<TemplateRegistry, TemplateManagementError> {
+  static createFromConfig(
+    directiveTypes: readonly string[],
+    layerTypes: readonly string[],
+  ): Result<TemplateRegistry, TemplateManagementError> {
     try {
       const registry = new TemplateRegistry();
 
-      // Register default templates with proper type safety
-      const defaults = [
-        { directive: "summary", layer: "issue", filename: "f_issue.md", required: true },
-        { directive: "summary", layer: "project", filename: "f_project.md", required: true },
-        { directive: "defect", layer: "issue", filename: "f_issue.md", required: true },
-        { directive: "find", layer: "bugs", filename: "f_bugs.md", required: true },
-        { directive: "to", layer: "task", filename: "f_task.md", required: true },
-        { directive: "to", layer: "issue", filename: "f_issue.md", required: true },
-        { directive: "to", layer: "project", filename: "f_project.md", required: true },
-      ];
+      // Generate template combinations from configuration
+      const defaults: Array<
+        { directive: string; layer: string; filename: string; required: boolean }
+      > = [];
+
+      // Create combinations based on configured types
+      for (const directive of directiveTypes) {
+        for (const layer of layerTypes) {
+          // Standard filename pattern
+          const filename = `f_${layer}.md`;
+          defaults.push({
+            directive,
+            layer,
+            filename,
+            required: true, // All configured combinations are required
+          });
+        }
+      }
 
       // Register each template with proper error handling
       // Note: In a full implementation, would need to properly construct DirectiveType and LayerType
@@ -269,7 +275,6 @@ export class ValidationPolicy {
   constructor(
     private readonly templateRepo: TemplateRepository,
     private readonly schemaRepo: SchemaRepository,
-    // loggerパラメータを削除
   ) {}
 
   /**
@@ -423,7 +428,6 @@ export class InitializationService {
     private readonly templateRepo: TemplateRepository,
     private readonly schemaRepo: SchemaRepository,
     private readonly validationPolicy: ValidationPolicy,
-    // loggerパラメータを削除
   ) {}
 
   /**
@@ -484,7 +488,6 @@ export class InitializationService {
         if (!exists) {
           // Copy from source
           // Implementation would load from source and save to repository
-          // テンプレートコピーログは削除
           result.initialized.templates.push(entry.templatePath.getPath());
         }
       } catch (caught) {
@@ -509,7 +512,6 @@ export class TemplateManagementContext {
     private readonly templateRepo: TemplateRepository,
     private readonly schemaRepo: SchemaRepository,
     private readonly registry: TemplateRegistry,
-    // loggerパラメータを削除
   ) {
     this.promptAggregates = new Map();
     const schemaAggregateResult = SchemaManagementAggregate.create("schema-management");
@@ -520,15 +522,16 @@ export class TemplateManagementContext {
   }
 
   /**
-   * Create default context with proper error handling
+   * Create context from configuration with proper error handling
    */
   static create(
     templateRepo: TemplateRepository,
     schemaRepo: SchemaRepository,
+    directiveTypes: readonly string[],
+    layerTypes: readonly string[],
   ): Result<TemplateManagementContext, TemplateManagementError> {
     try {
-      // BreakdownLoggerの初期化を削除
-      const registryResult = TemplateRegistry.createDefault();
+      const registryResult = TemplateRegistry.createFromConfig(directiveTypes, layerTypes);
 
       if (!registryResult.ok) {
         return error(registryResult.error);
@@ -538,7 +541,6 @@ export class TemplateManagementContext {
         templateRepo,
         schemaRepo,
         registryResult.data,
-        // loggerパラメータを削除
       );
 
       return ok(context);
@@ -567,7 +569,6 @@ export class TemplateManagementContext {
       this.templateRepo,
       this.schemaRepo,
       this.getValidationPolicy(),
-      // loggerパラメータを削除
     );
   }
 

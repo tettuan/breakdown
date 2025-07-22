@@ -1,0 +1,193 @@
+# Edge cases test configuration - Unicode patterns
+# Unicode文字を含むエッジケーステスト用設定ファイル
+
+# Unicode文字を含むパターン
+params:
+  two:
+    directiveType:
+      pattern: "^(to|summary|defect|変換|要約|欠陥検出|转换|摘要|缺陷检测|変換する|要約する|검출하다|변환하다|요약하다|🔄|📝|🐛|→|📊|🔍)$"
+    layerType:
+      pattern: "^(project|issue|task|プロジェクト|課題|タスク|项目|问题|任务|프로젝트|이슈|작업|📂|📋|✅|🎯|📌|⚡)$"
+
+# テストデータ（Unicode含む）
+testData:
+  validDirectives:
+    - "to"
+    - "summary"
+    - "defect"
+    - "変換"
+    - "要約"
+    - "欠陥検出"
+    - "转换"
+    - "摘要"
+    - "缺陷检测"
+    - "変換する"
+    - "要約する"
+    - "검출하다"
+    - "변환하다"
+    - "요약하다"
+    - "🔄"
+    - "📝"
+    - "🐛"
+    - "→"
+    - "📊"
+    - "🔍"
+
+  validLayers:
+    - "project"
+    - "issue"
+    - "task"
+    - "プロジェクト"
+    - "課題"
+    - "タスク"
+    - "项目"
+    - "问题"
+    - "任务"
+    - "프로젝트"
+    - "이슈"
+    - "작업"
+    - "📂"
+    - "📋"
+    - "✅"
+    - "🎯"
+    - "📌"
+    - "⚡"
+
+  invalidDirectives:
+    - "無効"
+    - "无效"
+    - "무효"
+    - "🚫"
+    - "❌"
+    - "💀"
+    - ""
+    - " "
+    - "　" # 全角スペース
+    - "\t"
+    - "\n"
+    - "\r"
+    - "混合 spaces"
+    - "tab\there"
+    - "line\nbreak"
+    - "return\rcharacter"
+    - "null\0character"
+    - "控制字符"
+    - "제어문자"
+    - "特殊\u200B字符" # Zero Width Space
+    - "\u200C\u200D" # Zero Width Non-Joiner + Zero Width Joiner
+    - "🏳️‍🌈" # Rainbow flag (multi-codepoint emoji)
+    - "👨‍👩‍👧‍👦" # Family emoji (multi-codepoint)
+    - "🇯🇵" # Japanese flag (regional indicator)
+    - "🇺🇸" # US flag (regional indicator)
+    - "🇰🇷" # Korean flag (regional indicator)
+    - "🇨🇳" # Chinese flag (regional indicator)
+
+  invalidLayers:
+    - "無効レイヤー"
+    - "无效层"
+    - "무효 레이어"
+    - "🚫📂"
+    - "❌📋"
+    - "💀✅"
+    - ""
+    - " "
+    - "　" # 全角スペース
+    - "\t"
+    - "\n"
+    - "\r"
+    - "混合 layer spaces"
+    - "layer\ttab"
+    - "layer\nbreak"
+    - "layer\rreturn"
+    - "layer\0null"
+    - "层控制字符"
+    - "레이어제어문자"
+    - "レイヤー\u200B特殊文字"
+    - "layer\u200C\u200D"
+    - "🚫🏳️‍🌈"
+    - "❌👨‍👩‍👧‍👦"
+    - "💀🇯🇵"
+    - "layer🇺🇸"
+    - "🇰🇷layer"
+    - "🇨🇳混合"
+
+# 特殊ケース用テストデータ
+edgeCases:
+  unicodeNormalization:
+    # NFC vs NFD normalization tests
+    - directive: "café" # NFC normalized
+      layer: "task"
+      shouldPass: false
+    - directive: "café" # NFD normalized (different bytes, same appearance)
+      layer: "task"
+      shouldPass: false
+
+  emojiVariations:
+    - directive: "📝" # Text presentation
+      layer: "📂"
+      shouldPass: true
+    - directive: "📝️" # Emoji presentation (with variation selector)
+      layer: "📂"
+      shouldPass: false
+
+  combiningCharacters:
+    - directive: "a̧" # a + combining cedilla
+      layer: "task"
+      shouldPass: false
+    - directive: "é" # e + combining acute
+      layer: "task"
+      shouldPass: false
+
+  rightToLeftText:
+    - directive: "العربية" # Arabic text
+      layer: "task"
+      shouldPass: false
+    - directive: "עברית" # Hebrew text
+      layer: "task"
+      shouldPass: false
+
+  bidirectionalText:
+    - directive: "hello العالم world" # Mixed LTR/RTL
+      layer: "task"
+      shouldPass: false
+
+  surrogatePairs:
+    - directive: "𝒽𝑒𝓁𝓁𝑜" # Mathematical script (requires surrogate pairs)
+      layer: "task"
+      shouldPass: false
+    - directive: "🌍🌎🌏" # Earth globe emojis
+      layer: "task"
+      shouldPass: false
+
+# メタデータ
+profile_metadata:
+  name: "unicode-patterns"
+  description: "Unicode and special character edge cases test configuration"
+  created_at: "2024-01-01T00:00:00Z"
+  version: "unicode-1.0"
+  unicode_version: "15.0"
+
+# カスタム変数（Unicode含む）
+custom_variables:
+  test_type: "unicode_edge_cases"
+  author: "Unicode テスト スイート"
+  author_chinese: "Unicode 测试套件"
+  author_korean: "유니코드 테스트 도구"
+  author_emoji: "🧪 Unicode Test 📝"
+  description_multilingual:
+    japanese: "Unicode文字のエッジケーステスト"
+    chinese: "Unicode字符边缘案例测试"
+    korean: "유니코드 문자 엣지 케이스 테스트"
+    arabic: "اختبار حالات حافة أحرف يونيكود"
+    hebrew: "בדיקת מקרי קצה של תווי יוניקוד"
+  special_characters:
+    zero_width_space: "\u200B"
+    zero_width_non_joiner: "\u200C"
+    zero_width_joiner: "\u200D"
+    byte_order_mark: "\uFEFF"
+    replacement_character: "�"
+    null_character: "\u0000"
+  normalization_forms:
+    nfc: "café" # Composed form
+    nfd: "café" # Decomposed form
+    note: "These look identical but have different byte representations"

@@ -1,0 +1,21 @@
+# 柔軟なパターンテスト用設定
+params:
+  two:
+    directiveType:
+      pattern: "^[a-z0-9_#-]{2,20}$" # ハッシュ文字を含む柔軟なパターン
+      errorMessage: "Directive must be 2-20 characters with letters, numbers, hash, hyphen, underscore"
+    layerType:
+      pattern: "^[a-z0-9_#-]{2,20}$"
+      errorMessage: "Layer must be 2-20 characters with letters, numbers, hash, hyphen, underscore"
+
+# 柔軟なテスト用データセット - 動的生成されるため、ハードコード配列を除去
+# testData.validDirectives/validLayers は ConfigurationPatternGenerator により
+# params.two.directiveType.pattern および params.two.layerType.pattern から動的生成される
+testData:
+  # 柔軟パターン ^[a-z0-9_#-]{2,20}$ から生成される値
+  dynamicGeneration: true
+  patternBased: true
+  flexibleMode: true
+
+# 柔軟パターン参考
+flexiblePattern: "^[a-z0-9_#-]{2,20}$"

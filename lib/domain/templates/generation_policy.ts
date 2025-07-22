@@ -63,6 +63,21 @@ export interface SelectionContext {
 }
 
 /**
+ * Fallback action type - simple string version
+ */
+export type FallbackActionType = "retry" | "skip" | "abort" | "useDefault";
+
+/**
+ * Fallback action with additional options
+ */
+export interface FallbackAction {
+  type: FallbackActionType;
+  defaultValue?: string;
+  retryCount?: number;
+  condition?: (error: unknown) => boolean;
+}
+
+/**
  * Generation policy configuration
  */
 export interface GenerationPolicyConfig {
@@ -71,7 +86,7 @@ export interface GenerationPolicyConfig {
   variableValidation: Record<string, VariableValidationRule>;
   maxRetries: number;
   timeoutMs: number;
-  fallbackStrategies: FallbackStrategy[];
+  fallbackStrategies?: FallbackActionType[];
 }
 
 /**
@@ -84,23 +99,6 @@ export interface VariableValidationRule {
   required?: boolean;
   transform?: (value: string) => string;
 }
-
-/**
- * Fallback strategy
- */
-export interface FallbackStrategy {
-  condition: (error: Error) => boolean;
-  action: FallbackAction;
-}
-
-/**
- * Fallback action
- */
-export type FallbackAction =
-  | { type: "useDefault"; defaultValue: string }
-  | { type: "skipVariable" }
-  | { type: "useAlternativeTemplate"; templatePath: Result<TemplatePath, string> }
-  | { type: "fail" };
 
 /**
  * Generation policy domain service
@@ -258,15 +256,44 @@ export class GenerationPolicy {
   }
 
   /**
-   * Handle generation failure with fallback strategies
+   * Handle generation failure and determine fallback action
    */
-  handleFailure(error: Error): FallbackAction | null {
-    for (const strategy of this.config.fallbackStrategies) {
-      if (strategy.condition(error)) {
-        return strategy.action;
-      }
+  handleFailure(error: unknown): FallbackAction {
+    const strategies = this.config.fallbackStrategies || ["retry", "abort"];
+
+    // Type-safe error handling with error guards
+    const errorCode = this.extractErrorCode(error);
+
+    if (errorCode === "TEMPLATE_NOT_FOUND" && strategies.includes("useDefault")) {
+      return {
+        type: "useDefault",
+        defaultValue: "Default template content",
+      };
     }
-    return null;
+
+    if (errorCode === "VALIDATION_ERROR" && strategies.includes("skip")) {
+      return {
+        type: "skip",
+      };
+    }
+
+    // Default fallback
+    const actionType = strategies[0] || "abort";
+    return {
+      type: actionType,
+      retryCount: actionType === "retry" ? this.config.maxRetries : undefined,
+    };
+  }
+
+  /**
+   * Extract error code from unknown error type safely
+   */
+  private extractErrorCode(error: unknown): string | undefined {
+    if (typeof error === "object" && error !== null && "code" in error) {
+      const code = (error as Record<string, unknown>).code;
+      return typeof code === "string" ? code : undefined;
+    }
+    return undefined;
   }
 
   /**

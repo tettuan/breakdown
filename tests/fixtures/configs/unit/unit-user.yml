@@ -1,0 +1,158 @@
+# Test Helper Configuration for Unit Tests
+# This configuration file is used by ConfigurationTestHelper for unit tests
+# It defines the valid directive and layer types for testing
+
+# Breakdown configuration
+breakdown:
+  params:
+    two:
+      directiveType:
+        pattern: "^(to|summary|defect)$"
+      layerType:
+        pattern: "^(project|issue|task|bugs)$"
+
+# Test data for ConfigurationTestHelper
+testData:
+  # Valid values that should pass validation
+  validDirectives:
+    - to
+    - summary
+    - defect
+
+  validLayers:
+    - project
+    - issue
+    - task
+    - bugs
+
+  # Invalid values that should fail validation
+  invalidDirectives:
+    - invalid
+    - TO
+    - summary2
+    - ""
+    - "invalid_directive"
+    - "to#1"
+    - "summary_v2"
+    - "defect-fix"
+
+  invalidLayers:
+    - invalid
+    - PROJECT
+    - task1
+    - ""
+    - "INVALID@LAYER"
+    - "project#1"
+    - "issue_v2"
+    - "task-new"
+
+# Hash-like pattern test values
+hashPatternTestData:
+  validHashDirectives:
+    - to
+    - summary
+    - defect
+    - to#1
+    - summary_v2
+    - defect-fix
+    - to_all
+    - web#search
+    - db_query
+    - api-call
+    - data#extract
+
+  validHashLayers:
+    - project
+    - issue
+    - task
+    - bugs
+    - project#1
+    - issue_v2
+    - task-new
+    - bugs_critical
+    - module#api
+    - service_db
+    - component-ui
+    - layer#data
+
+  # Flexible pattern for hash-like values
+  flexibleDirectivePattern: "^[a-zA-Z0-9_#-]{2,20}$"
+  flexibleLayerPattern: "^[a-zA-Z0-9_#-]{2,20}$"
+
+# Edge case test data
+edgeCaseTestData:
+  # Boundary test cases
+  boundaryTestCases:
+    - value: "a1"
+      shouldMatch: true
+      description: "minimum length (2 chars)"
+    - value: "aaaaaaaaaaaaaaaaaaaa" # 20 chars
+      shouldMatch: true
+      description: "maximum length (20 chars)"
+    - value: "a"
+      shouldMatch: false
+      description: "too short (1 char)"
+    - value: "aaaaaaaaaaaaaaaaaaaaa" # 21 chars
+      shouldMatch: false
+      description: "too long (21 chars)"
+    - value: "test#123"
+      shouldMatch: true
+      description: "hash character"
+    - value: "test_var"
+      shouldMatch: true
+      description: "underscore character"
+    - value: "test-case"
+      shouldMatch: true
+      description: "dash character"
+    - value: "test space"
+      shouldMatch: false
+      description: "space character"
+    - value: "test@email"
+      shouldMatch: false
+      description: "invalid @ character"
+
+# Standard test combinations
+standardCombinations:
+  - directive: to
+    layer: project
+  - directive: to
+    layer: issue
+  - directive: to
+    layer: task
+  - directive: to
+    layer: bugs
+  - directive: summary
+    layer: project
+  - directive: summary
+    layer: issue
+  - directive: summary
+    layer: task
+  - directive: summary
+    layer: bugs
+  - directive: defect
+    layer: project
+  - directive: defect
+    layer: issue
+  - directive: defect
+    layer: task
+  - directive: defect
+    layer: bugs
+
+# Test aliases
+aliases:
+  # Directive aliases
+  t: to
+  s: summary
+  d: defect
+
+  # Layer aliases
+  p: project
+  i: issue
+  tk: task
+  b: bugs
+
+# Custom variables for testing
+custom_variables:
+  author: "Unit Test Suite"
+  version: "1.0.0"
+  organization: "Breakdown Unit Testing"

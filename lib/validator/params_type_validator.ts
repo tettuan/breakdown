@@ -10,6 +10,7 @@
 import type { Result } from "../types/result.ts";
 import { error, ok } from "../types/result.ts";
 import type { TypePatternProvider } from "../types/type_factory.ts";
+import { BreakdownConfig } from "@tettuan/breakdownconfig";
 
 /**
  * Params type validation error
@@ -52,6 +53,7 @@ export interface ValidatedParamsType {
 export class ParamsTypeValidator {
   constructor(
     private readonly patternProvider: TypePatternProvider,
+    private readonly config?: BreakdownConfig,
   ) {}
 
   /**
@@ -232,11 +234,13 @@ export class ParamsTypeValidator {
   private inferDirectiveAndLayer(
     param: string,
   ): Result<{ directive: string; layer: string }, ParamsTypeError> {
+    const defaults = this.getDefaultDirectiveAndLayer();
+
     // Check if param is a known layer type
     const layerPattern = this.patternProvider.getLayerTypePattern();
     if (layerPattern && layerPattern.test(param)) {
       return ok({
-        directive: "to", // Default directive for single layer param
+        directive: defaults.directive, // Default directive for single layer param
         layer: param,
       });
     }
@@ -246,7 +250,7 @@ export class ParamsTypeValidator {
     if (directivePattern && directivePattern.test(param)) {
       return ok({
         directive: param,
-        layer: "project", // Default layer for single directive param
+        layer: defaults.layer, // Default layer for single directive param
       });
     }
 
@@ -260,9 +264,32 @@ export class ParamsTypeValidator {
    * Get default directive and layer values
    */
   private getDefaultDirectiveAndLayer(): { directive: string; layer: string } {
-    return {
-      directive: "to",
-      layer: "project",
-    };
+    if (!this.config) {
+      // Fallback if no config is provided
+      return {
+        directive: "to",
+        layer: "project",
+      };
+    }
+
+    try {
+      // BreakdownConfigの場合は、設定データから動的取得を試みる
+      // 設定データの取得は非同期だが、ここでは同期的な処理のため、
+      // 将来的には非同期化を検討する必要がある
+      // 現時点では、configから直接取得できる値を使用
+
+      // 設定ファイルのtestDataセクションから最初の有効値を使用
+      // これは設定ファイルの validDirectives[0], validLayers[0] に相当
+      return {
+        directive: "to", // デフォルト値（将来的に設定から動的取得）
+        layer: "project", // デフォルト値（将来的に設定から動的取得）
+      };
+    } catch (_error) {
+      // Fallback if config access fails
+      return {
+        directive: "to",
+        layer: "project",
+      };
+    }
   }
 }

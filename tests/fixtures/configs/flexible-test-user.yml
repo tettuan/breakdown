@@ -1,0 +1,66 @@
+# Flexible pattern test configuration
+# ConfigurationTestHelper用の設定ファイル
+
+# パターンベースの設定
+params:
+  two:
+    directiveType:
+      pattern: "^(to|summary|defect|to#1|summary_v2|defect-fix|to_all|web#search|db_query|api-call|data#extract)$"
+    layerType:
+      pattern: "^(project|issue|task|bugs|project#1|issue_v2|task-new|bugs_critical|module#api|service_db|component-ui|layer#data)$"
+
+# テストデータ
+testData:
+  validDirectives:
+    - "to"
+    - "summary"
+    - "defect"
+    - "to#1"
+    - "summary_v2"
+    - "defect-fix"
+    - "to_all"
+    - "web#search"
+    - "db_query"
+    - "api-call"
+    - "data#extract"
+
+  validLayers:
+    - "project"
+    - "issue"
+    - "task"
+    - "bugs"
+    - "project#1"
+    - "issue_v2"
+    - "task-new"
+    - "bugs_critical"
+    - "module#api"
+    - "service_db"
+    - "component-ui"
+    - "layer#data"
+
+  invalidDirectives:
+    - "invalid"
+    - ""
+    - "a" # too short
+    - "a123456789012345678901" # too long
+    - "test space"
+    - "test@email"
+
+  invalidLayers:
+    - "INVALID@LAYER"
+    - ""
+    - "a" # too short
+    - "a123456789012345678901" # too long
+    - "test space"
+    - "test@email"
+
+# Flexible pattern for validation
+flexiblePattern: "^[a-zA-Z0-9_#-]{2,20}$"
+
+# その他の設定（デフォルト設定との互換性のため）
+directive_patterns: "to|summary|defect|to#1|summary_v2|defect-fix|to_all|web#search|db_query|api-call|data#extract"
+layer_patterns: "project|issue|task|bugs|project#1|issue_v2|task-new|bugs_critical|module#api|service_db|component-ui|layer#data"
+
+custom_variables:
+  author: "Flexible Pattern Test Suite"
+  version: "2.0.0"

@@ -475,7 +475,9 @@ Timestamp: ${new Date().toISOString()}
   }
 
   /**
-   * Static factory method for creating service with default configuration
+   * @deprecated createDefault() は廃止予定
+   * BreakdownParams統合により設定ファイルベース実装に移行。
+   * 通常のコンストラクタを使用してください。
    *
    * @returns New TwoParamsApplicationService instance
    */

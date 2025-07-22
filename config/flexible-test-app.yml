@@ -1,0 +1,30 @@
+# Application configuration for flexible-test profile
+#
+# This file provides flexible application configuration for extended testing
+
+system:
+  name: "breakdown-flexible-test"
+  version: "1.0.0-flexible"
+  environment: "test"
+
+logging:
+  level: "debug"
+  enabled: true
+
+paths:
+  workDir: "."
+  resourceDir: "./resources"
+  templateDir: "./templates"
+
+# Flexible test environment settings
+test:
+  enabled: true
+  mockMode: false
+  flexiblePatterns: true
+
+# Integration test specific configurations
+integration:
+  breakdownParams:
+    enabled: true
+    customConfig: true
+    flexibleMode: true

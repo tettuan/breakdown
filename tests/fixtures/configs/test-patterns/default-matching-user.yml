@@ -1,0 +1,18 @@
+# デフォルト設定に合わせたテスト用設定
+params:
+  two:
+    directiveType:
+      pattern: "^(to|summary|defect|find|analyze|extract)$"
+      errorMessage: "Invalid directive type for default matching test"
+    layerType:
+      pattern: "^(project|issue|task|component|module)$"
+      errorMessage: "Invalid layer type for default matching test"
+
+# テスト用データセット - 動的生成されるため、ハードコード配列を除去
+# testData.validDirectives/validLayers は ConfigurationPatternGenerator により
+# params.two.directiveType.pattern および params.two.layerType.pattern から動的生成される
+testData:
+  # デフォルトマッチング用パターンから生成される値
+  dynamicGeneration: true
+  patternBased: true
+  defaultMatching: true

@@ -1,0 +1,23 @@
+# エッジケーステスト用設定
+params:
+  two:
+    directiveType:
+      pattern: "^[a-z0-9]{1,50}$" # 1-50文字の英数字
+      errorMessage: "Directive must be 1-50 alphanumeric characters"
+    layerType:
+      pattern: "^[a-z0-9-_]{2,30}$" # 2-30文字、ハイフン・アンダースコア許可
+      errorMessage: "Layer must be 2-30 characters with hyphens/underscores allowed"
+
+# エッジケース用データセット - 動的生成されるため、ハードコード配列を除去
+# testData.validDirectives/validLayers は ConfigurationPatternGenerator により
+# params.two.directiveType.pattern および params.two.layerType.pattern から動的生成される
+testData:
+  # エッジケース用パターン ^[a-z0-9]{1,50}$ から生成される値
+  dynamicGeneration: true
+  patternBased: true
+  edgeCaseMode: true
+  # 境界値テストのためのヒント
+  boundaryHints:
+    minLength: 1
+    maxLength: 50
+    allowedChars: "a-z0-9-_"

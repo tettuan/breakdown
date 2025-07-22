@@ -96,12 +96,56 @@ export interface TotalityPromptCliParams extends PromptCliParams {
 export type { TwoParams_Result } from "../deps.ts";
 
 /**
+ * Configuration data returned from BreakdownConfig.getConfig()
+ */
+interface ConfigData {
+  app_prompt?: { base_dir?: string };
+  app_schema?: { base_dir?: string };
+  input?: { base_dir?: string };
+  output?: { base_dir?: string };
+  features?: {
+    schema_validation?: boolean;
+    path_optimization?: boolean;
+  };
+  [key: string]: unknown;
+}
+
+/**
+ * BreakdownConfig instance interface
+ */
+interface BreakdownConfigInstance {
+  load(): Promise<{ success: boolean }>;
+  getConfig(): Promise<ConfigData>;
+}
+
+/**
  * Configuration structure expected by the factory
  */
 interface FactoryConfig {
   app_prompt?: { base_dir?: string };
   app_schema?: { base_dir?: string };
   [key: string]: unknown;
+}
+
+/**
+ * Result type from BreakdownConfig.create()
+ */
+interface BreakdownConfigResult {
+  success: boolean;
+  data?: unknown;
+  error?: string | { message: string };
+}
+
+/**
+ * Type guard for BreakdownConfigResult
+ */
+function isBreakdownConfigResult(value: unknown): value is BreakdownConfigResult {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "success" in value &&
+    typeof (value as Record<string, unknown>).success === "boolean"
+  );
 }
 
 /**
@@ -300,7 +344,20 @@ export class PromptVariablesFactory {
     this.transformer = transformer ||
       (defaultPath
         ? TransformerFactory.createWithPathValidation(defaultPath)
-        : TransformerFactory.createDefault());
+        : this.createDefaultTransformer());
+  }
+
+  /**
+   * 設定ベースでデフォルトTransformerを作成
+   * createDefault()の代替実装
+   */
+  private createDefaultTransformer(): PromptVariableTransformer {
+    const fallbackPathResult = PathResolutionOption.create("relative", "prompts", ["schemas"]);
+    const fallbackPath = fallbackPathResult.ok ? fallbackPathResult.data : undefined;
+
+    return fallbackPath
+      ? TransformerFactory.createWithPathValidation(fallbackPath)
+      : new PromptVariableTransformer({ validatePaths: false, allowEmpty: false });
   }
 
   /**
@@ -381,16 +438,74 @@ export class PromptVariablesFactory {
   }
 
   /**
-   * Create factory with automatic configuration loading
+   * Create factory with BreakdownParams integration
+   *
+   * createDefaultConfig() 依存を完全排除し、設定ファイルベース実装に移行。
    */
-  static create(
+  static async create(
     cliParams: PromptCliParams,
+    profileName: string = "default",
   ): Promise<Result<PromptVariablesFactory, PromptVariablesFactoryErrors>> {
-    // TODO: Re-enable BreakdownConfig when API is stable
-    // For now, always use default config to avoid compilation errors
-    const config = createDefaultConfig();
-    const result = PromptVariablesFactory.createSafely(config, cliParams);
-    return Promise.resolve(result);
+    try {
+      // BreakdownConfig から動的に設定を読み込み
+      const { BreakdownConfig } = await import("@tettuan/breakdownconfig");
+      const breakdownConfigResult = await BreakdownConfig.create(profileName);
+
+      // Handle BreakdownConfig Result structure (success/data pattern)
+      if (!isBreakdownConfigResult(breakdownConfigResult)) {
+        return resultError(
+          PromptVariablesFactoryErrorFactory.pathOptionsCreationFailed(
+            "Invalid BreakdownConfig result structure",
+          ),
+        );
+      }
+
+      if (!breakdownConfigResult.success) {
+        const errorMessage = typeof breakdownConfigResult.error === "string"
+          ? breakdownConfigResult.error
+          : breakdownConfigResult.error?.message || "Unknown error";
+        return resultError(
+          PromptVariablesFactoryErrorFactory.pathOptionsCreationFailed(
+            `Failed to create BreakdownConfig: ${errorMessage}`,
+          ),
+        );
+      }
+
+      if (!breakdownConfigResult.data) {
+        return resultError(
+          PromptVariablesFactoryErrorFactory.pathOptionsCreationFailed(
+            "BreakdownConfig succeeded but no data returned",
+          ),
+        );
+      }
+
+      const breakdownConfig = breakdownConfigResult.data;
+      const configData: ConfigData = await breakdownConfig.getConfig();
+
+      // FactoryConfig 形式に変換
+      const config: FactoryConfig = {
+        paths: {
+          prompts: configData.app_prompt?.base_dir || "prompts",
+          schemas: configData.app_schema?.base_dir || "schemas",
+          input: configData.input?.base_dir || "input",
+          output: configData.output?.base_dir || "output",
+        },
+        features: {
+          schemaValidation: configData.features?.schema_validation ?? true,
+          pathOptimization: configData.features?.path_optimization ?? true,
+        },
+      };
+
+      return PromptVariablesFactory.createSafely(config, cliParams);
+    } catch (error) {
+      return resultError(
+        PromptVariablesFactoryErrorFactory.pathOptionsCreationFailed(
+          `Failed to create factory with BreakdownParams: ${
+            error instanceof Error ? error.message : "Unknown error"
+          }`,
+        ),
+      );
+    }
   }
 
   /**
@@ -784,8 +899,8 @@ export class PromptVariablesFactory {
       : undefined;
 
     // Create ConfigProfile instance for proper configuration management
-    const profileName = ConfigProfile.fromCliOption(this.cliParams.options.config);
-    
+    const profileName = ConfigProfile.create(this.cliParams.options.config);
+
     const configSource = PromptVariableSourceFactory.fromConfig({
       directive: this.cliParams.directiveType,
       layer: this.cliParams.layerType,
@@ -877,14 +992,10 @@ export class PromptVariablesFactory {
 }
 
 /**
- * Create default configuration when BreakdownConfig is not available
+ * @deprecated createDefaultConfig関数は削除されました
+ * BreakdownParams統合により設定ファイルベース実装に移行。
+ * BreakdownConfig を使用してください。
  */
-function createDefaultConfig(): FactoryConfig {
-  return {
-    app_prompt: { base_dir: "prompts" },
-    app_schema: { base_dir: "schemas" },
-  };
-}
 
 /**
  * Totality-compliant factory alias for backward compatibility

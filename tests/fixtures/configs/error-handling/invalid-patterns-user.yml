@@ -1,0 +1,41 @@
+# Error handling test configuration - Invalid patterns
+# テスト用の不正なパターン設定ファイル
+
+# 不正なパターン（正規表現エラーを誘発）
+params:
+  two:
+    directiveType:
+      pattern: "^(to|summary|[unclosed" # 不正な正規表現
+    layerType:
+      pattern: "^(project|issue|task)$"
+
+# テストデータ
+testData:
+  validDirectives: [] # 空配列
+  validLayers:
+    - "project"
+    - "issue"
+    - "task"
+
+  invalidDirectives:
+    - "to" # パターンエラーで全て無効になる
+    - "summary"
+    - "defect"
+
+  invalidLayers:
+    - "invalid_layer"
+    - ""
+    - null
+
+# メタデータ
+profile_metadata:
+  name: "invalid-patterns"
+  description: "Invalid regex patterns test configuration"
+  created_at: "2024-01-01T00:00:00Z"
+  version: "test-1.0"
+
+# カスタム変数
+custom_variables:
+  error_type: "invalid_regex"
+  test_purpose: "pattern_validation"
+  expected_failure: true

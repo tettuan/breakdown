@@ -516,37 +516,45 @@ export class TwoParamsValidator {
    * Get default patterns from configuration files (no hardcoded fallback)
    * This method should read from config/default-user.yml or return error
    */
-  private async getDefaultPatterns(profile: ProfileName): Promise<Result<ValidationPatterns, ValidationError>> {
+  private async getDefaultPatterns(
+    profile: ProfileName,
+  ): Promise<Result<ValidationPatterns, ValidationError>> {
     try {
       // BreakdownConfigから設定を取得
       if (!this.config) {
         throw new Error("Configuration is required but not available");
       }
-      
+
       // 設定からパターンを取得（BreakdownConfigのAPIを使用）
-      const configData = (typeof this.config === 'object' && this.config && 'getConfig' in this.config && typeof this.config.getConfig === 'function') ? await this.config.getConfig() : this.config;
-      const directivePatterns = configData?.params?.two?.directiveType?.pattern?.split('|') || [];
-      const layerPatterns = configData?.params?.two?.layerType?.pattern?.split('|') || [];
-      
+      const configData =
+        (typeof this.config === "object" && this.config && "getConfig" in this.config &&
+            typeof this.config.getConfig === "function")
+          ? await this.config.getConfig()
+          : this.config;
+      const directivePatterns = configData?.params?.two?.directiveType?.pattern?.split("|") || [];
+      const layerPatterns = configData?.params?.two?.layerType?.pattern?.split("|") || [];
+
       if (!directivePatterns || directivePatterns.length === 0) {
         throw new Error("Configuration must define directive types");
       }
       if (!layerPatterns || layerPatterns.length === 0) {
         throw new Error("Configuration must define layer types");
       }
-      
+
       const patterns: ValidationPatterns = {
         directivePatterns: [...directivePatterns],
-        layerPatterns: [...layerPatterns]
+        layerPatterns: [...layerPatterns],
       };
-      
+
       return ok(patterns);
     } catch (err) {
       const profileName = ProfileName.value(profile);
       return error({
         kind: "ConfigurationNotFound",
         profile: profileName,
-        message: `Failed to load default patterns: ${err instanceof Error ? err.message : "Unknown error"}`
+        message: `Failed to load default patterns: ${
+          err instanceof Error ? err.message : "Unknown error"
+        }`,
       });
     }
   }

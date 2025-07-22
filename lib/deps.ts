@@ -73,7 +73,7 @@ export * from "jsr:@tettuan/breakdownprompt@1.2.3";
 /**
  * Logging utilities for Breakdown. Re-exported from @tettuan/breakdownlogger.
  */
-export * from "jsr:@tettuan/breakdownlogger@^1.0.0";
+export * from "jsr:@tettuan/breakdownlogger@^1.0.8";
 
 /**
  * Testing assertion utilities. Re-exported from @std/assert.

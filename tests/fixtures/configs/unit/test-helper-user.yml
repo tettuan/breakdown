@@ -1,0 +1,22 @@
+# ユニットテストヘルパー用設定
+params:
+  two:
+    directiveType:
+      pattern: "^[a-z0-9_-]{1,20}$"
+      errorMessage: "Directive must be 1-20 alphanumeric characters with hyphens/underscores"
+    layerType:
+      pattern: "^[a-z0-9_-]{1,20}$"
+      errorMessage: "Layer must be 1-20 alphanumeric characters with hyphens/underscores"
+
+# ユニットテスト用データセット
+testData:
+  validDirectives: ["to", "summary", "defect", "find", "analyze", "extract"]
+  validLayers: ["project", "issue", "task", "epic", "story", "bug", "feature"]
+  invalidDirectives: ["", "INVALID", "test@email", "verylongdirectivenamethatexceeds20"]
+  invalidLayers: ["", "INVALID@LAYER", "test space", "verylonglayernamethatexceeds20chars"]
+
+# 境界値テスト
+boundaryTests:
+  minLength: 1
+  maxLength: 20
+  validCharacters: "abcdefghijklmnopqrstuvwxyz0123456789-_"

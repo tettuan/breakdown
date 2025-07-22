@@ -1,0 +1,51 @@
+# Development profile test configuration
+# ConfigurationTestHelper用の開発環境設定ファイル
+
+# パターンベースの設定
+params:
+  two:
+    directiveType:
+      pattern: "^(to|summary|defect|debug|trace|analyze)$"
+    layerType:
+      pattern: "^(project|issue|task|function|test|module)$"
+
+# テストデータ
+testData:
+  validDirectives:
+    - "to"
+    - "summary"
+    - "defect"
+    - "debug"
+    - "trace"
+    - "analyze"
+
+  validLayers:
+    - "project"
+    - "issue"
+    - "task"
+    - "function"
+    - "test"
+    - "module"
+
+  invalidDirectives:
+    - "invalid"
+    - ""
+    - "a" # too short
+    - "test space"
+
+  invalidLayers:
+    - "INVALID@LAYER"
+    - ""
+    - "a" # too short
+    - "test space"
+
+# その他の設定
+outputFormat: "markdown-verbose"
+debugMode: true
+directive_patterns: "to|summary|defect|debug|trace|analyze"
+layer_patterns: "project|issue|task|function|test|module"
+
+custom_variables:
+  author: "Development Test Suite"
+  version: "1.0.0"
+  environment: "development"

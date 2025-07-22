@@ -19,10 +19,10 @@
     "@std/yaml": "jsr:@std/yaml@^1.0.6",
     "@std/testing": "jsr:@std/testing@^0.224.0",
     "@tettuan/breakdown": "jsr:@tettuan/breakdown@^0.1.4",
-    "@tettuan/breakdownconfig": "jsr:@tettuan/breakdownconfig@^1.1.4",
+    "@tettuan/breakdownconfig": "jsr:@tettuan/breakdownconfig@^1.1.5",
     "@tettuan/breakdownparams": "jsr:@tettuan/breakdownparams@^1.1.0",
     "@tettuan/breakdownprompt": "jsr:@tettuan/breakdownprompt@^1.2.4",
-    "@tettuan/breakdownlogger": "jsr:@tettuan/breakdownlogger@^1.0.5"
+    "@tettuan/breakdownlogger": "jsr:@tettuan/breakdownlogger@^1.0.8"
   },
   "publish": {
     "include": [

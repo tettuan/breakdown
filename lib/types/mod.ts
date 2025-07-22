@@ -133,7 +133,6 @@ export type { PromptVariable, PromptVariables } from "./prompt_variables_vo.ts";
 
 // Default implementations
 export { DefaultTypePatternProvider } from "./defaults/default_type_pattern_provider.ts";
-export { _defaultConfigTwoParams } from "./defaults/config_two_params.ts";
 
 // Configuration types
 export { ConfigError, ParamsCustomConfig } from "./params_custom_config.ts";

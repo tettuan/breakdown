@@ -1,10 +1,10 @@
 /**
  * @fileoverview ConfigProfile - Local implementation for profile name management
- * 
+ *
  * This module provides ConfigProfile class for managing configuration profiles
  * following DDD and Totality principles. Local implementation as JSR package
  * does not export ConfigProfile/ConfigProfileName.
- * 
+ *
  * @module config/config_profile_name
  */
 
@@ -34,7 +34,10 @@ export class ConfigProfile {
   }
 
   /**
-   * Create default ConfigProfile instance
+   * @deprecated createDefault() は廃止予定
+   * BreakdownParams統合により設定ファイルベース実装に移行。
+   * ConfigProfile.create() を使用してください。
+   *
    * @returns Default ConfigProfile instance
    */
   static createDefault(): ConfigProfile {
@@ -96,23 +99,29 @@ export class ConfigProfile {
    * @param profileName - Profile name string
    * @returns Result containing ConfigProfile or error
    */
-  static createOrError(profileName?: string | null | undefined): { ok: boolean; data?: ConfigProfile; error?: { message: string; kind: string; field: string } } {
+  static createOrError(
+    profileName?: string | null | undefined,
+  ): {
+    ok: boolean;
+    data?: ConfigProfile;
+    error?: { message: string; kind: string; field: string };
+  } {
     const normalizedName = (typeof profileName === "string" ? profileName.trim() : "") || "";
-    
+
     if (normalizedName === "") {
       return {
         ok: false,
-        error: { 
+        error: {
           message: "Profile name cannot be empty, using default",
           kind: "InvalidInput",
-          field: "profileName"
-        }
+          field: "profileName",
+        },
       };
     }
-    
+
     return {
       ok: true,
-      data: new ConfigProfile(normalizedName)
+      data: new ConfigProfile(normalizedName),
     };
   }
 }

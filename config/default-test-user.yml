@@ -1,0 +1,29 @@
+# Test configuration for BreakdownParams integration tests
+#
+# This file provides the configuration for the default-test profile
+# used in breakdown_params integration tests.
+
+params:
+  two:
+    directiveType:
+      pattern: "to|summary|defect"
+      errorMessage: "Invalid directive type for test profile"
+    layerType:
+      pattern: "project|issue|task"
+      errorMessage: "Invalid layer type for test profile"
+
+# Additional test-specific patterns
+validation:
+  enabled: true
+  strictMode: false
+
+# Testing values
+directiveValues:
+  - "to"
+  - "summary"
+  - "defect"
+
+layerTypeValues:
+  - "project"
+  - "issue"
+  - "task"

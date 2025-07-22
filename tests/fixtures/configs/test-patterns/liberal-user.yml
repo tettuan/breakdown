@@ -1,0 +1,18 @@
+# 寛容パターンテスト用設定
+params:
+  two:
+    directiveType:
+      pattern: "[a-z]+" # 任意の小文字
+      errorMessage: "Directive must be lowercase letters"
+    layerType:
+      pattern: "[a-z0-9]+" # 小文字と数字
+      errorMessage: "Layer must be lowercase alphanumeric"
+
+# テスト用データセット（寛容版） - 動的生成されるため、ハードコード配列を除去
+# testData.validDirectives/validLayers は ConfigurationPatternGenerator により
+# params.two.directiveType.pattern および params.two.layerType.pattern から動的生成される
+testData:
+  # 寛容パターン [a-z]+ から生成される値
+  dynamicGeneration: true
+  patternBased: true
+  liberalMode: true

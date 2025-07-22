@@ -200,7 +200,7 @@ export class TemplateErrorHandler {
     const { autoResolve = false, projectRoot = Deno.cwd() } = options || {};
 
     // Log detailed error information
-    this.logger.error(error.getDetailedMessage());
+    this.logger.error(error.getDetailedMessage(), "error");
 
     if (!autoResolve || !error.canAutoResolve) {
       return {
@@ -244,7 +244,7 @@ export class TemplateErrorHandler {
     resolved: boolean;
     message: string;
   }> {
-    this.logger.info("🔧 Attempting to auto-generate missing templates...");
+    this.logger.info("🔧 Attempting to auto-generate missing templates...", "recovery");
 
     const process = new Deno.Command("bash", {
       args: ["scripts/template_generator.sh", "generate"],
@@ -273,7 +273,7 @@ export class TemplateErrorHandler {
     resolved: boolean;
     message: string;
   }> {
-    this.logger.info("🔧 Validating and fixing templates...");
+    this.logger.info("🔧 Validating and fixing templates...", "validation");
 
     const process = new Deno.Command("bash", {
       args: ["examples/00_template_check.sh", "full"],
@@ -326,15 +326,15 @@ export async function withTemplateErrorHandling<T>(
       });
 
       if (result.resolved) {
-        logger.info(result.message);
+        logger.info(result.message, "recovery");
         // Retry the operation after resolution
         return await operation();
       } else {
-        logger.error(result.message);
+        logger.error(result.message, "recovery");
         if (result.commands) {
-          logger.error("\n🔧 Recovery commands:");
+          logger.error("\n🔧 Recovery commands:", "recovery");
           for (const command of result.commands) {
-            logger.error(`   ${command}`);
+            logger.error(`   ${command}`, "recovery");
           }
         }
         throw templateError;

@@ -57,7 +57,6 @@ export {
 // Domain Services
 export {
   type FallbackAction,
-  type FallbackStrategy,
   GenerationPolicy,
   type GenerationPolicyConfig,
   type ResolutionContext,
@@ -72,7 +71,6 @@ export {
 
 export {
   ExactPathStrategy,
-  FallbackStrategy as ResolverFallbackStrategy,
   type ResolutionErrorType,
   type ResolutionStrategy,
   StandardNamingStrategy,

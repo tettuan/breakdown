@@ -1,0 +1,14 @@
+# 基本テスト用アプリケーション設定
+application:
+  name: "Breakdown Test Basic"
+  version: "1.0.0"
+
+paths:
+  workDir: "./tests/fixtures"
+  resourceDir: "./tests/fixtures"
+  promptDir: "./prompts"
+  schemaDir: "./schema"
+
+settings:
+  debug: false
+  logLevel: "info"

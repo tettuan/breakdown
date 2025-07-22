@@ -1,0 +1,41 @@
+# 本番環境類似テスト設定
+params:
+  two:
+    directiveType:
+      pattern: "^(to|summary|defect|find|analyze|extract)$" # 厳格な列挙パターン
+      errorMessage: "Directive must be one of: to, summary, defect, find, analyze, extract"
+    layerType:
+      pattern: "^(project|issue|task|epic|story|bug|feature)$" # 厳格な列挙パターン
+      errorMessage: "Layer must be one of: project, issue, task, epic, story, bug, feature"
+
+# 本番環境類似テストケース
+integrationTests:
+  productionCases:
+    - args: ["to", "project"]
+      shouldPass: true
+      expectedErrorType: null
+    - args: ["summary", "issue"]
+      shouldPass: true
+      expectedErrorType: null
+    - args: ["find", "bug"]
+      shouldPass: true
+      expectedErrorType: null
+    - args: ["analyze", "epic"]
+      shouldPass: true
+      expectedErrorType: null
+    # 大文字は拒否
+    - args: ["TO", "PROJECT"]
+      shouldPass: false
+      expectedErrorType: "VALIDATION_ERROR"
+    # 未定義の値は拒否
+    - args: ["custom", "layer"]
+      shouldPass: false
+      expectedErrorType: "VALIDATION_ERROR"
+    # 空文字は拒否
+    - args: ["", "project"]
+      shouldPass: false
+      expectedErrorType: "VALIDATION_ERROR"
+    # 特殊文字は拒否
+    - args: ["to@home", "project"]
+      shouldPass: false
+      expectedErrorType: "VALIDATION_ERROR"

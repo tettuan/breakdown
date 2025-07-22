@@ -1,0 +1,29 @@
+# Application configuration for default-test profile
+#
+# This file provides application-level configuration for breakdown_params
+# integration tests.
+
+system:
+  name: "breakdown-test"
+  version: "1.0.0-test"
+  environment: "test"
+
+logging:
+  level: "debug"
+  enabled: true
+
+paths:
+  workDir: "."
+  resourceDir: "./resources"
+  templateDir: "./templates"
+
+# Test environment settings
+test:
+  enabled: true
+  mockMode: false
+
+# Integration test specific configurations
+integration:
+  breakdownParams:
+    enabled: true
+    customConfig: true

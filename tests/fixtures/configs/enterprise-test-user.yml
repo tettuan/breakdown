@@ -1,0 +1,58 @@
+# Enterprise custom profile test configuration
+# 企業環境向けのカスタムプロファイル設定
+
+# パターンベースの設定（企業特有の命名規則）
+params:
+  two:
+    directiveType:
+      pattern: "^(transform|aggregate|validate|migrate|archive|audit)$"
+    layerType:
+      pattern: "^(enterprise|department|team|service|component|resource)$"
+
+# テストデータ
+testData:
+  validDirectives:
+    - "transform"
+    - "aggregate"
+    - "validate"
+    - "migrate"
+    - "archive"
+    - "audit"
+
+  validLayers:
+    - "enterprise"
+    - "department"
+    - "team"
+    - "service"
+    - "component"
+    - "resource"
+
+  invalidDirectives:
+    - "to" # 標準的なディレクティブは無効
+    - "summary"
+    - "defect"
+    - "invalid"
+    - ""
+
+  invalidLayers:
+    - "project" # 標準的なレイヤーは無効
+    - "issue"
+    - "task"
+    - "INVALID"
+    - ""
+
+# 企業固有の設定
+outputFormat: "enterprise-report"
+strictMode: true
+auditEnabled: true
+complianceLevel: "high"
+
+directive_patterns: "transform|aggregate|validate|migrate|archive|audit"
+layer_patterns: "enterprise|department|team|service|component|resource"
+
+custom_variables:
+  organization: "Test Enterprise Corp"
+  department: "IT Division"
+  compliance: "SOC2"
+  version: "2.0.0"
+  environment: "enterprise"

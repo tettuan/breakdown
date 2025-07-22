@@ -331,7 +331,7 @@ export class FileSchemaRepository implements SchemaRepository {
     this.cache.clear();
     this.manifest = undefined;
     this.manifestLoadedAt = undefined;
-    this.logger.info("Schema repository cache cleared");
+    this.logger.info("Schema repository cache cleared", "cache");
     return Promise.resolve();
   }
 

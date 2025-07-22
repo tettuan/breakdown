@@ -113,7 +113,9 @@ export class LayerType {
       return defaultConfigPattern.split("|");
     } catch {
       // Only if configuration loading completely fails - prevent system breakage
-      throw new Error("Configuration loading failed: Unable to load layer types from config/default-user.yml");
+      throw new Error(
+        "Configuration loading failed: Unable to load layer types from config/default-user.yml",
+      );
     }
   }
 
@@ -125,7 +127,10 @@ export class LayerType {
    * @param customConfig - Configuration provider for layer types
    * @returns Array of suggested layer types based on similarity
    */
-  static async calculateSuggestions(input: string, customConfig?: LayerTypeConfig): Promise<readonly string[]> {
+  static async calculateSuggestions(
+    input: string,
+    customConfig?: LayerTypeConfig,
+  ): Promise<readonly string[]> {
     const validLayers = await LayerType.getKnownLayers(customConfig);
     const normalizedInput = input.toLowerCase().trim();
 
@@ -269,7 +274,7 @@ export class LayerType {
    */
   static create(
     value: string | null | undefined | { layerType: string },
-    config?: LayerTypeConfig
+    config?: LayerTypeConfig,
   ): Result<LayerType, LayerTypeError> {
     // Handle TwoParams_Result-like objects
     if (typeof value === "object" && value !== null && "layerType" in value) {
@@ -321,7 +326,7 @@ export class LayerType {
     // Case 4: Configuration-based validation (if config provided)
     if (config) {
       const validLayersResult = config.getLayerTypes();
-      
+
       // Handle both sync and async config
       if (Array.isArray(validLayersResult)) {
         // Sync case
@@ -330,7 +335,9 @@ export class LayerType {
             kind: "PatternMismatch",
             value: trimmedValue,
             validLayers: validLayersResult,
-            message: `Unknown LayerType "${trimmedValue}". Valid types: ${validLayersResult.join(", ")}`
+            message: `Unknown LayerType "${trimmedValue}". Valid types: ${
+              validLayersResult.join(", ")
+            }`,
           });
         }
       } else {
@@ -503,10 +510,8 @@ export class LayerType {
     // If creation failed, provide basic error without async suggestions
     return error({
       ...result.error,
-      message: `Unknown layer type "${normalized}". Check available layer types in configuration.`
+      message: `Unknown layer type "${normalized}". Check available layer types in configuration.`,
     });
-
-    return result;
   }
 
   /**
@@ -516,7 +521,10 @@ export class LayerType {
    * @param config - Configuration provider for layer types (optional)
    * @returns Result with LayerType or error
    */
-  static fromTwoParamsResult(result: { layerType: string }, config?: LayerTypeConfig): Result<LayerType, LayerTypeError> {
+  static fromTwoParamsResult(
+    result: { layerType: string },
+    config?: LayerTypeConfig,
+  ): Result<LayerType, LayerTypeError> {
     return LayerType.create(result.layerType, config);
   }
 
@@ -556,7 +564,7 @@ export class LayerTypeFactory {
    */
   static create(
     input: string,
-    config?: LayerTypeConfig
+    config?: LayerTypeConfig,
   ): Result<LayerType, LayerTypeError> {
     return LayerType.create(input, config);
   }
@@ -572,7 +580,7 @@ export class LayerTypeFactory {
   static createWithPattern(
     input: string,
     pattern: string,
-    config?: LayerTypeConfig
+    config?: LayerTypeConfig,
   ): Result<LayerType, LayerTypeError> {
     // First validate input with pattern
     const patternResult = TwoParamsLayerTypePattern.createOrError(pattern);
@@ -613,7 +621,7 @@ export class LayerTypeFactory {
    */
   static createMany(
     inputs: string[],
-    config?: LayerTypeConfig
+    config?: LayerTypeConfig,
   ): Result<LayerType, LayerTypeError>[] {
     return inputs.map((input) => LayerType.create(input, config));
   }
@@ -637,9 +645,11 @@ export class LayerTypePatternService {
    */
   async validatePattern(value: string): Promise<Result<boolean, LayerTypeError>> {
     const validLayersResult = this.config.getLayerTypes();
-    const validLayers = Array.isArray(validLayersResult) ? validLayersResult : await validLayersResult;
+    const validLayers = Array.isArray(validLayersResult)
+      ? validLayersResult
+      : await validLayersResult;
     const isValid = validLayers.includes(value);
-    
+
     if (!isValid) {
       const suggestions = await this.calculateSuggestions(value);
       return error({
@@ -647,10 +657,12 @@ export class LayerTypePatternService {
         value,
         validLayers,
         suggestions,
-        message: `LayerType "${value}" not found in configuration. Did you mean: ${suggestions.join(", ")}?`
+        message: `LayerType "${value}" not found in configuration. Did you mean: ${
+          suggestions.join(", ")
+        }?`,
       });
     }
-    
+
     return ok(true);
   }
 
@@ -682,7 +694,9 @@ export class LayerTypePatternService {
    */
   async isValidLayer(value: string): Promise<boolean> {
     const validLayersResult = this.config.getLayerTypes();
-    const validLayers = Array.isArray(validLayersResult) ? validLayersResult : await validLayersResult;
+    const validLayers = Array.isArray(validLayersResult)
+      ? validLayersResult
+      : await validLayersResult;
     return validLayers.includes(value);
   }
 }

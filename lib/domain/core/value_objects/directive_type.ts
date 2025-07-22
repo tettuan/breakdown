@@ -176,7 +176,6 @@ export class DirectiveType {
     return ok(new DirectiveType(trimmedValue, true));
   }
 
-
   /**
    * Get prompt directory path for this directive type
    *
@@ -281,8 +280,6 @@ export class DirectiveType {
     return `${dir}/${filename}`;
   }
 
-
-
   /**
    * Check if this DirectiveType is valid for resource path generation
    *
@@ -318,23 +315,23 @@ export class DirectiveType {
 
   /**
    * Create DirectiveType from TwoParamsResult (JSR package integration)
-   * 
+   *
    * This factory method creates a DirectiveType instance from the result
    * of BreakdownParams JSR package, marking it as validated.
-   * 
+   *
    * @param result - Object containing directiveType from BreakdownParams
    * @returns Result containing DirectiveType or validation error
    */
   static fromTwoParamsResult(
-    result: { directiveType: string }
+    result: { directiveType: string },
   ): Result<DirectiveType, DirectiveTypeError> {
     if (!result || typeof result.directiveType !== "string") {
       return error({
         kind: "EmptyInput",
-        message: "Invalid TwoParamsResult: directiveType must be a string"
+        message: "Invalid TwoParamsResult: directiveType must be a string",
       });
     }
-    
+
     // Create DirectiveType with JSR validation marker
     // Since this comes from BreakdownParams, it's already validated
     return ok(new DirectiveType(result.directiveType, true));

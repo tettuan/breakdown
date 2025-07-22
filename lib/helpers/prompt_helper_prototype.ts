@@ -165,7 +165,7 @@ export class PromptHelperPrototype {
     };
 
     if (this.options.debug) {
-      this.logger.debug("Variable detection completed", result);
+      this.logger.debug("Variable detection completed", { result });
     }
 
     return result;
@@ -377,13 +377,15 @@ export class PromptHelperPrototype {
       const mergedConfig = await configResult.data.getConfig();
       const variableDefaults = mergedConfig.variableDefaults || {};
       const language = this.options.language || "en";
-      
+
       // Check for specific variable default
-      if (typeof variableDefaults !== 'object' || variableDefaults === null) {
+      if (typeof variableDefaults !== "object" || variableDefaults === null) {
         return `{${varName} value}`;
       }
-      const varDefault = (variableDefaults as Record<string, unknown>)[varName.toLowerCase()] as Record<string, string> | undefined;
-      if (varDefault && typeof varDefault === 'object' && varDefault[language]) {
+      const varDefault = (variableDefaults as Record<string, unknown>)[varName.toLowerCase()] as
+        | Record<string, string>
+        | undefined;
+      if (varDefault && typeof varDefault === "object" && varDefault[language]) {
         let value = varDefault[language];
         // Handle special {date} placeholder
         if (value === "{date}") {
@@ -391,19 +393,21 @@ export class PromptHelperPrototype {
         }
         return value;
       }
-      
+
       // Use default template
-      const defaultTemplate = (variableDefaults as Record<string, unknown>).default as Record<string, string> | undefined;
-      if (defaultTemplate && typeof defaultTemplate === 'object' && defaultTemplate[language]) {
+      const defaultTemplate = (variableDefaults as Record<string, unknown>).default as
+        | Record<string, string>
+        | undefined;
+      if (defaultTemplate && typeof defaultTemplate === "object" && defaultTemplate[language]) {
         return defaultTemplate[language].replace("{varName}", varName);
       }
-      
+
       // Ultimate fallback
       return `{${varName.toLowerCase()} value}`;
     } catch (error) {
       this.logger.warn("Failed to load variable defaults", {
         varName,
-        error: String(error)
+        error: String(error),
       });
       return `{${varName} value}`;
     }
@@ -436,34 +440,37 @@ export class PromptHelperPrototype {
       }
       await configResult.data.loadConfig();
       const mergedConfig = await configResult.data.getConfig();
-      
+
       // Access outputFormats from config (added to default-app.yml)
       const outputFormats = mergedConfig.outputFormats || {};
-      
+
       // Get format for this directive and language
-      if (typeof outputFormats !== 'object' || outputFormats === null) {
+      if (typeof outputFormats !== "object" || outputFormats === null) {
         return "## Output Format\nProvide output in the specified format.";
       }
-      const directiveFormat = (outputFormats as Record<string, unknown>)[directiveValue] as Record<string, string> | undefined;
-      if (directiveFormat && typeof directiveFormat === 'object' && directiveFormat[language]) {
+      const directiveFormat = (outputFormats as Record<string, unknown>)[directiveValue] as
+        | Record<string, string>
+        | undefined;
+      if (directiveFormat && typeof directiveFormat === "object" && directiveFormat[language]) {
         return directiveFormat[language];
       }
-      
+
       // Fallback to default format
-      const defaultFormat = (outputFormats as Record<string, unknown>).default as Record<string, string> | undefined;
-      if (defaultFormat && typeof defaultFormat === 'object' && defaultFormat[language]) {
+      const defaultFormat = (outputFormats as Record<string, unknown>).default as
+        | Record<string, string>
+        | undefined;
+      if (defaultFormat && typeof defaultFormat === "object" && defaultFormat[language]) {
         return defaultFormat[language];
       }
-      
+
       // Ultimate fallback
       return "## Output Format\nProvide output in the specified format.";
-      
     } catch (error) {
       // Fallback on configuration error
-      this.logger.warn("Failed to load output format configuration", { 
-        directive: directiveValue, 
+      this.logger.warn("Failed to load output format configuration", {
+        directive: directiveValue,
         language,
-        error: String(error)
+        error: String(error),
       });
       return "## Output Format\nProvide output in the specified format.";
     }
@@ -479,39 +486,52 @@ export class PromptHelperPrototype {
       const mergedConfig = await configResult.data.getConfig();
       const textEnhancements = mergedConfig.textEnhancements || {};
       const language = this.options.language || "en";
-      if (typeof textEnhancements !== 'object' || textEnhancements === null) {
+      if (typeof textEnhancements !== "object" || textEnhancements === null) {
         return content;
       }
-      const langEnhancements = (textEnhancements as Record<string, unknown>)[language] as Record<string, unknown> | undefined;
-      
+      const langEnhancements = (textEnhancements as Record<string, unknown>)[language] as
+        | Record<string, unknown>
+        | undefined;
+
       if (!langEnhancements) {
         return content;
       }
-      
+
       let enhanced = content;
-      
+
       // Apply replacements from config
-      if (langEnhancements && typeof langEnhancements === 'object' && 'replacements' in langEnhancements && Array.isArray(langEnhancements.replacements)) {
-        for (const replacement of langEnhancements.replacements as Array<{from: string, to: string, flags?: string}>) {
+      if (
+        langEnhancements && typeof langEnhancements === "object" &&
+        "replacements" in langEnhancements && Array.isArray(langEnhancements.replacements)
+      ) {
+        for (
+          const replacement of langEnhancements.replacements as Array<
+            { from: string; to: string; flags?: string }
+          >
+        ) {
           const regex = new RegExp(replacement.from, replacement.flags || "g");
           enhanced = enhanced.replace(regex, replacement.to);
         }
       }
-      
+
       // Apply formatting from config
-      if (langEnhancements && typeof langEnhancements === 'object' && 'formatting' in langEnhancements && typeof langEnhancements.formatting === 'object' && langEnhancements.formatting !== null) {
-        const formatting = langEnhancements.formatting as {sectionSeparator?: string};
+      if (
+        langEnhancements && typeof langEnhancements === "object" &&
+        "formatting" in langEnhancements && typeof langEnhancements.formatting === "object" &&
+        langEnhancements.formatting !== null
+      ) {
+        const formatting = langEnhancements.formatting as { sectionSeparator?: string };
         const { sectionSeparator } = formatting;
         if (sectionSeparator) {
           enhanced = enhanced.replace(/\n\n/g, sectionSeparator);
         }
       }
-      
+
       return enhanced;
     } catch (error) {
       this.logger.warn("Failed to apply language enhancements", {
         language: this.options.language,
-        error: String(error)
+        error: String(error),
       });
       return content;
     }

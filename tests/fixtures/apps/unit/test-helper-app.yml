@@ -1,0 +1,26 @@
+# Test Helper Application Configuration for Unit Tests
+# This is the app-level configuration that pairs with test-helper-user.yml
+
+resourceDirectory: tests/fixtures
+workingDirectory: .
+
+# Application settings for test environment
+settings:
+  prompt:
+    enableCache: false
+    cacheDirectory: tmp/test-cache
+  schema:
+    enableValidation: true
+    strictMode: false
+  output:
+    format: markdown
+    includeTimestamp: false
+  debug:
+    enabled: true
+    level: info
+
+# Test environment configuration
+testEnvironment:
+  parallel: false
+  timeout: 30000
+  retries: 1
