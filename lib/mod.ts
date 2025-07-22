@@ -45,8 +45,9 @@ export {
   TwoParamsLayerTypePattern,
   type TypeCreationResult,
   TypeFactory,
-  type TypePatternProvider,
 } from "./types/mod.ts";
+// TypePatternProvider export removed - JSR統合によりTypePatternProviderは非推奨
+// JSR統合では TypeFactory.createFromJSR() を直接使用してください
 
 // Export Result types (Result type already exported via types/mod.ts)
 export { error, ok } from "./types/result.ts";

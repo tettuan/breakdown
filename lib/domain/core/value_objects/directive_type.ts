@@ -336,6 +336,31 @@ export class DirectiveType {
     // Since this comes from BreakdownParams, it's already validated
     return ok(new DirectiveType(result.directiveType, true));
   }
+
+  /**
+   * Create DirectiveType from BreakdownParams JSR package (simplified JSR integration)
+   *
+   * This static factory method directly creates a DirectiveType instance from
+   * a validated directiveType string that comes from BreakdownParams JSR package.
+   * The value is marked as JSR-validated, bypassing internal validation.
+   *
+   * @param jsrValidatedValue - Pre-validated directiveType string from BreakdownParams
+   * @returns Result containing DirectiveType or validation error
+   */
+  static fromJSR(
+    jsrValidatedValue: string,
+  ): Result<DirectiveType, DirectiveTypeError> {
+    if (typeof jsrValidatedValue !== "string") {
+      return error({
+        kind: "EmptyInput",
+        message: "Invalid JSR value: directiveType must be a string",
+      });
+    }
+
+    // Create DirectiveType with JSR validation marker
+    // Since this comes directly from BreakdownParams JSR, it's already validated
+    return ok(new DirectiveType(jsrValidatedValue, true));
+  }
 }
 
 /**

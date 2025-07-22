@@ -392,7 +392,7 @@ export class SchemaFilePathResolverTotality {
    * Gets the directive type with validation
    */
   private getDirectiveType(): string {
-    const type = SchemaFilePathResolverTotality.extractDirectiveType(this._cliParams);
+    const type: string = SchemaFilePathResolverTotality.extractDirectiveType(this._cliParams);
     return type || "unknown";
   }
 
@@ -419,7 +419,7 @@ export class SchemaFilePathResolverTotality {
    * Gets the layer type with validation
    */
   private getLayerType(): string {
-    const type = SchemaFilePathResolverTotality.extractLayerType(this._cliParams);
+    const type: string = SchemaFilePathResolverTotality.extractLayerType(this._cliParams);
     return type || "unknown";
   }
 

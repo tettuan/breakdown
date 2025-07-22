@@ -7,7 +7,7 @@
  * @module config/config_based_type_pattern_provider
  */
 
-import { TypePatternProvider } from "../types/type_factory.ts";
+import type { TypePatternProvider } from "./pattern_provider.ts";
 import { ParamsCustomConfig } from "./params_custom_config.ts";
 import { ConfigProfile } from "./config_profile_name.ts";
 import { loadUserConfig } from "./user_config_loader.ts";
@@ -71,19 +71,33 @@ export class ConfigBasedTypePatternProvider implements TypePatternProvider {
   }
 
   /**
-   * DirectiveTypeのパターンを取得
-   * @returns DirectiveTypeパターン（正規表現文字列）
+   * DirectiveTypeのパターンオブジェクトを取得
+   * @returns DirectiveTypeパターンオブジェクト
    */
-  getDirectivePattern(): string {
-    return this.customConfig.directivePattern || "";
+  getDirectivePattern(): { test(value: string): boolean; getPattern(): string } | null {
+    const pattern = this.customConfig.directivePattern;
+    if (!pattern) return null;
+
+    const regex = new RegExp(`^(${pattern})$`);
+    return {
+      test: (value: string) => regex.test(value),
+      getPattern: () => pattern,
+    };
   }
 
   /**
-   * LayerTypeのパターンを取得
-   * @returns LayerTypeパターン（正規表現文字列）
+   * LayerTypeのパターンオブジェクトを取得
+   * @returns LayerTypeパターンオブジェクト
    */
-  getLayerPattern(): string {
-    return this.customConfig.layerPattern || "";
+  getLayerTypePattern(): { test(value: string): boolean; getPattern(): string } | null {
+    const pattern = this.customConfig.layerPattern;
+    if (!pattern) return null;
+
+    const regex = new RegExp(`^(${pattern})$`);
+    return {
+      test: (value: string) => regex.test(value),
+      getPattern: () => pattern,
+    };
   }
 
   /**
@@ -103,25 +117,43 @@ export class ConfigBasedTypePatternProvider implements TypePatternProvider {
   }
 
   /**
-   * DirectiveTypeが有効かチェック
-   * @param value チェック対象の値
+   * DirectiveTypeを検証
+   * @param value 検証対象の値
    * @returns 有効な場合true
    */
-  isValidDirectiveType(value: string): boolean {
+  validateDirectiveType(value: string): boolean {
     const pattern = this.getDirectivePattern();
-    if (!pattern) return false;
-    return new RegExp(`^(${pattern})$`).test(value);
+    return pattern ? pattern.test(value) : false;
   }
 
   /**
-   * LayerTypeが有効かチェック
-   * @param value チェック対象の値
+   * LayerTypeを検証
+   * @param value 検証対象の値
    * @returns 有効な場合true
    */
+  validateLayerType(value: string): boolean {
+    const pattern = this.getLayerTypePattern();
+    return pattern ? pattern.test(value) : false;
+  }
+
+  /**
+   * DirectiveTypeが有効かチェック（後方互換性のため）
+   * @param value チェック対象の値
+   * @returns 有効な場合true
+   * @deprecated validateDirectiveType を使用してください
+   */
+  isValidDirectiveType(value: string): boolean {
+    return this.validateDirectiveType(value);
+  }
+
+  /**
+   * LayerTypeが有効かチェック（後方互換性のため）
+   * @param value チェック対象の値
+   * @returns 有効な場合true
+   * @deprecated validateLayerType を使用してください
+   */
   isValidLayerType(value: string): boolean {
-    const pattern = this.getLayerPattern();
-    if (!pattern) return false;
-    return new RegExp(`^(${pattern})$`).test(value);
+    return this.validateLayerType(value);
   }
 
   /**
@@ -137,10 +169,13 @@ export class ConfigBasedTypePatternProvider implements TypePatternProvider {
    * @returns 設定サマリー
    */
   getSummary(): Record<string, unknown> {
+    const directivePattern = this.getDirectivePattern();
+    const layerPattern = this.getLayerTypePattern();
+
     return {
       profile: this.profileName,
-      directivePattern: this.getDirectivePattern(),
-      layerPattern: this.getLayerPattern(),
+      directivePattern: directivePattern?.getPattern() || "",
+      layerPattern: layerPattern?.getPattern() || "",
       directiveTypes: this.directiveTypes,
       layerTypes: this.layerTypes,
     };

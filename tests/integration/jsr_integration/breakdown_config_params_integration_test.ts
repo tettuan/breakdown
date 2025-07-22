@@ -12,8 +12,8 @@ import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import {
   ConfigBasedTwoParamsBuilder,
-  Result,
-  TwoParams_Result,
+  Result as _Result,
+  TwoParams_Result as _TwoParams_Result,
 } from "../../../lib/config/config_based_two_params_builder.ts";
 import { ConfigProfile } from "../../../lib/config/config_profile_name.ts";
 import { ParamsCustomConfig } from "../../../lib/config/params_custom_config.ts";
@@ -272,7 +272,7 @@ describe("JSR Integration - BreakdownConfig + BreakdownParams", () => {
       assertEquals(result.error?.kind, "ConfigLoadFailed");
     });
 
-    it("パターンが未定義の場合にエラーを返す", async () => {
+    it("パターンが未定義の場合にエラーを返す", () => {
       // カスタム設定でパターンを持たない CustomConfig を作成
       const emptyConfig = ParamsCustomConfig.create({});
       const builder = new ConfigBasedTwoParamsBuilder(emptyConfig, "empty");

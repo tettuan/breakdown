@@ -17,7 +17,6 @@
 import type { Result } from "$lib/types/result.ts";
 import { error, ok } from "$lib/types/result.ts";
 import type { BreakdownConfig } from "@tettuan/breakdownconfig";
-import { TypeFactory as _TypeFactory } from "$lib/types/type_factory.ts";
 import {
   DirectiveType as ImportedDirectiveType,
   TwoParamsDirectivePattern,

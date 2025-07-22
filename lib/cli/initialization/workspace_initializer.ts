@@ -8,7 +8,7 @@
  */
 
 import { ensureDir } from "@std/fs";
-import { DefaultTypePatternProvider } from "../../types/defaults/default_type_pattern_provider.ts";
+import { JSRPatternAdapter } from "../../config/jsr_pattern_adapter.ts";
 
 /**
  * Initialize breakdown configuration and directory structure
@@ -16,17 +16,22 @@ import { DefaultTypePatternProvider } from "../../types/defaults/default_type_pa
 export async function initializeBreakdownConfiguration(): Promise<void> {
   console.log("🚀 Initializing breakdown configuration...");
 
-  // Use BreakdownConfig to get the configuration directory
-  const _cwd = Deno.cwd?.() || ".";
-  const baseDir = `${_cwd}/.agent/breakdown`;
+  const cwd = Deno.cwd?.() || ".";
+  const baseDir = `${cwd}/.agent/breakdown`;
 
   // Create directory structure
-  // Get default configuration from DefaultTypePatternProvider
-  const patternProvider = new DefaultTypePatternProvider();
+  // Initialize JSR pattern adapter for type extraction
+  const adapterResult = JSRPatternAdapter.create();
+  if (!adapterResult.ok) {
+    const errorMessage = "message" in adapterResult.error
+      ? adapterResult.error.message
+      : adapterResult.error.kind;
+    throw new Error(`Failed to initialize JSR pattern adapter: ${errorMessage}`);
+  }
 
-  // Get layer types from pattern provider (unified configuration source)
-  const layerTypes = patternProvider.getLayerTypes();
-  if (!layerTypes || layerTypes.length === 0) {
+  const adapter = adapterResult.data;
+  const layerTypes = adapter.getValidLayerTypes();
+  if (layerTypes.length === 0) {
     throw new Error("Configuration must define layer types");
   }
 
@@ -45,9 +50,9 @@ export async function initializeBreakdownConfiguration(): Promise<void> {
     console.log(`✅ Created directory: ${dirPath}`);
   }
 
-  // Get directive types from pattern provider (unified configuration source)
-  const directiveTypes = patternProvider.getDirectiveTypes();
-  if (!directiveTypes || directiveTypes.length === 0) {
+  // Get directive types from JSR pattern adapter
+  const directiveTypes = adapter.getValidDirectiveTypes();
+  if (directiveTypes.length === 0) {
     throw new Error("Configuration must define directive types");
   }
 

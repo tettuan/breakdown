@@ -48,6 +48,7 @@ export { BreakdownConfig, type MergedConfig } from "jsr:@tettuan/breakdownconfig
  * CLI parameter parsing utilities for Breakdown. Re-exported from @tettuan/breakdownparams.
  */
 export {
+  type CustomConfig,
   DEFAULT_CUSTOM_CONFIG,
   type ErrorInfo,
   type OneParamsResult,

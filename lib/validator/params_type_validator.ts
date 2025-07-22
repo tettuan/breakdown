@@ -9,8 +9,10 @@
 
 import type { Result } from "../types/result.ts";
 import { error, ok } from "../types/result.ts";
-import type { TypePatternProvider } from "../types/type_factory.ts";
+// TypePatternProvider依存を除去 - JSR統合により不要
 import { BreakdownConfig } from "@tettuan/breakdownconfig";
+import { DirectiveType } from "../domain/core/value_objects/directive_type.ts";
+import { LayerType } from "../domain/core/value_objects/layer_type.ts";
 
 /**
  * Params type validation error
@@ -52,7 +54,6 @@ export interface ValidatedParamsType {
  */
 export class ParamsTypeValidator {
   constructor(
-    private readonly patternProvider: TypePatternProvider,
     private readonly config?: BreakdownConfig,
   ) {}
 
@@ -177,25 +178,17 @@ export class ParamsTypeValidator {
   }
 
   /**
-   * Validate directive type against pattern
+   * Validate directive type against pattern (JSR integrated)
    */
   private validateDirectiveType(value: string): Result<void, ParamsTypeError> {
-    const pattern = this.patternProvider.getDirectivePattern();
-    if (!pattern) {
+    // JSR統合により、パターンプロバイダーを使わずDirectiveType.createで検証
+    const directiveResult = DirectiveType.create(value);
+    if (!directiveResult.ok) {
       return error({
         kind: "InvalidFieldValue",
         field: "directiveType",
         value,
-        pattern: "no pattern available",
-      });
-    }
-
-    if (!pattern.test(value)) {
-      return error({
-        kind: "InvalidFieldValue",
-        field: "directiveType",
-        value,
-        pattern: pattern.getPattern(),
+        pattern: "JSR validation failed",
       });
     }
 
@@ -206,22 +199,14 @@ export class ParamsTypeValidator {
    * Validate layer type against pattern
    */
   private validateLayerType(value: string): Result<void, ParamsTypeError> {
-    const pattern = this.patternProvider.getLayerTypePattern();
-    if (!pattern) {
+    // JSR統合により、パターンプロバイダーを使わずLayerType.createで検証
+    const layerResult = LayerType.create(value);
+    if (!layerResult.ok) {
       return error({
         kind: "InvalidFieldValue",
         field: "layerType",
         value,
-        pattern: "no pattern available",
-      });
-    }
-
-    if (!pattern.test(value)) {
-      return error({
-        kind: "InvalidFieldValue",
-        field: "layerType",
-        value,
-        pattern: pattern.getPattern(),
+        pattern: "JSR validation failed",
       });
     }
 
@@ -237,8 +222,8 @@ export class ParamsTypeValidator {
     const defaults = this.getDefaultDirectiveAndLayer();
 
     // Check if param is a known layer type
-    const layerPattern = this.patternProvider.getLayerTypePattern();
-    if (layerPattern && layerPattern.test(param)) {
+    const layerResult = LayerType.create(param);
+    if (layerResult.ok) {
       return ok({
         directive: defaults.directive, // Default directive for single layer param
         layer: param,
@@ -246,8 +231,8 @@ export class ParamsTypeValidator {
     }
 
     // Check if param is a known directive type
-    const directivePattern = this.patternProvider.getDirectivePattern();
-    if (directivePattern && directivePattern.test(param)) {
+    const directiveResult = DirectiveType.create(param);
+    if (directiveResult.ok) {
       return ok({
         directive: param,
         layer: defaults.layer, // Default layer for single directive param

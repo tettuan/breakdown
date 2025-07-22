@@ -7,10 +7,10 @@
  * @module tests/integration/jsr_integration/hardcode_elimination_test
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals } from "@std/assert";
 import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { readAll } from "@std/io";
+// Removed @std/io import - not needed for file reading operations
 import { join } from "@std/path";
 
 const logger = new BreakdownLogger("hardcode-check");
@@ -74,7 +74,7 @@ describe("ハードコード除去の確認", () => {
       );
     });
 
-    it("lib/types/defaults/ 内の実装が設定ベースになっている", async () => {
+    it("削除済みファイルが存在しないことの確認", async () => {
       const targetFile = join(
         Deno.cwd(),
         "lib",
@@ -83,37 +83,24 @@ describe("ハードコード除去の確認", () => {
         "default_type_pattern_provider.ts",
       );
 
-      const content = await Deno.readTextFile(targetFile);
+      // ファイルが削除されていることを確認
+      try {
+        await Deno.readTextFile(targetFile);
+        throw new Error("削除予定のファイルがまだ存在しています");
+      } catch (error) {
+        if (error instanceof Deno.errors.NotFound) {
+          logger.debug("ハードコード除去確認", {
+            file: "default_type_pattern_provider.ts",
+            status: "successfully_removed",
+            note: "TypePatternProvider機能はJSRパッケージに移行済み",
+          });
 
-      // 設定を参照しているパターンを確認
-      const configPatterns = [
-        /customConfig/g,
-        /getPattern/g,
-        /pattern\.split/g,
-        /directivePattern/g,
-        /layerPattern/g,
-      ];
-
-      let configReferences = 0;
-      configPatterns.forEach((pattern) => {
-        const matches = content.match(pattern);
-        if (matches) {
-          configReferences += matches.length;
+          // 成功：ファイルが正常に削除されている
+          assertEquals(true, true, "default_type_pattern_provider.ts は正常に削除されました");
+        } else {
+          throw error;
         }
-      });
-
-      logger.debug("設定参照の検査", {
-        file: "default_type_pattern_provider.ts",
-        configReferences,
-        hasConfigSupport: configReferences > 0,
-      });
-
-      // 設定を参照していることを確認
-      assertEquals(
-        configReferences > 0,
-        true,
-        "default_type_pattern_provider が設定を参照していません",
-      );
+      }
     });
   });
 

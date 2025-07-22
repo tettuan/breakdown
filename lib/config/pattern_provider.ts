@@ -9,7 +9,34 @@
  */
 
 import { BreakdownConfig } from "@tettuan/breakdownconfig";
-import type { TypePatternProvider } from "../types/type_factory.ts";
+// TypePatternProvider インターフェースをここで定義
+export interface TypePatternProvider {
+  /**
+   * DirectiveType用バリデーション結果を取得
+   * @param value 検証対象の値
+   * @returns バリデーション結果
+   */
+  validateDirectiveType(value: string): boolean;
+
+  /**
+   * LayerType用バリデーション結果を取得
+   * @param value 検証対象の値
+   * @returns バリデーション結果
+   */
+  validateLayerType(value: string): boolean;
+
+  /**
+   * 利用可能なDirectiveType値を取得
+   * @returns 設定で許可されたDirectiveType値の配列
+   */
+  getValidDirectiveTypes(): readonly string[];
+
+  /**
+   * 利用可能なLayerType値を取得
+   * @returns 設定で許可されたLayerType値の配列
+   */
+  getValidLayerTypes(): readonly string[];
+}
 import { TwoParamsDirectivePattern } from "../domain/core/value_objects/directive_type.ts";
 import { TwoParamsLayerTypePattern } from "../domain/core/value_objects/layer_type.ts";
 import { error, ok, Result } from "../types/result.ts";

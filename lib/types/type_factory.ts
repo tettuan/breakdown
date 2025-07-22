@@ -1,9 +1,9 @@
 /**
- * @fileoverview TypeFactory implementation for safe type construction
+ * @fileoverview TypeFactory implementation for JSR-based type construction
  *
  * This module provides a factory for creating DirectiveType and LayerType instances
- * with proper validation patterns from configuration. It ensures Totality principle
- * compliance by centralizing type construction with validation.
+ * from JSR-validated BreakdownParams results. It ensures Totality principle
+ * compliance by centralizing JSR-based type construction.
  *
  * @module types/type_factory
  */
@@ -16,119 +16,62 @@ import type { ProcessingError } from "./unified_error_types.ts";
 import { ErrorFactory } from "./unified_error_types.ts";
 
 /**
- * 設定ファイルからバリデーションパターンを提供するインターフェース
- * BreakdownConfig との連携を抽象化
- */
-export interface TypePatternProvider {
-  /**
-   * DirectiveType用バリデーション結果を取得
-   * @param value 検証対象の値
-   * @returns バリデーション結果
-   */
-  validateDirectiveType(value: string): boolean;
-
-  /**
-   * LayerType用バリデーション結果を取得
-   * @param value 検証対象の値
-   * @returns バリデーション結果
-   */
-  validateLayerType(value: string): boolean;
-
-  /**
-   * 利用可能なDirectiveType値を取得
-   * @returns 設定で許可されたDirectiveType値の配列
-   */
-  getValidDirectiveTypes(): readonly string[];
-
-  /**
-   * 利用可能なLayerType値を取得
-   * @returns 設定で許可されたLayerType値の配列
-   */
-  getValidLayerTypes(): readonly string[];
-
-  /**
-   * DirectiveType用パターンオブジェクトを取得
-   * @returns DirectiveType用のパターンオブジェクト
-   */
-  getDirectivePattern(): { test(value: string): boolean; getPattern(): string } | null;
-
-  /**
-   * LayerType用パターンオブジェクトを取得
-   * @returns LayerType用のパターンオブジェクト
-   */
-  getLayerTypePattern(): { test(value: string): boolean; getPattern(): string } | null;
-}
-
-/**
  * 型構築結果を表すResult型
  * 統一されたResult型とProcessingErrorを使用
  */
 export type TypeCreationResult<T> = Result<T, ProcessingError>;
 
-// TypeCreationError は ProcessingError に統一されました
-// 新しいDirectiveType/LayerTypeとの連携:
+// JSR統合による新しいアーキテクチャ:
 // - 型構築はDirectiveType.create()/LayerType.create()に委譲
-// - パターンバリデーションはTypePatternProviderが担当
+// - バリデーションはBreakdownParams JSRパッケージが担当
 // - エラーハンドリングはResult型で統一
 
 /**
- * TypeFactory - 型構築のためのファクトリー
+ * TypeFactory - JSR-based型構築のためのファクトリー
  *
- * 設定と連携して安全な型構築を提供。Totality原則に従い、
- * 型構築の失敗も明示的にResult型で表現する。
+ * BreakdownParams JSRパッケージと連携して安全な型構築を提供。
+ * Totality原則に従い、型構築の失敗も明示的にResult型で表現する。
  *
- * @example 基本的な使用例
+ * @example JSR統合での使用（推奨方式）
  * ```typescript
- * const factory = new TypeFactory(patternProvider);
+ * // JSR検証済み値から直接生成
+ * const jsrResult = await breakdownParams.parseArgs(args);
+ * if (jsrResult.type === "two") {
+ *   const typesResult = TypeFactory.createFromJSR(jsrResult);
+ *   if (typesResult.ok) {
+ *     const { directive, layer } = typesResult.data;
+ *     // JSRバリデーション済み値から直接生成完了
+ *   }
+ * }
+ * ```
  *
- * const directiveResult = factory.createDirectiveType("to");
+ * @example 直接型構築（JSR検証済み値前提）
+ * ```typescript
+ * const directiveResult = TypeFactory.createDirectiveType("to");
  * if (directiveResult.ok) {
  *   console.log(directiveResult.data.value); // "to"
  * } else {
  *   console.error(directiveResult.error.message);
  * }
  * ```
- *
- * @example 一括構築
- * ```typescript
- * const bothResult = factory.createBothTypes("summary", "project");
- * if (bothResult.ok) {
- *   const { directive, layer } = bothResult.data;
- *   // 両方とも有効な型として構築済み
- * }
- * ```
  */
 export class TypeFactory {
-  constructor(private readonly patternProvider: TypePatternProvider) {}
-
   /**
-   * DirectiveType を安全に構築
-   * @param value 構築対象の値
+   * DirectiveType を安全に構築（JSR検証済み値前提）
+   * @param value 構築対象の値（JSRによる事前検証を前提）
    * @returns 成功した場合は DirectiveType、失敗した場合は Error
    */
-  createDirectiveType(
+  static createDirectiveType(
     value: string,
   ): TypeCreationResult<DirectiveType> {
-    // TypePatternProviderによるバリデーション
-    if (!this.patternProvider.validateDirectiveType(value)) {
-      return {
-        ok: false,
-        error: ErrorFactory.processingError("PatternValidationFailed", {
-          value,
-          pattern: "directive_type_pattern",
-          operation: "type_creation",
-        }),
-      };
-    }
-
-    // 新しいDirectiveTypeのcreateメソッドを使用
+    // DirectiveTypeのcreateメソッドを直接使用（JSR検証済み前提）
     const directiveResult = DirectiveType.create(value);
 
     if (!directiveResult.ok) {
       return {
         ok: false,
         error: ErrorFactory.processingError("ProcessingFailed", {
-          operation: "type_creation",
+          operation: "jsr_type_creation",
           reason: directiveResult.error.message ?? "Unknown error",
         }),
       };
@@ -141,31 +84,19 @@ export class TypeFactory {
   }
 
   /**
-   * LayerType を安全に構築
-   * @param value 構築対象の値
+   * LayerType を安全に構築（JSR検証済み値前提）
+   * @param value 構築対象の値（JSRによる事前検証を前提）
    * @returns 成功した場合は LayerType、失敗した場合は Error
    */
-  createLayerType(value: string): TypeCreationResult<LayerType> {
-    // TypePatternProviderによるバリデーション
-    if (!this.patternProvider.validateLayerType(value)) {
-      return {
-        ok: false,
-        error: ErrorFactory.processingError("PatternValidationFailed", {
-          value,
-          pattern: "layer_type_pattern",
-          operation: "type_creation",
-        }),
-      };
-    }
-
-    // 新しいLayerTypeのcreateメソッドを使用
+  static createLayerType(value: string): TypeCreationResult<LayerType> {
+    // LayerTypeのcreateメソッドを直接使用（JSR検証済み前提）
     const layerResult = LayerType.create(value);
 
     if (!layerResult.ok) {
       return {
         ok: false,
         error: ErrorFactory.processingError("ProcessingFailed", {
-          operation: "type_creation",
+          operation: "jsr_type_creation",
           reason: layerResult.error.message ?? "Unknown error",
         }),
       };
@@ -178,25 +109,25 @@ export class TypeFactory {
   }
 
   /**
-   * DirectiveType と LayerType を同時に構築
+   * DirectiveType と LayerType を同時に構築（JSR検証済み値前提）
    *
    * 両方の型が必要な場合の便利メソッド。
    * どちらか一方でも失敗した場合は全体が失敗となる。
    *
-   * @param directiveValue DirectiveType の値
-   * @param layerValue LayerType の値
+   * @param directiveValue DirectiveType の値（JSR検証済み）
+   * @param layerValue LayerType の値（JSR検証済み）
    * @returns 両方成功した場合は両型、失敗した場合は Error
    */
-  createBothTypes(
+  static createBothTypes(
     directiveValue: string,
     layerValue: string,
   ): TypeCreationResult<{ directive: DirectiveType; layer: LayerType }> {
-    const directiveResult = this.createDirectiveType(directiveValue);
+    const directiveResult = TypeFactory.createDirectiveType(directiveValue);
     if (!directiveResult.ok) {
       return directiveResult;
     }
 
-    const layerResult = this.createLayerType(layerValue);
+    const layerResult = TypeFactory.createLayerType(layerValue);
     if (!layerResult.ok) {
       return layerResult;
     }
@@ -211,53 +142,90 @@ export class TypeFactory {
   }
 
   /**
-   * パターン検証のみ実行（型構築なし）
+   * JSR検証済みTwoParamsResultから直接型を生成（推奨メソッド）
    *
-   * 型を構築する前に検証のみ行いたい場合に使用。
+   * BreakdownParamsで既に検証済みの値を使用して、
+   * 直接的な型生成を行う。これがJSR統合における標準的なアプローチ。
    *
-   * @param directiveValue DirectiveType の値
-   * @param layerValue LayerType の値
-   * @returns 両方が有効な場合 true
+   * @param jsrResult JSR BreakdownParamsによる検証済み結果
+   * @returns 成功した場合は両型、失敗した場合は Error
+   *
+   * @example JSR統合の使用例
+   * ```typescript
+   * // BreakdownParamsによる検証済み結果を直接利用
+   * const jsrResult = await breakdownParams.parseArgs(args);
+   * if (jsrResult.type === "two") {
+   *   const typesResult = TypeFactory.createFromJSR(jsrResult);
+   *   if (typesResult.ok) {
+   *     const { directive, layer } = typesResult.data;
+   *     // JSR検証済み値から直接生成された型
+   *   }
+   * }
+   * ```
    */
-  validateBothValues(directiveValue: string, layerValue: string): boolean {
-    return this.patternProvider.validateDirectiveType(directiveValue) &&
-      this.patternProvider.validateLayerType(layerValue);
-  }
+  static createFromJSR(
+    jsrResult: _TwoParams_Result,
+  ): TypeCreationResult<{ directive: DirectiveType; layer: LayerType }> {
+    // JSR検証済み値を直接使用
+    const directiveResult = DirectiveType.create(jsrResult.directiveType);
+    if (!directiveResult.ok) {
+      return {
+        ok: false,
+        error: ErrorFactory.processingError("ProcessingFailed", {
+          operation: "jsr_type_creation",
+          reason: `DirectiveType creation failed: ${
+            directiveResult.error.message ?? "Unknown error"
+          }`,
+          context: {
+            source: "JSR_validated",
+            directiveType: jsrResult.directiveType,
+          },
+        }),
+      };
+    }
 
-  /**
-   * 利用可能なパターンの確認
-   * @returns パターンの利用可能性
-   */
-  getPatternAvailability(): {
-    directive: boolean;
-    layer: boolean;
-    both: boolean;
-  } {
-    const directiveTypes = this.patternProvider.getValidDirectiveTypes();
-    const layerTypes = this.patternProvider.getValidLayerTypes();
+    const layerResult = LayerType.create(jsrResult.layerType);
+    if (!layerResult.ok) {
+      return {
+        ok: false,
+        error: ErrorFactory.processingError("ProcessingFailed", {
+          operation: "jsr_type_creation",
+          reason: `LayerType creation failed: ${layerResult.error.message ?? "Unknown error"}`,
+          context: {
+            source: "JSR_validated",
+            layerType: jsrResult.layerType,
+          },
+        }),
+      };
+    }
 
     return {
-      directive: directiveTypes.length > 0,
-      layer: layerTypes.length > 0,
-      both: directiveTypes.length > 0 && layerTypes.length > 0,
+      ok: true,
+      data: {
+        directive: directiveResult.data,
+        layer: layerResult.data,
+      },
     };
   }
 
   /**
-   * デバッグ用情報取得
-   * @returns ファクトリーの状態情報
+   * JSRパッケージ統合状況の確認（デバッグ用）
+   * @returns JSR統合の状態情報
    */
-  debug(): {
-    patternProvider: string;
-    availability: ReturnType<TypeFactory["getPatternAvailability"]>;
-    validDirectives: readonly string[];
-    validLayers: readonly string[];
+  static debug(): {
+    mode: "JSR_ONLY";
+    availableMethods: string[];
+    recommendedMethod: string;
   } {
     return {
-      patternProvider: this.patternProvider.constructor.name,
-      availability: this.getPatternAvailability(),
-      validDirectives: this.patternProvider.getValidDirectiveTypes(),
-      validLayers: this.patternProvider.getValidLayerTypes(),
+      mode: "JSR_ONLY",
+      availableMethods: [
+        "TypeFactory.createFromJSR()",
+        "TypeFactory.createDirectiveType()",
+        "TypeFactory.createLayerType()",
+        "TypeFactory.createBothTypes()",
+      ],
+      recommendedMethod: "TypeFactory.createFromJSR()",
     };
   }
 }

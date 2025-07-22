@@ -63,11 +63,11 @@ Build a modern e-commerce platform with user management, product catalog, and pa
 EOF
 
 echo "Running: breakdown to issue..."
-if cat "$OUTPUT_DIR/project_spec.md" | BREAKDOWN to issue --config=timeout --destination="$OUTPUT_DIR/issues/" 2>/dev/null; then
+if cat "$OUTPUT_DIR/project_spec.md" | BREAKDOWN to issue --config=timeout > "$OUTPUT_DIR/issues.md" 2>/dev/null; then
     # Validate output was created
-    if [ -d "$OUTPUT_DIR/issues" ] && [ "$(ls -A "$OUTPUT_DIR/issues" 2>/dev/null)" ]; then
-        echo "✅ Created issue breakdowns in $OUTPUT_DIR/issues/"
-        echo "   Files created: $(ls -1 "$OUTPUT_DIR/issues" | wc -l | tr -d ' ')"
+    if [ -f "$OUTPUT_DIR/issues.md" ] && [ -s "$OUTPUT_DIR/issues.md" ]; then
+        echo "✅ Created issue breakdown at $OUTPUT_DIR/issues.md"
+        echo "   File size: $(wc -c < "$OUTPUT_DIR/issues.md" | tr -d ' ') bytes"
     else
         echo "⚠️  Command succeeded but no output files were created"
     fi
@@ -90,7 +90,7 @@ mobile responsive design issues on tablets
 EOF
 
 echo "Processing messy notes into organized summary..."
-if cat "$OUTPUT_DIR/messy_notes.md" | BREAKDOWN summary task --config=default --destination="$OUTPUT_DIR/task_summary.md" 2>/dev/null; then
+if cat "$OUTPUT_DIR/messy_notes.md" | BREAKDOWN summary task --config=default > "$OUTPUT_DIR/task_summary.md" 2>/dev/null; then
     # Validate output file was created and has content
     if [ -f "$OUTPUT_DIR/task_summary.md" ] && [ -s "$OUTPUT_DIR/task_summary.md" ]; then
         echo "✅ Created task summary at $OUTPUT_DIR/task_summary.md"
@@ -116,7 +116,7 @@ cat > "$OUTPUT_DIR/error_log.txt" << EOF
 EOF
 
 echo "Analyzing error logs..."
-if tail -20 "$OUTPUT_DIR/error_log.txt" | BREAKDOWN defect project --config=default --destination="$OUTPUT_DIR/defect_analysis.md" 2>/dev/null; then
+if tail -20 "$OUTPUT_DIR/error_log.txt" | BREAKDOWN defect project --config=default > "$OUTPUT_DIR/defect_analysis.md" 2>/dev/null; then
     # Validate output file was created and has content
     if [ -f "$OUTPUT_DIR/defect_analysis.md" ] && [ -s "$OUTPUT_DIR/defect_analysis.md" ]; then
         echo "✅ Created defect analysis at $OUTPUT_DIR/defect_analysis.md"
@@ -153,7 +153,7 @@ function processUser(user) {
 EOF
 
 echo "Running find bugs analysis..."
-if BREAKDOWN find bugs --config=findbugs --from="$OUTPUT_DIR/buggy_code.js" -o="$OUTPUT_DIR/bugs_analysis.md" > "$OUTPUT_DIR/bugs_analysis.md" 2>/dev/null; then
+if BREAKDOWN find bugs --config=findbugs --from="$OUTPUT_DIR/buggy_code.js" > "$OUTPUT_DIR/bugs_analysis.md" 2>/dev/null; then
     if [ -f "$OUTPUT_DIR/bugs_analysis.md" ] && [ -s "$OUTPUT_DIR/bugs_analysis.md" ]; then
         echo "✅ Created bug analysis at $OUTPUT_DIR/bugs_analysis.md"
         echo "   File size: $(wc -c < "$OUTPUT_DIR/bugs_analysis.md" | tr -d ' ') bytes"
@@ -187,7 +187,7 @@ function calculateTotal(items) {
 \`\`\`
 EOF
     
-    if BREAKDOWN defect task --config=default --from="$OUTPUT_DIR/bug_report.md" -o="$OUTPUT_DIR/bugs_report.md" > "$OUTPUT_DIR/bugs_report.md" 2>/dev/null; then
+    if BREAKDOWN defect task --config=default --from="$OUTPUT_DIR/bug_report.md" > "$OUTPUT_DIR/bugs_report.md" 2>/dev/null; then
         if [ -f "$OUTPUT_DIR/bugs_report.md" ] && [ -s "$OUTPUT_DIR/bugs_report.md" ]; then
             echo "✅ Created fallback defect analysis at $OUTPUT_DIR/bugs_report.md"
             echo "   File size: $(wc -c < "$OUTPUT_DIR/bugs_report.md" | tr -d ' ') bytes"

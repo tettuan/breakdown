@@ -94,7 +94,8 @@ export { createTwoParamsType, TwoParamsType, type TwoParamsTypeError } from "./t
 
 // Factory and creation utilities
 export { TypeFactory } from "./type_factory.ts";
-export type { TypeCreationResult, TypePatternProvider } from "./type_factory.ts";
+export type { TypeCreationResult } from "./type_factory.ts";
+// TypePatternProvider removed - JSR統合により削除
 
 // Pattern types - LayerType pattern (now unified with domain implementation)
 // Note: TwoParamsLayerTypePattern has been removed (@deprecated)
@@ -131,8 +132,9 @@ export type { PromptVariable, PromptVariables } from "./prompt_variables_vo.ts";
 
 // Layer type utilities - moved to domain/core/value_objects
 
-// Default implementations
-export { DefaultTypePatternProvider } from "./defaults/default_type_pattern_provider.ts";
+// Default implementations - moved to JSR packages
+// Note: DefaultTypePatternProvider has been removed as part of hardcode elimination
+// Pattern provider functionality is now handled by BreakdownParams package
 
 // Configuration types
 export { ConfigError, ParamsCustomConfig } from "./params_custom_config.ts";

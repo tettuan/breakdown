@@ -10,14 +10,8 @@
 
 import { BreakdownConfig } from "@tettuan/breakdownconfig";
 import { TypeFactory } from "../types/type_factory.ts";
-import { ConfigPatternProvider } from "../config/pattern_provider.ts";
-import type {
-  DirectiveType as _DirectiveType,
-  LayerType as _LayerType,
-  PromptCliParams,
-  TotalityPromptCliParams,
-  TypeCreationResult,
-} from "../types/mod.ts";
+import { JSRPatternProvider } from "../config/jsr_pattern_provider.ts";
+import type { PromptCliParams, TotalityPromptCliParams, TypeCreationResult } from "../types/mod.ts";
 import { TotalityPromptVariablesFactory } from "../factory/prompt_variables_factory.ts";
 
 /**
@@ -48,14 +42,16 @@ export type FactoryCreation_Result<T> = {
  * Complete Totality factory bundle containing all necessary components
  */
 export interface TotalityFactoryBundle {
-  /** TypeFactory for creating validated types */
-  typeFactory: TypeFactory;
   /** Pattern provider with configuration integration */
-  patternProvider: ConfigPatternProvider;
+  patternProvider: JSRPatternProvider;
   /** BreakdownConfig instance */
   config: BreakdownConfig;
   /** Helper function to create PromptVariablesFactory */
   createPromptFactory: (params: TotalityPromptCliParams) => Promise<TotalityPromptVariablesFactory>;
+  /** Static TypeFactory methods for type creation */
+  createDirectiveType: typeof TypeFactory.createDirectiveType;
+  createLayerType: typeof TypeFactory.createLayerType;
+  createBothTypes: typeof TypeFactory.createBothTypes;
 }
 
 /**
@@ -122,20 +118,17 @@ export async function createTotalityFactory(
       await config!.loadConfig();
     }
 
-    // Create pattern provider with config integration
-    const patternProvider = new ConfigPatternProvider(config!);
-
-    // Validate that patterns are available
-    if (!patternProvider.hasValidPatterns()) {
+    // Create JSR pattern provider using DEFAULT_CUSTOM_CONFIG
+    const patternProviderResult = JSRPatternProvider.create();
+    if (!patternProviderResult.ok) {
       return {
         ok: false,
-        error: "Configuration does not contain valid validation patterns",
-        details: "Both directivePattern and layerTypePattern must be configured",
+        error: "Failed to create JSR pattern provider",
+        details: patternProviderResult.error,
       };
     }
 
-    // Create TypeFactory with pattern provider
-    const typeFactory = new TypeFactory(patternProvider);
+    const patternProvider = patternProviderResult.data;
 
     // Create helper function for PromptVariablesFactory
     const createPromptFactory = async (
@@ -156,10 +149,13 @@ export async function createTotalityFactory(
     return {
       ok: true,
       data: {
-        typeFactory,
         patternProvider,
         config: config!,
         createPromptFactory,
+        // Static TypeFactory methods
+        createDirectiveType: TypeFactory.createDirectiveType,
+        createLayerType: TypeFactory.createLayerType,
+        createBothTypes: TypeFactory.createBothTypes,
       },
     };
   } catch (error) {
@@ -207,7 +203,7 @@ export function createValidatedCliParams(
   options: PromptCliParams["options"],
   factoryBundle: TotalityFactoryBundle,
 ): TypeCreationResult<TotalityPromptCliParams> {
-  const typesResult = factoryBundle.typeFactory.createBothTypes(directiveValue, layerValue);
+  const typesResult = factoryBundle.createBothTypes(directiveValue, layerValue);
 
   if (!typesResult.ok) {
     const errorMessage = (() => {
@@ -357,15 +353,25 @@ export async function validateConfigurationPatterns(
   workspacePath: string = Deno.cwd(),
 ): Promise<{ valid: boolean; details: string[] }> {
   try {
-    const providerResult = await ConfigPatternProvider.create(configSetName, workspacePath);
+    const configResult = await BreakdownConfig.create(configSetName, workspacePath);
+    if (!configResult.success) {
+      return {
+        valid: false,
+        details: [`Failed to create BreakdownConfig: ${configResult.error}`],
+      };
+    }
+
+    const config = configResult.data;
+    await config.loadConfig();
+
+    const providerResult = JSRPatternProvider.create();
     if (!providerResult.ok) {
       return {
         valid: false,
-        details: [
-          `Failed to create ConfigPatternProvider: ${JSON.stringify(providerResult.error)}`,
-        ],
+        details: [`Failed to create JSR pattern provider: ${providerResult.error}`],
       };
     }
+
     const provider = providerResult.data;
     const directivePattern = provider.getDirectivePattern();
     const layerPattern = provider.getLayerTypePattern();

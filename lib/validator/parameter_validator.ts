@@ -12,7 +12,7 @@ import { error, ok } from "../types/result.ts";
 import { DirectiveType } from "../domain/core/value_objects/directive_type.ts";
 import { LayerType } from "../domain/core/value_objects/layer_type.ts";
 import type { OneParamsResult, TwoParams_Result, ZeroParamsResult } from "../deps.ts";
-import type { TypePatternProvider } from "../types/type_factory.ts";
+// TypePatternProvider依存を除去 - JSR統合により不要
 import { PathValidator } from "./path_validator.ts";
 import { OptionsNormalizer } from "./options_normalizer.ts";
 import { ParamsTypeValidator } from "./params_type_validator.ts";
@@ -121,11 +121,10 @@ export class ParameterValidator {
   private readonly customVariableExtractor: CustomVariableExtractor;
 
   constructor(
-    private readonly patternProvider: TypePatternProvider,
     private readonly configValidator: ConfigValidator,
     private readonly config?: BreakdownConfig,
   ) {
-    this.paramsValidator = new ParamsTypeValidator(patternProvider, config);
+    this.paramsValidator = new ParamsTypeValidator(config);
     this.pathValidator = new PathValidator();
     this.optionsNormalizer = new OptionsNormalizer();
     this.customVariableExtractor = new CustomVariableExtractor();

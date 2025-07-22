@@ -529,6 +529,31 @@ export class LayerType {
   }
 
   /**
+   * Create LayerType from BreakdownParams JSR package (simplified JSR integration)
+   *
+   * This static factory method directly creates a LayerType instance from
+   * a validated layerType string that comes from BreakdownParams JSR package.
+   * The value is marked as JSR-validated, bypassing internal validation.
+   *
+   * @param jsrValidatedValue - Pre-validated layerType string from BreakdownParams
+   * @returns Result containing LayerType or validation error
+   */
+  static fromJSR(
+    jsrValidatedValue: string,
+  ): Result<LayerType, LayerTypeError> {
+    if (typeof jsrValidatedValue !== "string") {
+      return error({
+        kind: "EmptyInput",
+        message: "Invalid JSR value: layerType must be a string",
+      });
+    }
+
+    // Create LayerType with JSR validation marker
+    // Since this comes directly from BreakdownParams JSR, it's already validated
+    return ok(new LayerType(jsrValidatedValue, true));
+  }
+
+  /**
    * Check if a layer value is valid (basic format check + known types check)
    *
    * @param input - Layer value to check

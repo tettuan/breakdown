@@ -71,19 +71,19 @@ Deno.test("BreakdownConfig - Profile switching with patterns", async () => {
   try {
     const defaultConfigResult = await BreakdownConfig.create(
       defaultProfile.value,
-      Deno.cwd()
+      Deno.cwd(),
     );
-    
+
     if (defaultConfigResult.success && defaultConfigResult.data) {
       const defaultProvider = new ConfigPatternProvider(defaultConfigResult.data);
       const defaultPatterns = defaultProvider.getDirectivePattern();
       const defaultLayerPatterns = defaultProvider.getLayerTypePattern();
-      
+
       logger.debug("Default profile patterns", {
         directive: defaultPatterns ? defaultPatterns.getPattern() : "N/A",
         layer: defaultLayerPatterns ? defaultLayerPatterns.getPattern() : "N/A",
       });
-      
+
       if (defaultPatterns) {
         assertExists(defaultPatterns);
         assertExists(defaultPatterns.getPattern());
@@ -94,8 +94,8 @@ Deno.test("BreakdownConfig - Profile switching with patterns", async () => {
       }
     }
   } catch (error) {
-    logger.debug("Default profile not available", { 
-      error: error instanceof Error ? error.message : String(error) 
+    logger.debug("Default profile not available", {
+      error: error instanceof Error ? error.message : String(error),
     });
   }
 
@@ -104,19 +104,19 @@ Deno.test("BreakdownConfig - Profile switching with patterns", async () => {
   try {
     const testConfigResult = await BreakdownConfig.create(
       testProfile.value,
-      Deno.cwd()
+      Deno.cwd(),
     );
-    
+
     if (testConfigResult.success && testConfigResult.data) {
       const testProvider = new ConfigPatternProvider(testConfigResult.data);
       const testPatterns = testProvider.getDirectivePattern();
       const testLayerPatterns = testProvider.getLayerTypePattern();
-      
+
       logger.debug("Test profile patterns", {
         directive: testPatterns ? testPatterns.getPattern() : "N/A",
         layer: testLayerPatterns ? testLayerPatterns.getPattern() : "N/A",
       });
-      
+
       if (testPatterns) {
         assertExists(testPatterns);
         assertExists(testPatterns.getPattern());
@@ -127,8 +127,8 @@ Deno.test("BreakdownConfig - Profile switching with patterns", async () => {
       }
     }
   } catch (error) {
-    logger.debug("Test profile not available", { 
-      error: error instanceof Error ? error.message : String(error) 
+    logger.debug("Test profile not available", {
+      error: error instanceof Error ? error.message : String(error),
     });
   }
 });
@@ -141,7 +141,7 @@ Deno.test("Dynamic configuration loading - Multiple profiles", async () => {
 
     try {
       const configResult = await BreakdownConfig.create(profileName, Deno.cwd());
-      
+
       if (configResult.success && configResult.data) {
         logger.debug(`Loaded config for ${profileName}`, {
           hasConfig: true,
@@ -154,7 +154,7 @@ Deno.test("Dynamic configuration loading - Multiple profiles", async () => {
         assertEquals(typeof configResult.data, "object");
       } else {
         logger.debug(`Profile ${profileName} loading failed`, {
-          error: "Config creation failed"
+          error: "Config creation failed",
         });
       }
     } catch (error) {
@@ -167,7 +167,7 @@ Deno.test("Dynamic configuration loading - Multiple profiles", async () => {
 
 Deno.test("Configuration value resolution - Profile-specific patterns", async () => {
   const configResult = await BreakdownConfig.create("default", Deno.cwd());
-  
+
   if (configResult.success && configResult.data) {
     const provider = new ConfigPatternProvider(configResult.data);
 
@@ -220,7 +220,7 @@ Deno.test("Profile switching runtime behavior", async () => {
 
     try {
       const configResult = await BreakdownConfig.create(profile.value, Deno.cwd());
-      
+
       if (configResult.success && configResult.data) {
         const provider = new ConfigPatternProvider(configResult.data);
         const directivePattern = provider.getDirectivePattern();
@@ -262,13 +262,15 @@ Deno.test("Configuration isolation between profiles", async () => {
     const configResult2 = await BreakdownConfig.create(profile2.value, Deno.cwd());
 
     // Both should work independently
-    if (configResult1.success && configResult1.data && 
-        configResult2.success && configResult2.data) {
+    if (
+      configResult1.success && configResult1.data &&
+      configResult2.success && configResult2.data
+    ) {
       const provider1 = new ConfigPatternProvider(configResult1.data);
       const provider2 = new ConfigPatternProvider(configResult2.data);
 
-      const patterns1 = provider1.getDirectivePattern();
-      const patterns2 = provider2.getDirectivePattern();
+      const _patterns1 = provider1.getDirectivePattern();
+      const _patterns2 = provider2.getDirectivePattern();
 
       logger.debug("Both profiles loaded", {
         profile1: profile1.value,
