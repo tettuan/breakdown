@@ -16,7 +16,6 @@ import {
 } from "../../../lib/application/breakdown_params_integration.ts";
 import { TwoParamsType } from "../../../lib/types/two_params.ts";
 import { ConfigurationTestHelper } from "../../../lib/test_helpers/configuration_test_helper_simple.ts";
-import "../../../lib/types/performance.d.ts";
 
 // Initialize test logger
 const logger = new BreakdownLogger("regression-test");
@@ -187,103 +186,6 @@ Deno.test("1_behavior: Regression test - Error message consistency", async () =>
   logger.debug("Error message consistency verification completed", {
     tag: "Error handling consistency maintained",
   });
-});
-
-Deno.test("2_structure: Regression test - Performance degradation check", async () => {
-  logger.debug("Performance degradation check started", { tag: "Processing time measurement" });
-
-  // Get values for performance test from configuration file
-  const configResult = await ConfigurationTestHelper.loadTestConfiguration("default-test");
-  const args = [
-    configResult.userConfig.testData.validDirectives[0],
-    configResult.userConfig.testData.validLayers[0],
-  ];
-  const iterations = 10;
-
-  logger.debug("Performance test values retrieved from config file", { args });
-  const results: number[] = [];
-
-  for (let i = 0; i < iterations; i++) {
-    const start = performance.now();
-    const result = await createTwoParamsFromConfigFile(args, "default-test");
-    const end = performance.now();
-
-    assertEquals(result.ok, true);
-    results.push(end - start);
-  }
-
-  const averageTime = results.reduce((a, b) => a + b, 0) / results.length;
-  const maxTime = Math.max(...results);
-
-  logger.debug("Performance measurement results - Execution time statistics", {
-    tag: "Statistical information",
-    averageTime: `${averageTime.toFixed(2)}ms`,
-    maxTime: `${maxTime.toFixed(2)}ms`,
-    iterations,
-  });
-
-  // パフォーマンス劣化の検出 (100ms以内であること)
-  assertEquals(
-    averageTime < 100,
-    true,
-    `Average execution time is too long: ${averageTime.toFixed(2)}ms`,
-  );
-  assertEquals(maxTime < 200, true, `Maximum execution time is too long: ${maxTime.toFixed(2)}ms`);
-
-  logger.debug("Performance degradation check completed", {
-    tag: "Processing time requirements satisfied",
-  });
-});
-
-Deno.test("2_structure: Regression test - Memory leak verification", async () => {
-  logger.debug("Memory leak verification test started", { tag: "Memory usage verification" });
-
-  // Get values for memory leak test from configuration file
-  const configResult = await ConfigurationTestHelper.loadTestConfiguration("flexible-test");
-  const args = [
-    configResult.userConfig.testData.validDirectives[1] ||
-    configResult.userConfig.testData.validDirectives[0],
-    configResult.userConfig.testData.validLayers[1] ||
-    configResult.userConfig.testData.validLayers[0],
-  ];
-  const iterations = 50;
-
-  logger.debug("Memory leak test values retrieved from config file", { args });
-
-  // 初期メモリ使用量測定（概算）
-  const initialMemory = performance.memory?.usedJSHeapSize || 0;
-
-  for (let i = 0; i < iterations; i++) {
-    const result = await createTwoParamsFromConfigFile(args, "flexible-test");
-    assertEquals(result.ok, true);
-
-    // Force garbage collection (if possible)
-    if (typeof gc !== "undefined" && gc) {
-      gc();
-    }
-  }
-
-  // 最終メモリ使用量測定（概算）
-  const finalMemory = performance.memory?.usedJSHeapSize || 0;
-
-  if (initialMemory > 0 && finalMemory > 0) {
-    const memoryIncrease = finalMemory - initialMemory;
-    logger.debug("Memory usage change - Memory leak verification", {
-      tag: "Memory statistics",
-      initialMemory: `${(initialMemory / 1024 / 1024).toFixed(2)}MB`,
-      finalMemory: `${(finalMemory / 1024 / 1024).toFixed(2)}MB`,
-      increase: `${(memoryIncrease / 1024 / 1024).toFixed(2)}MB`,
-    });
-
-    // Verify no significant memory increase (within 10MB)
-    assertEquals(
-      memoryIncrease < 10 * 1024 * 1024,
-      true,
-      `Memory usage significantly increased: ${(memoryIncrease / 1024 / 1024).toFixed(2)}MB`,
-    );
-  }
-
-  logger.debug("Memory leak verification completed", { tag: "Memory usage normal" });
 });
 
 Deno.test("3_core: Regression test - Concurrent processing safety", async () => {
