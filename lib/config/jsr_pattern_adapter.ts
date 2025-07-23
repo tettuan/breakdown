@@ -264,21 +264,31 @@ export class JSRPatternAdapter implements TypePatternProvider {
 
   /**
    * デバッグ情報取得
-   * AsyncConfigPatternProvider互換メソッド
+   * AsyncConfigPatternProvider互換メソッド（完全互換版）
    */
   debug(): {
     initialized: boolean;
+    hasConfigData: boolean;
     hasDirectivePattern: boolean;
     hasLayerTypePattern: boolean;
-    directivePattern: string | null;
-    layerTypePattern: string | null;
-    validDirectives: readonly string[];
-    validLayers: readonly string[];
+    cacheStatus: {
+      directive: "cached" | "null" | "not_loaded";
+      layer: "cached" | "null" | "not_loaded";
+    };
+    directivePattern?: string | null;
+    layerTypePattern?: string | null;
+    validDirectives?: readonly string[];
+    validLayers?: readonly string[];
   } {
     return {
       initialized: this._initialized,
+      hasConfigData: !!this.customConfig,
       hasDirectivePattern: this._directivePattern !== null,
       hasLayerTypePattern: this._layerTypePattern !== null,
+      cacheStatus: {
+        directive: this._directivePattern === null ? "null" : "cached",
+        layer: this._layerTypePattern === null ? "null" : "cached",
+      },
       directivePattern: this._directivePattern?.getPattern() || null,
       layerTypePattern: this._layerTypePattern?.getPattern() || null,
       validDirectives: this.getValidDirectiveTypes(),

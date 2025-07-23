@@ -157,8 +157,7 @@ Deno.test("DirectiveType/LayerType Integration - 1_behavior: Configuration file 
   }
 });
 
-// TODO: Enable after fixing to match configuration file-based implementation
-Deno.test.ignore(
+Deno.test(
   "DirectiveType/LayerType Integration - 2_structure: Error handling",
   async () => {
     logger.debug("Error handling test started", { test: "error_handling" });

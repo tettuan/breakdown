@@ -8,8 +8,14 @@ import { parse } from "@std/yaml";
 import { ConfigProfile } from "./config_profile_name.ts";
 
 export async function loadUserConfig(profile: ConfigProfile): Promise<Record<string, unknown>> {
+  // Get the directory of this module
+  const moduleUrl = new URL(import.meta.url);
+  const moduleDir = moduleUrl.pathname.substring(0, moduleUrl.pathname.lastIndexOf("/"));
+
+  // Calculate path relative to this module
   const configPath = join(
-    Deno.cwd(),
+    moduleDir,
+    "../..", // Go up from lib/config to project root
     "tests",
     "fixtures",
     "configs",

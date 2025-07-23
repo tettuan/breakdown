@@ -96,17 +96,18 @@ export async function createCustomConfigFromProfile(
     const configData = await breakdownConfig.getConfig();
 
     // CustomConfig形式に変換
+    // BreakdownParamsは正規表現パターンを期待しているので、そのまま使用
     const customConfig: CustomConfig = {
       ...DEFAULT_CUSTOM_CONFIG,
       params: {
         two: {
           directiveType: {
-            pattern: configData.params?.two?.directiveType?.pattern || "to|summary|defect",
+            pattern: configData.params?.two?.directiveType?.pattern || "^(to|summary|defect)$",
             errorMessage: configData.params?.two?.directiveType?.errorMessage ||
               "Invalid directive type",
           },
           layerType: {
-            pattern: configData.params?.two?.layerType?.pattern || "project|issue|task",
+            pattern: configData.params?.two?.layerType?.pattern || "^(project|issue|task)$",
             errorMessage: configData.params?.two?.layerType?.errorMessage || "Invalid layer type",
           },
         },
@@ -146,9 +147,8 @@ export async function executeBreakdownParams(
     }
 
     // Step 2: BreakdownParams実行
-    // Note: CustomConfig patterns not yet fully supported in current BreakdownParams version
-    // Using default parser for now - this is a known limitation to be addressed
-    const parser = new ParamsParser();
+    // CustomConfigを使用してParamsParserを初期化（第2引数がCustomConfig）
+    const parser = new ParamsParser(undefined, customConfigResult.data);
     let result;
     try {
       // Parse with args (uses default BreakdownParams validation patterns)
@@ -156,7 +156,7 @@ export async function executeBreakdownParams(
     } catch (_e) {
       try {
         // Try parse without arguments if args fails
-        result = parser.parse();
+        result = parser.parse(args ?? []);
       } catch (e2) {
         return error({
           kind: "ParamsExecutionError",

@@ -127,7 +127,7 @@ export function detectEnvironment(config?: EnvironmentDetectionConfig): Environm
 
   // Test environment detection
   const isTest = config?.isTest ?? !!(
-    _getEnvVar("DENO_TESTING") === "true" ||
+    _getEnvVar("DENO_TEST") === "true" ||
     _getEnvVar("TEST") === "true" ||
     globalThis.Deno?.test
   );

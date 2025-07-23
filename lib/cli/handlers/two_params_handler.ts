@@ -86,6 +86,7 @@ class TwoParamsOrchestrator {
       config as BreakdownConfigCompatible,
       options,
     );
+
     if (!stdinResult.ok) {
       return error({
         kind: "StdinReadError",

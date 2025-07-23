@@ -15,9 +15,25 @@ testData:
   validDirectives: ["to", "summary", "defect", "find", "analyze", "extract"]
   validLayers: ["project", "issue", "task", "component", "module"]
 
-  # 無効な値（テスト用）
-  invalidDirectives: ["invalid", "WRONG", "123", "", "null"]
-  invalidLayers: ["", "null", "undefined", "UPPERCASE", "123"]
+  # 無効な値（テスト用）- 基本パターン ^[a-z0-9_-]{1,20}$ に適合しない値
+  invalidDirectives: [
+    "",
+    "WRONG",
+    "!",
+    "@#$",
+    "toolongdirectivenamethatexceedslimit",
+    " to ",
+    "with space",
+  ]
+  invalidLayers: [
+    "",
+    "UPPERCASE",
+    "!",
+    "@#$",
+    "toolonglayernamethatexceedslimit",
+    " project ",
+    "with space",
+  ]
 
   # 動的生成フラグ
   dynamicGeneration: true

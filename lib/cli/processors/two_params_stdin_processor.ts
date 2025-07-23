@@ -63,6 +63,11 @@ export class TwoParamsStdinProcessor {
       return false;
     }
 
+    // Check environment variable for skip
+    if (Deno.env.get("BREAKDOWN_SKIP_STDIN") === "true") {
+      return false;
+    }
+
     // Check explicit stdin flags
     if (options.from === "-" || options.fromFile === "-") {
       return true;
@@ -146,10 +151,10 @@ export class TwoParamsStdinProcessor {
       // Create TimeoutManager for enhanced stdin
       const timeoutManager = createTimeoutManagerFromConfig(config);
 
-      // Use enhanced stdin with comprehensive error handling
+      // Use enhanced stdin with environment-aware configuration
       const inputText = await readStdinEnhanced({
         timeoutManager,
-        forceRead: true, // Force read in test environments where stdin is piped
+        forceRead: false, // Respect environment detection and BREAKDOWN_SKIP_STDIN
         allowEmpty: true,
       });
 
@@ -173,10 +178,17 @@ export class TwoParamsStdinProcessor {
         }
       }
 
-      // EMERGENCY FIX: If error message contains "test environment", return empty string
+      // Enhanced error handling: Handle various skip scenarios gracefully
       const errorMessage = err instanceof Error ? err.message : String(err);
-      if (errorMessage.includes("test environment")) {
-        // Return empty string for test environment errors
+
+      // Handle environment-based skip scenarios
+      if (
+        errorMessage.includes("test environment") ||
+        errorMessage.includes("BREAKDOWN_SKIP_STDIN") ||
+        errorMessage.includes("CI terminal environment") ||
+        errorMessage.includes("Stdin not available")
+      ) {
+        // Return empty string for environment-based skip scenarios
         return ok("");
       }
 

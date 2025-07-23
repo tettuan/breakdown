@@ -23,12 +23,17 @@ const logger = new BreakdownLogger("integration-test");
 Deno.test("1_behavior: New integration flow - Basic configuration file loading", async () => {
   logger.debug("New integration flow basic test started", {
     tag: "CustomConfig generation from config file",
+    cwd: Deno.cwd(),
+    configDir: Deno.env.get("BREAKDOWN_CONFIG_DIR") || "not set",
   });
 
   // Step 1: Generate CustomConfig from configuration file
   const customConfigResult = await createCustomConfigFromProfile("default-test");
 
   logger.debug("CustomConfig generation result - Result check", { result: customConfigResult });
+  if (!customConfigResult.ok) {
+    logger.error("CustomConfig generation failed", { error: customConfigResult.error });
+  }
 
   assertEquals(customConfigResult.ok, true);
   if (customConfigResult.ok) {

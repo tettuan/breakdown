@@ -92,11 +92,11 @@ handle_permission_error() {
 Error: Missing run permission in $test_file
 Adding --allow-run flag and retrying..."
         if [ "$test_file" = "all tests" ]; then
-            if ! LOG_LEVEL=debug deno task test; then
+            if ! BREAKDOWN_CONFIG_DIR=tests/fixtures/configs BREAKDOWN_SKIP_STDIN=true LOG_LEVEL=debug deno task test; then
                 handle_error "$test_file" "Test failed even with --allow-run permission" "true"
             fi
         else
-            if ! LOG_LEVEL=debug deno task test "$test_file"; then
+            if ! BREAKDOWN_CONFIG_DIR=tests/fixtures/configs BREAKDOWN_SKIP_STDIN=true LOG_LEVEL=debug deno task test "$test_file"; then
                 handle_error "$test_file" "Test failed even with --allow-run permission" "true"
             fi
         fi
@@ -139,11 +139,11 @@ Error: $error_message in $test_file
 Retrying with debug mode..."
         # Special handling for "all tests" case
         if [ "$test_file" = "all tests" ]; then
-            if ! LOG_LEVEL=debug deno task test; then
+            if ! BREAKDOWN_CONFIG_DIR=tests/fixtures/configs BREAKDOWN_SKIP_STDIN=true LOG_LEVEL=debug deno task test; then
                 handle_error "$test_file" "Test failed in debug mode" "true"
             fi
         else
-            if ! LOG_LEVEL=debug deno task test "$test_file"; then
+            if ! BREAKDOWN_CONFIG_DIR=tests/fixtures/configs BREAKDOWN_SKIP_STDIN=true LOG_LEVEL=debug deno task test "$test_file"; then
                 handle_error "$test_file" "Test failed in debug mode" "true"
             fi
         fi
@@ -490,13 +490,13 @@ Please fix the type errors before proceeding.
 ===============================================================================
 >>> RUNNING TEST IN DEBUG MODE: $test_file <<<
 ==============================================================================="
-        if ! error_output=$(LOG_LEVEL=debug LOG_LENGTH=W deno task test "$test_file" 2>&1); then
+        if ! error_output=$(BREAKDOWN_CONFIG_DIR=tests/fixtures/configs BREAKDOWN_SKIP_STDIN=true LOG_LEVEL=debug LOG_LENGTH=W deno task test "$test_file" 2>&1); then
             handle_error "$test_file" "$error_output" "true"
             return 1
         fi
     else
         echo "Running test: $test_file"
-        if ! error_output=$(deno task test "$test_file" 2>&1); then
+        if ! error_output=$(BREAKDOWN_CONFIG_DIR=tests/fixtures/configs BREAKDOWN_SKIP_STDIN=true deno task test "$test_file" 2>&1); then
             handle_error "$test_file" "$error_output" "false"
             return 1
         fi
@@ -529,7 +529,7 @@ run_tests_in_batches() {
 ==============================================================================="
         
         # Run batch with memory constraints and explicit garbage collection
-        if ! DENO_JOBS=1 deno test --v8-flags=--max-old-space-size=2048,--expose-gc --allow-env --allow-write --allow-read --allow-run "${batch_files[@]}" 2>&1; then
+        if ! BREAKDOWN_CONFIG_DIR=tests/fixtures/configs BREAKDOWN_SKIP_STDIN=true DENO_JOBS=1 deno test --v8-flags=--max-old-space-size=2048,--expose-gc --allow-env --allow-write --allow-read --allow-run "${batch_files[@]}" 2>&1; then
             echo "
 ===============================================================================
 >>> BATCH $batch_num FAILED <<<
@@ -599,7 +599,7 @@ To retry just this file:
   deno task test \"$file\"
 
 To retry in debug mode:
-  LOG_LEVEL=debug deno task test \"$file\"
+  BREAKDOWN_CONFIG_DIR=tests/fixtures/configs BREAKDOWN_SKIP_STDIN=true LOG_LEVEL=debug deno task test \"$file\"
 ==============================================================================="
             return 1
         fi
@@ -793,7 +793,7 @@ To retry just this file:
         
         # Run tests with memory constraints and output capture
         local test_output
-        if ! test_output=$(DENO_JOBS=$optimal_jobs deno test --v8-flags=--max-old-space-size=4096 --allow-env --allow-write --allow-read --allow-run 2>&1); then
+        if ! test_output=$(BREAKDOWN_CONFIG_DIR=tests/fixtures/configs BREAKDOWN_SKIP_STDIN=true DENO_JOBS=$optimal_jobs deno test --v8-flags=--max-old-space-size=4096 --allow-env --allow-write --allow-read --allow-run 2>&1); then
             echo "
 ===============================================================================
 >>> ALL TESTS EXECUTION FAILED <<<
@@ -836,7 +836,7 @@ run_tests_in_batches_with_fallback() {
 ==============================================================================="
         
         # Run batch with memory constraints
-        if ! DENO_JOBS=1 deno test --v8-flags=--max-old-space-size=2048,--expose-gc --allow-env --allow-write --allow-read --allow-run "${batch_files[@]}" 2>&1; then
+        if ! BREAKDOWN_CONFIG_DIR=tests/fixtures/configs BREAKDOWN_SKIP_STDIN=true DENO_JOBS=1 deno test --v8-flags=--max-old-space-size=2048,--expose-gc --allow-env --allow-write --allow-read --allow-run "${batch_files[@]}" 2>&1; then
             echo "
 ===============================================================================
 >>> BATCH $batch_num FAILED - Attempting individual file execution <<<

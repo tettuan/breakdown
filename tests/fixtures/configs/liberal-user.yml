@@ -1,0 +1,16 @@
+# 寛容パターンテスト用設定
+params:
+  two:
+    directiveType:
+      pattern: "[a-z]+" # 任意の小文字
+      errorMessage: "Directive must be lowercase letters"
+    layerType:
+      pattern: "[a-z0-9]+" # 小文字と数字
+      errorMessage: "Layer must be lowercase alphanumeric"
+
+# テスト用データセット（寛容版）
+testData:
+  validDirectives: ["to", "summary", "defect", "analyze", "create", "review", "optimize"]
+  validLayers: ["project", "issue", "task", "module", "component", "layer1", "test2"]
+  invalidDirectives: ["To", "SUMMARY", "123", "", "test-with-dash", "test_with_underscore"]
+  invalidLayers: ["Project", "ISSUE", "", "test-with-dash", "test_with_underscore"]

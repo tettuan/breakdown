@@ -96,7 +96,7 @@ export class StdinAvailability {
     try {
       const isTerminal = Deno.stdin.isTerminal();
       const isCI = !!Deno.env.get("CI");
-      const isTest = !!Deno.env.get("DENO_TESTING");
+      const isTest = !!Deno.env.get("DENO_TEST");
 
       return ok(new StdinAvailability(isTerminal, isCI, isTest));
     } catch (e) {

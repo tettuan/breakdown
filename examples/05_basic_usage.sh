@@ -35,10 +35,10 @@ if ! bash ./00_template_check.sh full; then
     handle_error "Template setup failed"
 fi
 
-# Use deno task for breakdown command
+# Use deno run for breakdown command
 # Define as function to avoid quote issues
 BREAKDOWN() {
-    deno task breakdown "$@"
+    deno run --allow-read --allow-write --allow-env --allow-net ../cli/breakdown.ts "$@"
 }
 
 # Create output directory for examples

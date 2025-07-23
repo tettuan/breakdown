@@ -1,0 +1,16 @@
+# 厳格パターンテスト用設定
+params:
+  two:
+    directiveType:
+      pattern: "^(to|summary|defect)$" # 完全一致
+      errorMessage: "Directive must exactly match: to, summary, or defect"
+    layerType:
+      pattern: "^(project|issue|task)$" # 完全一致
+      errorMessage: "Layer must exactly match: project, issue, or task"
+
+# テスト用データセット（厳格版）
+testData:
+  validDirectives: ["to", "summary", "defect"]
+  validLayers: ["project", "issue", "task"]
+  invalidDirectives: ["analyze", "create", "invalid", "", "123"]
+  invalidLayers: ["module", "component", "invalid", "", "456"]

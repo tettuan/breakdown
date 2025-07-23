@@ -22,6 +22,10 @@ test:
   enabled: true
   mockMode: false
 
+# Prompt configuration for breakdown processing
+app_prompt:
+  base_dir: "./tests/fixtures/prompts"
+
 # Integration test specific configurations
 integration:
   breakdownParams:

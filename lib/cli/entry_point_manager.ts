@@ -207,7 +207,7 @@ export class EntryPointManager {
   private setupSignalHandlers(): Result<void, EntryPointError> {
     try {
       // Skip if already installed or in test environment
-      if (this.signalHandlersInstalled || Deno.env.get("DENO_TESTING") === "true") {
+      if (this.signalHandlersInstalled || Deno.env.get("DENO_TEST") === "true") {
         return ok(undefined);
       }
 

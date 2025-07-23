@@ -49,3 +49,12 @@ testData:
 paths:
   resourceDir: "./tests/fixtures"
   templateDir: "./tests/fixtures/prompts"
+
+# Prompt configuration for BreakdownPrompt
+app_prompt:
+  base_dir: "./tests/fixtures/prompts"
+
+# BreakdownConfig integration
+promptDir: "/Users/tettuan/github/breakdown/tests/fixtures/prompts"
+schemaDir: "/Users/tettuan/github/breakdown/tests/fixtures/schemas"
+workingDir: "/Users/tettuan/github/breakdown"

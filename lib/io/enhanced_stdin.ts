@@ -129,7 +129,7 @@ export function detectEnvironment(config?: EnvironmentDetectionConfig): Environm
 
   // Test environment detection
   const isTest = config?.isTest ?? !!(
-    getEnvVar("DENO_TESTING") === "true" ||
+    getEnvVar("DENO_TEST") === "true" ||
     getEnvVar("TEST") === "true" ||
     globalThis.Deno?.test
   );
@@ -166,7 +166,7 @@ export function createStdinReaderForEnvironment(envInfo: EnvironmentInfo): Stdin
       data: "",
       terminal: envInfo.isTerminal,
       delay: 0,
-      shouldFail: true,
+      shouldFail: false, // Don't fail by default in test environments
       failureError: {
         kind: "NotAvailableError",
         environment: "test environment",
@@ -175,7 +175,7 @@ export function createStdinReaderForEnvironment(envInfo: EnvironmentInfo): Stdin
   }
 
   // In production, use the real Deno reader
-  return new DenoStdinReader();
+  return new DenoStdinReader({ isTestEnvironment: envInfo.isTest });
 }
 
 /**
@@ -225,6 +225,7 @@ class TimerManager {
  */
 export async function readStdinEnhanced(options: EnhancedStdinOptions = {}): Promise<string> {
   const timerManager = new TimerManager();
+  let reader: StdinReader | null = null;
 
   const {
     allowEmpty = false,
@@ -250,9 +251,6 @@ export async function readStdinEnhanced(options: EnhancedStdinOptions = {}): Pro
       envInfo.isCI = ciDetector();
     }
 
-    // Create or use provided reader
-    const reader = stdinReader || createStdinReaderForEnvironment(envInfo);
-
     // Determine effective values
     let effectiveTimeout: number;
     let effectiveAllowEmpty: boolean;
@@ -271,8 +269,21 @@ export async function readStdinEnhanced(options: EnhancedStdinOptions = {}): Pro
       effectiveForceRead = forceRead || defaultManager.getStdinConfig().forceRead;
     }
 
+    // Create or use provided reader
+    // If forceRead is true and no custom reader provided, use real reader
+    reader = stdinReader ||
+      (effectiveForceRead
+        ? new DenoStdinReader({ isTestEnvironment: envInfo.isTest })
+        : createStdinReaderForEnvironment(envInfo));
+
     // Early abort conditions for CI/test environments (only when not forced)
     if (!effectiveForceRead) {
+      // Check environment variable for skip
+      if (Deno.env.get("BREAKDOWN_SKIP_STDIN") === "true") {
+        const errorMsg = "Stdin processing skipped by BREAKDOWN_SKIP_STDIN environment variable";
+        throw new EnhancedStdinError(errorMsg, envInfo, { reason: "skip_stdin_env" });
+      }
+
       if (envInfo.isCI && envInfo.isTerminal) {
         const errorMsg = "Stdin not available in CI terminal environment";
         throw new EnhancedStdinError(errorMsg, envInfo, { reason: "ci_terminal" });
@@ -333,11 +344,12 @@ export async function readStdinEnhanced(options: EnhancedStdinOptions = {}): Pro
     timerManager.cleanup();
 
     // Always ensure reader is cleaned up
-    try {
-      const reader = options.stdinReader || createStdinReaderForEnvironment(detectEnvironment());
-      await reader.cancel();
-    } catch {
-      // Ignore cleanup errors
+    if (reader) {
+      try {
+        await reader.cancel();
+      } catch {
+        // Ignore cleanup errors
+      }
     }
   }
 }
@@ -394,6 +406,12 @@ export async function safeReadStdin(options: EnhancedStdinOptions = {}): Promise
 
   // Check if we should skip stdin processing
   if (!options.forceRead) {
+    // Check environment variable for skip
+    if (Deno.env.get("BREAKDOWN_SKIP_STDIN") === "true") {
+      const reason = "BREAKDOWN_SKIP_STDIN environment variable set";
+      return { success: true, content: "", skipped: true, reason, envInfo };
+    }
+
     // Skip in CI terminal environments
     if (envInfo.isCI && envInfo.isTerminal) {
       const reason = `CI terminal environment (${envInfo.ciProvider})`;
@@ -447,6 +465,11 @@ export function shouldSkipStdinProcessing(options?: {
 
   if (forceRead) {
     return { skip: false, envInfo };
+  }
+
+  // Check environment variable for skip
+  if (Deno.env.get("BREAKDOWN_SKIP_STDIN") === "true") {
+    return { skip: true, reason: "BREAKDOWN_SKIP_STDIN environment variable set", envInfo };
   }
 
   // Skip in CI terminal environments

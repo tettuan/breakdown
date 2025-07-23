@@ -61,6 +61,11 @@ flexiblePattern: "^[a-zA-Z0-9_#-]{2,20}$"
 directive_patterns: "to|summary|defect|to#1|summary_v2|defect-fix|to_all|web#search|db_query|api-call|data#extract"
 layer_patterns: "project|issue|task|bugs|project#1|issue_v2|task-new|bugs_critical|module#api|service_db|component-ui|layer#data"
 
+# プロンプト設定
+app_prompt:
+  base_dir: "tests/fixtures/prompts"
+  schema_dir: "tests/fixtures/schemas"
+
 custom_variables:
   author: "Flexible Pattern Test Suite"
   version: "2.0.0"

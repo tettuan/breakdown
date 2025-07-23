@@ -1,0 +1,22 @@
+# 基本パターンテスト用設定
+params:
+  two:
+    directiveType:
+      pattern: "^[a-z0-9_-]{1,20}$" # DirectiveTypeの実際のパターン
+      errorMessage: "Invalid directive type for basic test"
+    layerType:
+      pattern: "^[a-z0-9_-]{1,20}$" # LayerTypeの実際のパターン
+      errorMessage: "Invalid layer type for basic test"
+
+# テスト用データセット
+testData:
+  validDirectives: ["to", "summary", "defect", "analyze", "create"]
+  validLayers: ["project", "issue", "task", "module", "component"]
+  invalidDirectives: ["", "invalid_directive", "123", "toolong_directive_name_that_exceeds_limit"]
+  invalidLayers: ["", "invalid_layer", "456", "toolong_layer_name_that_exceeds_limit"]
+
+# 境界値テスト
+boundaryTests:
+  minLength: 2
+  maxLength: 10
+  edgeCases: ["", "a", "verylongstring"]

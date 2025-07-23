@@ -142,7 +142,7 @@ export class StdinProviderFactory {
    */
   private static isTestEnvironment(): boolean {
     return !!(
-      Deno.env.get("DENO_TESTING") === "true" ||
+      Deno.env.get("DENO_TEST") === "true" ||
       Deno.env.get("TEST") === "true" ||
       globalThis.Deno?.test
     );

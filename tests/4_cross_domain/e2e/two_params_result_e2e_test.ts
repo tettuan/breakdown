@@ -140,26 +140,39 @@ Deno.test("E2E: Tier1 - Basic Two Params Command Execution", async () => {
     const args = [validDirective, validLayer];
     logger.debug("Breakdown execution started", { args, inputFile });
 
-    const result = await runBreakdown(args);
-    const output = stdout.stop();
+    // Set environment to skip stdin processing in this test
+    const originalSkipStdin = Deno.env.get("BREAKDOWN_SKIP_STDIN");
+    Deno.env.set("BREAKDOWN_SKIP_STDIN", "true");
 
-    logger.debug("Breakdown execution result", {
-      success: result.ok,
-      outputLength: output.length,
-      hasOutput: output.length > 0,
-    });
+    try {
+      const result = await runBreakdown(args);
+      const output = stdout.stop();
 
-    // Verify successful execution
-    assertEquals(result.ok, true, "Breakdown execution should succeed");
+      logger.debug("Breakdown execution result", {
+        success: result.ok,
+        outputLength: output.length,
+        hasOutput: output.length > 0,
+      });
 
-    // Verify output contains expected elements
-    assertExists(output, "Output should be generated");
-    assertEquals(output.length > 0, true, "Output should not be empty");
+      // Verify successful execution
+      assertEquals(result.ok, true, "Breakdown execution should succeed");
 
-    logger.debug("E2E basic command execution test completed", {
-      resultStatus: "SUCCESS",
-      outputPreview: output.substring(0, 100),
-    });
+      // Verify output contains expected elements
+      assertExists(output, "Output should be generated");
+      assertEquals(output.length > 0, true, "Output should not be empty");
+
+      logger.debug("E2E basic command execution test completed", {
+        resultStatus: "SUCCESS",
+        outputPreview: output.substring(0, 100),
+      });
+    } finally {
+      // Restore environment
+      if (originalSkipStdin !== undefined) {
+        Deno.env.set("BREAKDOWN_SKIP_STDIN", originalSkipStdin);
+      } else {
+        Deno.env.delete("BREAKDOWN_SKIP_STDIN");
+      }
+    }
   } finally {
     stdout.stop();
     await testSetup.cleanup();
@@ -199,18 +212,31 @@ Deno.test("E2E: Tier1 - Multiple Directive-Layer Combinations", async () => {
     stdout.start();
 
     try {
-      const args = [directive, layer];
-      const result = await runBreakdown(args);
-      const output = stdout.stop();
+      // Set environment to skip stdin processing in this test
+      const originalSkipStdin = Deno.env.get("BREAKDOWN_SKIP_STDIN");
+      Deno.env.set("BREAKDOWN_SKIP_STDIN", "true");
 
-      logger.debug(`Combination ${directive}-${layer} result`, {
-        success: result.ok,
-        outputLength: output.length,
-      });
+      try {
+        const args = [directive, layer];
+        const result = await runBreakdown(args);
+        const output = stdout.stop();
 
-      // Verify each combination works
-      assertEquals(result.ok, true, `Combination ${directive}-${layer} should succeed`);
-      assertExists(output, `Output should be generated for ${directive}-${layer}`);
+        logger.debug(`Combination ${directive}-${layer} result`, {
+          success: result.ok,
+          outputLength: output.length,
+        });
+
+        // Verify each combination works
+        assertEquals(result.ok, true, `Combination ${directive}-${layer} should succeed`);
+        assertExists(output, `Output should be generated for ${directive}-${layer}`);
+      } finally {
+        // Restore environment
+        if (originalSkipStdin !== undefined) {
+          Deno.env.set("BREAKDOWN_SKIP_STDIN", originalSkipStdin);
+        } else {
+          Deno.env.delete("BREAKDOWN_SKIP_STDIN");
+        }
+      }
     } finally {
       stdout.stop();
     }
@@ -253,7 +279,9 @@ Deno.test("E2E: Tier2 - Configuration Profile Switching", async () => {
     try {
       // Set environment variable for profile (simulating CLI --config)
       const originalEnv = Deno.env.get("BREAKDOWN_PROFILE");
+      const originalSkipStdin = Deno.env.get("BREAKDOWN_SKIP_STDIN");
       Deno.env.set("BREAKDOWN_PROFILE", profile);
+      Deno.env.set("BREAKDOWN_SKIP_STDIN", "true");
 
       const args = [validDirective, validLayer];
       const result = await runBreakdown(args);
@@ -273,6 +301,11 @@ Deno.test("E2E: Tier2 - Configuration Profile Switching", async () => {
         Deno.env.set("BREAKDOWN_PROFILE", originalEnv);
       } else {
         Deno.env.delete("BREAKDOWN_PROFILE");
+      }
+      if (originalSkipStdin !== undefined) {
+        Deno.env.set("BREAKDOWN_SKIP_STDIN", originalSkipStdin);
+      } else {
+        Deno.env.delete("BREAKDOWN_SKIP_STDIN");
       }
     } finally {
       stdout.stop();
@@ -324,22 +357,35 @@ Deno.test("E2E: Tier3 - Invalid Arguments Error Handling", async () => {
     stdout.start();
 
     try {
-      const result = await runBreakdown(testCase.args);
-      const output = stdout.stop();
+      // Set environment to skip stdin processing in this test
+      const originalSkipStdin = Deno.env.get("BREAKDOWN_SKIP_STDIN");
+      Deno.env.set("BREAKDOWN_SKIP_STDIN", "true");
 
-      logger.debug(`Error case ${testCase.name} result`, {
-        success: result.ok,
-        hasError: !result.ok,
-        outputLength: output.length,
-      });
+      try {
+        const result = await runBreakdown(testCase.args);
+        const output = stdout.stop();
 
-      // Verify error is properly handled
-      assertEquals(result.ok, false, `${testCase.name} should result in error`);
+        logger.debug(`Error case ${testCase.name} result`, {
+          success: result.ok,
+          hasError: !result.ok,
+          outputLength: output.length,
+        });
 
-      // Check error structure
-      if (!result.ok) {
-        assertExists(result.error, "Error should be present");
-        logger.debug(`Error details ${testCase.name}`, { error: result.error });
+        // Verify error is properly handled
+        assertEquals(result.ok, false, `${testCase.name} should result in error`);
+
+        // Check error structure
+        if (!result.ok) {
+          assertExists(result.error, "Error should be present");
+          logger.debug(`Error details ${testCase.name}`, { error: result.error });
+        }
+      } finally {
+        // Restore environment
+        if (originalSkipStdin !== undefined) {
+          Deno.env.set("BREAKDOWN_SKIP_STDIN", originalSkipStdin);
+        } else {
+          Deno.env.delete("BREAKDOWN_SKIP_STDIN");
+        }
       }
     } finally {
       stdout.stop();
@@ -368,7 +414,9 @@ Deno.test("E2E: Tier3 - Configuration Error Handling", async () => {
   try {
     // Test with non-existent configuration profile
     const originalEnv = Deno.env.get("BREAKDOWN_PROFILE");
+    const originalSkipStdin = Deno.env.get("BREAKDOWN_SKIP_STDIN");
     Deno.env.set("BREAKDOWN_PROFILE", "non-existent-profile");
+    Deno.env.set("BREAKDOWN_SKIP_STDIN", "true");
 
     const args = ["to", "project"];
     const result = await runBreakdown(args);
@@ -397,6 +445,11 @@ Deno.test("E2E: Tier3 - Configuration Error Handling", async () => {
       Deno.env.set("BREAKDOWN_PROFILE", originalEnv);
     } else {
       Deno.env.delete("BREAKDOWN_PROFILE");
+    }
+    if (originalSkipStdin !== undefined) {
+      Deno.env.set("BREAKDOWN_SKIP_STDIN", originalSkipStdin);
+    } else {
+      Deno.env.delete("BREAKDOWN_SKIP_STDIN");
     }
   } finally {
     stdout.stop();
@@ -439,22 +492,35 @@ Deno.test("E2E: Tier4 - Performance Characteristics", async () => {
     const startTime = performance.now();
 
     try {
-      const args = [validDirective, validLayer];
-      const result = await runBreakdown(args);
-      const endTime = performance.now();
+      // Set environment to skip stdin processing in this test
+      const originalSkipStdin = Deno.env.get("BREAKDOWN_SKIP_STDIN");
+      Deno.env.set("BREAKDOWN_SKIP_STDIN", "true");
 
-      const executionTime = endTime - startTime;
-      executionTimes.push(executionTime);
+      try {
+        const args = [validDirective, validLayer];
+        const result = await runBreakdown(args);
+        const endTime = performance.now();
 
-      const output = stdout.stop();
+        const executionTime = endTime - startTime;
+        executionTimes.push(executionTime);
 
-      logger.debug(`Execution ${i + 1}/${executionCount}`, {
-        executionTime: `${executionTime.toFixed(2)}ms`,
-        success: result.ok,
-        outputLength: output.length,
-      });
+        const output = stdout.stop();
 
-      assertEquals(result.ok, true, `Execution ${i + 1} should succeed`);
+        logger.debug(`Execution ${i + 1}/${executionCount}`, {
+          executionTime: `${executionTime.toFixed(2)}ms`,
+          success: result.ok,
+          outputLength: output.length,
+        });
+
+        assertEquals(result.ok, true, `Execution ${i + 1} should succeed`);
+      } finally {
+        // Restore environment
+        if (originalSkipStdin !== undefined) {
+          Deno.env.set("BREAKDOWN_SKIP_STDIN", originalSkipStdin);
+        } else {
+          Deno.env.delete("BREAKDOWN_SKIP_STDIN");
+        }
+      }
     } finally {
       stdout.stop();
     }
@@ -526,51 +592,64 @@ The project serves critical business functions and requires careful analysis to 
       inputContentLength: realWorldContent.length,
     });
 
-    const args = [validDirective, validLayer];
-    const result = await runBreakdown(args);
-    const output = stdout.stop();
+    // Set environment to skip stdin processing in this test
+    const originalSkipStdin = Deno.env.get("BREAKDOWN_SKIP_STDIN");
+    Deno.env.set("BREAKDOWN_SKIP_STDIN", "true");
 
-    logger.debug("Complete integration flow execution completed", {
-      success: result.ok,
-      outputLength: output.length,
-      hasOutput: output.length > 0,
-    });
+    try {
+      const args = [validDirective, validLayer];
+      const result = await runBreakdown(args);
+      const output = stdout.stop();
 
-    // Comprehensive validation of the complete flow
-    assertEquals(result.ok, true, "Complete integration flow should succeed");
-    assertExists(output, "Final output should be generated");
-    assertEquals(output.length > 0, true, "Output should contain generated content");
+      logger.debug("Complete integration flow execution completed", {
+        success: result.ok,
+        outputLength: output.length,
+        hasOutput: output.length > 0,
+      });
 
-    // Verify output contains expected prompt structure elements
-    // (The exact content depends on templates, but should have structured output)
-    const outputLowerCase = output.toLowerCase();
-    const hasPromptStructure = outputLowerCase.includes("project") ||
-      outputLowerCase.includes("analysis") ||
-      outputLowerCase.includes("breakdown") ||
-      outputLowerCase.length > 50; // Reasonable minimum length
+      // Comprehensive validation of the complete flow
+      assertEquals(result.ok, true, "Complete integration flow should succeed");
+      assertExists(output, "Final output should be generated");
+      assertEquals(output.length > 0, true, "Output should contain generated content");
 
-    assertEquals(hasPromptStructure, true, "Output should contain structured prompt content");
+      // Verify output contains expected prompt structure elements
+      // (The exact content depends on templates, but should have structured output)
+      const outputLowerCase = output.toLowerCase();
+      const hasPromptStructure = outputLowerCase.includes("project") ||
+        outputLowerCase.includes("analysis") ||
+        outputLowerCase.includes("breakdown") ||
+        outputLowerCase.length > 50; // Reasonable minimum length
 
-    // Log success with comprehensive details
-    logger.debug("Complete integration flow verification successful", {
-      processing_chain:
-        "CLI → BreakdownConfig → BreakdownParams → TwoParamsResult → TwoParams → VariablesBuilder → BreakdownPrompt → Output",
-      stages_validated: [
-        "CLI argument parsing",
-        "Configuration loading",
-        "Parameter validation",
-        "Domain object creation",
-        "Variable processing",
-        "Prompt generation",
-        "Output formatting",
-      ],
-      resultStatus: "SUCCESS",
-      outputCharacteristics: {
-        length: output.length,
-        hasContent: output.length > 0,
-        hasStructure: hasPromptStructure,
-      },
-    });
+      assertEquals(hasPromptStructure, true, "Output should contain structured prompt content");
+
+      // Log success with comprehensive details
+      logger.debug("Complete integration flow verification successful", {
+        processing_chain:
+          "CLI → BreakdownConfig → BreakdownParams → TwoParamsResult → TwoParams → VariablesBuilder → BreakdownPrompt → Output",
+        stages_validated: [
+          "CLI argument parsing",
+          "Configuration loading",
+          "Parameter validation",
+          "Domain object creation",
+          "Variable processing",
+          "Prompt generation",
+          "Output formatting",
+        ],
+        resultStatus: "SUCCESS",
+        outputCharacteristics: {
+          length: output.length,
+          hasContent: output.length > 0,
+          hasStructure: hasPromptStructure,
+        },
+      });
+    } finally {
+      // Restore environment
+      if (originalSkipStdin !== undefined) {
+        Deno.env.set("BREAKDOWN_SKIP_STDIN", originalSkipStdin);
+      } else {
+        Deno.env.delete("BREAKDOWN_SKIP_STDIN");
+      }
+    }
   } finally {
     stdout.stop();
     await testSetup.cleanup();

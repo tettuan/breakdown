@@ -1,0 +1,32 @@
+# エッジケーステスト用設定
+params:
+  two:
+    directiveType:
+      pattern: "^[a-z0-9]{1,50}$" # 1-50文字の英数字
+      errorMessage: "Directive must be 1-50 alphanumeric characters"
+    layerType:
+      pattern: "^[a-z0-9-_]{2,30}$" # 2-30文字、ハイフン・アンダースコア許可
+      errorMessage: "Layer must be 2-30 characters with hyphens/underscores allowed"
+
+# エッジケース用データセット
+testData:
+  validDirectives: [
+    "a",
+    "z",
+    "0",
+    "9",
+    "to",
+    "summary",
+    "defect",
+    "verylongdirectivenamethatiswithinlimits",
+  ]
+  validLayers: [
+    "aa",
+    "z9",
+    "to-do",
+    "bug_fix",
+    "long-layer-name-with-dashes",
+    "layer_with_underscores",
+  ]
+  invalidDirectives: ["", "A", "Z", "!", "@", "toolongdirectivenamethatexceedsthefiftycharlimit"]
+  invalidLayers: ["a", "!", "@", "toolongdirectivenamethatexceedsthirtychars"]

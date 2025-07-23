@@ -37,6 +37,11 @@ testData:
 directive_patterns: "to|summary|defect"
 layer_patterns: "project|issue|task"
 
+# プロンプト設定
+app_prompt:
+  base_dir: "tests/fixtures/prompts"
+  schema_dir: "tests/fixtures/schemas"
+
 custom_variables:
   author: "Default Test Suite"
   version: "1.0.0"

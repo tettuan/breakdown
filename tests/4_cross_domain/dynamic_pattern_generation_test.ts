@@ -116,8 +116,7 @@ Deno.test("2_structure: Dynamic pattern generation - ConfigurationTestHelper int
   });
 });
 
-// TODO: Enable after path configuration fix
-Deno.test.ignore(
+Deno.test(
   "1_behavior: Hardcode elimination verification - Pattern file dynamization",
   async () => {
     logger.debug("Hardcode elimination verification started", {
