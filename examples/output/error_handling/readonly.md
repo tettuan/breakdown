@@ -1,2 +1,0 @@
-# Readonly content
-Additional content
