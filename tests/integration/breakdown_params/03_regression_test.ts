@@ -188,7 +188,6 @@ Deno.test("1_behavior: Regression test - Error message consistency", async () =>
   });
 });
 
-
 Deno.test("3_core: Regression test - Concurrent processing safety", async () => {
   logger.debug("Concurrent processing safety test started", {
     tag: "Concurrent execution operation verification",
