@@ -24,7 +24,7 @@ import { twoParamsHandler } from "../../../lib/cli/handlers/two_params_handler.t
 import { ConfigLoader } from "../../../lib/config/loader.ts";
 import { join } from "@std/path";
 
-// テストロガー初期化
+// Initialize test logger
 const logger = new BreakdownLogger("e2e-error-edge-cases");
 
 /**
@@ -139,11 +139,11 @@ const errorEnvironment = new ErrorSimulationEnvironment();
 
 /**
  * Test Suite: Configuration Error Handling
- * 設定エラーハンドリングテスト
+ * Configuration error handling test
  */
 Deno.test("E2E-ERROR: Configuration Loading Error Handling", async () => {
-  logger.debug("E2E設定読み込みエラーハンドリングテスト開始", {
-    scenario: "設定ファイル関連エラーの適切な処理",
+  logger.debug("E2E configuration loading error handling test started", {
+    scenario: "Proper handling of configuration file related errors",
   });
 
   await errorEnvironment.setup();
@@ -169,7 +169,9 @@ Deno.test("E2E-ERROR: Configuration Loading Error Handling", async () => {
   ];
 
   for (const scenario of errorScenarios) {
-    logger.debug(`設定エラーシナリオテスト: ${scenario.name}`, { scenario: scenario.name });
+    logger.debug(`Configuration error scenario test: ${scenario.name}`, {
+      scenario: scenario.name,
+    });
 
     try {
       // Setup corrupted or empty config if needed
@@ -184,7 +186,7 @@ Deno.test("E2E-ERROR: Configuration Loading Error Handling", async () => {
       // Attempt to load configuration
       const configResult = await ConfigLoader.loadBreakdownConfig(scenario.profileName, Deno.cwd());
 
-      logger.debug(`設定読み込み結果 ${scenario.name}`, {
+      logger.debug(`Configuration loading result ${scenario.name}`, {
         success: configResult.ok,
         expectFallback: scenario.expectFallback,
       });
@@ -192,9 +194,9 @@ Deno.test("E2E-ERROR: Configuration Loading Error Handling", async () => {
       if (scenario.expectFallback) {
         // Should either succeed with fallback or fail gracefully
         if (configResult.ok) {
-          logger.debug(`フォールバック成功 ${scenario.name}`, { config: configResult.data });
+          logger.debug(`Fallback successful ${scenario.name}`, { config: configResult.data });
         } else {
-          logger.debug(`適切なエラー処理 ${scenario.name}`, { error: configResult.error });
+          logger.debug(`Proper error handling ${scenario.name}`, { error: configResult.error });
           assertExists(configResult.error, "Error should be properly structured");
         }
       }
@@ -207,12 +209,12 @@ Deno.test("E2E-ERROR: Configuration Loading Error Handling", async () => {
       const handlerResult = await twoParamsHandler(params, config, options);
 
       // The handler should either succeed with defaults or fail gracefully
-      logger.debug(`ハンドラー結果 ${scenario.name}`, {
+      logger.debug(`Handler result ${scenario.name}`, {
         handlerSuccess: handlerResult.ok,
         error: handlerResult.ok ? undefined : handlerResult.error,
       });
     } catch (error) {
-      logger.debug(`予期しないエラー ${scenario.name}`, {
+      logger.debug(`Unexpected error ${scenario.name}`, {
         error: error instanceof Error ? error.message : String(error),
       });
       // Unexpected errors should be documented but not fail the test
@@ -221,16 +223,18 @@ Deno.test("E2E-ERROR: Configuration Loading Error Handling", async () => {
   }
 
   await errorEnvironment.cleanup();
-  logger.debug("E2E設定読み込みエラーハンドリングテスト完了", { resultStatus: "SUCCESS" });
+  logger.debug("E2E configuration loading error handling test completed", {
+    resultStatus: "SUCCESS",
+  });
 });
 
 /**
  * Test Suite: Parameter Validation Error Handling
- * パラメータバリデーションエラーハンドリングテスト
+ * Parameter validation error handling test
  */
 Deno.test("E2E-ERROR: Parameter Validation Error Handling", async () => {
-  logger.debug("E2Eパラメータバリデーションエラーハンドリングテスト開始", {
-    scenario: "パラメータ検証エラーの段階的処理",
+  logger.debug("E2E parameter validation error handling test started", {
+    scenario: "Staged processing of parameter validation errors",
   });
 
   const _configResult = await ConfigurationTestHelper.loadTestConfiguration("default-test");
@@ -285,7 +289,7 @@ Deno.test("E2E-ERROR: Parameter Validation Error Handling", async () => {
   ];
 
   for (const scenario of invalidParameterScenarios) {
-    logger.debug(`パラメータバリデーションシナリオ: ${scenario.name}`, {
+    logger.debug(`Parameter validation scenario: ${scenario.name}`, {
       scenario: scenario.name,
       paramsLength: scenario.params.length,
       firstParamLength: scenario.params[0]?.length || 0,
@@ -294,7 +298,7 @@ Deno.test("E2E-ERROR: Parameter Validation Error Handling", async () => {
     const options = {};
     const result = await twoParamsHandler(scenario.params, config, options);
 
-    logger.debug(`バリデーション結果 ${scenario.name}`, {
+    logger.debug(`Validation result ${scenario.name}`, {
       success: result.ok,
       expectedError: scenario.expectedErrorType,
       actualError: result.ok ? undefined : result.error.kind,
@@ -322,7 +326,7 @@ Deno.test("E2E-ERROR: Parameter Validation Error Handling", async () => {
     }
   }
 
-  logger.debug("E2Eパラメータバリデーションエラーハンドリングテスト完了", {
+  logger.debug("E2E parameter validation error handling test completed", {
     scenarios: invalidParameterScenarios.length,
     resultStatus: "SUCCESS",
   });
@@ -333,8 +337,8 @@ Deno.test("E2E-ERROR: Parameter Validation Error Handling", async () => {
  * リソース制約エラーハンドリングテスト
  */
 Deno.test("E2E-ERROR: Resource Constraint Error Handling", async () => {
-  logger.debug("E2Eリソース制約エラーハンドリングテスト開始", {
-    scenario: "リソース制約下での動作確認",
+  logger.debug("E2E resource constraint error handling test started", {
+    scenario: "Operation verification under resource constraints",
   });
 
   const configResult = await ConfigurationTestHelper.loadTestConfiguration("default-test");
@@ -358,7 +362,7 @@ Deno.test("E2E-ERROR: Resource Constraint Error Handling", async () => {
   ];
 
   for (const scenario of resourceConstraintScenarios) {
-    logger.debug(`リソース制約シナリオ: ${scenario.name}`, { scenario: scenario.name });
+    logger.debug(`Resource constraint scenario: ${scenario.name}`, { scenario: scenario.name });
 
     const monitor = new ResourceMonitor();
     monitor.start();
@@ -391,7 +395,7 @@ Deno.test("E2E-ERROR: Resource Constraint Error Handling", async () => {
         // Restore original function
         Deno.stdin.readSync = originalReadSync;
 
-        logger.debug(`大容量データ処理結果`, {
+        logger.debug(`Large data processing result`, {
           dataSizeMB: scenario.sizeMB,
           success: result.ok,
         });
@@ -411,7 +415,7 @@ Deno.test("E2E-ERROR: Resource Constraint Error Handling", async () => {
 
         const results = await Promise.allSettled(promises);
 
-        logger.debug(`並行処理結果`, {
+        logger.debug(`Concurrent processing result`, {
           concurrentCount: scenario.concurrentRequests,
           successfulResults: results.filter((r) => r.status === "fulfilled").length,
           failedResults: results.filter((r) => r.status === "rejected").length,
@@ -436,7 +440,7 @@ Deno.test("E2E-ERROR: Resource Constraint Error Handling", async () => {
           results.push(result);
         }
 
-        logger.debug(`連続処理結果`, {
+        logger.debug(`Sequential processing result`, {
           sequentialCount: scenario.sequentialRequests,
           successfulResults: results.filter((r) => r.ok).length,
         });
@@ -447,11 +451,13 @@ Deno.test("E2E-ERROR: Resource Constraint Error Handling", async () => {
       }
     } finally {
       const memoryStats = monitor.stop();
-      logger.debug(`リソース使用統計 ${scenario.name}`, memoryStats);
+      logger.debug(`Resource usage statistics ${scenario.name}`, memoryStats);
     }
   }
 
-  logger.debug("E2Eリソース制約エラーハンドリングテスト完了", { resultStatus: "SUCCESS" });
+  logger.debug("E2E resource constraint error handling test completed", {
+    resultStatus: "SUCCESS",
+  });
 });
 
 /**
@@ -459,8 +465,8 @@ Deno.test("E2E-ERROR: Resource Constraint Error Handling", async () => {
  * エッジケース入力処理テスト
  */
 Deno.test("E2E-ERROR: Edge Case Input Handling", async () => {
-  logger.debug("E2Eエッジケース入力処理テスト開始", {
-    scenario: "境界値・異常値入力の適切な処理",
+  logger.debug("E2E edge case input handling test started", {
+    scenario: "Proper handling of boundary and abnormal value inputs",
   });
 
   const _configResult = await ConfigurationTestHelper.loadTestConfiguration("flexible-test");
@@ -520,7 +526,7 @@ Deno.test("E2E-ERROR: Edge Case Input Handling", async () => {
   ];
 
   for (const scenario of edgeCaseScenarios) {
-    logger.debug(`エッジケースシナリオ: ${scenario.name}`, {
+    logger.debug(`Edge case scenario: ${scenario.name}`, {
       scenario: scenario.name,
       paramsTypes: scenario.params.map((p) => typeof p),
       expectError: scenario.expectError,
@@ -530,7 +536,7 @@ Deno.test("E2E-ERROR: Edge Case Input Handling", async () => {
       const options = {};
       const result = await twoParamsHandler(scenario.params, config, options);
 
-      logger.debug(`エッジケース結果 ${scenario.name}`, {
+      logger.debug(`Edge case result ${scenario.name}`, {
         success: result.ok,
         expectError: scenario.expectError,
         actualError: result.ok ? undefined : result.error?.kind,
@@ -546,12 +552,12 @@ Deno.test("E2E-ERROR: Edge Case Input Handling", async () => {
       }
     } catch (error) {
       if (scenario.expectError) {
-        logger.debug(`期待されたエラー ${scenario.name}`, {
+        logger.debug(`Expected error ${scenario.name}`, {
           error: error instanceof Error ? error.message : String(error),
         });
         // Expected error - test passes
       } else {
-        logger.debug(`予期しないエラー ${scenario.name}`, {
+        logger.debug(`Unexpected error ${scenario.name}`, {
           error: error instanceof Error ? error.message : String(error),
         });
         throw error; // Unexpected error - test fails
@@ -559,7 +565,7 @@ Deno.test("E2E-ERROR: Edge Case Input Handling", async () => {
     }
   }
 
-  logger.debug("E2Eエッジケース入力処理テスト完了", {
+  logger.debug("E2E edge case input processing test completed", {
     scenarios: edgeCaseScenarios.length,
     resultStatus: "SUCCESS",
   });
@@ -567,11 +573,11 @@ Deno.test("E2E-ERROR: Edge Case Input Handling", async () => {
 
 /**
  * Test Suite: Error Recovery and Graceful Degradation
- * エラー回復と優雅な劣化テスト
+ * Error recovery and graceful degradation test
  */
 Deno.test("E2E-ERROR: Error Recovery and Graceful Degradation", async () => {
-  logger.debug("E2Eエラー回復・優雅な劣化テスト開始", {
-    scenario: "エラー状況からの回復メカニズム確認",
+  logger.debug("E2E error recovery and graceful degradation test started", {
+    scenario: "Error recovery mechanism verification",
   });
 
   const configResult = await ConfigurationTestHelper.loadTestConfiguration("default-test");
@@ -608,13 +614,13 @@ Deno.test("E2E-ERROR: Error Recovery and Graceful Degradation", async () => {
   ];
 
   for (const scenario of recoveryScenarios) {
-    logger.debug(`回復シナリオテスト: ${scenario.name}`, { scenario: scenario.name });
+    logger.debug(`Recovery scenario test: ${scenario.name}`, { scenario: scenario.name });
 
     try {
       // First, cause an error
       const errorResult = await scenario.errorOperation();
 
-      logger.debug(`エラー操作結果 ${scenario.name}`, {
+      logger.debug(`Error operation result ${scenario.name}`, {
         errorOccurred: !errorResult.ok,
         errorType: errorResult.ok ? undefined : errorResult.error?.kind,
       });
@@ -625,7 +631,7 @@ Deno.test("E2E-ERROR: Error Recovery and Graceful Degradation", async () => {
       // Then, verify system can recover with valid operation
       const recoveryResult = await scenario.recoveryOperation();
 
-      logger.debug(`回復操作結果 ${scenario.name}`, {
+      logger.debug(`Recovery operation result ${scenario.name}`, {
         recoverySuccess: recoveryResult.ok,
         error: recoveryResult.ok ? undefined : recoveryResult.error?.kind,
       });
@@ -633,7 +639,7 @@ Deno.test("E2E-ERROR: Error Recovery and Graceful Degradation", async () => {
       // Recovery should succeed, demonstrating system resilience
       assertEquals(recoveryResult.ok, true, `${scenario.name} recovery should succeed`);
     } catch (error) {
-      logger.debug(`回復テスト例外 ${scenario.name}`, {
+      logger.debug(`Recovery test exception ${scenario.name}`, {
         error: error instanceof Error ? error.message : String(error),
       });
       // Log but don't fail - this tests the system's ability to handle unexpected errors
@@ -641,7 +647,9 @@ Deno.test("E2E-ERROR: Error Recovery and Graceful Degradation", async () => {
   }
 
   // Test graceful degradation with partial system failures
-  logger.debug("優雅な劣化テスト実行", { scenario: "部分的システム障害下での動作" });
+  logger.debug("Graceful degradation test execution", {
+    scenario: "Operation under partial system failure",
+  });
 
   try {
     // Simulate partial system failure (e.g., template not found)
@@ -654,7 +662,7 @@ Deno.test("E2E-ERROR: Error Recovery and Graceful Degradation", async () => {
       {},
     );
 
-    logger.debug("部分的障害結果", {
+    logger.debug("Partial failure result", {
       handled: partialFailureResult.ok !== undefined,
       gracefulDegradation: partialFailureResult.ok || partialFailureResult.error !== undefined,
     });
@@ -662,13 +670,15 @@ Deno.test("E2E-ERROR: Error Recovery and Graceful Degradation", async () => {
     // System should handle partial failures gracefully
     assertExists(partialFailureResult, "System should return result even with partial failures");
   } catch (error) {
-    logger.debug("部分的障害処理", {
+    logger.debug("Partial failure handling", {
       error: error instanceof Error ? error.message : String(error),
     });
     // System handled partial failure by throwing - this is also acceptable
   }
 
-  logger.debug("E2Eエラー回復・優雅な劣化テスト完了", { resultStatus: "SUCCESS" });
+  logger.debug("E2E error recovery and graceful degradation test completed", {
+    resultStatus: "SUCCESS",
+  });
 });
 
 /**
@@ -676,8 +686,8 @@ Deno.test("E2E-ERROR: Error Recovery and Graceful Degradation", async () => {
  * セキュリティ・インジェクション防止テスト
  */
 Deno.test("E2E-ERROR: Security and Injection Prevention", async () => {
-  logger.debug("E2Eセキュリティ・インジェクション防止テスト開始", {
-    scenario: "悪意のある入力に対する防御機能確認",
+  logger.debug("E2E security and injection prevention test started", {
+    scenario: "Defense mechanism verification against malicious input",
   });
 
   const securityScenarios = [
@@ -719,7 +729,7 @@ Deno.test("E2E-ERROR: Security and Injection Prevention", async () => {
   ];
 
   for (const scenario of securityScenarios) {
-    logger.debug(`セキュリティシナリオ: ${scenario.name}`, {
+    logger.debug(`Security scenario: ${scenario.name}`, {
       scenario: scenario.name,
       maliciousIntent: scenario.maliciousIntent,
     });
@@ -730,7 +740,7 @@ Deno.test("E2E-ERROR: Security and Injection Prevention", async () => {
     try {
       const result = await twoParamsHandler(scenario.params, config, options);
 
-      logger.debug(`セキュリティテスト結果 ${scenario.name}`, {
+      logger.debug(`Security test result ${scenario.name}`, {
         blocked: !result.ok,
         maliciousIntent: scenario.maliciousIntent,
         errorType: result.ok ? undefined : result.error?.kind,
@@ -764,7 +774,7 @@ Deno.test("E2E-ERROR: Security and Injection Prevention", async () => {
       }
     } catch (error) {
       // Catching exceptions is also acceptable for security scenarios
-      logger.debug(`セキュリティ例外処理 ${scenario.name}`, {
+      logger.debug(`Security exception handling ${scenario.name}`, {
         error: error instanceof Error ? error.message : String(error),
         maliciousIntent: scenario.maliciousIntent,
       });
@@ -783,7 +793,7 @@ Deno.test("E2E-ERROR: Security and Injection Prevention", async () => {
     }
   }
 
-  logger.debug("E2Eセキュリティ・インジェクション防止テスト完了", {
+  logger.debug("E2E security and injection prevention test completed", {
     scenarios: securityScenarios.length,
     resultStatus: "SECURITY_VERIFIED",
   });

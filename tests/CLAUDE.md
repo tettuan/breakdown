@@ -119,3 +119,6 @@ LOG_LENGTH=W deno test --allow-env --allow-write --allow-read
 
 `deno task ci` の実行時間が長いとき、エラーが多いとき、
 `deno task ci --single-file` を使う。` --single-file` オプションは1つずつ順番にテストするため全体テストの時間が不要。
+
+# LANG
+- use English in Test name, comments, log messages, and every others.

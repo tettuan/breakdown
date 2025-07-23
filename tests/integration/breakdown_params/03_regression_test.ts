@@ -1,8 +1,8 @@
 /**
- * @fileoverview 新統合フロー回帰テスト
+ * @fileoverview New integration flow regression test
  *
- * createDefault()修正後の回帰テスト要件を満たすテストスイート
- * 既存機能への影響がないことを確認
+ * Test suite meeting regression test requirements after createDefault() modifications
+ * Verify that existing functionality is not affected
  *
  * @module tests/integration/breakdown_params/03_regression_test
  */
@@ -18,19 +18,21 @@ import { TwoParamsType } from "../../../lib/types/two_params.ts";
 import { ConfigurationTestHelper } from "../../../lib/test_helpers/configuration_test_helper_simple.ts";
 import "../../../lib/types/performance.d.ts";
 
-// テストロガー初期化
+// Initialize test logger
 const logger = new BreakdownLogger("regression-test");
 
-Deno.test("0_architecture: 回帰テスト - TwoParamsType互換性", async () => {
-  logger.debug("TwoParamsType互換性テスト開始", { tag: "既存APIとの互換性確認" });
+Deno.test("0_architecture: Regression test - TwoParamsType compatibility", async () => {
+  logger.debug("TwoParamsType compatibility test started", {
+    tag: "Existing API compatibility verification",
+  });
 
-  // 新統合フローで取得したTwoParamsResult - 設定ファイルから有効な値を取得
+  // TwoParamsResult obtained from new integration flow - Get valid values from configuration file
   const configResult = await ConfigurationTestHelper.loadTestConfiguration("default-test");
   const validDirective = configResult.userConfig.testData.validDirectives[0];
   const validLayer = configResult.userConfig.testData.validLayers[0];
   const args = [validDirective, validLayer];
 
-  logger.debug("設定ファイルから取得した互換性テスト用値", {
+  logger.debug("Compatibility test values retrieved from config file", {
     directive: validDirective,
     layer: validLayer,
   });
@@ -40,10 +42,12 @@ Deno.test("0_architecture: 回帰テスト - TwoParamsType互換性", async () =
   if (!paramsResult.ok) return;
   assertExists(paramsResult.data);
 
-  // TwoParamsType.createOrErrorでの従来通りの処理
+  // Conventional processing with TwoParamsType.createOrError
   const twoParamsTypeResult = TwoParamsType.createOrError(paramsResult.data);
 
-  logger.debug("TwoParamsType作成結果 - 互換性チェック", { result: twoParamsTypeResult });
+  logger.debug("TwoParamsType creation result - Compatibility check", {
+    result: twoParamsTypeResult,
+  });
 
   assertEquals(twoParamsTypeResult.ok, true);
   if (!twoParamsTypeResult.ok) return;
@@ -54,42 +58,50 @@ Deno.test("0_architecture: 回帰テスト - TwoParamsType互換性", async () =
   assertEquals(twoParamsType.layer, validLayer);
   assertEquals(twoParamsType.params, [validDirective, validLayer]);
 
-  logger.debug("TwoParamsType互換性確認完了", { tag: "既存API互換性維持" });
+  logger.debug("TwoParamsType compatibility verification completed", {
+    tag: "Existing API compatibility maintained",
+  });
 });
 
-Deno.test("0_architecture: 回帰テスト - ConfigProfile依存除去確認", async () => {
-  logger.debug("ConfigProfile依存除去確認テスト開始", { tag: "ハードコード除去検証" });
+Deno.test("0_architecture: Regression test - ConfigProfile dependency removal confirmation", async () => {
+  logger.debug("ConfigProfile dependency removal confirmation test started", {
+    tag: "Hardcode elimination verification",
+  });
 
-  // createDefault()を使わない新しい実装での動作確認
+  // Verify operation with new implementation not using createDefault()
   const customConfigResult = await createCustomConfigFromProfile("default-test");
 
   assertEquals(customConfigResult.ok, true);
   if (!customConfigResult.ok) return;
   assertExists(customConfigResult.data);
 
-  // CustomConfigの内容が設定ファイルから適切に生成されていることを確認
+  // Verify that CustomConfig content is appropriately generated from configuration file
   const customConfig = customConfigResult.data;
 
-  // パターンが設定ファイルから読み込まれていること
+  // Verify that patterns are loaded from configuration file
   assertExists(customConfig.params);
   assertExists(customConfig.params.two);
   assertExists(customConfig.params.two.directiveType);
   assertExists(customConfig.params.two.layerType);
 
-  // ハードコードされた値ではなく、設定ファイルからの値であることを確認
-  logger.debug("設定ファイルから読み込まれたパターン - ハードコード除去確認", {
-    tag: "パターン確認",
+  // Verify values are from configuration file, not hardcoded
+  logger.debug("Patterns loaded from config file - Hardcode elimination confirmation", {
+    tag: "Pattern confirmation",
     directivePattern: customConfig.params.two.directiveType.pattern,
     layerPattern: customConfig.params.two.layerType.pattern,
   });
 
-  logger.debug("ConfigProfile依存除去確認完了", { tag: "ハードコード除去成功" });
+  logger.debug("ConfigProfile dependency removal confirmation completed", {
+    tag: "Hardcode elimination succeeded",
+  });
 });
 
-Deno.test("1_behavior: 回帰テスト - 既存テストケース互換性", async () => {
-  logger.debug("既存テストケース互換性テスト開始", { tag: "従来のテストケース動作確認" });
+Deno.test("1_behavior: Regression test - Existing test case compatibility", async () => {
+  logger.debug("Existing test case compatibility test started", {
+    tag: "Legacy test case operation verification",
+  });
 
-  // 従来のテストで使われていた典型的なパターンを設定ファイルから生成
+  // Generate typical patterns used in conventional tests from configuration file
   const configResult = await ConfigurationTestHelper.loadTestConfiguration("default-test");
   const validDirectives = configResult.userConfig.testData.validDirectives;
   const validLayers = configResult.userConfig.testData.validLayers;
@@ -115,34 +127,38 @@ Deno.test("1_behavior: 回帰テスト - 既存テストケース互換性", asy
     },
   ];
 
-  logger.debug("設定ファイルから生成されたテストケース", { testCases: legacyTestCases });
+  logger.debug("Test cases generated from config file", { testCases: legacyTestCases });
 
   for (const testCase of legacyTestCases) {
     const result = await createTwoParamsFromConfigFile(testCase.args, "default-test");
 
-    logger.debug(`既存テストケース結果: ${testCase.args.join(" ")}`, { result });
+    logger.debug(`Existing test case result: ${testCase.args.join(" ")}`, { result });
 
-    assertEquals(result.ok, true, `既存テストケースが失敗: ${testCase.args.join(" ")}`);
+    assertEquals(result.ok, true, `Existing test case failed: ${testCase.args.join(" ")}`);
     if (!result.ok) continue;
     assertExists(result.data);
     assertEquals(result.data.directive.value, testCase.expected.directive);
     assertEquals(result.data.layer.value, testCase.expected.layer);
   }
 
-  logger.debug("既存テストケース互換性確認完了", { tag: "従来テストケース動作維持" });
+  logger.debug("Existing test case compatibility verification completed", {
+    tag: "Legacy test case operation maintained",
+  });
 });
 
-Deno.test("1_behavior: 回帰テスト - エラーメッセージ整合性", async () => {
-  logger.debug("エラーメッセージ整合性テスト開始", { tag: "エラー処理の一貫性確認" });
+Deno.test("1_behavior: Regression test - Error message consistency", async () => {
+  logger.debug("Error message consistency test started", {
+    tag: "Error handling consistency verification",
+  });
 
-  // 無効な引数でのエラーメッセージ - 設定ファイルから無効な値を取得
+  // Error message with invalid arguments - Get invalid values from configuration file
   const configResult = await ConfigurationTestHelper.loadTestConfiguration("default-test");
   const invalidDirective = configResult.userConfig.testData.invalidDirectives[0] ||
     "invalid_directive";
   const invalidLayer = configResult.userConfig.testData.invalidLayers[0] || "invalid_layer";
   const invalidArgs = [invalidDirective, invalidLayer];
 
-  logger.debug("設定ファイルから取得した無効値", {
+  logger.debug("Invalid values retrieved from config file", {
     directive: invalidDirective,
     layer: invalidLayer,
   });
@@ -152,7 +168,7 @@ Deno.test("1_behavior: 回帰テスト - エラーメッセージ整合性", asy
   if (errorResult.ok) return;
   assertExists(errorResult.error);
 
-  // エラーの種類が適切であること (現在のBreakdownParams実装に基づく)
+  // Verify error type is appropriate (based on current BreakdownParams implementation)
   const errorKinds = [
     "ParamsExecutionError",
     "DirectiveTypeCreationError",
@@ -160,21 +176,23 @@ Deno.test("1_behavior: 回帰テスト - エラーメッセージ整合性", asy
     "InvalidParamsType",
   ];
   const hasValidErrorKind = errorKinds.includes(errorResult.error.kind);
-  assertEquals(hasValidErrorKind, true, `予期しないエラー種類: ${errorResult.error.kind}`);
+  assertEquals(hasValidErrorKind, true, `Unexpected error type: ${errorResult.error.kind}`);
 
-  logger.debug("エラーメッセージ - エラー種類確認", {
-    tag: "エラー詳細",
+  logger.debug("Error message - Error type verification", {
+    tag: "Error details",
     kind: errorResult.error.kind,
     message: errorResult.error.message,
   });
 
-  logger.debug("エラーメッセージ整合性確認完了", { tag: "エラー処理一貫性維持" });
+  logger.debug("Error message consistency verification completed", {
+    tag: "Error handling consistency maintained",
+  });
 });
 
-Deno.test("2_structure: 回帰テスト - パフォーマンス劣化チェック", async () => {
-  logger.debug("パフォーマンス劣化チェック開始", { tag: "処理時間測定" });
+Deno.test("2_structure: Regression test - Performance degradation check", async () => {
+  logger.debug("Performance degradation check started", { tag: "Processing time measurement" });
 
-  // パフォーマンステスト用の値を設定ファイルから取得
+  // Get values for performance test from configuration file
   const configResult = await ConfigurationTestHelper.loadTestConfiguration("default-test");
   const args = [
     configResult.userConfig.testData.validDirectives[0],
@@ -182,7 +200,7 @@ Deno.test("2_structure: 回帰テスト - パフォーマンス劣化チェッ�
   ];
   const iterations = 10;
 
-  logger.debug("設定ファイルから取得したパフォーマンステスト用値", { args });
+  logger.debug("Performance test values retrieved from config file", { args });
   const results: number[] = [];
 
   for (let i = 0; i < iterations; i++) {
@@ -197,24 +215,30 @@ Deno.test("2_structure: 回帰テスト - パフォーマンス劣化チェッ�
   const averageTime = results.reduce((a, b) => a + b, 0) / results.length;
   const maxTime = Math.max(...results);
 
-  logger.debug("パフォーマンス測定結果 - 実行時間統計", {
-    tag: "統計情報",
+  logger.debug("Performance measurement results - Execution time statistics", {
+    tag: "Statistical information",
     averageTime: `${averageTime.toFixed(2)}ms`,
     maxTime: `${maxTime.toFixed(2)}ms`,
     iterations,
   });
 
   // パフォーマンス劣化の検出 (100ms以内であること)
-  assertEquals(averageTime < 100, true, `平均実行時間が長すぎる: ${averageTime.toFixed(2)}ms`);
-  assertEquals(maxTime < 200, true, `最大実行時間が長すぎる: ${maxTime.toFixed(2)}ms`);
+  assertEquals(
+    averageTime < 100,
+    true,
+    `Average execution time is too long: ${averageTime.toFixed(2)}ms`,
+  );
+  assertEquals(maxTime < 200, true, `Maximum execution time is too long: ${maxTime.toFixed(2)}ms`);
 
-  logger.debug("パフォーマンス劣化チェック完了", { tag: "処理時間要件満足" });
+  logger.debug("Performance degradation check completed", {
+    tag: "Processing time requirements satisfied",
+  });
 });
 
-Deno.test("2_structure: 回帰テスト - メモリリーク検証", async () => {
-  logger.debug("メモリリーク検証テスト開始", { tag: "メモリ使用量確認" });
+Deno.test("2_structure: Regression test - Memory leak verification", async () => {
+  logger.debug("Memory leak verification test started", { tag: "Memory usage verification" });
 
-  // メモリリークテスト用の値を設定ファイルから取得
+  // Get values for memory leak test from configuration file
   const configResult = await ConfigurationTestHelper.loadTestConfiguration("flexible-test");
   const args = [
     configResult.userConfig.testData.validDirectives[1] ||
@@ -224,7 +248,7 @@ Deno.test("2_structure: 回帰テスト - メモリリーク検証", async () =>
   ];
   const iterations = 50;
 
-  logger.debug("設定ファイルから取得したメモリリークテスト用値", { args });
+  logger.debug("Memory leak test values retrieved from config file", { args });
 
   // 初期メモリ使用量測定（概算）
   const initialMemory = performance.memory?.usedJSHeapSize || 0;
@@ -233,7 +257,7 @@ Deno.test("2_structure: 回帰テスト - メモリリーク検証", async () =>
     const result = await createTwoParamsFromConfigFile(args, "flexible-test");
     assertEquals(result.ok, true);
 
-    // 強制ガベージコレクション（可能な場合）
+    // Force garbage collection (if possible)
     if (typeof gc !== "undefined" && gc) {
       gc();
     }
@@ -244,28 +268,30 @@ Deno.test("2_structure: 回帰テスト - メモリリーク検証", async () =>
 
   if (initialMemory > 0 && finalMemory > 0) {
     const memoryIncrease = finalMemory - initialMemory;
-    logger.debug("メモリ使用量変化 - メモリリーク検証", {
-      tag: "メモリ統計",
+    logger.debug("Memory usage change - Memory leak verification", {
+      tag: "Memory statistics",
       initialMemory: `${(initialMemory / 1024 / 1024).toFixed(2)}MB`,
       finalMemory: `${(finalMemory / 1024 / 1024).toFixed(2)}MB`,
       increase: `${(memoryIncrease / 1024 / 1024).toFixed(2)}MB`,
     });
 
-    // 大幅なメモリ増加がないことを確認（10MB以内）
+    // Verify no significant memory increase (within 10MB)
     assertEquals(
       memoryIncrease < 10 * 1024 * 1024,
       true,
-      `メモリ使用量が大幅に増加: ${(memoryIncrease / 1024 / 1024).toFixed(2)}MB`,
+      `Memory usage significantly increased: ${(memoryIncrease / 1024 / 1024).toFixed(2)}MB`,
     );
   }
 
-  logger.debug("メモリリーク検証完了", { tag: "メモリ使用量正常" });
+  logger.debug("Memory leak verification completed", { tag: "Memory usage normal" });
 });
 
-Deno.test("3_core: 回帰テスト - 並行処理安全性", async () => {
-  logger.debug("並行処理安全性テスト開始", { tag: "同時実行での動作確認" });
+Deno.test("3_core: Regression test - Concurrent processing safety", async () => {
+  logger.debug("Concurrent processing safety test started", {
+    tag: "Concurrent execution operation verification",
+  });
 
-  // 並行処理テストケースを設定ファイルから動的生成
+  // Dynamically generate concurrent processing test cases from configuration file
   const defaultConfig = await ConfigurationTestHelper.loadTestConfiguration("default-test");
   const flexibleConfig = await ConfigurationTestHelper.loadTestConfiguration("flexible-test");
 
@@ -304,7 +330,7 @@ Deno.test("3_core: 回帰テスト - 並行処理安全性", async () => {
     },
   ];
 
-  logger.debug("設定ファイルから生成した並行処理テストケース", { testCases });
+  logger.debug("Concurrent processing test cases generated from config file", { testCases });
 
   // 全テストケースを並行実行
   const promises = testCases.map(async (testCase, index) => {
@@ -314,16 +340,20 @@ Deno.test("3_core: 回帰テスト - 並行処理安全性", async () => {
 
   const results = await Promise.all(promises);
 
-  // 全ての結果が正常であることを確認
+  // Verify all results are successful
   for (const { index, testCase, result } of results) {
-    logger.debug(`並行処理結果 - テストケース${index}: ${testCase.args.join(" ")}`, { result });
+    logger.debug(`Concurrent processing result - Test case ${index}: ${testCase.args.join(" ")}`, {
+      result,
+    });
 
-    assertEquals(result.ok, true, `並行処理テストケース${index}が失敗`);
+    assertEquals(result.ok, true, `Concurrent processing test case ${index} failed`);
     if (!result.ok) continue;
     assertExists(result.data);
     assertEquals(result.data.directiveType, testCase.args[0]);
     assertEquals(result.data.layerType, testCase.args[1]);
   }
 
-  logger.debug("並行処理安全性確認完了", { tag: "同時実行での動作正常" });
+  logger.debug("Concurrent processing safety verification completed", {
+    tag: "Concurrent execution operation normal",
+  });
 });

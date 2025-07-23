@@ -1,8 +1,8 @@
 /**
- * @fileoverview ハードコード除去確認テスト - DirectiveType/LayerTypeの配列ハードコード検証
+ * @fileoverview Hardcode elimination verification test - DirectiveType/LayerType array hardcode validation
  *
- * コードベース内でハードコードされた配列が存在しないことを確認し、
- * すべての型定義が設定ファイルから動的に読み込まれることを検証
+ * Verify that no hardcoded arrays exist in the codebase,
+ * and all type definitions are dynamically loaded from configuration files
  *
  * @module tests/integration/jsr_integration/hardcode_elimination_test
  */
@@ -15,12 +15,12 @@ import { join } from "@std/path";
 
 const logger = new BreakdownLogger("hardcode-check");
 
-describe("ハードコード除去の確認", () => {
-  describe("DirectiveType/LayerType配列のハードコード検出", () => {
-    it("lib/domain/core/value_objects/ 内でハードコードされた配列が存在しない", async () => {
+describe("Hardcode elimination verification", () => {
+  describe("DirectiveType/LayerType array hardcode detection", () => {
+    it("No hardcoded arrays exist in lib/domain/core/value_objects/", async () => {
       const targetDir = join(Deno.cwd(), "lib", "domain", "core", "value_objects");
 
-      // ハードコードのパターンを定義
+      // Define hardcode patterns
       const hardcodePatterns = [
         // 配列リテラル
         /\[(["'])(to|summary|defect|find|project|issue|task)\1[\s,\S]*?\]/g,
@@ -42,7 +42,7 @@ describe("ハードコード除去の確認", () => {
         lines.forEach((line, index) => {
           hardcodePatterns.forEach((pattern) => {
             if (pattern.test(line)) {
-              // コメント行やテスト用のモックデータは除外
+              // Exclude comment lines and mock data for tests
               if (
                 !line.trim().startsWith("//") &&
                 !line.includes("test") &&
@@ -60,21 +60,21 @@ describe("ハードコード除去の確認", () => {
         });
       }
 
-      logger.debug("ハードコード検査結果", {
+      logger.debug("Hardcode inspection result", {
         filesChecked: files.length,
         violations: violations.length,
         details: violations,
       });
 
-      // ハードコードが存在しないことを確認
+      // Verify that no hardcodes exist
       assertEquals(
         violations.length,
         0,
-        `ハードコードされた配列が見つかりました: ${JSON.stringify(violations, null, 2)}`,
+        `Hardcoded arrays found: ${JSON.stringify(violations, null, 2)}`,
       );
     });
 
-    it("削除済みファイルが存在しないことの確認", async () => {
+    it("Verification that deleted files do not exist", async () => {
       const targetFile = join(
         Deno.cwd(),
         "lib",
@@ -83,20 +83,20 @@ describe("ハードコード除去の確認", () => {
         "default_type_pattern_provider.ts",
       );
 
-      // ファイルが削除されていることを確認
+      // Verify that the file has been deleted
       try {
         await Deno.readTextFile(targetFile);
-        throw new Error("削除予定のファイルがまだ存在しています");
+        throw new Error("File scheduled for deletion still exists");
       } catch (error) {
         if (error instanceof Deno.errors.NotFound) {
-          logger.debug("ハードコード除去確認", {
+          logger.debug("Hardcode removal confirmation", {
             file: "default_type_pattern_provider.ts",
             status: "successfully_removed",
-            note: "TypePatternProvider機能はJSRパッケージに移行済み",
+            note: "TypePatternProvider functionality migrated to JSR package",
           });
 
-          // 成功：ファイルが正常に削除されている
-          assertEquals(true, true, "default_type_pattern_provider.ts は正常に削除されました");
+          // Success: File has been properly deleted
+          assertEquals(true, true, "default_type_pattern_provider.ts was successfully deleted");
         } else {
           throw error;
         }
@@ -104,8 +104,8 @@ describe("ハードコード除去の確認", () => {
     });
   });
 
-  describe("動的パターンプロバイダーの検証", () => {
-    it("PatternProvider が設定から動的にパターンを取得している", async () => {
+  describe("Dynamic pattern provider verification", () => {
+    it("PatternProvider dynamically retrieves patterns from configuration", async () => {
       const targetFiles = [
         join(Deno.cwd(), "lib", "config", "pattern_provider.ts"),
         join(Deno.cwd(), "lib", "config", "pattern_provider_async.ts"),
@@ -114,11 +114,11 @@ describe("ハードコード除去の確認", () => {
       for (const file of targetFiles) {
         const content = await Deno.readTextFile(file);
 
-        // 動的パターン取得の実装を確認
+        // Verify implementation of dynamic pattern retrieval
         const dynamicPatterns = [
           /this\.config\./g,
           /customConfig\./g,
-          /pattern\s*=\s*[^"']/g, // 変数からの代入
+          /pattern\s*=\s*[^"']/g, // Assignment from variables
           /getDirectivePattern/g,
           /getLayerPattern/g,
         ];
@@ -131,7 +131,7 @@ describe("ハードコード除去の確認", () => {
           }
         });
 
-        logger.debug("動的実装の検査", {
+        logger.debug("Dynamic implementation inspection", {
           file: file.replace(Deno.cwd(), "."),
           dynamicImplementations,
           isDynamic: dynamicImplementations > 0,
@@ -140,20 +140,20 @@ describe("ハードコード除去の確認", () => {
         assertEquals(
           dynamicImplementations > 0,
           true,
-          `${file} が動的パターン取得を実装していません`,
+          `${file} does not implement dynamic pattern retrieval`,
         );
       }
     });
   });
 
-  describe("統合テストでの設定駆動確認", () => {
-    it("異なるプロファイルで異なるパターンが使用される", async () => {
+  describe("Configuration-driven verification in integration tests", () => {
+    it("Different profiles use different patterns", async () => {
       // ConfigBasedTwoParamsBuilderを使用して確認
       const { ConfigBasedTwoParamsBuilder } = await import(
         "../../../lib/config/config_based_two_params_builder.ts"
       );
 
-      // 異なるプロファイルでビルダーを作成
+      // Create builders with different profiles
       const profiles = [
         { name: "default", expectedPatterns: true },
         { name: "breakdown-params-integration", expectedPatterns: true },
@@ -174,34 +174,34 @@ describe("ハードコード除去の確認", () => {
             };
           }
         } catch (error) {
-          logger.debug("プロファイル読み込みスキップ", {
+          logger.debug("Profile loading skipped", {
             profile: profile.name,
             reason: error instanceof Error ? error.message : String(error),
           });
         }
       }
 
-      logger.debug("プロファイル別パターン", patterns);
+      logger.debug("Profile-specific patterns", patterns);
 
-      // 少なくとも2つのプロファイルが読み込まれることを確認
+      // Verify that at least 2 profiles are loaded
       const loadedProfiles = Object.keys(patterns);
-      assertEquals(loadedProfiles.length >= 2, true, "複数のプロファイルが読み込まれませんでした");
+      assertEquals(loadedProfiles.length >= 2, true, "Multiple profiles were not loaded");
 
-      // パターンが存在し、文字列であることを確認
+      // Verify that patterns exist and are strings
       loadedProfiles.forEach((profileName) => {
         const pattern = patterns[profileName];
         if (pattern.directive) {
           assertEquals(
             typeof pattern.directive,
             "string",
-            `${profileName} の directive パターンが文字列ではありません`,
+            `${profileName} directive pattern is not a string`,
           );
         }
         if (pattern.layer) {
           assertEquals(
             typeof pattern.layer,
             "string",
-            `${profileName} の layer パターンが文字列ではありません`,
+            `${profileName} layer pattern is not a string`,
           );
         }
       });
@@ -210,7 +210,7 @@ describe("ハードコード除去の確認", () => {
 });
 
 /**
- * TypeScriptファイルを再帰的に検索
+ * Recursively search for TypeScript files
  */
 async function findTypeScriptFiles(dir: string): Promise<string[]> {
   const files: string[] = [];
@@ -227,7 +227,7 @@ async function findTypeScriptFiles(dir: string): Promise<string[]> {
       }
     }
   } catch (error) {
-    logger.debug("ディレクトリ読み込みエラー", {
+    logger.debug("Directory reading error", {
       dir,
       error: error instanceof Error ? error.message : String(error),
     });

@@ -1,8 +1,8 @@
 /**
- * @fileoverview BreakdownParams + BreakdownConfig 統合テスト
+ * @fileoverview BreakdownParams + BreakdownConfig Integration Test
  *
- * 設定ファイル(*-user.yml) → CustomConfig → BreakdownParams → TwoParamsResult の完全統合テスト
- * ハードコード除去とConfigProfile依存除去の検証
+ * Configuration file (*-user.yml) → CustomConfig → BreakdownParams → TwoParamsResult complete integration test
+ * Verification of hardcode elimination and ConfigProfile dependency removal
  *
  * @module tests/integration/breakdown_params_integration.test
  */
@@ -17,37 +17,37 @@ import { executeBreakdownParams } from "../../lib/application/breakdown_params_i
 const logger = new BreakdownLogger("breakdown-params-integration");
 
 /**
- * 設定ファイル → ParamsCustomConfig 生成テスト
+ * Configuration file → ParamsCustomConfig generation test
  */
 async function createParamsCustomConfigFromProfile(
   profileName: string,
 ): Promise<ParamsCustomConfig> {
-  // ConfigProfile生成
+  // ConfigProfile generation
   const profile = ConfigProfile.create(profileName);
 
-  // 設定ファイル読み込み
+  // Configuration file loading
   const userConfig = await loadUserConfig(profile);
 
-  // ParamsCustomConfig生成
+  // ParamsCustomConfig generation
   return ParamsCustomConfig.create(userConfig);
 }
 
 // executeBreakdownParams is now imported from breakdown_params_integration.ts
 
 Deno.test({
-  name: "BreakdownParams統合テスト: 基本フロー完全検証",
+  name: "BreakdownParams Integration Test: Complete Basic Flow Verification",
   fn: async () => {
-    logger.debug("統合テスト開始: 基本フロー完全検証", { stage: "test" });
+    logger.debug("Integration test started: Complete basic flow verification", { stage: "test" });
 
-    // Step 1: 設定ファイル → ParamsCustomConfig 生成
+    // Step 1: Configuration file → ParamsCustomConfig generation
     const paramsCustomConfig = await createParamsCustomConfigFromProfile(
       "breakdown-params-integration",
     );
-    assertExists(paramsCustomConfig, "ParamsCustomConfigが生成されること");
-    assertExists(paramsCustomConfig.directivePattern, "DirectiveTypeパターンが設定されること");
-    assertExists(paramsCustomConfig.layerPattern, "LayerTypeパターンが設定されること");
+    assertExists(paramsCustomConfig, "ParamsCustomConfig should be generated");
+    assertExists(paramsCustomConfig.directivePattern, "DirectiveType pattern should be configured");
+    assertExists(paramsCustomConfig.layerPattern, "LayerType pattern should be configured");
 
-    // Step 2: CLI引数 → BreakdownParams実行 - 設定ファイルから有効な値を取得
+    // Step 2: CLI arguments → BreakdownParams execution - Get valid values from configuration file
     const testProfile = ConfigProfile.create("breakdown-params-integration");
     const testUserConfig = await loadUserConfig(testProfile);
     const testData = testUserConfig.testData as {
@@ -61,7 +61,7 @@ Deno.test({
       "breakdown-params-integration",
     );
 
-    logger.debug("設定ファイルから取得した基本フロー検証用値", {
+    logger.debug("Basic flow verification values retrieved from config file", {
       directive: validDirective,
       layer: validLayer,
     });
@@ -70,53 +70,59 @@ Deno.test({
       throw new Error(`executeBreakdownParams failed: ${JSON.stringify(paramsResult.error)}`);
     }
 
-    assertEquals(paramsResult.data.type, "two", "TwoParamsResultが返されること");
+    assertEquals(paramsResult.data.type, "two", "TwoParamsResult should be returned");
 
-    logger.debug("統合テスト完了: 全ステップ成功確認", { stage: "test" });
+    logger.debug("Integration test completed: All steps successfully confirmed", { stage: "test" });
   },
 });
 
 Deno.test({
-  name: "BreakdownParams統合テスト: 設定ファイルベース検証",
+  name: "BreakdownParams Integration Test: Configuration File-Based Verification",
   fn: async () => {
-    logger.debug("設定ファイルベース検証開始", { stage: "test" });
+    logger.debug("Config file-based verification started", { stage: "test" });
 
-    // breakdown-params-integration-user.yml からパターン読み込み
+    // Pattern loading from breakdown-params-integration-user.yml
     const profile = ConfigProfile.create("breakdown-params-integration");
     const userConfig = await loadUserConfig(profile);
     const paramsCustomConfig = ParamsCustomConfig.create(userConfig);
 
-    // 設定値確認
+    // Configuration value verification
     assertEquals(
       paramsCustomConfig.directivePattern,
       "to|summary|defect|find|test_directive",
-      "DirectiveTypeパターンが正しく読み込まれること",
+      "DirectiveType pattern should be loaded correctly",
     );
     assertEquals(
       paramsCustomConfig.layerPattern,
       "project|issue|task|test_layer",
-      "LayerTypeパターンが正しく読み込まれること",
+      "LayerType pattern should be loaded correctly",
     );
 
-    logger.debug("設定ファイルベース検証完了", { stage: "test" });
+    logger.debug("Config file-based verification completed", { stage: "test" });
   },
 });
 
 Deno.test({
-  name: "BreakdownParams統合テスト: ConfigProfile依存除去確認",
+  name: "BreakdownParams Integration Test: ConfigProfile Dependency Removal Verification",
   fn: async () => {
-    logger.debug("ConfigProfile依存除去確認開始", { stage: "test" });
+    logger.debug("ConfigProfile dependency removal confirmation started", { stage: "test" });
 
-    // ConfigProfile → 設定ファイル → ParamsCustomConfig フローの確認
+    // ConfigProfile → Configuration file → ParamsCustomConfig flow verification
     const profile = ConfigProfile.create("default-test");
     const userConfig = await loadUserConfig(profile);
     const paramsCustomConfig = ParamsCustomConfig.create(userConfig);
 
-    // 設定ファイルベース実装の動作確認
-    assertExists(paramsCustomConfig.directivePattern, "設定ファイルベース実装が動作していること");
-    assertExists(paramsCustomConfig.layerPattern, "設定ファイルベース実装が動作していること");
+    // Configuration file-based implementation operation verification
+    assertExists(
+      paramsCustomConfig.directivePattern,
+      "Config file-based implementation should be working",
+    );
+    assertExists(
+      paramsCustomConfig.layerPattern,
+      "Config file-based implementation should be working",
+    );
 
-    // ハードコード配列を使用しない実装確認 - 設定ファイルから有効な値を取得
+    // Implementation verification without using hardcoded arrays - Get valid values from configuration file
     const defaultProfile = ConfigProfile.create("default-test");
     const defaultUserConfig = await loadUserConfig(defaultProfile);
     const defaultTestData = defaultUserConfig.testData as {
@@ -127,100 +133,104 @@ Deno.test({
     const validLayer = defaultTestData.validLayers[0];
     const result = await executeBreakdownParams([validDirective, validLayer], "default-test");
 
-    logger.debug("設定ファイルから取得したConfigProfile依存除去確認用値", {
-      directive: validDirective,
-      layer: validLayer,
-    });
+    logger.debug(
+      "ConfigProfile dependency removal confirmation values retrieved from config file",
+      {
+        directive: validDirective,
+        layer: validLayer,
+      },
+    );
     assertEquals(
       result.ok && result.data.type,
       "two",
-      "設定ファイルベースパース実行が成功すること",
+      "Config file-based parsing should succeed",
     );
 
-    logger.debug("ConfigProfile依存除去確認完了", { stage: "test" });
+    logger.debug("ConfigProfile dependency removal confirmation completed", { stage: "test" });
   },
 });
 
 Deno.test({
-  name: "BreakdownParams統合テスト: ParamsCustomConfig生成検証",
+  name: "BreakdownParams Integration Test: ParamsCustomConfig Generation Verification",
   fn: async () => {
-    logger.debug("ParamsCustomConfig生成検証開始", { stage: "test" });
+    logger.debug("ParamsCustomConfig generation verification started", { stage: "test" });
 
-    // breakdown-params-integration-user.yml の詳細確認
+    // breakdown-params-integration-user.yml detailed verification
     const profile = ConfigProfile.create("breakdown-params-integration");
     const userConfig = await loadUserConfig(profile);
 
-    // ParamsCustomConfig生成
+    // ParamsCustomConfig generation
     const paramsCustomConfig = ParamsCustomConfig.create(userConfig);
 
-    // パターン設定確認
+    // Pattern configuration verification
     assertEquals(
       paramsCustomConfig.directivePattern,
       "to|summary|defect|find|test_directive",
-      "統合用DirectiveTypeパターンが正しく設定されること",
+      "Integration DirectiveType pattern should be configured correctly",
     );
     assertEquals(
       paramsCustomConfig.layerPattern,
       "project|issue|task|test_layer",
-      "統合用LayerTypeパターンが正しく設定されること",
+      "Integration LayerType pattern should be configured correctly",
     );
 
-    // testData確認
-    assertExists(paramsCustomConfig.testData, "testDataが存在すること");
+    // testData verification
+    assertExists(paramsCustomConfig.testData, "testData should exist");
 
-    logger.debug("ParamsCustomConfig生成検証完了", { stage: "test" });
+    logger.debug("ParamsCustomConfig generation verification completed", { stage: "test" });
   },
 });
 
 Deno.test({
-  name: "BreakdownParams統合テスト: 複数プロファイル設定ファイル読み込み検証",
+  name:
+    "BreakdownParams Integration Test: Multiple Profile Configuration File Loading Verification",
   fn: async () => {
-    logger.debug("複数プロファイル設定ファイル読み込み検証開始", { stage: "test" });
+    logger.debug("Multiple profile config file loading verification started", { stage: "test" });
 
-    // デフォルトテスト設定の読み込み
+    // Default test configuration loading
     const defaultProfile = ConfigProfile.create("default-test");
     const defaultUserConfig = await loadUserConfig(defaultProfile);
     const defaultParamsCustomConfig = ParamsCustomConfig.create(defaultUserConfig);
 
     assertExists(
       defaultParamsCustomConfig.directivePattern,
-      "デフォルト設定のDirectiveTypeパターンが読み込まれること",
+      "Default configuration DirectiveType pattern should be loaded",
     );
     assertExists(
       defaultParamsCustomConfig.layerPattern,
-      "デフォルト設定のLayerTypeパターンが読み込まれること",
+      "Default configuration LayerType pattern should be loaded",
     );
 
-    // 統合テスト用設定の読み込み
+    // Integration test configuration loading
     const integrationProfile = ConfigProfile.create("breakdown-params-integration");
     const integrationUserConfig = await loadUserConfig(integrationProfile);
     const integrationParamsCustomConfig = ParamsCustomConfig.create(integrationUserConfig);
 
     assertExists(
       integrationParamsCustomConfig.directivePattern,
-      "統合テスト設定のDirectiveTypeパターンが読み込まれること",
+      "Integration test configuration DirectiveType pattern should be loaded",
     );
     assertExists(
       integrationParamsCustomConfig.layerPattern,
-      "統合テスト設定のLayerTypeパターンが読み込まれること",
+      "Integration test configuration LayerType pattern should be loaded",
     );
 
-    // 異なる設定値が読み込まれることを確認
+    // Verify that different configuration values are loaded
     assert(
       integrationParamsCustomConfig.directivePattern.includes("test_directive"),
-      "統合設定に拡張パターンが含まれること",
+      "Integration configuration should include extended patterns",
     );
 
-    logger.debug("複数プロファイル設定ファイル読み込み検証完了", { stage: "test" });
+    logger.debug("Multiple profile config file loading verification completed", { stage: "test" });
   },
 });
 
 Deno.test({
-  name: "BreakdownParams統合テスト: ParamsResult型安全検証",
+  name: "BreakdownParams Integration Test: ParamsResult Type Safety Verification",
   fn: async () => {
-    logger.debug("ParamsResult型安全検証開始", { stage: "test" });
+    logger.debug("ParamsResult type safety verification started", { stage: "test" });
 
-    // 有効な引数でのテスト - 設定ファイルから有効な値を取得
+    // Test with valid arguments - Get valid values from configuration file
     const integrationProfile = ConfigProfile.create("breakdown-params-integration");
     const integrationUserConfig = await loadUserConfig(integrationProfile);
     const integrationTestData = integrationUserConfig.testData as {
@@ -234,56 +244,56 @@ Deno.test({
       "breakdown-params-integration",
     );
 
-    logger.debug("設定ファイルから取得した型安全検証用値", {
+    logger.debug("Type safety verification values retrieved from config file", {
       directive: validDirective,
       layer: validLayer,
     });
     assertEquals(
       validResult.ok && validResult.data.type,
       "two",
-      "有効な引数でTwoParamsResultが返されること",
+      "TwoParamsResult should be returned with valid arguments",
     );
 
-    // 単一引数でのテスト（エラーまたは特定の型が返される）
+    // Test with single argument (error or specific type is returned)
     const oneResult = await executeBreakdownParams(
       [validDirective],
       "breakdown-params-integration",
     );
-    // BreakdownParams実装では単一引数はエラーになるため、ok=falseを期待
+    // BreakdownParams implementation returns error for single argument, expect ok=false
     assert(
       !oneResult.ok || typeof oneResult.data?.type === "string",
-      "単一引数で結果が返されること",
+      "Result should be returned with single argument",
     );
 
-    // 引数なしでのテスト（エラーまたは特定の型が返される）
+    // Test with no arguments (error or specific type is returned)
     const zeroResult = await executeBreakdownParams([], "breakdown-params-integration");
-    // BreakdownParams実装では引数なしはエラーになるため、ok=falseを期待
+    // BreakdownParams implementation returns error for no arguments, expect ok=false
     assert(
       !zeroResult.ok || typeof zeroResult.data?.type === "string",
-      "引数なしで結果が返されること",
+      "Result should be returned with no arguments",
     );
 
-    logger.debug("ParamsResult型安全検証完了", { stage: "test" });
+    logger.debug("ParamsResult type safety verification completed", { stage: "test" });
   },
 });
 
 Deno.test({
-  name: "BreakdownParams統合テスト: testDataアクセス検証",
+  name: "BreakdownParams Integration Test: testData Access Verification",
   fn: async () => {
-    logger.debug("testDataアクセス検証開始", { stage: "test" });
+    logger.debug("testData access verification started", { stage: "test" });
 
-    // breakdown-params-integration-user.yml のtestData確認
+    // breakdown-params-integration-user.yml testData verification
     const profile = ConfigProfile.create("breakdown-params-integration");
     const userConfig = await loadUserConfig(profile);
     const paramsCustomConfig = ParamsCustomConfig.create(userConfig);
 
-    // testDataの存在確認
+    // testData existence verification
     const testData = paramsCustomConfig.testData;
-    assertExists(testData, "testDataが存在すること");
+    assertExists(testData, "testData should exist");
 
-    // testDataがオブジェクトであることを確認
-    assert(typeof testData === "object", "testDataがオブジェクトであること");
+    // Verify that testData is an object
+    assert(typeof testData === "object", "testData should be an object");
 
-    logger.debug("testDataアクセス検証完了", { stage: "test" });
+    logger.debug("testData access verification completed", { stage: "test" });
   },
 });

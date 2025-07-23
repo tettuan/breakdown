@@ -1,34 +1,34 @@
 /**
- * @fileoverview JSRPatternAdapter シンプルテスト
+ * @fileoverview JSRPatternAdapter simple test
  *
- * DEFAULT_CUSTOM_CONFIGのみを使用したシンプルな動作確認
+ * Simple operation verification using only DEFAULT_CUSTOM_CONFIG
  */
 
 import { assert, assertEquals } from "../deps.ts";
 import { JSRPatternAdapter } from "./jsr_pattern_adapter.ts";
 
-Deno.test("JSRPatternAdapter - DEFAULT_CUSTOM_CONFIGでの基本動作", () => {
-  // DEFAULT_CUSTOM_CONFIGでの作成
+Deno.test("JSRPatternAdapter - Basic operation with DEFAULT_CUSTOM_CONFIG", () => {
+  // Create with DEFAULT_CUSTOM_CONFIG
   const result = JSRPatternAdapter.create();
 
   if (!result.ok) {
     const errorMessage = "message" in result.error ? result.error.message : result.error.kind;
     console.log(`Creation failed: ${errorMessage}`);
 
-    // エラーでも継続（デバッグ目的）
+    // Continue even on error (for debugging purposes)
     assert(false, `JSRPatternAdapter creation failed: ${errorMessage}`);
   }
 
   const adapter = result.data;
 
-  // 基本的な初期化確認
+  // Basic initialization verification
   assertEquals(adapter.isInitialized(), true);
 
-  // デバッグ情報確認
+  // Debug information verification
   const debugInfo = adapter.debug();
   console.log("Debug info:", debugInfo);
 
-  // TypePatternProvider基本メソッドの動作確認
+  // Verify TypePatternProvider basic method operation
   console.log("validateDirectiveType('to'):", adapter.validateDirectiveType("to"));
   console.log("validateLayerType('project'):", adapter.validateLayerType("project"));
 
@@ -36,7 +36,7 @@ Deno.test("JSRPatternAdapter - DEFAULT_CUSTOM_CONFIGでの基本動作", () => {
   console.log("getValidLayerTypes():", adapter.getValidLayerTypes());
 });
 
-Deno.test("JSRPatternAdapter - パターンオブジェクト取得", () => {
+Deno.test("JSRPatternAdapter - Pattern object retrieval", () => {
   const result = JSRPatternAdapter.create();
 
   if (result.ok) {
@@ -48,7 +48,7 @@ Deno.test("JSRPatternAdapter - パターンオブジェクト取得", () => {
     console.log("DirectivePattern:", directivePattern);
     console.log("LayerPattern:", layerPattern);
 
-    // パターンが取得できているか確認（null でも構わない）
+    // Verify patterns can be retrieved (null is acceptable)
     console.log("Has directive pattern:", directivePattern !== null);
     console.log("Has layer pattern:", layerPattern !== null);
   } else {

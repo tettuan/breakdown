@@ -1,8 +1,8 @@
 /**
- * @fileoverview DirectiveType/LayerType 統合テスト - 基本機能
+ * @fileoverview DirectiveType/LayerType Integration Test - Basic Functionality
  *
- * ハードコード依存を完全に排除し、設定ファイルベースの実装に移行。
- * BreakdownParams統合により動的な型生成と検証を実現。
+ * Completely eliminates hardcode dependencies and migrates to configuration file-based implementation.
+ * Achieves dynamic type generation and validation through BreakdownParams integration.
  *
  * @module tests/integration/directive_layer_types/tests/01_basic_integration_test
  */
@@ -19,7 +19,7 @@ import {
 import { DirectiveType } from "../../../../lib/domain/core/value_objects/directive_type.ts";
 import { LayerType } from "../../../../lib/domain/core/value_objects/layer_type.ts";
 
-// テストロガー初期化
+// Test logger initialization
 const logger = new BreakdownLogger("directive-layer-integration-test");
 
 /**
@@ -29,10 +29,10 @@ function assertFalse(actual: boolean, msg?: string): void {
   assert(actual === false, msg);
 }
 
-Deno.test("DirectiveType/LayerType Integration - 1_behavior: 基本的な型生成と検証", async () => {
-  logger.debug("基本統合テスト開始", { test: "basic_type_creation" });
+Deno.test("DirectiveType/LayerType Integration - 1_behavior: Basic type creation and validation", async () => {
+  logger.debug("Basic integration test started", { test: "basic_type_creation" });
 
-  // Step 1: 設定ファイルから有効な値を動的に取得
+  // Step 1: Dynamically obtain valid values from configuration file
   const configResult = await ConfigurationTestHelper.loadTestConfiguration("default");
   assertExists(configResult, "Configuration should be loaded");
 
@@ -42,37 +42,37 @@ Deno.test("DirectiveType/LayerType Integration - 1_behavior: 基本的な型生�
   assertExists(validDirectives, "validDirectives should be defined in test configuration");
   assertExists(validLayers, "validLayers should be defined in test configuration");
 
-  logger.debug("設定ファイルから取得した有効値", {
-    tag: "有効値",
+  logger.debug("Valid values obtained from configuration file", {
+    tag: "valid_values",
     directives: validDirectives,
     layers: validLayers,
   });
 
-  // Step 2: DirectiveType の生成と検証
+  // Step 2: DirectiveType creation and validation
   for (const directive of validDirectives) {
     const directiveResult = DirectiveType.create(directive);
     assertEquals(directiveResult.ok, true, `DirectiveType.create should succeed for ${directive}`);
     if (directiveResult.ok) {
       assertEquals(directiveResult.data.value, directive);
-      logger.debug("DirectiveType 生成成功", { directive });
+      logger.debug("DirectiveType creation successful", { directive });
     }
   }
 
-  // Step 3: LayerType の生成と検証
+  // Step 3: LayerType creation and validation
   for (const layer of validLayers) {
     const layerResult = LayerType.create(layer);
     assertEquals(layerResult.ok, true, `LayerType.create should succeed for ${layer}`);
     if (layerResult.ok) {
       assertEquals(layerResult.data.value, layer);
-      logger.debug("LayerType 生成成功", { layer });
+      logger.debug("LayerType creation successful", { layer });
     }
   }
 });
 
-Deno.test("DirectiveType/LayerType Integration - 1_behavior: BreakdownParams統合フロー", async () => {
-  logger.debug("BreakdownParams統合フローテスト開始", { test: "breakdown_params_flow" });
+Deno.test("DirectiveType/LayerType Integration - 1_behavior: BreakdownParams integration flow", async () => {
+  logger.debug("BreakdownParams integration flow test started", { test: "breakdown_params_flow" });
 
-  // Step 1: 設定ファイルから有効な値を取得
+  // Step 1: Get valid values from configuration file
   const configResult = await ConfigurationTestHelper.loadTestConfiguration("default");
   const validDirectives = configResult.userConfig.testData?.validDirectives;
   assertExists(validDirectives, "validDirectives should be defined in test configuration");
@@ -81,19 +81,19 @@ Deno.test("DirectiveType/LayerType Integration - 1_behavior: BreakdownParams統�
   const validLayers = configResult.userConfig.testData?.validLayers;
   assertExists(validLayers, "validLayers should be defined in test configuration");
   const validLayer = validLayers[0];
-  // BreakdownParamsは2つの引数のみ受け付ける（directiveとlayer）
+  // BreakdownParams accepts only two arguments (directive and layer)
   const args = [validDirective, validLayer];
 
-  logger.debug("テスト用引数", { args });
+  logger.debug("Test arguments", { args });
 
-  // Step 2: BreakdownParams実行
+  // Step 2: Execute BreakdownParams
   const paramsResult = await executeBreakdownParams(args, "default");
 
   assertEquals(paramsResult.ok, true, "BreakdownParams execution should succeed");
   if (paramsResult.ok) {
     assertExists(paramsResult.data);
 
-    // Step 3: TwoParamsResult から TwoParams への変換
+    // Step 3: Convert from TwoParamsResult to TwoParams
     const twoParamsResult = fromTwoParamsResult(paramsResult.data);
     assertEquals(twoParamsResult.ok, true, "TwoParams conversion should succeed");
 
@@ -102,8 +102,8 @@ Deno.test("DirectiveType/LayerType Integration - 1_behavior: BreakdownParams統�
       assertEquals(twoParams.directiveType, validDirective);
       assertEquals(twoParams.layerType, validLayer);
 
-      logger.debug("統合フロー成功", {
-        tag: "成功",
+      logger.debug("Integration flow successful", {
+        tag: "success",
         directive: twoParams.directiveType,
         layer: twoParams.layerType,
       });
@@ -111,10 +111,12 @@ Deno.test("DirectiveType/LayerType Integration - 1_behavior: BreakdownParams統�
   }
 });
 
-Deno.test("DirectiveType/LayerType Integration - 1_behavior: 設定ファイルベースのバリデーション", async () => {
-  logger.debug("設定ファイルベースバリデーションテスト開始", { test: "config_based_validation" });
+Deno.test("DirectiveType/LayerType Integration - 1_behavior: Configuration file based validation", async () => {
+  logger.debug("Configuration file based validation test started", {
+    test: "config_based_validation",
+  });
 
-  // Step 1: カスタム設定から CustomConfig 生成
+  // Step 1: Generate CustomConfig from custom configuration
   const customConfigResult = await createCustomConfigFromProfile("default");
   assertEquals(customConfigResult.ok, true, "CustomConfig creation should succeed");
 
@@ -123,17 +125,17 @@ Deno.test("DirectiveType/LayerType Integration - 1_behavior: 設定ファイル�
     assertExists(customConfig.params?.two?.directiveType?.pattern);
     assertExists(customConfig.params?.two?.layerType?.pattern);
 
-    logger.debug("カスタム設定パターン", {
-      tag: "パターン",
+    logger.debug("Custom configuration patterns", {
+      tag: "patterns",
       directivePattern: customConfig.params.two.directiveType.pattern,
       layerPattern: customConfig.params.two.layerType.pattern,
     });
 
-    // Step 2: パターンから有効な値を抽出
+    // Step 2: Extract valid values from patterns
     const directivePattern = customConfig.params.two.directiveType.pattern;
     const layerPattern = customConfig.params.two.layerType.pattern;
 
-    // パターンから値を抽出（例: "^(to|summary|defect)$" -> ["to", "summary", "defect"]）
+    // Extract values from pattern (e.g., "^(to|summary|defect)$" -> ["to", "summary", "defect"])
     const directiveMatch = directivePattern.match(/^\^\(([^)]+)\)\$$/);
     const layerMatch = layerPattern.match(/^\^\(([^)]+)\)\$$/);
 
@@ -141,7 +143,7 @@ Deno.test("DirectiveType/LayerType Integration - 1_behavior: 設定ファイル�
       const validDirectives = directiveMatch[1].split("|");
       const validLayers = layerMatch[1].split("|");
 
-      // Step 3: 抽出した値でバリデーション
+      // Step 3: Validation with extracted values
       for (const directive of validDirectives) {
         const result = DirectiveType.create(directive);
         assertEquals(result.ok, true, `${directive} should be valid`);
@@ -155,13 +157,13 @@ Deno.test("DirectiveType/LayerType Integration - 1_behavior: 設定ファイル�
   }
 });
 
-// TODO: 設定ファイルベース実装に合わせて修正後に有効化
+// TODO: Enable after fixing to match configuration file-based implementation
 Deno.test.ignore(
-  "DirectiveType/LayerType Integration - 2_structure: エラーハンドリング",
+  "DirectiveType/LayerType Integration - 2_structure: Error handling",
   async () => {
-    logger.debug("エラーハンドリングテスト開始", { test: "error_handling" });
+    logger.debug("Error handling test started", { test: "error_handling" });
 
-    // Step 1: 設定ファイルから無効な値を取得
+    // Step 1: Get invalid values from configuration file
     const configResult = await ConfigurationTestHelper.loadTestConfiguration("default");
     const invalidDirectives = configResult.userConfig.testData?.invalidDirectives;
     const invalidLayers = configResult.userConfig.testData?.invalidLayers;
@@ -176,8 +178,8 @@ Deno.test.ignore(
       if (!result.ok) {
         // DirectiveTypeは独自のエラー型を使用（EmptyInput, InvalidFormat, etc）
         // ValidationErrorではなく、具体的なエラー種別を持つ
-        logger.debug("DirectiveType エラー検証成功", {
-          tag: "エラー検証",
+        logger.debug("DirectiveType error validation successful", {
+          tag: "error_validation",
           input: invalid,
           error: result.error.kind,
         });
@@ -191,8 +193,8 @@ Deno.test.ignore(
       if (!result.ok) {
         // DirectiveTypeは独自のエラー型を使用（EmptyInput, InvalidFormat, etc）
         // ValidationErrorではなく、具体的なエラー種別を持つ
-        logger.debug("LayerType エラー検証成功", {
-          tag: "エラー検証",
+        logger.debug("LayerType error validation successful", {
+          tag: "error_validation",
           input: invalid,
           error: result.error.kind,
         });
@@ -201,8 +203,8 @@ Deno.test.ignore(
   },
 );
 
-Deno.test("DirectiveType/LayerType Integration - 2_structure: 完全統合フロー", async () => {
-  logger.debug("完全統合フローテスト開始", { test: "complete_integration" });
+Deno.test("DirectiveType/LayerType Integration - 2_structure: Complete integration flow", async () => {
+  logger.debug("Complete integration flow test started", { test: "complete_integration" });
 
   // Step 1: 設定ファイルから複数の組み合わせを取得
   const configResult = await ConfigurationTestHelper.loadTestConfiguration("default");
@@ -217,7 +219,7 @@ Deno.test("DirectiveType/LayerType Integration - 2_structure: 完全統合フロ
     for (const layer of layers.slice(0, 2)) { // 最初の2つのみ使用
       const args = [directive, layer];
 
-      logger.debug("組み合わせテスト実行", { directive, layer });
+      logger.debug("Combination test execution", { directive, layer });
 
       // 完全統合フロー実行
       const result = await createTwoParamsFromConfigFile(args, "default");
@@ -238,11 +240,11 @@ Deno.test("DirectiveType/LayerType Integration - 2_structure: 完全統合フロ
     }
   }
 
-  logger.debug("完全統合フロー全パターン成功", "成功");
+  logger.debug("Complete integration flow all patterns successful", "success");
 });
 
-Deno.test("DirectiveType/LayerType Integration - 3_performance: パフォーマンステスト", async () => {
-  logger.debug("パフォーマンステスト開始", { test: "performance" });
+Deno.test("DirectiveType/LayerType Integration - 3_performance: Performance test", async () => {
+  logger.debug("Performance test started", { test: "performance" });
 
   const iterations = 100;
   const startTime = performance.now();
@@ -269,8 +271,8 @@ Deno.test("DirectiveType/LayerType Integration - 3_performance: パフォーマ�
   const totalTime = endTime - startTime;
   const avgTime = totalTime / iterations;
 
-  logger.debug("パフォーマンステスト結果", {
-    tag: "結果",
+  logger.debug("Performance test results", {
+    tag: "results",
     iterations,
     totalTime: `${totalTime.toFixed(2)}ms`,
     avgTime: `${avgTime.toFixed(2)}ms`,

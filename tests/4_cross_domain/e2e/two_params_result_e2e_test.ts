@@ -21,11 +21,11 @@ import { ConfigurationTestHelper } from "../../../lib/test_helpers/configuration
 import { runBreakdown } from "../../../cli/breakdown.ts";
 import { join } from "@std/path";
 
-// テストロガー初期化
+// Initialize test logger
 const logger = new BreakdownLogger("e2e-two-params");
 
 /**
- * E2E テストフィクスチャーセットアップ
+ * E2E Test Fixture Setup
  */
 class E2ETestSetup {
   private readonly tempDir = "./tmp";
@@ -59,7 +59,7 @@ class E2ETestSetup {
 }
 
 /**
- * STDOUT キャプチャヘルパー
+ * STDOUT Capture Helper
  */
 class StdoutCapture {
   private originalWrite: typeof Deno.stdout.write | null = null;
@@ -107,12 +107,12 @@ const testSetup = new E2ETestSetup();
 
 /**
  * Tier 1: Basic Functionality E2E Tests
- * 基本機能の完全な処理チェーンテスト
+ * Complete processing chain test for basic functionality
  */
 Deno.test("E2E: Tier1 - Basic Two Params Command Execution", async () => {
-  logger.debug("E2E基本コマンド実行テスト開始", {
+  logger.debug("E2E basic command execution test started", {
     tier: "Tier1",
-    scenario: "基本的なtwo paramsコマンド実行",
+    scenario: "Basic two params command execution",
   });
 
   // Setup test configuration
@@ -120,7 +120,7 @@ Deno.test("E2E: Tier1 - Basic Two Params Command Execution", async () => {
   const validDirective = configResult.userConfig.testData.validDirectives[0];
   const validLayer = configResult.userConfig.testData.validLayers[0];
 
-  logger.debug("テスト設定準備完了", {
+  logger.debug("Test configuration preparation completed", {
     directive: validDirective,
     layer: validLayer,
     profile: "default-test",
@@ -138,12 +138,12 @@ Deno.test("E2E: Tier1 - Basic Two Params Command Execution", async () => {
   try {
     // Execute complete breakdown command
     const args = [validDirective, validLayer];
-    logger.debug("Breakdown実行開始", { args, inputFile });
+    logger.debug("Breakdown execution started", { args, inputFile });
 
     const result = await runBreakdown(args);
     const output = stdout.stop();
 
-    logger.debug("Breakdown実行結果", {
+    logger.debug("Breakdown execution result", {
       success: result.ok,
       outputLength: output.length,
       hasOutput: output.length > 0,
@@ -156,7 +156,7 @@ Deno.test("E2E: Tier1 - Basic Two Params Command Execution", async () => {
     assertExists(output, "Output should be generated");
     assertEquals(output.length > 0, true, "Output should not be empty");
 
-    logger.debug("E2E基本コマンド実行テスト完了", {
+    logger.debug("E2E basic command execution test completed", {
       resultStatus: "SUCCESS",
       outputPreview: output.substring(0, 100),
     });
@@ -168,12 +168,12 @@ Deno.test("E2E: Tier1 - Basic Two Params Command Execution", async () => {
 
 /**
  * Tier 1: Multiple Directive-Layer Combinations
- * 異なるDirectiveType・LayerTypeの組み合わせテスト
+ * Test for different DirectiveType/LayerType combinations
  */
 Deno.test("E2E: Tier1 - Multiple Directive-Layer Combinations", async () => {
-  logger.debug("E2E複数組み合わせテスト開始", {
+  logger.debug("E2E multiple combinations test started", {
     tier: "Tier1",
-    scenario: "複数のDirective-Layer組み合わせ",
+    scenario: "Multiple Directive-Layer combinations",
   });
 
   const configResult = await ConfigurationTestHelper.loadTestConfiguration("flexible-test");
@@ -192,7 +192,7 @@ Deno.test("E2E: Tier1 - Multiple Directive-Layer Combinations", async () => {
 
   for (let i = 0; i < testCombinations.length; i++) {
     const [directive, layer] = testCombinations[i];
-    logger.debug(`組み合わせテスト ${i + 1}/${testCombinations.length}`, { directive, layer });
+    logger.debug(`Combination test ${i + 1}/${testCombinations.length}`, { directive, layer });
 
     const _inputFile = await testSetup.createTestInput(`combo-test-${i}.md`, testInputContent);
     const stdout = new StdoutCapture();
@@ -203,7 +203,7 @@ Deno.test("E2E: Tier1 - Multiple Directive-Layer Combinations", async () => {
       const result = await runBreakdown(args);
       const output = stdout.stop();
 
-      logger.debug(`組み合わせ ${directive}-${layer} 結果`, {
+      logger.debug(`Combination ${directive}-${layer} result`, {
         success: result.ok,
         outputLength: output.length,
       });
@@ -217,7 +217,7 @@ Deno.test("E2E: Tier1 - Multiple Directive-Layer Combinations", async () => {
   }
 
   await testSetup.cleanup();
-  logger.debug("E2E複数組み合わせテスト完了", {
+  logger.debug("E2E multiple combinations test completed", {
     totalCombinations: testCombinations.length,
     resultStatus: "SUCCESS",
   });
@@ -225,19 +225,19 @@ Deno.test("E2E: Tier1 - Multiple Directive-Layer Combinations", async () => {
 
 /**
  * Tier 2: Configuration Profile Tests
- * 設定プロファイル切り替えテスト
+ * Configuration profile switching test
  */
 Deno.test("E2E: Tier2 - Configuration Profile Switching", async () => {
-  logger.debug("E2E設定プロファイル切り替えテスト開始", {
+  logger.debug("E2E configuration profile switching test started", {
     tier: "Tier2",
-    scenario: "複数プロファイル動作確認",
+    scenario: "Multiple profile operation verification",
   });
 
   const profiles = ["default-test", "flexible-test"];
   const testInputContent = "# Profile Test Content\n\nTesting different configuration profiles.";
 
   for (const profile of profiles) {
-    logger.debug(`プロファイルテスト: ${profile}`, { profile });
+    logger.debug(`Profile test: ${profile}`, { profile });
 
     const configResult = await ConfigurationTestHelper.loadTestConfiguration(profile);
     const validDirective = configResult.userConfig.testData.validDirectives[0];
@@ -259,7 +259,7 @@ Deno.test("E2E: Tier2 - Configuration Profile Switching", async () => {
       const result = await runBreakdown(args);
       const output = stdout.stop();
 
-      logger.debug(`プロファイル ${profile} 実行結果`, {
+      logger.debug(`Profile ${profile} execution result`, {
         success: result.ok,
         outputLength: output.length,
       });
@@ -280,7 +280,7 @@ Deno.test("E2E: Tier2 - Configuration Profile Switching", async () => {
   }
 
   await testSetup.cleanup();
-  logger.debug("E2E設定プロファイル切り替えテスト完了", {
+  logger.debug("E2E configuration profile switching test completed", {
     profiles: profiles.length,
     resultStatus: "SUCCESS",
   });
@@ -288,12 +288,12 @@ Deno.test("E2E: Tier2 - Configuration Profile Switching", async () => {
 
 /**
  * Tier 3: Error Handling E2E Tests
- * エラーハンドリングの完全テスト
+ * Complete error handling test
  */
 Deno.test("E2E: Tier3 - Invalid Arguments Error Handling", async () => {
-  logger.debug("E2E無効引数エラーハンドリングテスト開始", {
+  logger.debug("E2E invalid argument error handling test started", {
     tier: "Tier3",
-    scenario: "無効引数の適切なエラー処理",
+    scenario: "Appropriate error handling for invalid arguments",
   });
 
   const testCases = [
@@ -315,7 +315,7 @@ Deno.test("E2E: Tier3 - Invalid Arguments Error Handling", async () => {
   ];
 
   for (const testCase of testCases) {
-    logger.debug(`エラーケーステスト: ${testCase.name}`, {
+    logger.debug(`Error case test: ${testCase.name}`, {
       args: testCase.args,
       expectedError: testCase.expectedError,
     });
@@ -327,7 +327,7 @@ Deno.test("E2E: Tier3 - Invalid Arguments Error Handling", async () => {
       const result = await runBreakdown(testCase.args);
       const output = stdout.stop();
 
-      logger.debug(`エラーケース ${testCase.name} 結果`, {
+      logger.debug(`Error case ${testCase.name} result`, {
         success: result.ok,
         hasError: !result.ok,
         outputLength: output.length,
@@ -339,14 +339,14 @@ Deno.test("E2E: Tier3 - Invalid Arguments Error Handling", async () => {
       // Check error structure
       if (!result.ok) {
         assertExists(result.error, "Error should be present");
-        logger.debug(`エラー詳細 ${testCase.name}`, { error: result.error });
+        logger.debug(`Error details ${testCase.name}`, { error: result.error });
       }
     } finally {
       stdout.stop();
     }
   }
 
-  logger.debug("E2E無効引数エラーハンドリングテスト完了", {
+  logger.debug("E2E invalid argument error handling test completed", {
     testCases: testCases.length,
     resultStatus: "SUCCESS",
   });
@@ -354,12 +354,12 @@ Deno.test("E2E: Tier3 - Invalid Arguments Error Handling", async () => {
 
 /**
  * Tier 3: Configuration Error Handling
- * 設定エラーのハンドリングテスト
+ * Configuration error handling test
  */
 Deno.test("E2E: Tier3 - Configuration Error Handling", async () => {
-  logger.debug("E2E設定エラーハンドリングテスト開始", {
+  logger.debug("E2E configuration error handling test started", {
     tier: "Tier3",
-    scenario: "設定ファイル問題の適切な処理",
+    scenario: "Appropriate handling of configuration file issues",
   });
 
   const stdout = new StdoutCapture();
@@ -374,7 +374,7 @@ Deno.test("E2E: Tier3 - Configuration Error Handling", async () => {
     const result = await runBreakdown(args);
     const output = stdout.stop();
 
-    logger.debug("非存在プロファイルテスト結果", {
+    logger.debug("Non-existent profile test result", {
       success: result.ok,
       outputLength: output.length,
     });
@@ -382,9 +382,14 @@ Deno.test("E2E: Tier3 - Configuration Error Handling", async () => {
     // Should still work with fallback to defaults
     // (The system should gracefully handle missing config)
     if (result.ok) {
-      logger.debug("非存在プロファイルで正常にフォールバック動作", { fallbackSuccessful: true });
+      logger.debug("Non-existent profile fallback operation successful", {
+        fallbackSuccessful: true,
+      });
     } else {
-      logger.debug("非存在プロファイルでエラー処理", { errorHandled: true, error: result.error });
+      logger.debug("Non-existent profile error handling", {
+        errorHandled: true,
+        error: result.error,
+      });
     }
 
     // Restore environment
@@ -397,17 +402,17 @@ Deno.test("E2E: Tier3 - Configuration Error Handling", async () => {
     stdout.stop();
   }
 
-  logger.debug("E2E設定エラーハンドリングテスト完了", { resultStatus: "SUCCESS" });
+  logger.debug("E2E configuration error handling test completed", { resultStatus: "SUCCESS" });
 });
 
 /**
  * Tier 4: Performance Characteristics Test
- * パフォーマンス特性テスト
+ * Performance characteristics test
  */
 Deno.test("E2E: Tier4 - Performance Characteristics", async () => {
-  logger.debug("E2Eパフォーマンス特性テスト開始", {
+  logger.debug("E2E performance characteristics test started", {
     tier: "Tier4",
-    scenario: "処理速度と安定性確認",
+    scenario: "Processing speed and stability verification",
   });
 
   const configResult = await ConfigurationTestHelper.loadTestConfiguration("default-test");
@@ -443,7 +448,7 @@ Deno.test("E2E: Tier4 - Performance Characteristics", async () => {
 
       const output = stdout.stop();
 
-      logger.debug(`実行 ${i + 1}/${executionCount}`, {
+      logger.debug(`Execution ${i + 1}/${executionCount}`, {
         executionTime: `${executionTime.toFixed(2)}ms`,
         success: result.ok,
         outputLength: output.length,
@@ -460,7 +465,7 @@ Deno.test("E2E: Tier4 - Performance Characteristics", async () => {
   const maxTime = Math.max(...executionTimes);
   const minTime = Math.min(...executionTimes);
 
-  logger.debug("パフォーマンス分析結果", {
+  logger.debug("Performance analysis result", {
     executionCount,
     avgTime: `${avgTime.toFixed(2)}ms`,
     maxTime: `${maxTime.toFixed(2)}ms`,
@@ -473,17 +478,17 @@ Deno.test("E2E: Tier4 - Performance Characteristics", async () => {
   assertEquals(maxTime < 10000, true, "Maximum execution time should be under 10 seconds");
 
   await testSetup.cleanup();
-  logger.debug("E2Eパフォーマンス特性テスト完了", { resultStatus: "SUCCESS" });
+  logger.debug("E2E performance characteristics test completed", { resultStatus: "SUCCESS" });
 });
 
 /**
  * Tier 5: Complete Integration Flow Test
- * 完全統合フローテスト - 全処理段階の検証
+ * Complete integration flow test - verification of all processing stages
  */
 Deno.test("E2E: Tier5 - Complete Integration Flow Validation", async () => {
-  logger.debug("E2E完全統合フロー検証テスト開始", {
+  logger.debug("E2E complete integration flow verification test started", {
     tier: "Tier5",
-    scenario: "全処理段階の完全な統合動作確認",
+    scenario: "Complete integrated operation verification of all processing stages",
   });
 
   const configResult = await ConfigurationTestHelper.loadTestConfiguration("default-test");
@@ -515,7 +520,7 @@ The project serves critical business functions and requires careful analysis to 
 
   try {
     // Execute complete flow with detailed logging
-    logger.debug("完全統合フロー実行開始", {
+    logger.debug("Complete integration flow execution started", {
       directive: validDirective,
       layer: validLayer,
       inputContentLength: realWorldContent.length,
@@ -525,7 +530,7 @@ The project serves critical business functions and requires careful analysis to 
     const result = await runBreakdown(args);
     const output = stdout.stop();
 
-    logger.debug("完全統合フロー実行完了", {
+    logger.debug("Complete integration flow execution completed", {
       success: result.ok,
       outputLength: output.length,
       hasOutput: output.length > 0,
@@ -547,7 +552,7 @@ The project serves critical business functions and requires careful analysis to 
     assertEquals(hasPromptStructure, true, "Output should contain structured prompt content");
 
     // Log success with comprehensive details
-    logger.debug("完全統合フロー検証成功", {
+    logger.debug("Complete integration flow verification successful", {
       processing_chain:
         "CLI → BreakdownConfig → BreakdownParams → TwoParamsResult → TwoParams → VariablesBuilder → BreakdownPrompt → Output",
       stages_validated: [
@@ -571,7 +576,7 @@ The project serves critical business functions and requires careful analysis to 
     await testSetup.cleanup();
   }
 
-  logger.debug("E2E完全統合フロー検証テスト完了", {
+  logger.debug("E2E complete integration flow verification test completed", {
     resultStatus: "COMPREHENSIVE_SUCCESS",
     message: "All processing stages validated successfully",
   });

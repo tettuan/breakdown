@@ -1,8 +1,8 @@
 /**
- * @fileoverview JSR統合テスト - BreakdownConfigとBreakdownParamsの設定駆動アーキテクチャ
+ * @fileoverview JSR integration test - Configuration-driven architecture of BreakdownConfig and BreakdownParams
  *
- * 設定ファイルからDirectiveType/LayerTypeを動的に読み込み、
- * ハードコードを完全に排除した統合テストの実装
+ * Dynamically load DirectiveType/LayerType from configuration files,
+ * Implementation of integration tests with complete hardcode elimination
  *
  * @module tests/integration/jsr_integration/breakdown_config_params_integration_test
  */
@@ -22,15 +22,15 @@ import { loadUserConfig } from "../../../lib/config/user_config_loader.ts";
 const logger = new BreakdownLogger("jsr-integration");
 
 describe("JSR Integration - BreakdownConfig + BreakdownParams", () => {
-  describe("設定ファイルからの動的読み込み", () => {
-    it("breakdown-params-integration-user.yml から設定を読み込める", async () => {
-      // 設定プロファイルの作成
+  describe("Dynamic loading from configuration files", () => {
+    it("Can load configuration from breakdown-params-integration-user.yml", async () => {
+      // Create configuration profile
       const profile = ConfigProfile.create("breakdown-params-integration");
-      logger.debug("設定プロファイル作成", { profile: profile.value });
+      logger.debug("Config profile created", { profile: profile.value });
 
       // 設定ファイルの読み込み
       const configData = await loadUserConfig(profile);
-      logger.debug("設定ファイル読み込み完了", {
+      logger.debug("Config file loading completed", {
         keys: Object.keys(configData),
         paramsSection: configData.params,
       });
@@ -38,16 +38,16 @@ describe("JSR Integration - BreakdownConfig + BreakdownParams", () => {
       // ParamsCustomConfig の作成
       const customConfig = ParamsCustomConfig.create(configData);
 
-      // パターンの確認（ハードコードなし）
+      // Verify patterns (no hardcode)
       assertExists(customConfig.directivePattern);
       assertExists(customConfig.layerPattern);
 
-      logger.debug("パターン取得成功", {
+      logger.debug("Pattern retrieval successful", {
         directivePattern: customConfig.directivePattern,
         layerPattern: customConfig.layerPattern,
       });
 
-      // パターンが期待通りの形式であることを確認
+      // Verify patterns are in expected format
       assertEquals(
         customConfig.directivePattern,
         "to|summary|defect|find|test_directive",
@@ -58,13 +58,13 @@ describe("JSR Integration - BreakdownConfig + BreakdownParams", () => {
       );
     });
 
-    it("ConfigBasedTwoParamsBuilder で設定ベースのビルダーを作成できる", async () => {
+    it("Can create configuration-based builder with ConfigBasedTwoParamsBuilder", async () => {
       // 設定ベースビルダーの作成
       const builderResult = await ConfigBasedTwoParamsBuilder.fromConfig(
         "breakdown-params-integration",
       );
 
-      logger.debug("ビルダー作成結果", { ok: builderResult.ok });
+      logger.debug("Builder creation result", { ok: builderResult.ok });
 
       // Result型のチェック
       assertEquals(builderResult.ok, true);
@@ -76,14 +76,14 @@ describe("JSR Integration - BreakdownConfig + BreakdownParams", () => {
 
       const builder = builderResult.data;
 
-      // パターンの動的取得（ハードコードなし）
+      // Dynamic pattern retrieval (no hardcode)
       const directivePattern = builder.getDirectivePattern();
       const layerPattern = builder.getLayerPattern();
 
       assertExists(directivePattern);
       assertExists(layerPattern);
 
-      logger.debug("ビルダーからパターン取得", {
+      logger.debug("Pattern retrieval from builder", {
         directivePattern,
         layerPattern,
         profile: builder.getProfile(),
@@ -91,9 +91,9 @@ describe("JSR Integration - BreakdownConfig + BreakdownParams", () => {
     });
   });
 
-  describe("動的パラメータ検証", () => {
-    it("設定ファイルのパターンに基づいて有効なパラメータを検証できる", async () => {
-      // ビルダー作成
+  describe("Dynamic parameter validation", () => {
+    it("Can validate valid parameters based on configuration file patterns", async () => {
+      // Create builder
       const builderResult = await ConfigBasedTwoParamsBuilder.fromConfig(
         "breakdown-params-integration",
       );
@@ -104,10 +104,10 @@ describe("JSR Integration - BreakdownConfig + BreakdownParams", () => {
 
       const builder = builderResult.data;
 
-      // 設定ファイルで定義された有効な値でテスト
+      // Test with valid values defined in configuration file
       const validationResult = builder.validateParams("to", "project");
 
-      logger.debug("検証結果（有効）", {
+      logger.debug("Validation result (valid)", {
         result: validationResult,
         directiveType: "to",
         layerType: "project",
@@ -120,8 +120,8 @@ describe("JSR Integration - BreakdownConfig + BreakdownParams", () => {
       assertEquals(testValidation.ok, true);
     });
 
-    it("設定ファイルのパターンに基づいて無効なパラメータを拒否できる", async () => {
-      // ビルダー作成
+    it("Can reject invalid parameters based on configuration file patterns", async () => {
+      // Create builder
       const builderResult = await ConfigBasedTwoParamsBuilder.fromConfig(
         "breakdown-params-integration",
       );
@@ -132,10 +132,10 @@ describe("JSR Integration - BreakdownConfig + BreakdownParams", () => {
 
       const builder = builderResult.data;
 
-      // 無効な値でテスト（ハードコードなし）
+      // Test with invalid values (no hardcode)
       const invalidResult = builder.validateParams("invalid_directive", "invalid_layer");
 
-      logger.debug("検証結果（無効）", {
+      logger.debug("Validation result (invalid)", {
         result: invalidResult,
         directiveType: "invalid_directive",
         layerType: "invalid_layer",
@@ -146,9 +146,9 @@ describe("JSR Integration - BreakdownConfig + BreakdownParams", () => {
     });
   });
 
-  describe("TwoParams_Result の動的生成", () => {
-    it("設定ベースで TwoParams_Result を生成できる", async () => {
-      // ビルダー作成
+  describe("Dynamic generation of TwoParams_Result", () => {
+    it("Can generate TwoParams_Result from configuration base", async () => {
+      // Create builder
       const builderResult = await ConfigBasedTwoParamsBuilder.fromConfig(
         "breakdown-params-integration",
       );
@@ -162,7 +162,7 @@ describe("JSR Integration - BreakdownConfig + BreakdownParams", () => {
       // TwoParams_Result の生成
       const result = builder.build("summary", "issue");
 
-      logger.debug("TwoParams_Result 生成結果", {
+      logger.debug("TwoParams_Result generation result", {
         ok: result.ok,
         data: result.ok ? result.data : undefined,
         error: result.ok ? undefined : result.error,
@@ -181,20 +181,20 @@ describe("JSR Integration - BreakdownConfig + BreakdownParams", () => {
       assertEquals(twoParamsResult.layerType, "issue");
       assertEquals(twoParamsResult.params, ["summary", "issue"]);
 
-      // オプションにメタデータが含まれることを確認
+      // Verify that options contain metadata
       assertExists(twoParamsResult.options);
       assertEquals(twoParamsResult.options.profile, "breakdown-params-integration");
       assertEquals(twoParamsResult.options.source, "config-based");
     });
   });
 
-  describe("ハードコード除去の確認", () => {
-    it("DirectiveType/LayerType の定義がハードコードされていない", async () => {
+  describe("Hardcode elimination verification", () => {
+    it("DirectiveType/LayerType definitions are not hardcoded", async () => {
       // 複数のプロファイルでテスト
       const profiles = ["default", "flexible-test", "enterprise-test"];
 
       for (const profileName of profiles) {
-        logger.debug("プロファイルテスト開始", { profile: profileName });
+        logger.debug("Profile test started", { profile: profileName });
 
         try {
           const builderResult = await ConfigBasedTwoParamsBuilder.fromConfig(profileName);
@@ -204,22 +204,22 @@ describe("JSR Integration - BreakdownConfig + BreakdownParams", () => {
             const directivePattern = builder.getDirectivePattern();
             const layerPattern = builder.getLayerPattern();
 
-            // パターンが存在し、ハードコードされた配列ではないことを確認
+            // Verify patterns exist and are not hardcoded arrays
             assertExists(directivePattern);
             assertExists(layerPattern);
 
-            // パターンが文字列（正規表現パターン）であることを確認
+            // Verify patterns are strings (regex patterns)
             assertEquals(typeof directivePattern, "string");
             assertEquals(typeof layerPattern, "string");
 
-            logger.debug("プロファイルのパターン", {
+            logger.debug("Profile patterns", {
               profile: profileName,
               directivePattern,
               layerPattern,
             });
           }
         } catch (error) {
-          logger.debug("プロファイル読み込みエラー（想定内）", {
+          logger.debug("Profile loading error (expected)", {
             profile: profileName,
             error: error instanceof Error ? error.message : String(error),
           });
@@ -227,7 +227,7 @@ describe("JSR Integration - BreakdownConfig + BreakdownParams", () => {
       }
     });
 
-    it("設定ファイルを変更すると許可される値も変わる", async () => {
+    it("Changing configuration files also changes allowed values", async () => {
       // デフォルトプロファイルのビルダー
       const defaultBuilder = await ConfigBasedTwoParamsBuilder.fromConfig("default");
 
@@ -247,23 +247,23 @@ describe("JSR Integration - BreakdownConfig + BreakdownParams", () => {
         "test_layer",
       );
 
-      logger.debug("プロファイル別検証結果", {
+      logger.debug("Profile-specific validation results", {
         default: defaultValidation.ok,
         integration: integrationValidation.ok,
       });
 
       // integration プロファイルでのみ有効であることを確認
       assertEquals(integrationValidation.ok, true);
-      // default プロファイルでは無効（設定によっては有効かもしれない）
+      // Invalid in default profile (may be valid depending on configuration)
       // これは設定ファイルの内容に依存
     });
   });
 
-  describe("エラーハンドリング", () => {
-    it("存在しないプロファイルでエラーを返す", async () => {
+  describe("Error handling", () => {
+    it("Returns error for non-existent profile", async () => {
       const result = await ConfigBasedTwoParamsBuilder.fromConfig("non-existent-profile");
 
-      logger.debug("存在しないプロファイルの結果", {
+      logger.debug("Non-existent profile result", {
         ok: result.ok,
         errorKind: result.error?.kind,
       });
@@ -272,14 +272,14 @@ describe("JSR Integration - BreakdownConfig + BreakdownParams", () => {
       assertEquals(result.error?.kind, "ConfigLoadFailed");
     });
 
-    it("パターンが未定義の場合にエラーを返す", () => {
-      // カスタム設定でパターンを持たない CustomConfig を作成
+    it("Returns error when patterns are undefined", () => {
+      // Create CustomConfig with no patterns in custom configuration
       const emptyConfig = ParamsCustomConfig.create({});
       const builder = new ConfigBasedTwoParamsBuilder(emptyConfig, "empty");
 
       const validationResult = builder.validateParams("any", "value");
 
-      logger.debug("パターン未定義の検証結果", {
+      logger.debug("Undefined pattern validation result", {
         ok: validationResult.ok,
         errorKind: validationResult.error?.kind,
       });

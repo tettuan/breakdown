@@ -11,7 +11,7 @@ import { assertEquals, assertExists } from "../deps.ts";
 import { TypeFactory } from "./type_factory.ts";
 import { createTwoParamsResult } from "./two_params_result_extension.ts";
 
-Deno.test("TypeFactory createFromJSR - 成功ケース", () => {
+Deno.test("TypeFactory createFromJSR - Success case", () => {
   const jsrResult = createTwoParamsResult("summary", "project");
 
   const result = TypeFactory.createFromJSR(jsrResult);
@@ -23,7 +23,7 @@ Deno.test("TypeFactory createFromJSR - 成功ケース", () => {
   }
 });
 
-Deno.test("TypeFactory createFromJSR - DirectiveType無効", () => {
+Deno.test("TypeFactory createFromJSR - DirectiveType invalid", () => {
   const jsrResult = createTwoParamsResult("", "project"); // 空のDirectiveType
 
   const result = TypeFactory.createFromJSR(jsrResult);
@@ -35,7 +35,7 @@ Deno.test("TypeFactory createFromJSR - DirectiveType無効", () => {
   }
 });
 
-Deno.test("TypeFactory createFromJSR - LayerType無効", () => {
+Deno.test("TypeFactory createFromJSR - LayerType invalid", () => {
   const jsrResult = createTwoParamsResult("summary", ""); // 空のLayerType
 
   const result = TypeFactory.createFromJSR(jsrResult);
@@ -47,7 +47,7 @@ Deno.test("TypeFactory createFromJSR - LayerType無効", () => {
   }
 });
 
-Deno.test("TypeFactory createFromJSR - JSR検証済み値の直接利用", () => {
+Deno.test("TypeFactory createFromJSR - Direct use of JSR validated values", () => {
   const jsrResult = createTwoParamsResult("summary", "project");
 
   // JSR統合専用TypeFactoryは TypePatternProvider を使用しない
@@ -60,7 +60,7 @@ Deno.test("TypeFactory createFromJSR - JSR検証済み値の直接利用", () =>
   }
 });
 
-Deno.test("TypeFactory createDirectiveType - JSR前提での直接構築", () => {
+Deno.test("TypeFactory createDirectiveType - Direct construction with JSR premise", () => {
   const result = TypeFactory.createDirectiveType("to");
 
   assertEquals(result.ok, true);
@@ -69,7 +69,7 @@ Deno.test("TypeFactory createDirectiveType - JSR前提での直接構築", () =>
   }
 });
 
-Deno.test("TypeFactory createLayerType - JSR前提での直接構築", () => {
+Deno.test("TypeFactory createLayerType - Direct construction with JSR premise", () => {
   const result = TypeFactory.createLayerType("project");
 
   assertEquals(result.ok, true);
@@ -78,7 +78,7 @@ Deno.test("TypeFactory createLayerType - JSR前提での直接構築", () => {
   }
 });
 
-Deno.test("TypeFactory createBothTypes - JSR前提での両型構築", () => {
+Deno.test("TypeFactory createBothTypes - Both types construction with JSR premise", () => {
   const result = TypeFactory.createBothTypes("summary", "project");
 
   assertEquals(result.ok, true);

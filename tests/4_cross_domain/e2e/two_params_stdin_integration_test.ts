@@ -22,7 +22,7 @@ import { ConfigurationTestHelper } from "../../../lib/test_helpers/configuration
 import { twoParamsHandler } from "../../../lib/cli/handlers/two_params_handler.ts";
 import { ConfigLoader } from "../../../lib/config/loader.ts";
 
-// テストロガー初期化
+// Test logger initialization
 const logger = new BreakdownLogger("e2e-stdin-integration");
 
 /**
@@ -98,11 +98,11 @@ class StdoutCapture {
 
 /**
  * Test Suite: STDIN Processing Integration
- * STDIN処理の統合テスト
+ * STDIN processing integration test
  */
 Deno.test("E2E-STDIN: Basic STDIN Processing Integration", async () => {
-  logger.debug("E2E STDIN基本統合テスト開始", {
-    scenario: "STDIN内容の変数置換とプロンプト生成",
+  logger.debug("E2E STDIN basic integration test started", {
+    scenario: "STDIN content variable replacement and prompt generation",
   });
 
   // Setup test configuration
@@ -146,7 +146,7 @@ The system processes large datasets and needs to maintain performance under load
     const params = [validDirective, validLayer];
     const options = { skipStdin: false, from: "-" }; // Explicitly enable STDIN reading
 
-    logger.debug("TwoParamsHandler実行開始", {
+    logger.debug("TwoParamsHandler execution started", {
       params,
       stdinContentLength: stdinContent.length,
       config: Object.keys(config),
@@ -155,7 +155,7 @@ The system processes large datasets and needs to maintain performance under load
     const result = await twoParamsHandler(params, config, options);
     const output = stdoutCapture.stop();
 
-    logger.debug("TwoParamsHandler実行結果", {
+    logger.debug("TwoParamsHandler execution result", {
       success: result.ok,
       outputLength: output.length,
       hasOutput: output.length > 0,
@@ -173,7 +173,7 @@ The system processes large datasets and needs to maintain performance under load
 
     assertEquals(hasBasicStructure, true, "Output should have basic template structure");
 
-    logger.debug("STDIN統合確認完了", {
+    logger.debug("STDIN integration verification completed", {
       stdinLength: stdinContent.length,
       outputLength: output.length,
       expansionRatio: (output.length / stdinContent.length).toFixed(2),
@@ -184,17 +184,17 @@ The system processes large datasets and needs to maintain performance under load
     stdoutCapture.stop();
   }
 
-  logger.debug("E2E STDIN基本統合テスト完了", { resultStatus: "SUCCESS" });
+  logger.debug("E2E STDIN basic integration test completed", { resultStatus: "SUCCESS" });
 });
 
 /**
  * Test Suite: Complex STDIN Content Processing
- * 複雑なSTDIN内容の処理テスト
+ * Complex STDIN content processing test
  */
 Deno.test("E2E-STDIN: Complex Content Processing", async () => {
   const workingDir = Deno.cwd(); // Use current working directory
-  logger.debug("E2E STDIN複雑内容処理テスト開始", {
-    scenario: "複雑な構造のSTDIN内容処理",
+  logger.debug("E2E STDIN complex content processing test started", {
+    scenario: "Complex structured STDIN content processing",
   });
 
   const configResult = await ConfigurationTestHelper.loadTestConfiguration("flexible-test");
@@ -277,7 +277,7 @@ This document provides a comprehensive analysis of our enterprise system's curre
     const params = [validDirective, validLayer];
     const options = { skipStdin: false, from: "-" }; // Explicitly enable STDIN reading
 
-    logger.debug("複雑STDIN処理実行開始", {
+    logger.debug("Complex STDIN processing execution started", {
       params,
       contentLength: complexStdinContent.length,
       contentComplexity: {
@@ -291,7 +291,7 @@ This document provides a comprehensive analysis of our enterprise system's curre
     const result = await twoParamsHandler(params, config, options);
     const output = stdoutCapture.stop();
 
-    logger.debug("複雑STDIN処理結果", {
+    logger.debug("Complex STDIN processing result", {
       success: result.ok,
       outputLength: output.length,
       inputOutputRatio: (output.length / complexStdinContent.length).toFixed(2),
@@ -306,7 +306,7 @@ This document provides a comprehensive analysis of our enterprise system's curre
     const hasBasicProcessing = output.includes("input_text") || output.length >= 20;
     assertEquals(hasBasicProcessing, true, "Complex content should show template processing");
 
-    logger.debug("複雑STDIN処理確認", {
+    logger.debug("Complex STDIN processing verification", {
       originalComplexity: complexStdinContent.length,
       processedLength: output.length,
       processingIndicator: hasBasicProcessing ? "SUCCESS" : "MINIMAL",
@@ -316,17 +316,17 @@ This document provides a comprehensive analysis of our enterprise system's curre
     stdoutCapture.stop();
   }
 
-  logger.debug("E2E STDIN複雑内容処理テスト完了", { resultStatus: "SUCCESS" });
+  logger.debug("E2E STDIN complex content processing test completed", { resultStatus: "SUCCESS" });
 });
 
 /**
  * Test Suite: STDIN Error Scenarios
- * STDINエラーシナリオテスト
+ * STDIN error scenario test
  */
 Deno.test("E2E-STDIN: Error Scenarios", async () => {
   const _workingDir = Deno.cwd(); // Use current working directory
-  logger.debug("E2E STDINエラーシナリオテスト開始", {
-    scenario: "STDIN関連エラーケースの処理確認",
+  logger.debug("E2E STDIN error scenario test started", {
+    scenario: "STDIN-related error case processing verification",
   });
 
   const configResult = await ConfigurationTestHelper.loadTestConfiguration("default-test");
@@ -360,7 +360,7 @@ Deno.test("E2E-STDIN: Error Scenarios", async () => {
   ];
 
   for (const scenario of errorScenarios) {
-    logger.debug(`STDINシナリオテスト: ${scenario.name}`, {
+    logger.debug(`STDIN scenario test: ${scenario.name}`, {
       scenario: scenario.name,
       contentLength: scenario.stdinContent.length,
       expectSuccess: scenario.expectSuccess,
@@ -380,7 +380,7 @@ Deno.test("E2E-STDIN: Error Scenarios", async () => {
       const result = await twoParamsHandler(params, config, options);
       const output = stdoutCapture.stop();
 
-      logger.debug(`STDINシナリオ ${scenario.name} 結果`, {
+      logger.debug(`STDIN scenario ${scenario.name} result`, {
         success: result.ok,
         expectSuccess: scenario.expectSuccess,
         outputLength: output.length,
@@ -397,7 +397,7 @@ Deno.test("E2E-STDIN: Error Scenarios", async () => {
     }
   }
 
-  logger.debug("E2E STDINエラーシナリオテスト完了", {
+  logger.debug("E2E STDIN error scenario test completed", {
     scenarios: errorScenarios.length,
     resultStatus: "SUCCESS",
   });
@@ -405,12 +405,12 @@ Deno.test("E2E-STDIN: Error Scenarios", async () => {
 
 /**
  * Test Suite: STDIN Performance Characteristics
- * STDINパフォーマンス特性テスト
+ * STDIN Performance Characteristics Test
  */
 Deno.test("E2E-STDIN: Performance Characteristics", async () => {
   const workingDir = Deno.cwd(); // Use current working directory
-  logger.debug("E2E STDINパフォーマンス特性テスト開始", {
-    scenario: "大容量STDIN処理のパフォーマンス確認",
+  logger.debug("E2E STDIN performance characteristics test started", {
+    scenario: "Performance verification for large STDIN processing",
   });
 
   const configResult = await ConfigurationTestHelper.loadTestConfiguration("default-test");
@@ -456,7 +456,7 @@ The content includes multiple paragraphs with technical details, business contex
   const testSizes = [10, 50, 100]; // KB sizes to test
 
   for (const sizeKB of testSizes) {
-    logger.debug(`パフォーマンステスト: ${sizeKB}KB`, { sizeKB });
+    logger.debug(`Performance test: ${sizeKB}KB`, { sizeKB });
 
     const largeContent = generateLargeContent(sizeKB);
     const stdinMock = new StdinMockHandler();
@@ -480,7 +480,7 @@ The content includes multiple paragraphs with technical details, business contex
       const output = stdoutCapture.stop();
       const processingTime = endTime - startTime;
 
-      logger.debug(`パフォーマンス結果 ${sizeKB}KB`, {
+      logger.debug(`Performance result ${sizeKB}KB`, {
         inputSize: `${(largeContent.length / 1024).toFixed(1)}KB`,
         processingTime: `${processingTime.toFixed(2)}ms`,
         outputSize: `${(output.length / 1024).toFixed(1)}KB`,
@@ -502,7 +502,7 @@ The content includes multiple paragraphs with technical details, business contex
     }
   }
 
-  logger.debug("E2E STDINパフォーマンス特性テスト完了", {
+  logger.debug("E2E STDIN performance characteristics test completed", {
     testSizes,
     resultStatus: "SUCCESS",
   });
@@ -510,12 +510,12 @@ The content includes multiple paragraphs with technical details, business contex
 
 /**
  * Test Suite: Real-world Integration Scenarios
- * 実世界統合シナリオテスト
+ * Real-world Integration Scenario Test
  */
 Deno.test("E2E-STDIN: Real-world Integration Scenarios", async () => {
   const workingDir = Deno.cwd(); // Use current working directory
-  logger.debug("E2E STDIN実世界統合シナリオテスト開始", {
-    scenario: "実際の利用パターンに基づく統合テスト",
+  logger.debug("E2E STDIN real-world integration scenario test started", {
+    scenario: "Integration test based on actual usage patterns",
   });
 
   const realWorldScenarios = [
@@ -624,7 +624,7 @@ Additional Information:
   ];
 
   for (const scenario of realWorldScenarios) {
-    logger.debug(`実世界シナリオテスト: ${scenario.name}`, {
+    logger.debug(`Real-world scenario test: ${scenario.name}`, {
       scenario: scenario.name,
       directive: scenario.directive,
       layer: scenario.layer,
@@ -660,7 +660,7 @@ Additional Information:
       const result = await twoParamsHandler(params, config, options);
       const output = stdoutCapture.stop();
 
-      logger.debug(`実世界シナリオ ${scenario.name} 結果`, {
+      logger.debug(`Real-world scenario ${scenario.name} result`, {
         success: result.ok,
         usedDirective: directive,
         usedLayer: layer,
@@ -685,7 +685,7 @@ Additional Information:
     }
   }
 
-  logger.debug("E2E STDIN実世界統合シナリオテスト完了", {
+  logger.debug("E2E STDIN real-world integration scenario test completed", {
     scenarios: realWorldScenarios.length,
     resultStatus: "SUCCESS",
   });

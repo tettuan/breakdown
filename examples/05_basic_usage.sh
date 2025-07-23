@@ -129,9 +129,8 @@ else
 fi
 echo
 
-# Example 4: Find bugs command - Now working with updated configuration
+# Example 4: Find bugs command - デフォルト無効からプロファイル有効への確認
 echo "4. Finding bugs in code (find bugs command)"
-echo "✅ 'find bugs' is now enabled in the default configuration"
 cat > "$OUTPUT_DIR/buggy_code.js" << EOF
 function calculateTotal(items) {
     let total = 0;
@@ -152,10 +151,20 @@ function processUser(user) {
 }
 EOF
 
-echo "Running find bugs analysis..."
+# Step 1: デフォルト設定での失敗確認
+echo "Testing with default configuration (expected to fail)..."
+if BREAKDOWN find bugs --config=default --from="$OUTPUT_DIR/buggy_code.js" > "$OUTPUT_DIR/bugs_default.md" 2>/dev/null; then
+    echo "⚠️  Unexpected: find bugs succeeded with default config"
+else
+    echo "✅ Expected: find bugs is disabled in default configuration"
+fi
+
+# Step 2: findbugsプロファイルでの成功確認
+echo
+echo "Testing with findbugs profile configuration..."
 if BREAKDOWN find bugs --config=findbugs --from="$OUTPUT_DIR/buggy_code.js" > "$OUTPUT_DIR/bugs_analysis.md" 2>/dev/null; then
     if [ -f "$OUTPUT_DIR/bugs_analysis.md" ] && [ -s "$OUTPUT_DIR/bugs_analysis.md" ]; then
-        echo "✅ Created bug analysis at $OUTPUT_DIR/bugs_analysis.md"
+        echo "✅ Success: find bugs works with findbugs profile"
         echo "   File size: $(wc -c < "$OUTPUT_DIR/bugs_analysis.md" | tr -d ' ') bytes"
         echo "   Preview:"
         head -5 "$OUTPUT_DIR/bugs_analysis.md" | sed 's/^/     /'
@@ -163,7 +172,7 @@ if BREAKDOWN find bugs --config=findbugs --from="$OUTPUT_DIR/buggy_code.js" > "$
         echo "⚠️  Command succeeded but output file is empty or missing"
     fi
 else
-    echo "⚠️  'find bugs' command failed - using fallback 'defect task' instead"
+    echo "❌ Error: find bugs failed even with findbugs profile"
     
     # Fallback to defect task for bug analysis
     cat > "$OUTPUT_DIR/bug_report.md" << EOF

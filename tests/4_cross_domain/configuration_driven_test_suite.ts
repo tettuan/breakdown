@@ -1,8 +1,8 @@
 /**
  * @fileoverview Configuration-Driven Test Suite
  *
- * 設定ファイルベーステストの完全実装
- * tests/fixtures/configs/配下の設定ファイルを活用してハードコード排除
+ * Complete implementation of configuration file-based testing
+ * Utilizes configuration files under tests/fixtures/configs/ to eliminate hardcoding
  *
  * @module tests/4_cross_domain/configuration_driven_test_suite
  */
@@ -15,47 +15,47 @@ import {
   executeBreakdownParams,
 } from "../../lib/application/breakdown_params_integration.ts";
 
-// テストロガー初期化
+// Initialize test logger
 const logger = new BreakdownLogger("config-driven-test");
 
 /**
- * 設定ファイルベーステストマトリックス
- * 各設定ファイルに対してテストを実行
+ * Configuration file-based test matrix
+ * Execute tests for each configuration file
  */
 const CONFIG_TEST_MATRIX = [
   {
     configName: "default-test",
-    description: "デフォルト設定でのテスト",
+    description: "Testing with default configuration",
     configPath: "tests/fixtures/configs/default-test-user.yml",
   },
   {
     configName: "flexible-test",
-    description: "柔軟パターン設定でのテスト",
+    description: "Testing with flexible pattern configuration",
     configPath: "tests/fixtures/configs/flexible-test-user.yml",
   },
 ];
 
 /**
- * 設定ファイルベース基本テストスイート
+ * Configuration file-based basic test suite
  */
 for (const testConfig of CONFIG_TEST_MATRIX) {
-  Deno.test(`1_behavior: 設定ファイルベース - ${testConfig.description}`, async () => {
-    logger.debug(`設定ファイルベーステスト開始 - 設定: ${testConfig.configName}`, {
-      stage: "テスト開始",
+  Deno.test(`1_behavior: Configuration file-based - ${testConfig.description}`, async () => {
+    logger.debug(`Configuration file-based test started - config: ${testConfig.configName}`, {
+      stage: "test_start",
       ...testConfig,
     });
 
-    // Step 1: 設定ファイル読み込み
+    // Step 1: Configuration file loading
     const configResult = await ConfigurationTestHelper.loadTestConfiguration(testConfig.configName);
-    logger.debug(`設定読み込み結果 - 設定データ確認`, {
-      stage: "設定確認",
+    logger.debug(`Configuration load result - config data verification`, {
+      stage: "config_verification",
       userConfig: configResult.userConfig,
     });
 
     assertExists(configResult.userConfig);
     assertExists(configResult.userConfig.testData);
 
-    // Step 2: テストマトリックス生成 - testDataから直接生成
+    // Step 2: Generate test matrix - directly generated from testData
     const testData = configResult.userConfig.testData;
     const testMatrix = [
       ...testData.validDirectives.map((directive: string) =>
@@ -73,15 +73,15 @@ for (const testConfig of CONFIG_TEST_MATRIX) {
         expectedType: "error" as const,
       })),
     ];
-    logger.debug(`テストマトリックス生成 - テストケース数: ${testMatrix.length}`, {
-      stage: "マトリックス生成",
+    logger.debug(`Test matrix generated - test case count: ${testMatrix.length}`, {
+      stage: "matrix_generation",
       testMatrix,
     });
 
-    // Step 3: 各テストケースを実行
+    // Step 3: Execute each test case
     for (const testCase of testMatrix) {
-      logger.debug(`テストケース実行 - 引数: ${testCase.args}`, {
-        stage: "テストケース",
+      logger.debug(`Test case execution - args: ${testCase.args}`, {
+        stage: "test_case",
         ...testCase,
       });
 
@@ -91,7 +91,7 @@ for (const testConfig of CONFIG_TEST_MATRIX) {
         assertEquals(
           paramsResult.ok,
           true,
-          `有効な引数 [${testCase.args.join(", ")}] が失敗: ${
+          `Valid arguments [${testCase.args.join(", ")}] failed: ${
             !paramsResult.ok ? paramsResult.error?.message : ""
           }`,
         );
@@ -105,20 +105,22 @@ for (const testConfig of CONFIG_TEST_MATRIX) {
         assertEquals(
           paramsResult.ok,
           false,
-          `無効な引数 [${testCase.args.join(", ")}] が成功してしまった`,
+          `Invalid arguments [${testCase.args.join(", ")}] unexpectedly succeeded`,
         );
       }
     }
 
-    logger.debug(`設定ファイルベーステスト完了`, { stage: "test" });
+    logger.debug(`Configuration file-based test completed`, { stage: "test" });
   });
 }
 
 /**
- * 設定ファイル間の整合性テスト
+ * Configuration file consistency test
  */
-Deno.test("2_structure: 設定ファイル間整合性チェック", async () => {
-  logger.debug("設定ファイル間整合性テスト開始", { stage: "複数設定ファイルの一貫性確認" });
+Deno.test("2_structure: Configuration file consistency check", async () => {
+  logger.debug("Configuration file consistency test started", {
+    stage: "multi_config_consistency_check",
+  });
 
   const configResults = await Promise.all(
     CONFIG_TEST_MATRIX.map(async (testConfig) => ({
@@ -127,58 +129,67 @@ Deno.test("2_structure: 設定ファイル間整合性チェック", async () =>
     })),
   );
 
-  // 各設定ファイルが必要な構造を持っていることを確認
+  // Verify that each configuration file has the required structure
   for (const result of configResults) {
-    logger.debug(`設定ファイル構造チェック - 設定: ${result.name}`, {
-      stage: "構造チェック",
+    logger.debug(`Configuration file structure check - config: ${result.name}`, {
+      stage: "structure_check",
       config: result.config.userConfig,
     });
 
-    assertExists(result.config.userConfig.testData, `${result.name}: testDataが存在しない`);
+    assertExists(result.config.userConfig.testData, `${result.name}: testData does not exist`);
     assertExists(
       result.config.userConfig.testData.validDirectives,
-      `${result.name}: validDirectivesが存在しない`,
+      `${result.name}: validDirectives does not exist`,
     );
     assertExists(
       result.config.userConfig.testData.validLayers,
-      `${result.name}: validLayersが存在しない`,
+      `${result.name}: validLayers does not exist`,
     );
 
-    // 基本的な値が含まれていることを確認（ハードコード排除の検証）
+    // Verify that basic values are included (verification of hardcode elimination)
     const validDirectives = result.config.userConfig.testData.validDirectives;
     const validLayers = result.config.userConfig.testData.validLayers;
 
-    // 設定ファイル駆動であることの確認（最低限の値は存在するはず）
-    assertEquals(validDirectives.length > 0, true, `${result.name}: validDirectivesが空`);
-    assertEquals(validLayers.length > 0, true, `${result.name}: validLayersが空`);
+    // Verify that it is configuration file-driven (minimum values should exist)
+    assertEquals(validDirectives.length > 0, true, `${result.name}: validDirectives is empty`);
+    assertEquals(validLayers.length > 0, true, `${result.name}: validLayers is empty`);
   }
 
-  logger.debug("設定ファイル間整合性チェック完了", { stage: "全設定ファイルが適切な構造を保持" });
+  logger.debug("Configuration file consistency check completed", {
+    stage: "all_config_files_maintain_proper_structure",
+  });
 });
 
 /**
- * 完全統合フローテスト（設定ファイル駆動）
+ * Complete integration flow test (configuration file-driven)
  */
-Deno.test("3_core: 設定ファイル駆動完全統合フロー", async () => {
-  logger.debug("設定ファイル駆動完全統合フロー開始", { stage: "エンドツーエンド設定ベーステスト" });
+Deno.test("3_core: Configuration-driven complete integration flow", async () => {
+  logger.debug("Configuration-driven complete integration flow started", {
+    stage: "end_to_end_config_based_test",
+  });
 
-  for (const testConfig of CONFIG_TEST_MATRIX.slice(0, 2)) { // 最初の2つの設定でテスト
-    logger.debug(`完全統合フローテスト`, { stage: "統合テスト" });
+  for (const testConfig of CONFIG_TEST_MATRIX.slice(0, 2)) { // Test with the first 2 configurations
+    logger.debug(`Complete integration flow test`, { stage: "integration_test" });
 
     const configResult = await ConfigurationTestHelper.loadTestConfiguration(testConfig.configName);
     const validDirectives = configResult.userConfig.testData.validDirectives;
     const validLayers = configResult.userConfig.testData.validLayers;
 
-    // 有効な組み合わせで完全統合フローをテスト
+    // Test complete integration flow with valid combinations
     const testArgs = [validDirectives[0], validLayers[0]];
 
     const completeResult = await createTwoParamsFromConfigFile(testArgs, testConfig.configName);
-    logger.debug(`完全統合フロー結果 - 引数: ${testArgs}`, { stage: "結果", completeResult });
+    logger.debug(`Complete integration flow result - args: ${testArgs}`, {
+      stage: "result",
+      completeResult,
+    });
 
     assertEquals(
       completeResult.ok,
       true,
-      `完全統合フローが失敗: ${!completeResult.ok ? completeResult.error?.message : ""}`,
+      `Complete integration flow failed: ${
+        !completeResult.ok ? completeResult.error?.message : ""
+      }`,
     );
 
     if (completeResult.ok) {
@@ -188,26 +199,26 @@ Deno.test("3_core: 設定ファイル駆動完全統合フロー", async () => {
     }
   }
 
-  logger.debug("設定ファイル駆動完全統合フロー完了", {
-    stage: "全設定ファイルで完全統合フロー成功",
+  logger.debug("Configuration-driven complete integration flow completed", {
+    stage: "complete_integration_flow_success_for_all_config_files",
   });
 });
 
 /**
- * エッジケーステスト（設定ファイル駆動）
+ * Edge case test (configuration file-driven)
  */
-Deno.test("2_structure: 設定ファイル駆動エッジケーステスト", async () => {
-  logger.debug("設定ファイル駆動エッジケーステスト開始", {
-    stage: "境界値とエラーケースの設定ベーステスト",
+Deno.test("2_structure: Configuration-driven edge case test", async () => {
+  logger.debug("Configuration-driven edge case test started", {
+    stage: "boundary_value_and_error_case_config_based_test",
   });
 
-  // エッジケース用設定ファイルが存在する場合のテスト
+  // Test when edge case configuration file exists
   try {
     const edgeCaseConfig = await ConfigurationTestHelper.loadTestConfiguration("test-helper");
 
     if (edgeCaseConfig.userConfig.edgeCaseTestData) {
-      logger.debug("エッジケース設定データ発見 - 境界値テスト実行", {
-        stage: "エッジケース",
+      logger.debug("Edge case configuration data found - executing boundary value test", {
+        stage: "edge_case",
         edgeCaseTestData: edgeCaseConfig.userConfig.edgeCaseTestData,
       });
 
@@ -221,34 +232,36 @@ Deno.test("2_structure: 設定ファイル駆動エッジケーステスト", as
             { value: string; description?: string; expectValid: boolean }
           >
         ) {
-          logger.debug(`境界値テストケース - 値: ${boundaryCase.value}`, {
-            stage: "境界値テスト",
+          logger.debug(`Boundary value test case - value: ${boundaryCase.value}`, {
+            stage: "boundary_value_test",
             ...boundaryCase,
           });
 
-          // 境界値テストロジック（実際のパターンマッチング）
-          const testArgs = [boundaryCase.value, "project"]; // layerは有効値で固定
+          // Boundary value test logic (actual pattern matching)
+          const testArgs = [boundaryCase.value, "project"]; // layer is fixed with valid value
           const result = await executeBreakdownParams(testArgs, "test-helper");
 
           if (boundaryCase.expectValid) {
             assertEquals(
               result.ok,
               true,
-              `境界値 '${boundaryCase.value}' がマッチしなかった: ${boundaryCase.description}`,
+              `Boundary value '${boundaryCase.value}' did not match: ${boundaryCase.description}`,
             );
           } else {
             assertEquals(
               result.ok,
               false,
-              `境界値 '${boundaryCase.value}' がマッチしてしまった: ${boundaryCase.description}`,
+              `Boundary value '${boundaryCase.value}' unexpectedly matched: ${boundaryCase.description}`,
             );
           }
         }
       }
     }
   } catch (error) {
-    logger.debug("エッジケース設定ファイル未発見 - スキップ", { stage: "スキップ", error });
+    logger.debug("Edge case configuration file not found - skipping", { stage: "skip", error });
   }
 
-  logger.debug("設定ファイル駆動エッジケーステスト完了", { stage: "全境界値テスト完了" });
+  logger.debug("Configuration-driven edge case test completed", {
+    stage: "all_boundary_value_tests_completed",
+  });
 });

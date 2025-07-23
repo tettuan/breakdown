@@ -1,7 +1,7 @@
 /**
- * @fileoverview JSRPatternAdapter テスト
+ * @fileoverview JSRPatternAdapter test
  *
- * TypePatternProvider完全実装の動作確認とAsyncConfigPatternProvider代替性検証
+ * Verify complete TypePatternProvider implementation operation and AsyncConfigPatternProvider compatibility
  */
 
 import { assert, assertEquals, assertExists } from "../deps.ts";
@@ -9,8 +9,8 @@ import { createJSRPatternAdapter, JSRPatternAdapter } from "./jsr_pattern_adapte
 import { DEFAULT_CUSTOM_CONFIG } from "../deps.ts";
 import type { CustomConfig } from "../deps.ts";
 
-Deno.test("JSRPatternAdapter - 基本的な作成とTypePatternProvider実装", () => {
-  // テスト用カスタム設定
+Deno.test("JSRPatternAdapter - Basic creation and TypePatternProvider implementation", () => {
+  // Test custom configuration
   const testConfig: CustomConfig = {
     ...DEFAULT_CUSTOM_CONFIG,
     params: {
@@ -27,7 +27,7 @@ Deno.test("JSRPatternAdapter - 基本的な作成とTypePatternProvider実装", 
     },
   };
 
-  // JSRPatternAdapter作成
+  // Create JSRPatternAdapter
   const result = JSRPatternAdapter.create(testConfig);
   if (!result.ok) {
     const errorMessage = "message" in result.error ? result.error.message : result.error.kind;
@@ -36,21 +36,21 @@ Deno.test("JSRPatternAdapter - 基本的な作成とTypePatternProvider実装", 
 
   const adapter = result.data;
 
-  // TypePatternProvider実装メソッドの確認
+  // Verify TypePatternProvider implementation methods
   assertEquals(adapter.isInitialized(), true);
 
-  // DirectiveType検証
+  // DirectiveType validation
   assertEquals(adapter.validateDirectiveType("to"), true);
   assertEquals(adapter.validateDirectiveType("summary"), true);
   assertEquals(adapter.validateDirectiveType("invalid"), false);
 
-  // LayerType検証
+  // LayerType validation
   assertEquals(adapter.validateLayerType("project"), true);
   assertEquals(adapter.validateLayerType("issue"), true);
   assertEquals(adapter.validateLayerType("invalid"), false);
 });
 
-Deno.test("JSRPatternAdapter - 有効な値取得", () => {
+Deno.test("JSRPatternAdapter - Valid value retrieval", () => {
   const testConfig: CustomConfig = {
     ...DEFAULT_CUSTOM_CONFIG,
     params: {
@@ -71,18 +71,18 @@ Deno.test("JSRPatternAdapter - 有効な値取得", () => {
   assert(result.ok);
   const adapter = result.data;
 
-  // 有効なDirectiveType取得
+  // Get valid DirectiveTypes
   const validDirectives = adapter.getValidDirectiveTypes();
   assertEquals(validDirectives.length, 3);
   assertEquals(validDirectives, ["to", "summary", "defect"]);
 
-  // 有効なLayerType取得
+  // Get valid LayerTypes
   const validLayers = adapter.getValidLayerTypes();
   assertEquals(validLayers.length, 3);
   assertEquals(validLayers, ["project", "issue", "task"]);
 });
 
-Deno.test("JSRPatternAdapter - パターンオブジェクト取得", () => {
+Deno.test("JSRPatternAdapter - Pattern object retrieval", () => {
   const testConfig: CustomConfig = {
     ...DEFAULT_CUSTOM_CONFIG,
     params: {
@@ -103,14 +103,14 @@ Deno.test("JSRPatternAdapter - パターンオブジェクト取得", () => {
   assert(result.ok);
   const adapter = result.data;
 
-  // DirectiveTypeパターンオブジェクト
+  // DirectiveType pattern object
   const directivePattern = adapter.getDirectivePattern();
   assertExists(directivePattern);
   assertEquals(directivePattern.test("to"), true);
   assertEquals(directivePattern.test("invalid"), false);
   assertEquals(directivePattern.getPattern(), "to|summary|defect");
 
-  // LayerTypeパターンオブジェクト
+  // LayerType pattern object
   const layerPattern = adapter.getLayerTypePattern();
   assertExists(layerPattern);
   assertEquals(layerPattern.test("project"), true);
@@ -118,7 +118,7 @@ Deno.test("JSRPatternAdapter - パターンオブジェクト取得", () => {
   assertEquals(layerPattern.getPattern(), "project|issue|task");
 });
 
-Deno.test("JSRPatternAdapter - AsyncConfigPatternProvider互換機能", () => {
+Deno.test("JSRPatternAdapter - AsyncConfigPatternProvider compatibility function", () => {
   const testConfig: CustomConfig = {
     ...DEFAULT_CUSTOM_CONFIG,
     params: {
@@ -152,7 +152,7 @@ Deno.test("JSRPatternAdapter - AsyncConfigPatternProvider互換機能", () => {
   adapter.clearCache();
   assertEquals(adapter.hasValidPatterns(), true); // 再初期化されるので有効のまま
 
-  // debug情報
+  // Debug information
   const debugInfo = adapter.debug();
   assertEquals(debugInfo.initialized, true);
   assertEquals(debugInfo.hasDirectivePattern, true);
@@ -161,7 +161,7 @@ Deno.test("JSRPatternAdapter - AsyncConfigPatternProvider互換機能", () => {
   assertEquals(debugInfo.validLayers, ["project", "issue", "task"]);
 });
 
-Deno.test("JSRPatternAdapter - ファクトリー関数", async () => {
+Deno.test("JSRPatternAdapter - Factory function", async () => {
   const testConfig: CustomConfig = {
     ...DEFAULT_CUSTOM_CONFIG,
     params: {
@@ -178,15 +178,15 @@ Deno.test("JSRPatternAdapter - ファクトリー関数", async () => {
     },
   };
 
-  // createJSRPatternAdapter
+  // createJSRPatternAdapter factory function
   const adapter = await createJSRPatternAdapter(testConfig);
   assertEquals(adapter.isInitialized(), true);
   assertEquals(adapter.validateDirectiveType("to"), true);
   assertEquals(adapter.validateLayerType("project"), true);
 });
 
-Deno.test("JSRPatternAdapter - DEFAULT_CUSTOM_CONFIG使用", () => {
-  // DEFAULT_CUSTOM_CONFIGでの作成
+Deno.test("JSRPatternAdapter - DEFAULT_CUSTOM_CONFIG usage", () => {
+  // Create with DEFAULT_CUSTOM_CONFIG
   const result = JSRPatternAdapter.create();
   if (!result.ok) {
     const errorMessage = "message" in result.error ? result.error.message : result.error.kind;
@@ -196,16 +196,16 @@ Deno.test("JSRPatternAdapter - DEFAULT_CUSTOM_CONFIG使用", () => {
   const adapter = result.data;
   assertEquals(adapter.isInitialized(), true);
 
-  // DEFAULT_CUSTOM_CONFIGの値で動作確認
+  // Verify operation with DEFAULT_CUSTOM_CONFIG values
   const debugInfo = adapter.debug();
   assertEquals(debugInfo.initialized, true);
 });
 
-Deno.test("JSRPatternAdapter - エラーハンドリング", () => {
-  // 無効な設定でのテスト（params無しでエラーを誘発）
+Deno.test("JSRPatternAdapter - Error handling", () => {
+  // Test with invalid configuration (no params to trigger error)
   const invalidConfig = {
     ...DEFAULT_CUSTOM_CONFIG,
-    params: undefined as never, // 無効な設定
+    params: undefined as never, // Invalid configuration
   } as CustomConfig;
 
   const result = JSRPatternAdapter.create(invalidConfig);

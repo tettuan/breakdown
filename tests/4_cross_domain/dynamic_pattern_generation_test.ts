@@ -1,8 +1,8 @@
 /**
  * @fileoverview Dynamic Pattern Generation Test
  *
- * ConfigurationPatternGeneratorとConfigurationTestHelperの動的生成機能をテスト
- * ハードコード配列排除の検証
+ * Tests the dynamic generation functionality of ConfigurationPatternGenerator and ConfigurationTestHelper
+ * Verification of hardcoded array elimination
  *
  * @module tests/4_cross_domain/dynamic_pattern_generation_test
  */
@@ -12,15 +12,15 @@ import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { ConfigurationTestHelper } from "../../lib/test_helpers/configuration_test_helper_simple.ts";
 import { ConfigurationPatternGenerator } from "../../lib/test_helpers/configuration_pattern_generator.ts";
 
-// テストロガー初期化
+// Test logger initialization
 const logger = new BreakdownLogger("dynamic-pattern-test");
 
-Deno.test("3_core: 動的パターン生成 - ConfigurationPatternGenerator基本機能", () => {
-  logger.debug("ConfigurationPatternGenerator基本機能テスト開始", {
-    tag: "パターンから動的生成テスト",
+Deno.test("3_core: Dynamic pattern generation - ConfigurationPatternGenerator basic functionality", () => {
+  logger.debug("ConfigurationPatternGenerator basic functionality test started", {
+    tag: "dynamic-generation-from-pattern-test",
   });
 
-  // 厳格パターンのテスト
+  // Strict pattern test
   const strictConfig = {
     directiveType: { pattern: "^(to|summary|defect)$" },
     layerType: { pattern: "^(project|issue|task)$" },
@@ -28,9 +28,9 @@ Deno.test("3_core: 動的パターン生成 - ConfigurationPatternGenerator基�
 
   const strictData = ConfigurationPatternGenerator.generateTestData(strictConfig);
 
-  logger.debug("厳格パターン生成結果", { tag: "パターンテスト", data: strictData });
+  logger.debug("Strict pattern generation result", { tag: "pattern-test", data: strictData });
 
-  // 期待される値が含まれていることを確認
+  // Verify that expected values are included
   assertEquals(strictData.validDirectives.includes("to"), true);
   assertEquals(strictData.validDirectives.includes("summary"), true);
   assertEquals(strictData.validDirectives.includes("defect"), true);
@@ -38,17 +38,21 @@ Deno.test("3_core: 動的パターン生成 - ConfigurationPatternGenerator基�
   assertEquals(strictData.validLayers.includes("issue"), true);
   assertEquals(strictData.validLayers.includes("task"), true);
 
-  // 無効な値も生成されていることを確認
+  // Verify that invalid values are also generated
   assertEquals(strictData.invalidDirectives.length > 0, true);
   assertEquals(strictData.invalidLayers.length > 0, true);
 
-  logger.debug("ConfigurationPatternGenerator基本機能確認完了", { tag: "厳格パターン生成成功" });
+  logger.debug("ConfigurationPatternGenerator basic functionality verification completed", {
+    tag: "strict-pattern-generation-success",
+  });
 });
 
-Deno.test("3_core: 動的パターン生成 - 柔軟パターン生成", () => {
-  logger.debug("柔軟パターン生成テスト開始", { tag: "ハッシュ記号を含むパターンテスト" });
+Deno.test("3_core: Dynamic pattern generation - Flexible pattern generation", () => {
+  logger.debug("Flexible pattern generation test started", {
+    tag: "pattern-test-with-hash-symbols",
+  });
 
-  // 柔軟パターンのテスト
+  // Flexible pattern test
   const flexibleConfig = {
     directiveType: { pattern: "^[a-z0-9_#-]{2,20}$" },
     layerType: { pattern: "^[a-z0-9_#-]{2,20}$" },
@@ -56,99 +60,115 @@ Deno.test("3_core: 動的パターン生成 - 柔軟パターン生成", () => {
 
   const flexibleData = ConfigurationPatternGenerator.generateTestData(flexibleConfig);
 
-  logger.debug("柔軟パターン生成結果", { tag: "パターンテスト", data: flexibleData });
+  logger.debug("Flexible pattern generation result", { tag: "pattern-test", data: flexibleData });
 
-  // 基本値が含まれていることを確認
+  // Verify that basic values are included
   assertEquals(flexibleData.validDirectives.length > 0, true);
   assertEquals(flexibleData.validLayers.length > 0, true);
 
-  // ハッシュ記号を含む値が含まれていることを確認（パターンが対応している場合）
+  // Verify that values containing hash symbols are included (when pattern supports them)
   const hasHashValue = flexibleData.validDirectives.some((d) => d.includes("#")) ||
     flexibleData.validLayers.some((l) => l.includes("#"));
-  assertEquals(hasHashValue, true, "ハッシュ記号を含む値が生成されるべき");
+  assertEquals(hasHashValue, true, "Values containing hash symbols should be generated");
 
-  logger.debug("柔軟パターン生成確認完了", { tag: "ハッシュ記号を含むパターン生成成功" });
+  logger.debug("Flexible pattern generation verification completed", {
+    tag: "pattern-generation-with-hash-symbols-success",
+  });
 });
 
-Deno.test("2_structure: 動的パターン生成 - ConfigurationTestHelper統合", async () => {
-  logger.debug("ConfigurationTestHelper統合テスト開始", { tag: "動的生成とヘルパー統合" });
+Deno.test("2_structure: Dynamic pattern generation - ConfigurationTestHelper integration", async () => {
+  logger.debug("ConfigurationTestHelper integration test started", {
+    tag: "dynamic-generation-and-helper-integration",
+  });
 
-  // flexible-test-user.yml（動的生成に変更済み）を使用
+  // Use flexible-test-user.yml (already changed to dynamic generation)
   const configResult = await ConfigurationTestHelper.loadTestConfiguration("flexible-test");
 
-  logger.debug("動的生成設定ロード結果", { tag: "設定ロード", config: configResult.userConfig });
+  logger.debug("Dynamic generation configuration load result", {
+    tag: "config-load",
+    config: configResult.userConfig,
+  });
 
   assertExists(configResult.userConfig);
   assertExists(configResult.userConfig.testData);
 
-  // 動的生成されたデータが含まれていることを確認
+  // Verify that dynamically generated data is included
   const testData = configResult.userConfig.testData;
   assertEquals(Array.isArray(testData.validDirectives), true);
   assertEquals(Array.isArray(testData.validLayers), true);
   assertEquals(Array.isArray(testData.invalidDirectives), true);
   assertEquals(Array.isArray(testData.invalidLayers), true);
 
-  // 動的生成されたデータに値があることを確認
+  // Verify that dynamically generated data has values
   assertEquals(testData.validDirectives.length > 0, true);
   assertEquals(testData.validLayers.length > 0, true);
   assertEquals(testData.invalidDirectives.length > 0, true);
   assertEquals(testData.invalidLayers.length > 0, true);
 
-  logger.debug("動的生成データ確認", {
-    tag: "データ確認",
+  logger.debug("Dynamic generation data verification", {
+    tag: "data-verification",
     validDirectives: testData.validDirectives,
     validLayers: testData.validLayers,
   });
 
-  logger.debug("ConfigurationTestHelper統合確認完了", { tag: "動的生成統合成功" });
+  logger.debug("ConfigurationTestHelper integration verification completed", {
+    tag: "dynamic-generation-integration-success",
+  });
 });
 
-// TODO: パス設定修正後に有効化
-Deno.test.ignore("1_behavior: ハードコード排除検証 - パターンファイル動的化", async () => {
-  logger.debug("ハードコード排除検証開始", { tag: "全パターンファイルの動的化確認" });
+// TODO: Enable after path configuration fix
+Deno.test.ignore(
+  "1_behavior: Hardcode elimination verification - Pattern file dynamization",
+  async () => {
+    logger.debug("Hardcode elimination verification started", {
+      tag: "all-pattern-files-dynamization-verification",
+    });
 
-  const patternConfigs = [
-    { name: "basic", configName: "basic" },
-    { name: "strict", configName: "strict" },
-    { name: "liberal", configName: "liberal" },
-    { name: "flexible-test", configName: "flexible-test" },
-    { name: "default-matching", configName: "default-matching" },
-    { name: "edge-case", configName: "edge-case" },
-  ];
+    const patternConfigs = [
+      { name: "basic", configName: "basic" },
+      { name: "strict", configName: "strict" },
+      { name: "liberal", configName: "liberal" },
+      { name: "flexible-test", configName: "flexible-test" },
+      { name: "default-matching", configName: "default-matching" },
+      { name: "edge-case", configName: "edge-case" },
+    ];
 
-  for (const config of patternConfigs) {
-    logger.debug(`パターンファイル動的化確認: ${config.name}`, { stage: "test" });
+    for (const config of patternConfigs) {
+      logger.debug(`Pattern file dynamization verification: ${config.name}`, { stage: "test" });
 
-    try {
-      const result = await ConfigurationTestHelper.loadTestConfiguration(config.configName);
+      try {
+        const result = await ConfigurationTestHelper.loadTestConfiguration(config.configName);
 
-      // 動的生成されたデータが正しく読み込まれていることを確認
-      assertExists(result.userConfig.testData);
-      assertEquals(Array.isArray(result.userConfig.testData.validDirectives), true);
-      assertEquals(Array.isArray(result.userConfig.testData.validLayers), true);
+        // Verify that dynamically generated data is loaded correctly
+        assertExists(result.userConfig.testData);
+        assertEquals(Array.isArray(result.userConfig.testData.validDirectives), true);
+        assertEquals(Array.isArray(result.userConfig.testData.validLayers), true);
 
-      // 空でないことを確認（動的生成が成功している）
-      assertEquals(
-        result.userConfig.testData.validDirectives.length > 0,
-        true,
-        `${config.name}: validDirectivesが空`,
-      );
-      assertEquals(
-        result.userConfig.testData.validLayers.length > 0,
-        true,
-        `${config.name}: validLayersが空`,
-      );
+        // Verify that it's not empty (dynamic generation succeeded)
+        assertEquals(
+          result.userConfig.testData.validDirectives.length > 0,
+          true,
+          `${config.name}: validDirectives is empty`,
+        );
+        assertEquals(
+          result.userConfig.testData.validLayers.length > 0,
+          true,
+          `${config.name}: validLayers is empty`,
+        );
 
-      logger.debug(`${config.name} 動的化確認完了`, {
-        tag: "確認完了",
-        validDirectivesCount: result.userConfig.testData.validDirectives.length,
-        validLayersCount: result.userConfig.testData.validLayers.length,
-      });
-    } catch (error) {
-      logger.debug(`${config.name} 動的化失敗`, { tag: "失敗", error });
-      throw error;
+        logger.debug(`${config.name} dynamization verification completed`, {
+          tag: "verification-completed",
+          validDirectivesCount: result.userConfig.testData.validDirectives.length,
+          validLayersCount: result.userConfig.testData.validLayers.length,
+        });
+      } catch (error) {
+        logger.debug(`${config.name} dynamization failed`, { tag: "failed", error });
+        throw error;
+      }
     }
-  }
 
-  logger.debug("ハードコード排除検証完了", { tag: "全パターンファイルの動的化成功" });
-});
+    logger.debug("Hardcode elimination verification completed", {
+      tag: "all-pattern-files-dynamization-success",
+    });
+  },
+);
