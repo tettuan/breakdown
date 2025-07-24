@@ -31,9 +31,13 @@ import { BreakdownConfig } from "../deps.ts";
 import { WorkspacePathResolverImpl } from "./path/resolver.ts";
 import { DefaultPathResolutionStrategy } from "./path/strategies.ts";
 import { resolve } from "jsr:@std/path@1.0.0";
+import {
+  _DEFAULT_WORKSPACE_STRUCTURE,
+  DEFAULT_PROMPT_BASE_DIR,
+  DEFAULT_SCHEMA_BASE_DIR,
+} from "../config/constants.ts";
 import { prompts } from "../templates/prompts.ts";
 import { schema } from "../templates/schema.ts";
-import { DEFAULT_PROMPT_BASE_DIR, DEFAULT_SCHEMA_BASE_DIR } from "../config/constants.ts";
 
 /**
  * Workspace class for managing Breakdown project structure and configuration.
@@ -92,7 +96,11 @@ export class WorkspaceImpl implements Workspace {
       await this._structure.initialize();
 
       // Create config file if it doesn't exist
-      const configDir = join(this.config.workingDir, ".agent", "breakdown", "config");
+      const configDir = join(
+        this.config.workingDir,
+        _DEFAULT_WORKSPACE_STRUCTURE.root,
+        _DEFAULT_WORKSPACE_STRUCTURE.config,
+      );
       const configFile = join(configDir, "default-app.yml");
 
       try {
@@ -101,7 +109,6 @@ export class WorkspaceImpl implements Workspace {
         if (error instanceof Deno.errors.NotFound) {
           await ensureDir(configDir);
           const config = {
-            working_dir: ".agent/breakdown",
             app_prompt: {
               base_dir: this.config.promptBaseDir,
             },
@@ -118,14 +125,12 @@ export class WorkspaceImpl implements Workspace {
       // Create custom base directories if specified
       const customPromptDir = join(
         this.config.workingDir,
-        ".agent",
-        "breakdown",
+        _DEFAULT_WORKSPACE_STRUCTURE.root,
         this.config.promptBaseDir,
       );
       const customSchemaDir = join(
         this.config.workingDir,
-        ".agent",
-        "breakdown",
+        _DEFAULT_WORKSPACE_STRUCTURE.root,
         this.config.schemaBaseDir,
       );
 
@@ -268,8 +273,8 @@ export class WorkspaceImpl implements Workspace {
       // Extract the necessary configuration values
       this.config = {
         workingDir: this.config.workingDir,
-        promptBaseDir: mergedConfig.app_prompt?.base_dir || "prompts",
-        schemaBaseDir: mergedConfig.app_schema?.base_dir || "schema",
+        promptBaseDir: mergedConfig.app_prompt?.base_dir || DEFAULT_PROMPT_BASE_DIR,
+        schemaBaseDir: mergedConfig.app_schema?.base_dir || DEFAULT_SCHEMA_BASE_DIR,
       };
     } catch (error) {
       if (error instanceof Deno.errors.NotFound) {

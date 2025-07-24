@@ -10,6 +10,7 @@
 import { exists, walk } from "@std/fs";
 import { join, relative } from "@std/path";
 import { BreakdownConfig } from "@tettuan/breakdownconfig";
+import { DEFAULT_PROMPT_BASE_DIR } from "../../config/constants.ts";
 import type { DirectiveType as _DirectiveType, LayerType as _LayerType } from "../../types/mod.ts";
 import {
   PromptTemplate,
@@ -74,7 +75,7 @@ export class FileTemplateRepository implements TemplateRepository {
     }
 
     // Load from file system
-    const promptsSubDir = this.getPromptsSubDirectory();
+    const promptsSubDir = await this.getPromptsSubDirectory();
     const fullPath = join(this.config.baseDirectory, promptsSubDir, pathString);
 
     try {
@@ -108,7 +109,7 @@ export class FileTemplateRepository implements TemplateRepository {
   }
 
   async exists(path: TemplatePath): Promise<boolean> {
-    const promptsSubDir = this.getPromptsSubDirectory();
+    const promptsSubDir = await this.getPromptsSubDirectory();
     const fullPath = join(this.config.baseDirectory, promptsSubDir, path.getPath());
     return await exists(fullPath);
   }
@@ -129,7 +130,7 @@ export class FileTemplateRepository implements TemplateRepository {
 
   async save(template: PromptTemplate): Promise<void> {
     const path = template.getPath();
-    const promptsSubDir = this.getPromptsSubDirectory();
+    const promptsSubDir = await this.getPromptsSubDirectory();
     const fullPath = join(this.config.baseDirectory, promptsSubDir, path.getPath());
 
     // Ensure directory exists
@@ -147,7 +148,7 @@ export class FileTemplateRepository implements TemplateRepository {
   }
 
   async delete(path: TemplatePath): Promise<void> {
-    const promptsSubDir = this.getPromptsSubDirectory();
+    const promptsSubDir = await this.getPromptsSubDirectory();
     const fullPath = join(this.config.baseDirectory, promptsSubDir, path.getPath());
 
     try {
@@ -175,7 +176,7 @@ export class FileTemplateRepository implements TemplateRepository {
 
   private async buildManifest(): Promise<TemplateManifest> {
     const templates: TemplateManifestEntry[] = [];
-    const promptsSubDir = this.getPromptsSubDirectory();
+    const promptsSubDir = await this.getPromptsSubDirectory();
     const promptsDir = join(this.config.baseDirectory, promptsSubDir);
 
     try {
@@ -285,9 +286,38 @@ export class FileTemplateRepository implements TemplateRepository {
 
   /**
    * BreakdownConfigからプロンプトディレクトリ名を取得
+   *
+   * @returns プロンプトディレクトリ名（相対パス）
    */
-  private getPromptsSubDirectory(): string {
-    // デフォルト値を直接返す（設定との統合は後で改善）
-    return "prompts";
+  private async getPromptsSubDirectory(): Promise<string> {
+    // BreakdownConfigから設定値を取得
+    if (this.config.breakdownConfig) {
+      try {
+        // getConfig()メソッドを使用して設定データを取得
+        const configData = await this.config.breakdownConfig.getConfig();
+        const promptConfig = configData.app_prompt;
+
+        if (promptConfig?.base_dir) {
+          // app_prompt.base_dirを直接使用（相対パスとして扱う）
+          const baseDir = promptConfig.base_dir.trim();
+
+          // 絶対パスの場合は警告してフォールバックを使用
+          if (baseDir.startsWith("/") || baseDir.match(/^[A-Za-z]:[\\\/]/)) {
+            console.warn(
+              `app_prompt.base_dir should be relative path, got: ${baseDir}. Using fallback.`,
+            );
+            return DEFAULT_PROMPT_BASE_DIR;
+          }
+
+          return baseDir;
+        }
+      } catch (error) {
+        // 設定取得エラーの場合のみフォールバック
+        console.warn(`Failed to get prompt directory from config: ${error}`);
+      }
+    }
+
+    // 設定がない場合や取得に失敗した場合のフォールバック
+    return DEFAULT_PROMPT_BASE_DIR;
   }
 }

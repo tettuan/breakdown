@@ -271,9 +271,17 @@ export class TwoParamsPromptGenerator {
    * Extract working directory
    */
   private extractWorkingDir(config: Record<string, unknown>): string | undefined {
+    // First check direct working_dir for backward compatibility
     if (config.working_dir && typeof config.working_dir === "string") {
       return config.working_dir;
     }
+
+    // Then check workspace.working_dir (current structure)
+    const workspace = config.workspace as Record<string, unknown> | undefined;
+    if (workspace?.working_dir && typeof workspace.working_dir === "string") {
+      return workspace.working_dir;
+    }
+
     return undefined;
   }
 

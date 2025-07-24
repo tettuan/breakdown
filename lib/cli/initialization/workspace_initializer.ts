@@ -58,11 +58,10 @@ export async function initializeBreakdownConfiguration(): Promise<void> {
 
   // Build configuration content dynamically
   const configContent = `# Breakdown Configuration
-working_dir: ".agent/breakdown"
 app_prompt:
-  base_dir: ".agent/breakdown/prompts"
+  base_dir: "${cwd}/.agent/breakdown/prompts"
 app_schema:
-  base_dir: ".agent/breakdown/schema"
+  base_dir: "${cwd}/.agent/breakdown/schema"
 params:
   two:
     directiveType:
@@ -70,8 +69,8 @@ params:
     layerType:
       pattern: "^(${layerTypes.join("|")})$"
 workspace:
-  working_dir: ".agent/breakdown"
-  temp_dir: ".agent/breakdown/temp"
+  working_dir: "${cwd}"
+  temp_dir: "${cwd}/.agent/breakdown/temp"
 `;
 
   // Use BreakdownConfig for configuration management

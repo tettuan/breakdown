@@ -136,8 +136,8 @@ echo "- ${CONFIG_DIR}/dev-app.yml"
 echo "- ${CONFIG_DIR}/staging-app.yml"
 echo "- ${CONFIG_DIR}/prod-app.yml"
 
-# Create test data
-cat > environment_test.md << 'EOF'
+# Create test data in working directory
+cat > ./environment_test.md << 'EOF'
 # Environment Test Data
 
 ## Development Issue
@@ -164,14 +164,14 @@ for ENV in dev staging prod; do
     echo ""
     echo "=== Testing ${ENV} environment ==="
     echo "Command: deno run --allow-all ../cli/breakdown.ts defect issue --config=${ENV} < environment_test.md"
-    deno run --allow-all ../cli/breakdown.ts defect issue --config=${ENV} < environment_test.md > ${ENV}_output.md
+    deno run --allow-all ../cli/breakdown.ts defect issue --config=${ENV} < ./environment_test.md > ./${ENV}_output.md
     echo "Output preview:"
-    head -10 ${ENV}_output.md
-    rm -f ${ENV}_output.md
+    head -10 ./${ENV}_output.md
+    rm -f ./${ENV}_output.md
 done
 
 # Cleanup
-rm -f environment_test.md
+rm -f ./environment_test.md
 
 echo ""
 echo "=== Environment-Specific Configuration Example Completed ==="

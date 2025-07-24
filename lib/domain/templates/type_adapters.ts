@@ -152,25 +152,42 @@ export class TypedVariableFactory {
 }
 
 /**
+ * Configuration for path resolution
+ */
+export interface PathResolverConfig {
+  baseDirectory?: string;
+  promptBaseDir?: string;
+  schemaBaseDir?: string;
+}
+
+/**
  * Path resolver for template and schema paths
  */
 export class TypedPathResolver {
+  private readonly baseDirectory: string;
+  private readonly promptBaseDir: string;
+  private readonly schemaBaseDir: string;
+
   constructor(
-    private readonly baseDirectory: string = Deno.cwd(),
-  ) {}
+    config: PathResolverConfig = {},
+  ) {
+    this.baseDirectory = config.baseDirectory || Deno.cwd();
+    this.promptBaseDir = config.promptBaseDir || "prompts";
+    this.schemaBaseDir = config.schemaBaseDir || "schema";
+  }
 
   /**
    * Resolve absolute template path
    */
   resolveTemplatePath(path: TemplatePath): string {
-    return `${this.baseDirectory}/lib/breakdown/prompts/${path.getPath()}`;
+    return `${this.baseDirectory}/${this.promptBaseDir}/${path.getPath()}`;
   }
 
   /**
    * Resolve absolute schema path
    */
   resolveSchemaPath(path: SchemaPath): string {
-    return `${this.baseDirectory}/lib/breakdown/schema/${path.getPath()}`;
+    return `${this.baseDirectory}/${this.schemaBaseDir}/${path.getPath()}`;
   }
 
   /**

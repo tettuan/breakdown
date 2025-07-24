@@ -15,6 +15,7 @@ import type { PromptParams } from "@tettuan/breakdownprompt";
 import { DirectiveType } from "../domain/core/value_objects/directive_type.ts";
 import { LayerType } from "../domain/core/value_objects/layer_type.ts";
 import { ConfigProfile } from "../config/mod.ts";
+import { DEFAULT_PROMPT_BASE_DIR } from "../config/constants.ts";
 import type { TwoParams_Result } from "../deps.ts";
 import {
   PromptVariableSource,
@@ -338,7 +339,8 @@ export class PromptVariablesFactory {
   ) {
     this.pathResolvers = {};
     // Create default path resolution option safely
-    const defaultPathResult = PathResolutionOption.create("relative", "prompts", ["schemas"]);
+    const baseDir = this.config.app_prompt?.base_dir || DEFAULT_PROMPT_BASE_DIR;
+    const defaultPathResult = PathResolutionOption.create("relative", baseDir, ["schemas"]);
     const defaultPath = defaultPathResult.ok ? defaultPathResult.data : undefined;
 
     this.transformer = transformer ||
@@ -620,8 +622,9 @@ export class PromptVariablesFactory {
    */
   public get promptFilePath(): string {
     if (!this._promptFilePath) {
+      const baseDir = this.config.app_prompt?.base_dir || DEFAULT_PROMPT_BASE_DIR;
       const fallback =
-        `prompts/${this.cliParams.directiveType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.md`;
+        `${baseDir}/${this.cliParams.directiveType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.md`;
       return fallback;
     }
     return this._promptFilePath;
@@ -632,8 +635,9 @@ export class PromptVariablesFactory {
    */
   public getPromptFilePath(): Result<string, PromptVariablesFactoryErrors> {
     if (!this._promptFilePath) {
+      const baseDir = this.config.app_prompt?.base_dir || DEFAULT_PROMPT_BASE_DIR;
       const fallback =
-        `prompts/${this.cliParams.directiveType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.md`;
+        `${baseDir}/${this.cliParams.directiveType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.md`;
       return ok(fallback);
     }
     return ok(this._promptFilePath);
@@ -934,13 +938,15 @@ export class PromptVariablesFactory {
         this._promptFilePath = templateResult.data.value;
       } else {
         // Template path resolution failed - use fallback
+        const baseDir = this.config.app_prompt?.base_dir || DEFAULT_PROMPT_BASE_DIR;
         this._promptFilePath =
-          `prompts/${this.cliParams.directiveType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.md`;
+          `${baseDir}/${this.cliParams.directiveType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.md`;
       }
     } else {
       // No template resolver - use fallback path
+      const baseDir = this.config.app_prompt?.base_dir || DEFAULT_PROMPT_BASE_DIR;
       this._promptFilePath =
-        `prompts/${this.cliParams.directiveType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.md`;
+        `${baseDir}/${this.cliParams.directiveType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.md`;
     }
 
     // Resolve input path using new Result-based API (if resolver exists)

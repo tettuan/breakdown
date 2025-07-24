@@ -145,7 +145,9 @@ Deno.test("E2E: Tier1 - Basic Two Params Command Execution", async () => {
     Deno.env.set("BREAKDOWN_SKIP_STDIN", "true");
 
     try {
-      const result = await runBreakdown(args);
+      // Add config profile to use test configuration
+      const argsWithConfig = ["--config=default-test", ...args];
+      const result = await runBreakdown(argsWithConfig);
       const output = stdout.stop();
 
       logger.debug("Breakdown execution result", {
@@ -217,8 +219,8 @@ Deno.test("E2E: Tier1 - Multiple Directive-Layer Combinations", async () => {
       Deno.env.set("BREAKDOWN_SKIP_STDIN", "true");
 
       try {
-        const args = [directive, layer];
-        const result = await runBreakdown(args);
+        const argsWithConfig = ["--config=default-test", directive, layer];
+        const result = await runBreakdown(argsWithConfig);
         const output = stdout.stop();
 
         logger.debug(`Combination ${directive}-${layer} result`, {
@@ -362,7 +364,8 @@ Deno.test("E2E: Tier3 - Invalid Arguments Error Handling", async () => {
       Deno.env.set("BREAKDOWN_SKIP_STDIN", "true");
 
       try {
-        const result = await runBreakdown(testCase.args);
+        const argsWithConfig = ["--config=default-test", ...testCase.args];
+        const result = await runBreakdown(argsWithConfig);
         const output = stdout.stop();
 
         logger.debug(`Error case ${testCase.name} result`, {
@@ -508,8 +511,9 @@ The project serves critical business functions and requires careful analysis to 
     Deno.env.set("BREAKDOWN_SKIP_STDIN", "true");
 
     try {
-      const args = [validDirective, validLayer];
-      const result = await runBreakdown(args);
+      // Add config profile to use test configuration
+      const argsWithConfig = ["--config=default-test", validDirective, validLayer];
+      const result = await runBreakdown(argsWithConfig);
       const output = stdout.stop();
 
       logger.debug("Complete integration flow execution completed", {

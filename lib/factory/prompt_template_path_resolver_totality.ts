@@ -19,7 +19,7 @@ import { error as resultError, ok as resultOk, type Result } from "../types/resu
 import type { PathResolutionError } from "../types/path_resolution_option.ts";
 
 // Legacy type alias for backward compatibility during migration
-type DoubleParams_Result = PromptCliParams;
+// type DoubleParams_Result = PromptCliParams; // Deprecated: use TwoParams_Result
 
 /**
  * Error type for layer type inference
@@ -38,13 +38,15 @@ export type PromptResolverConfig =
     kind: "WithPromptConfig";
     app_prompt: { base_dir: string };
     app_schema?: { base_dir?: string };
+    working_dir?: string;
   }
   | {
     kind: "WithSchemaConfig";
     app_schema: { base_dir: string };
     app_prompt?: { base_dir?: string };
+    working_dir?: string;
   }
-  | { kind: "NoConfig" };
+  | { kind: "NoConfig"; working_dir?: string };
 
 /**
  * CLI options with explicit union types
@@ -115,14 +117,14 @@ export class PromptTemplatePath {
  */
 export class PromptTemplatePathResolverTotality {
   private readonly config: PromptResolverConfig;
-  private readonly _cliParams: DoubleParams_Result | TwoParams_Result;
+  private readonly _cliParams: PromptCliParams | TwoParams_Result;
 
   /**
    * Private constructor following Smart Constructor pattern
    */
   private constructor(
     config: PromptResolverConfig,
-    cliParams: DoubleParams_Result | TwoParams_Result,
+    cliParams: PromptCliParams | TwoParams_Result,
   ) {
     this.config = config;
     this._cliParams = this.deepCopyCliParams(cliParams);
@@ -133,7 +135,7 @@ export class PromptTemplatePathResolverTotality {
    */
   static create(
     config: Record<string, unknown>,
-    cliParams: DoubleParams_Result | TwoParams_Result,
+    cliParams: PromptCliParams | TwoParams_Result,
   ): Result<PromptTemplatePathResolverTotality, PathResolutionError> {
     // Validate configuration presence and type
     if (!config || typeof config !== "object" || Array.isArray(config)) {
@@ -186,21 +188,25 @@ export class PromptTemplatePathResolverTotality {
   private static normalizeConfig(config: Record<string, unknown>): PromptResolverConfig {
     const appPrompt = config.app_prompt as { base_dir?: string } | undefined;
     const appSchema = config.app_schema as { base_dir?: string } | undefined;
+    const workspace = config.workspace as { working_dir?: string } | undefined;
+    const workingDir = workspace?.working_dir || config.working_dir as string | undefined;
 
     if (appPrompt?.base_dir) {
       return {
         kind: "WithPromptConfig",
         app_prompt: { base_dir: appPrompt.base_dir },
         app_schema: appSchema,
+        working_dir: workingDir,
       };
     } else if (appSchema?.base_dir) {
       return {
         kind: "WithSchemaConfig",
         app_schema: { base_dir: appSchema.base_dir },
         app_prompt: appPrompt,
+        working_dir: workingDir,
       };
     } else {
-      return { kind: "NoConfig" };
+      return { kind: "NoConfig", working_dir: workingDir };
     }
   }
 
@@ -208,8 +214,8 @@ export class PromptTemplatePathResolverTotality {
    * Deep copy CLI parameters
    */
   private deepCopyCliParams(
-    cliParams: DoubleParams_Result | TwoParams_Result,
-  ): DoubleParams_Result | TwoParams_Result {
+    cliParams: PromptCliParams | TwoParams_Result,
+  ): PromptCliParams | TwoParams_Result {
     if ("type" in cliParams && ("directive" in cliParams && "layer" in cliParams)) {
       // TwoParams_Result
       const twoParams = cliParams as TwoParams_Result;
@@ -222,14 +228,13 @@ export class PromptTemplatePathResolverTotality {
       };
       return copy;
     } else {
-      // DoubleParams_Result (PromptCliParams)
-      const doubleParams = cliParams as DoubleParams_Result;
+      // PromptCliParams (legacy format)
+      const promptParams = cliParams as PromptCliParams;
       const copy: PromptCliParams = {
-        layerType: doubleParams.layerType,
-        directiveType: doubleParams.directiveType || "",
-        options: doubleParams.options ? { ...doubleParams.options } : {},
+        layerType: promptParams.layerType,
+        directiveType: promptParams.directiveType || "",
+        options: promptParams.options ? { ...promptParams.options } : {},
       };
-
       return copy;
     }
   }
@@ -346,7 +351,9 @@ export class PromptTemplatePathResolverTotality {
     }
 
     if (!isAbsolute(baseDir)) {
-      baseDir = resolve(Deno.cwd(), baseDir);
+      // Use working_dir if available, otherwise use current working directory
+      const workingDir = this.config.working_dir || Deno.cwd();
+      baseDir = resolve(workingDir, baseDir);
     }
 
     // Verify base directory exists
@@ -450,7 +457,7 @@ export class PromptTemplatePathResolverTotality {
    * Static helper to extract directive type
    */
   private static extractDirectiveType(
-    cliParams: DoubleParams_Result | TwoParams_Result,
+    cliParams: PromptCliParams | TwoParams_Result,
   ): string {
     if ("directiveType" in cliParams) {
       return cliParams.directiveType || "";
@@ -475,7 +482,7 @@ export class PromptTemplatePathResolverTotality {
   /**
    * Static helper to extract layer type
    */
-  private static extractLayerType(cliParams: DoubleParams_Result | TwoParams_Result): string {
+  private static extractLayerType(cliParams: PromptCliParams | TwoParams_Result): string {
     if ("layerType" in cliParams) {
       return cliParams.layerType || "";
     }

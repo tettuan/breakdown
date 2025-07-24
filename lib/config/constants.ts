@@ -4,6 +4,7 @@
  */
 export const _DEFAULT_WORKSPACE_STRUCTURE = Object.freeze({
   root: ".agent/breakdown" as const,
+  config: "config" as const,
   directories: Object.freeze({
     issues: "issues" as const,
     tasks: "tasks" as const,
@@ -19,10 +20,12 @@ export type DirectoryType = keyof typeof _DEFAULT_WORKSPACE_STRUCTURE.directorie
 // Default constants for Breakdown configuration
 /**
  * The default base directory for prompt templates (relative path).
+ * This should only be used as a last resort fallback when no configuration is available.
  */
-export const DEFAULT_PROMPT_BASE_DIR = "lib/breakdown/prompts";
+export const DEFAULT_PROMPT_BASE_DIR = "prompts";
 
 /**
  * The default base directory for schema files (relative path).
+ * This should only be used as a last resort fallback when no configuration is available.
  */
-export const DEFAULT_SCHEMA_BASE_DIR = "lib/breakdown/schema";
+export const DEFAULT_SCHEMA_BASE_DIR = "schema";

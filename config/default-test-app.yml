@@ -22,6 +22,9 @@ test:
   enabled: true
   mockMode: false
 
+# Working directory (unified with default-app.yml)
+working_dir: "."
+
 # Prompt configuration for breakdown processing
 app_prompt:
   base_dir: "./tests/fixtures/prompts"
