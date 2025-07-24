@@ -68,14 +68,14 @@ class E2ETestSetup {
     // Create .agent/breakdown/prompts directory structure
     const promptDirs = [
       "to/project",
-      "to/issue", 
+      "to/issue",
       "to/task",
       "summary/project",
       "summary/issue",
-      "summary/task", 
+      "summary/task",
       "defect/project",
       "defect/issue",
-      "defect/task"
+      "defect/task",
     ];
 
     for (const dir of promptDirs) {
@@ -94,12 +94,18 @@ class E2ETestSetup {
       { from: "tests/fixtures/prompts/to/project/f_project.md", to: "to/project/f_project.md" },
       { from: "tests/fixtures/prompts/to/issue/f_project.md", to: "to/issue/f_issue.md" },
       { from: "tests/fixtures/prompts/to/task/f_task.md", to: "to/task/f_task.md" },
-      { from: "tests/fixtures/prompts/summary/project/f_project.md", to: "summary/project/f_project.md" },
+      {
+        from: "tests/fixtures/prompts/summary/project/f_project.md",
+        to: "summary/project/f_project.md",
+      },
       { from: "tests/fixtures/prompts/summary/issue/f_issue.md", to: "summary/issue/f_issue.md" },
       { from: "tests/fixtures/prompts/summary/task/f_task.md", to: "summary/task/f_task.md" },
-      { from: "tests/fixtures/prompts/defect/project/f_project.md", to: "defect/project/f_project.md" },
+      {
+        from: "tests/fixtures/prompts/defect/project/f_project.md",
+        to: "defect/project/f_project.md",
+      },
       { from: "tests/fixtures/prompts/defect/issue/f_issue.md", to: "defect/issue/f_issue.md" },
-      { from: "tests/fixtures/prompts/defect/task/f_task.md", to: "defect/task/f_task.md" }
+      { from: "tests/fixtures/prompts/defect/task/f_task.md", to: "defect/task/f_task.md" },
     ];
 
     for (const file of promptFiles) {
@@ -110,7 +116,8 @@ class E2ETestSetup {
       } catch (error) {
         // If source file doesn't exist, create a minimal template
         const targetPath = join(this.agentPromptsDir, file.to);
-        const minimalTemplate = `# Test Prompt Template\n\nInput: {input_text}\n\nGenerate structured output based on the input.`;
+        const minimalTemplate =
+          `# Test Prompt Template\n\nInput: {input_text}\n\nGenerate structured output based on the input.`;
         await Deno.writeTextFile(targetPath, minimalTemplate);
       }
     }
@@ -133,7 +140,7 @@ params:
     // Write configuration files that might be used by the tests
     const configFiles = [
       `${agentConfigDir}/default-test-app.yml`,
-      `${agentConfigDir}/default-app.yml`
+      `${agentConfigDir}/default-app.yml`,
     ];
 
     for (const configFile of configFiles) {
