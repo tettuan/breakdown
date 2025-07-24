@@ -1,6 +1,7 @@
 import { ensureDir, exists } from "@std/fs";
 import { join, resolve } from "@std/path";
 import { BreakdownConfig } from "@tettuan/breakdownconfig";
+import { DEFAULT_PROMPT_BASE_DIR, DEFAULT_SCHEMA_BASE_DIR } from "../../config/constants.ts";
 
 /**
  * 初期化サービスの設定オプション
@@ -131,20 +132,20 @@ export class InitService {
     directories.push("config", "output", "input", "tmp");
 
     // プロンプトディレクトリ
-    directories.push("prompts");
+    directories.push(DEFAULT_PROMPT_BASE_DIR);
     for (const directive of directiveTypes) {
-      directories.push(`prompts/${directive}`);
+      directories.push(`${DEFAULT_PROMPT_BASE_DIR}/${directive}`);
       for (const layer of layerTypes) {
-        directories.push(`prompts/${directive}/${layer}`);
+        directories.push(`${DEFAULT_PROMPT_BASE_DIR}/${directive}/${layer}`);
       }
     }
 
     // スキーマディレクトリ
-    directories.push("schemas");
+    directories.push(DEFAULT_SCHEMA_BASE_DIR);
     for (const directive of directiveTypes) {
-      directories.push(`schemas/${directive}`);
+      directories.push(`${DEFAULT_SCHEMA_BASE_DIR}/${directive}`);
       for (const layer of layerTypes) {
-        directories.push(`schemas/${directive}/${layer}`);
+        directories.push(`${DEFAULT_SCHEMA_BASE_DIR}/${directive}/${layer}`);
       }
     }
 
@@ -292,7 +293,7 @@ custom:
     result: InitializationResult,
   ): Promise<void> {
     // サンプルプロンプトファイル
-    const samplePromptPath = join(workspaceDir, "prompts/to/project/example.md");
+    const samplePromptPath = join(workspaceDir, `${DEFAULT_PROMPT_BASE_DIR}/to/project/example.md`);
     const samplePromptContent = `# Project Breakdown Prompt
 
 This is a sample prompt for breaking down a project.
@@ -313,7 +314,10 @@ Please structure your response according to the project schema.
     }
 
     // サンプルスキーマファイル
-    const sampleSchemaPath = join(workspaceDir, "schemas/to/project/example.json");
+    const sampleSchemaPath = join(
+      workspaceDir,
+      `${DEFAULT_SCHEMA_BASE_DIR}/to/project/example.json`,
+    );
     const sampleSchemaContent = JSON.stringify(
       {
         "$schema": "http://json-schema.org/draft-07/schema#",
@@ -378,8 +382,8 @@ Please structure your response according to the project schema.
       "🚀 Next steps:",
       "1. Review the generated configuration files in the 'config' directory",
       "2. Customize the directiveTypes and layerTypes in the user config",
-      "3. Add your prompt templates to the 'prompts' directory",
-      "4. Add your JSON schemas to the 'schemas' directory",
+      `3. Add your prompt templates to the '${DEFAULT_PROMPT_BASE_DIR}' directory`,
+      `4. Add your JSON schemas to the '${DEFAULT_SCHEMA_BASE_DIR}' directory`,
       "5. Run 'breakdown --help' to see available commands",
       "",
       "📚 For more information, visit the documentation.",

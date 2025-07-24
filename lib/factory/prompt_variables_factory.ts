@@ -15,7 +15,7 @@ import type { PromptParams } from "@tettuan/breakdownprompt";
 import { DirectiveType } from "../domain/core/value_objects/directive_type.ts";
 import { LayerType } from "../domain/core/value_objects/layer_type.ts";
 import { ConfigProfile } from "../config/mod.ts";
-import { DEFAULT_PROMPT_BASE_DIR } from "../config/constants.ts";
+import { DEFAULT_PROMPT_BASE_DIR, DEFAULT_SCHEMA_BASE_DIR } from "../config/constants.ts";
 import type { TwoParams_Result } from "../deps.ts";
 import {
   PromptVariableSource,
@@ -200,7 +200,7 @@ function createPathResolutionOptions(
   const pathOptionsResult = PathResolutionOption.create(
     "relative",
     baseDir,
-    [schemaDir || "schemas"],
+    [schemaDir || DEFAULT_SCHEMA_BASE_DIR],
   );
 
   if (!pathOptionsResult.ok) {
@@ -340,7 +340,9 @@ export class PromptVariablesFactory {
     this.pathResolvers = {};
     // Create default path resolution option safely
     const baseDir = this.config.app_prompt?.base_dir || DEFAULT_PROMPT_BASE_DIR;
-    const defaultPathResult = PathResolutionOption.create("relative", baseDir, ["schemas"]);
+    const defaultPathResult = PathResolutionOption.create("relative", baseDir, [
+      this.config.app_schema?.base_dir || DEFAULT_SCHEMA_BASE_DIR,
+    ]);
     const defaultPath = defaultPathResult.ok ? defaultPathResult.data : undefined;
 
     this.transformer = transformer ||
@@ -354,7 +356,9 @@ export class PromptVariablesFactory {
    * createDefault()の代替実装
    */
   private createDefaultTransformer(): PromptVariableTransformer {
-    const fallbackPathResult = PathResolutionOption.create("relative", "prompts", ["schemas"]);
+    const fallbackPathResult = PathResolutionOption.create("relative", DEFAULT_PROMPT_BASE_DIR, [
+      this.config.app_schema?.base_dir || DEFAULT_SCHEMA_BASE_DIR,
+    ]);
     const fallbackPath = fallbackPathResult.ok ? fallbackPathResult.data : undefined;
 
     return fallbackPath
@@ -487,8 +491,8 @@ export class PromptVariablesFactory {
       // FactoryConfig 形式に変換
       const config: FactoryConfig = {
         paths: {
-          prompts: configData.app_prompt?.base_dir || "prompts",
-          schemas: configData.app_schema?.base_dir || "schemas",
+          prompts: configData.app_prompt?.base_dir || DEFAULT_PROMPT_BASE_DIR,
+          schemas: configData.app_schema?.base_dir || DEFAULT_SCHEMA_BASE_DIR,
           input: configData.input?.base_dir || "input",
           output: configData.output?.base_dir || "output",
         },
@@ -688,7 +692,9 @@ export class PromptVariablesFactory {
    */
   public get schemaFilePath(): string {
     if (!this._schemaFilePath) {
-      return `schemas/${this.cliParams.directiveType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.json`;
+      return `${
+        this.config.app_schema?.base_dir || DEFAULT_SCHEMA_BASE_DIR
+      }/${this.cliParams.directiveType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.json`;
     }
     return this._schemaFilePath;
   }
@@ -698,8 +704,9 @@ export class PromptVariablesFactory {
    */
   public getSchemaFilePath(): Result<string, PromptVariablesFactoryErrors> {
     if (!this._schemaFilePath) {
-      const fallback =
-        `schemas/${this.cliParams.directiveType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.json`;
+      const fallback = `${
+        this.config.app_schema?.base_dir || DEFAULT_SCHEMA_BASE_DIR
+      }/${this.cliParams.directiveType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.json`;
       return ok(fallback);
     }
     return ok(this._schemaFilePath);
@@ -985,12 +992,12 @@ export class PromptVariablesFactory {
       } else {
         // Schema path resolution failed - use fallback
         this._schemaFilePath =
-          `schemas/${this.cliParams.directiveType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.json`;
+          `${this.config.app_schema?.base_dir || DEFAULT_SCHEMA_BASE_DIR}/${this.cliParams.directiveType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.json`;
       }
     } else {
       // No schema resolver - use fallback path
       this._schemaFilePath =
-        `schemas/${this.cliParams.directiveType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.json`;
+        `${this.config.app_schema?.base_dir || DEFAULT_SCHEMA_BASE_DIR}/${this.cliParams.directiveType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.json`;
     }
 
     return ok(undefined);

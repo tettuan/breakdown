@@ -120,7 +120,7 @@ Deno.test("PromptTemplatePathResolverTotality - Working directory resolution wit
     // Test with relative base_dir and working_dir
     const config = {
       app_prompt: { base_dir: "prompts" }, // Relative path
-      workspace: { working_dir: workingDir },
+      working_dir: workingDir,
     };
     const cliParams: TwoParams_Result = {
       type: "two",
@@ -252,7 +252,7 @@ Deno.test("PromptTemplatePathResolverTotality - Adaptation with fallback and wor
 
     const config = {
       app_prompt: { base_dir: "prompts" },
-      workspace: { working_dir: workingDir },
+      working_dir: workingDir,
     };
     const cliParams: TwoParams_Result = {
       type: "two",
@@ -458,7 +458,7 @@ Deno.test("PromptTemplatePathResolverTotality - fromLayerType resolution with wo
 
     const config = {
       app_prompt: { base_dir: "prompts" },
-      workspace: { working_dir: workingDir },
+      working_dir: workingDir,
     };
     const cliParams: TwoParams_Result = {
       type: "two",
@@ -485,4 +485,37 @@ Deno.test("PromptTemplatePathResolverTotality - fromLayerType resolution with wo
   } finally {
     await cleanupTestDirectory(testBaseDir);
   }
+});
+
+Deno.test("PromptTemplatePathResolverTotality - Single source working_dir configuration", () => {
+  const cliParams: TwoParams_Result = {
+    type: "two",
+    params: ["to", "issue"],
+    directiveType: "to",
+    layerType: "issue",
+    options: {},
+  };
+
+  // Test configuration with only root working_dir (should work)
+  const validConfig1 = {
+    app_prompt: { base_dir: "/test/prompts" },
+    working_dir: "/test/workspace",
+  };
+  const result1 = PromptTemplatePathResolverTotality.create(validConfig1, cliParams);
+  assertEquals(result1.ok, true);
+
+  // Test configuration with no working_dir (should work - uses current directory)
+  const validConfig2 = {
+    app_prompt: { base_dir: "/test/prompts" },
+  };
+  const result2 = PromptTemplatePathResolverTotality.create(validConfig2, cliParams);
+  assertEquals(result2.ok, true);
+
+  // Test configuration with workspace structure but no working_dir inside (should work)
+  const validConfig3 = {
+    app_prompt: { base_dir: "/test/prompts" },
+    workspace: { temp_dir: "/tmp" },
+  };
+  const result3 = PromptTemplatePathResolverTotality.create(validConfig3, cliParams);
+  assertEquals(result3.ok, true);
 });

@@ -22,7 +22,7 @@ export type DirectoryType = keyof typeof _DEFAULT_WORKSPACE_STRUCTURE.directorie
  * The default configuration directory path.
  * This is the standard location where Breakdown looks for configuration files.
  */
-export const DEFAULT_CONFIG_DIR = ".agent/breakdown/config" as const;
+export const DEFAULT_CONFIG_DIR = `${_DEFAULT_WORKSPACE_STRUCTURE.root}/config` as const;
 
 /**
  * The default base directory for prompt templates (relative path).
@@ -35,3 +35,9 @@ export const DEFAULT_PROMPT_BASE_DIR = "prompts";
  * This should only be used as a last resort fallback when no configuration is available.
  */
 export const DEFAULT_SCHEMA_BASE_DIR = "schema";
+
+/**
+ * The default full path for schema files in the workspace.
+ * Used by resolvers that need the complete workspace path.
+ */
+export const DEFAULT_SCHEMA_WORKSPACE_DIR = `${_DEFAULT_WORKSPACE_STRUCTURE.root}/schema`;

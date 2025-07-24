@@ -188,8 +188,9 @@ export class PromptTemplatePathResolverTotality {
   private static normalizeConfig(config: Record<string, unknown>): PromptResolverConfig {
     const appPrompt = config.app_prompt as { base_dir?: string } | undefined;
     const appSchema = config.app_schema as { base_dir?: string } | undefined;
-    const workspace = config.workspace as { working_dir?: string } | undefined;
-    const workingDir = workspace?.working_dir || config.working_dir as string | undefined;
+
+    // ✅ SINGLE SOURCE OF TRUTH: Only use working_dir at root level
+    const workingDir = config.working_dir as string | undefined;
 
     if (appPrompt?.base_dir) {
       return {

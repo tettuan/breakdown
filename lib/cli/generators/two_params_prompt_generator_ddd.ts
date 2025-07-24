@@ -268,21 +268,13 @@ export class TwoParamsPromptGenerator {
   }
 
   /**
-   * Extract working directory
+   * Extract working directory with unified configuration validation
    */
   private extractWorkingDir(config: Record<string, unknown>): string | undefined {
-    // First check direct working_dir for backward compatibility
-    if (config.working_dir && typeof config.working_dir === "string") {
-      return config.working_dir;
-    }
+    // ✅ SINGLE SOURCE OF TRUTH: Only use working_dir at root level
+    const workingDir = config.working_dir as string | undefined;
 
-    // Then check workspace.working_dir (current structure)
-    const workspace = config.workspace as Record<string, unknown> | undefined;
-    if (workspace?.working_dir && typeof workspace.working_dir === "string") {
-      return workspace.working_dir;
-    }
-
-    return undefined;
+    return workingDir;
   }
 
   /**

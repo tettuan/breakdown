@@ -401,7 +401,7 @@ export class DefaultPathResolutionStrategy implements PathResolutionStrategy {
    * const customStrategy = new DefaultPathResolutionStrategy('/my/workspace');
    *
    * const resolved = await defaultStrategy.resolve('projects/my-app');
-   * // Result: .agent/breakdown/projects/my-app
+   * // Result: <workspace-root>/projects/my-app
    * ```
    */
   constructor(baseDir: string = ".agent/breakdown") {
@@ -424,7 +424,7 @@ export class DefaultPathResolutionStrategy implements PathResolutionStrategy {
    *
    * // Resolve project path
    * const projectPath = await strategy.resolve('projects/my-app');
-   * // Result: .agent/breakdown/projects/my-app
+   * // Result: <workspace-root>/projects/my-app
    *
    * // Resolve configuration path
    * const configPath = await strategy.resolve('config/workspace.json');
@@ -449,7 +449,7 @@ export class DefaultPathResolutionStrategy implements PathResolutionStrategy {
    * const strategy = new DefaultPathResolutionStrategy();
    *
    * const normalized = await strategy.normalize('projects/my-app');
-   * // Result: .agent/breakdown/projects/my-app
+   * // Result: <workspace-root>/projects/my-app
    * ```
    */
   normalize(path: string): Promise<string> {

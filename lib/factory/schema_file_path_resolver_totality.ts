@@ -17,12 +17,13 @@ import type { PromptCliParams } from "./prompt_variables_factory.ts";
 import type { TwoParams_Result } from "../deps.ts";
 import { error as resultError, ok as resultOk, type Result } from "../types/result.ts";
 import type { PathResolutionError } from "../types/path_resolution_option.ts";
+import { _DEFAULT_WORKSPACE_STRUCTURE, DEFAULT_SCHEMA_BASE_DIR, DEFAULT_SCHEMA_WORKSPACE_DIR } from "../config/constants.ts";
 
 // Legacy type alias for backward compatibility during migration
 type DoubleParams_Result = PromptCliParams;
 
-// Default schema base directory
-const DEFAULT_SCHEMA_BASE_DIR = ".agent/breakdown/schema";
+// Default schema base directory is now imported from constants
+// Use DEFAULT_SCHEMA_WORKSPACE_DIR for full workspace path
 
 /**
  * Schema-specific errors as discriminated union

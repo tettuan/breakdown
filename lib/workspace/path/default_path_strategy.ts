@@ -8,6 +8,7 @@
  */
 
 import { PlatformAgnosticStrategyTotality } from "./platform_agnostic_strategy.ts";
+import { _DEFAULT_WORKSPACE_STRUCTURE } from "../../config/constants.ts";
 
 // ===== Result Type =====
 type Result<T, E> = { ok: true; data: T } | { ok: false; error: E };
@@ -53,7 +54,7 @@ export class DefaultPathStrategyTotality {
    */
   static createForWorkspace(): Result<DefaultPathStrategyTotality, string> {
     // Default workspace base directory
-    const workspaceDir = ".agent/breakdown";
+    const workspaceDir = _DEFAULT_WORKSPACE_STRUCTURE.root;
     return DefaultPathStrategyTotality.create(workspaceDir);
   }
 
@@ -171,7 +172,7 @@ export class PathStrategyFactory {
    * Creates a project-specific strategy
    */
   static createProject(projectName: string): Result<DefaultPathStrategyTotality, string> {
-    const projectDir = `.agent/breakdown/projects/${projectName}`;
+    const projectDir = `${_DEFAULT_WORKSPACE_STRUCTURE.root}/projects/${projectName}`;
     return DefaultPathStrategyTotality.create(projectDir);
   }
 
@@ -179,7 +180,7 @@ export class PathStrategyFactory {
    * Creates a temporary directory strategy
    */
   static createTemp(): Result<DefaultPathStrategyTotality, string> {
-    const tempDir = ".agent/breakdown/temp";
+    const tempDir = `${_DEFAULT_WORKSPACE_STRUCTURE.root}/temp`;
     return DefaultPathStrategyTotality.create(tempDir);
   }
 }
