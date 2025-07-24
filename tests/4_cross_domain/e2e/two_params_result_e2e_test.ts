@@ -30,6 +30,7 @@ const logger = new BreakdownLogger("e2e-two-params");
 class E2ETestSetup {
   private readonly tempDir = "./tmp";
   private readonly fixturesDir = "./tests/fixtures";
+  private readonly agentPromptsDir = "./.agent/breakdown/prompts";
 
   async setupTempDirectory(): Promise<string> {
     try {
@@ -49,11 +50,108 @@ class E2ETestSetup {
     return filePath;
   }
 
+  /**
+   * Setup .agent directory with required prompt files and configuration for E2E testing
+   * This ensures GitHub Actions environment has the same prompt files as local development
+   */
+  async setupAgentPrompts(): Promise<void> {
+    // Create .agent/breakdown directory structure
+    const agentConfigDir = "./.agent/breakdown/config";
+    try {
+      await Deno.mkdir(agentConfigDir, { recursive: true });
+    } catch (error) {
+      if (!(error instanceof Deno.errors.AlreadyExists)) {
+        throw error;
+      }
+    }
+
+    // Create .agent/breakdown/prompts directory structure
+    const promptDirs = [
+      "to/project",
+      "to/issue", 
+      "to/task",
+      "summary/project",
+      "summary/issue",
+      "summary/task", 
+      "defect/project",
+      "defect/issue",
+      "defect/task"
+    ];
+
+    for (const dir of promptDirs) {
+      const dirPath = join(this.agentPromptsDir, dir);
+      try {
+        await Deno.mkdir(dirPath, { recursive: true });
+      } catch (error) {
+        if (!(error instanceof Deno.errors.AlreadyExists)) {
+          throw error;
+        }
+      }
+    }
+
+    // Copy prompt files from fixtures to .agent directory
+    const promptFiles = [
+      { from: "tests/fixtures/prompts/to/project/f_project.md", to: "to/project/f_project.md" },
+      { from: "tests/fixtures/prompts/to/issue/f_project.md", to: "to/issue/f_issue.md" },
+      { from: "tests/fixtures/prompts/to/task/f_task.md", to: "to/task/f_task.md" },
+      { from: "tests/fixtures/prompts/summary/project/f_project.md", to: "summary/project/f_project.md" },
+      { from: "tests/fixtures/prompts/summary/issue/f_issue.md", to: "summary/issue/f_issue.md" },
+      { from: "tests/fixtures/prompts/summary/task/f_task.md", to: "summary/task/f_task.md" },
+      { from: "tests/fixtures/prompts/defect/project/f_project.md", to: "defect/project/f_project.md" },
+      { from: "tests/fixtures/prompts/defect/issue/f_issue.md", to: "defect/issue/f_issue.md" },
+      { from: "tests/fixtures/prompts/defect/task/f_task.md", to: "defect/task/f_task.md" }
+    ];
+
+    for (const file of promptFiles) {
+      try {
+        const content = await Deno.readTextFile(file.from);
+        const targetPath = join(this.agentPromptsDir, file.to);
+        await Deno.writeTextFile(targetPath, content);
+      } catch (error) {
+        // If source file doesn't exist, create a minimal template
+        const targetPath = join(this.agentPromptsDir, file.to);
+        const minimalTemplate = `# Test Prompt Template\n\nInput: {input_text}\n\nGenerate structured output based on the input.`;
+        await Deno.writeTextFile(targetPath, minimalTemplate);
+      }
+    }
+
+    // Create configuration files in .agent directory to match expected structure
+    const configContent = `# E2E Test Configuration
+working_dir: "."
+app_prompt:
+  base_dir: "./.agent/breakdown/prompts"
+app_schema:
+  base_dir: "./.agent/breakdown/schema"
+params:
+  two:
+    directiveType:
+      pattern: "^(to|summary|defect)$"
+    layerType:
+      pattern: "^(project|issue|task)$"
+`;
+
+    // Write configuration files that might be used by the tests
+    const configFiles = [
+      `${agentConfigDir}/default-test-app.yml`,
+      `${agentConfigDir}/default-app.yml`
+    ];
+
+    for (const configFile of configFiles) {
+      await Deno.writeTextFile(configFile, configContent);
+    }
+  }
+
   async cleanup(): Promise<void> {
     try {
       await Deno.remove(this.tempDir, { recursive: true });
     } catch {
       // Ignore cleanup errors
+    }
+    // Clean up .agent directory created for testing
+    try {
+      await Deno.remove("./.agent", { recursive: true });
+    } catch {
+      // Ignore cleanup errors - .agent might be used by other processes
     }
   }
 }
@@ -114,6 +212,9 @@ Deno.test("E2E: Tier1 - Basic Two Params Command Execution", async () => {
     tier: "Tier1",
     scenario: "Basic two params command execution",
   });
+
+  // Setup .agent directory for E2E testing to ensure prompt files exist
+  await testSetup.setupAgentPrompts();
 
   // Setup test configuration
   const configResult = await ConfigurationTestHelper.loadTestConfiguration("default-test");
@@ -470,6 +571,9 @@ Deno.test("E2E: Tier5 - Complete Integration Flow Validation", async () => {
     tier: "Tier5",
     scenario: "Complete integrated operation verification of all processing stages",
   });
+
+  // Setup .agent directory for E2E testing to ensure prompt files exist
+  await testSetup.setupAgentPrompts();
 
   const configResult = await ConfigurationTestHelper.loadTestConfiguration("default-test");
   const validDirective = configResult.userConfig.testData.validDirectives[0];
