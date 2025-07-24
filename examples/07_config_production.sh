@@ -45,7 +45,6 @@ params:
     layerType:
       pattern: "^(project|issue|task|bugs)$"
 workspace:
-  working_dir: ".agent/breakdown"
   temp_dir: ".agent/breakdown/temp"
 production_mode: true
 logger:

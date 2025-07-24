@@ -1,23 +1,27 @@
 #!/bin/bash
 
-# This script demonstrates using STDIN input with the Breakdown CLI
+# This script demonstrates using --from option input with the Breakdown CLI
 
 set -euo pipefail
 
 # Save the original CWD
 ORIGINAL_CWD="$(pwd)"
 
-# Initialize temp file variable
-TEMP_FILE=""
+# Initialize temp file variables
+TEMP_FILE1=""
+TEMP_FILE2=""
+TEMP_FILE3=""
 
 # Cleanup function
 cleanup() {
     local exit_code=$?
     
-    # Remove temp file if exists
-    if [[ -n "$TEMP_FILE" && -f "$TEMP_FILE" ]]; then
-        rm -f "$TEMP_FILE" || echo "Warning: Failed to remove temp file: $TEMP_FILE"
-    fi
+    # Remove temp files if they exist
+    for temp_file in "$TEMP_FILE1" "$TEMP_FILE2" "$TEMP_FILE3"; do
+        if [[ -n "$temp_file" && -f "$temp_file" ]]; then
+            rm -f "$temp_file" || echo "Warning: Failed to remove temp file: $temp_file"
+        fi
+    done
     
     # Return to original directory
     cd "$ORIGINAL_CWD" || true
@@ -35,7 +39,7 @@ if ! cd "$SCRIPT_DIR"; then
     exit 1
 fi
 
-echo "=== STDIN Input Example ==="
+echo "=== --from Option Input Example ==="
 
 # Define the config directory path
 CONFIG_DIR="./.agent/breakdown/config"
@@ -92,44 +96,59 @@ This is a sample project that needs to be broken down into tasks.
 - Implement proper error handling
 - Write comprehensive tests"
 
-# Example 1: Using echo with pipe
-echo "Example 1: Processing project overview with echo and pipe"
-if echo "$SAMPLE_INPUT" | run_breakdown summary project --config=stdin; then
+# Example 1: Using --from option with temporary file
+echo "Example 1: Processing project overview with --from option"
+TEMP_FILE1=$(mktemp) || {
+    echo "Error: Failed to create temporary file for Example 1"
+    exit 1
+}
+echo "$SAMPLE_INPUT" > "$TEMP_FILE1"
+if run_breakdown summary project --config=stdin --from="$TEMP_FILE1"; then
     echo "✓ Example 1 completed successfully"
+    rm -f "$TEMP_FILE1"
 else
     echo "✗ Example 1 failed"
     echo "Error: Breakdown execution failed for Example 1"
+    rm -f "$TEMP_FILE1"
 fi
 
 echo
 echo "---"
 echo
 
-# Example 2: Using cat with a temporary file
-echo "Example 2: Processing with cat and temporary file"
-TEMP_FILE=$(mktemp) || {
-    echo "Error: Failed to create temporary file"
+# Example 2: Using --from option with existing temporary file
+echo "Example 2: Processing with --from option using reusable temporary file"
+TEMP_FILE2=$(mktemp) || {
+    echo "Error: Failed to create temporary file for Example 2"
     exit 1
 }
 
-if echo "$SAMPLE_INPUT" > "$TEMP_FILE"; then
-    if cat "$TEMP_FILE" | run_breakdown summary project --config=stdin; then
+if echo "$SAMPLE_INPUT" > "$TEMP_FILE2"; then
+    if run_breakdown summary project --config=stdin --from="$TEMP_FILE2"; then
         echo "✓ Example 2 completed successfully"
+        rm -f "$TEMP_FILE2"
     else
         echo "✗ Example 2 failed"
         echo "Error: Breakdown execution failed for Example 2"
+        rm -f "$TEMP_FILE2"
     fi
 else
     echo "Error: Failed to write to temporary file"
+    rm -f "$TEMP_FILE2"
 fi
 
 echo
 echo "---"
 echo
 
-# Example 3: Using heredoc
-echo "Example 3: Processing with heredoc"
-if run_breakdown summary project --config=stdin << EOF
+# Example 3: Using --from option with quick task list
+echo "Example 3: Processing with --from option using quick task data"
+TEMP_FILE3=$(mktemp) || {
+    echo "Error: Failed to create temporary file for Example 3"
+    exit 1
+}
+
+cat > "$TEMP_FILE3" << EOF
 # Quick Task List
 
 - Fix login bug
@@ -138,12 +157,15 @@ if run_breakdown summary project --config=stdin << EOF
 - Review pull requests
 - Update documentation
 EOF
-then
+
+if run_breakdown summary project --config=stdin --from="$TEMP_FILE3"; then
     echo "✓ Example 3 completed successfully"
+    rm -f "$TEMP_FILE3"
 else
     echo "✗ Example 3 failed"
     echo "Error: Breakdown execution failed for Example 3"
+    rm -f "$TEMP_FILE3"
 fi
 
 echo
-echo "=== STDIN Examples Completed ==="
+echo "=== --from Option Examples Completed ==="
