@@ -10,7 +10,7 @@
 import { assert, assertEquals, assertExists } from "@std/assert";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { ConfigurationTestHelper } from "../../../../lib/test_helpers/configuration_test_helper_simple.ts";
-import { setupBreakdownConfigIntegrationTest } from "../../../../lib/test_helpers/breakdown_config_test_setup.ts";
+// import { setupBreakdownConfigIntegrationTest } from "../../../../lib/test_helpers/breakdown_config_test_setup.ts";
 import {
   createCustomConfigFromProfile,
   createTwoParamsFromConfigFile,
@@ -94,7 +94,7 @@ Deno.test("DirectiveType/LayerType Integration - 1_behavior: BreakdownParams int
     logger.debug("BreakdownParams execution failed", {
       error: paramsResult.error,
       errorKind: paramsResult.error.kind,
-      errorMessage: paramsResult.error.message
+      errorMessage: paramsResult.error.message,
     });
   }
 

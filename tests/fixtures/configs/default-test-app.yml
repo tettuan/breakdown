@@ -1,0 +1,25 @@
+# Default test application configuration
+# This is for testing with default patterns
+
+# Application metadata
+app_prompt:
+  base_dir: tests/fixtures/prompts
+
+app_schema:
+  base_dir: tests/fixtures/schema
+
+# Working directory for tests
+working_dir: .
+
+# Test environment settings
+test:
+  enabled: true
+  mockMode: false
+
+# Logging configuration for tests
+log_level: debug
+
+# Pattern validation settings
+validation:
+  strict_mode: false
+  allow_custom_patterns: true

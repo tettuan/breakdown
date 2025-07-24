@@ -20,6 +20,7 @@ import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { ConfigurationTestHelper } from "../../../lib/test_helpers/configuration_test_helper_simple.ts";
 import { runBreakdown } from "../../../cli/breakdown.ts";
 import { join } from "@std/path";
+import { DEFAULT_CONFIG_DIR } from "../../../lib/config/constants.ts";
 
 // Initialize test logger
 const logger = new BreakdownLogger("e2e-two-params");
@@ -56,7 +57,7 @@ class E2ETestSetup {
    */
   async setupAgentPrompts(): Promise<void> {
     // Create .agent/breakdown directory structure
-    const agentConfigDir = "./.agent/breakdown/config";
+    const agentConfigDir = `./${DEFAULT_CONFIG_DIR}`;
     try {
       await Deno.mkdir(agentConfigDir, { recursive: true });
     } catch (error) {

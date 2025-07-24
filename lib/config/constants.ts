@@ -19,6 +19,12 @@ export type DirectoryType = keyof typeof _DEFAULT_WORKSPACE_STRUCTURE.directorie
 
 // Default constants for Breakdown configuration
 /**
+ * The default configuration directory path.
+ * This is the standard location where Breakdown looks for configuration files.
+ */
+export const DEFAULT_CONFIG_DIR = ".agent/breakdown/config" as const;
+
+/**
  * The default base directory for prompt templates (relative path).
  * This should only be used as a last resort fallback when no configuration is available.
  */

@@ -11,6 +11,7 @@ import { ConfigProfile } from "../config/config_profile_name.ts";
 import { loadUserConfig } from "../config/user_config_loader.ts";
 import { ensureDir } from "@std/fs";
 import { join } from "@std/path";
+import { DEFAULT_CONFIG_DIR } from "../config/constants.ts";
 
 /**
  * Test data interface for type safety
@@ -43,28 +44,28 @@ export class ConfigurationTestHelper {
    */
   private static async ensureAgentDirectorySetup(): Promise<void> {
     const cwd = Deno.cwd?.() || ".";
-    const agentConfigDir = join(cwd, ".agent", "breakdown", "config");
-    
+    const agentConfigDir = join(cwd, DEFAULT_CONFIG_DIR);
+
     // Create .agent/breakdown/config directory if it doesn't exist
     await ensureDir(agentConfigDir);
-    
-    // Copy config files from project config/ to .agent/breakdown/config/
-    const projectConfigDir = join(cwd, "config");
+
+    // Copy config files from test fixtures to .agent/breakdown/config/
+    const fixturesConfigDir = join(cwd, "tests", "fixtures", "configs");
     try {
-      // Get list of config files
-      const entries = Deno.readDir(projectConfigDir);
+      // Get list of config files from test fixtures
+      const entries = Deno.readDir(fixturesConfigDir);
       for await (const entry of entries) {
-        if (entry.isFile && entry.name.endsWith('.yml')) {
-          const sourceFile = join(projectConfigDir, entry.name);
+        if (entry.isFile && entry.name.endsWith(".yml")) {
+          const sourceFile = join(fixturesConfigDir, entry.name);
           const targetFile = join(agentConfigDir, entry.name);
-          
+
           // Check if target file already exists and is up to date
           try {
             const [sourceContent, targetStat] = await Promise.all([
               Deno.readTextFile(sourceFile),
-              Deno.stat(targetFile).catch(() => null)
+              Deno.stat(targetFile).catch(() => null),
             ]);
-            
+
             // Copy if target doesn't exist or source is newer
             if (!targetStat) {
               await Deno.writeTextFile(targetFile, sourceContent);
@@ -76,8 +77,8 @@ export class ConfigurationTestHelper {
         }
       }
     } catch {
-      // If we can't read project config directory, skip setup
-      // This allows tests to run with fallback behavior
+      // If we can't read test fixtures directory, skip setup
+      // This allows tests to run with pre-existing configuration
     }
   }
 
@@ -90,7 +91,7 @@ export class ConfigurationTestHelper {
   static async loadTestConfiguration(profileName: string) {
     // Ensure .agent directory is set up for BreakdownConfig
     await ConfigurationTestHelper.ensureAgentDirectorySetup();
-    
+
     const profile = ConfigProfile.create(profileName);
     const rawUserConfig = await loadUserConfig(profile);
 

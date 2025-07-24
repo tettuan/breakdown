@@ -1,0 +1,20 @@
+# Default matching application configuration
+# This configuration is used with default-matching-user.yml for testing
+
+# Application metadata
+app_prompt:
+  base_dir: tests/fixtures/prompts
+
+app_schema:
+  base_dir: tests/fixtures/schema
+
+# Working directory (defaults to current directory)
+working_dir: .
+
+# Logging configuration
+log_level: info
+
+# Pattern validation settings
+validation:
+  strict_mode: false
+  allow_custom_patterns: true

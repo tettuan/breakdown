@@ -13,6 +13,7 @@ import { WorkspaceConfig, WorkspaceStructure } from "./interfaces.ts";
 import { ensureDir } from "jsr:@std/fs@0.224.0";
 import { join } from "jsr:@std/path@0.224.0";
 import { WorkspaceInitError } from "./errors.ts";
+import { _DEFAULT_WORKSPACE_STRUCTURE, DEFAULT_CONFIG_DIR } from "../config/constants.ts";
 
 /**
  * Implementation of the WorkspaceStructure interface for managing the directory
@@ -48,14 +49,15 @@ export class WorkspaceStructureImpl implements WorkspaceStructure {
    */
   constructor(config: WorkspaceConfig) {
     this.#config = config;
+    const baseDir = _DEFAULT_WORKSPACE_STRUCTURE.root;
     this.#directories = [
-      ".agent/breakdown/projects",
-      ".agent/breakdown/issues",
-      ".agent/breakdown/tasks",
-      ".agent/breakdown/temp",
-      ".agent/breakdown/config",
-      ".agent/breakdown/prompts",
-      ".agent/breakdown/schema",
+      `${baseDir}/projects`,
+      `${baseDir}/issues`,
+      `${baseDir}/tasks`,
+      `${baseDir}/temp`,
+      DEFAULT_CONFIG_DIR,
+      `${baseDir}/prompts`,
+      `${baseDir}/schema`,
     ];
   }
 

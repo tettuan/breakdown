@@ -6,17 +6,16 @@
 import { join } from "@std/path";
 import { parse } from "@std/yaml";
 import { ConfigProfile } from "./config_profile_name.ts";
+import { DEFAULT_CONFIG_DIR } from "./constants.ts";
 
 export async function loadUserConfig(profile: ConfigProfile): Promise<Record<string, unknown>> {
-  // Get the directory of this module
-  const moduleUrl = new URL(import.meta.url);
-  const moduleDir = moduleUrl.pathname.substring(0, moduleUrl.pathname.lastIndexOf("/"));
+  // Use the current working directory as base
+  const cwd = Deno.cwd();
 
-  // Calculate path relative to this module
+  // Use the default config directory constant
   const configPath = join(
-    moduleDir,
-    "../..", // Go up from lib/config to project root
-    "config",
+    cwd,
+    DEFAULT_CONFIG_DIR,
     `${profile.value}-user.yml`,
   );
 
