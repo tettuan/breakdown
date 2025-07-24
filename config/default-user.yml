@@ -4,22 +4,11 @@
 params:
   two:
     directiveType:
-      patterns:
-        - "^to$"
-        - "^summary$"
-        - "^defect$"
-        - "^fix$"
-        - "^refactor$"
-        - "^design$"
-        - "^test$"
+      pattern: "^(to|summary|defect|fix|refactor|design|test)$"
+      errorMessage: "Invalid directive type"
     layerType:
-      patterns:
-        - "^project$"
-        - "^issue$"
-        - "^task$"
-        - "^feature$"
-        - "^module$"
-        - "^component$"
+      pattern: "^(project|issue|task|feature|module|component)$"
+      errorMessage: "Invalid layer type"
 
 # Test data for validation
 testData:

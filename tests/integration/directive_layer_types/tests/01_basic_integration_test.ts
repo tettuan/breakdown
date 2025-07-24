@@ -10,6 +10,7 @@
 import { assert, assertEquals, assertExists } from "@std/assert";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import { ConfigurationTestHelper } from "../../../../lib/test_helpers/configuration_test_helper_simple.ts";
+import { setupBreakdownConfigIntegrationTest } from "../../../../lib/test_helpers/breakdown_config_test_setup.ts";
 import {
   createCustomConfigFromProfile,
   createTwoParamsFromConfigFile,
@@ -88,6 +89,14 @@ Deno.test("DirectiveType/LayerType Integration - 1_behavior: BreakdownParams int
 
   // Step 2: Execute BreakdownParams
   const paramsResult = await executeBreakdownParams(args, "default");
+
+  if (!paramsResult.ok) {
+    logger.debug("BreakdownParams execution failed", {
+      error: paramsResult.error,
+      errorKind: paramsResult.error.kind,
+      errorMessage: paramsResult.error.message
+    });
+  }
 
   assertEquals(paramsResult.ok, true, "BreakdownParams execution should succeed");
   if (paramsResult.ok) {
@@ -170,32 +179,32 @@ Deno.test(
     assertExists(invalidDirectives, "invalidDirectives should be defined in test configuration");
     assertExists(invalidLayers, "invalidLayers should be defined in test configuration");
 
-    // Step 2: DirectiveType エラーケース
+    // Step 2: DirectiveType エラーケース（via BreakdownParams integration）
     for (const invalid of invalidDirectives) {
-      const result = DirectiveType.create(invalid);
-      assertFalse(result.ok, `DirectiveType.create should fail for ${invalid}`);
-      if (!result.ok) {
-        // DirectiveTypeは独自のエラー型を使用（EmptyInput, InvalidFormat, etc）
-        // ValidationErrorではなく、具体的なエラー種別を持つ
-        logger.debug("DirectiveType error validation successful", {
+      // Use BreakdownParams integration which applies config-based validation
+      const args = [invalid, "project"]; // valid layer, invalid directive
+      const paramsResult = await executeBreakdownParams(args, "default");
+      assertFalse(paramsResult.ok, `BreakdownParams should fail for invalid directive: ${invalid}`);
+      if (!paramsResult.ok) {
+        logger.debug("DirectiveType error validation successful via BreakdownParams", {
           tag: "error_validation",
           input: invalid,
-          error: result.error.kind,
+          error: paramsResult.error.kind,
         });
       }
     }
 
-    // Step 3: LayerType エラーケース
+    // Step 3: LayerType エラーケース（via BreakdownParams integration）
     for (const invalid of invalidLayers) {
-      const result = LayerType.create(invalid);
-      assertFalse(result.ok, `LayerType.create should fail for ${invalid}`);
-      if (!result.ok) {
-        // DirectiveTypeは独自のエラー型を使用（EmptyInput, InvalidFormat, etc）
-        // ValidationErrorではなく、具体的なエラー種別を持つ
-        logger.debug("LayerType error validation successful", {
+      // Use BreakdownParams integration which applies config-based validation
+      const args = ["to", invalid]; // valid directive, invalid layer
+      const paramsResult = await executeBreakdownParams(args, "default");
+      assertFalse(paramsResult.ok, `BreakdownParams should fail for invalid layer: ${invalid}`);
+      if (!paramsResult.ok) {
+        logger.debug("LayerType error validation successful via BreakdownParams", {
           tag: "error_validation",
           input: invalid,
-          error: result.error.kind,
+          error: paramsResult.error.kind,
         });
       }
     }

@@ -5,10 +5,10 @@
 params:
   two:
     directiveType:
-      pattern: "to|summary|defect|to#\\d+|summary#\\d+"
+      pattern: "^(to|summary|defect|to#\\d+|summary#\\d+)$"
       errorMessage: "Invalid directive type for flexible profile"
     layerType:
-      pattern: "project|issue|task|project#\\d+|issue#\\d+"
+      pattern: "^(project|issue|task|project#\\d+|issue#\\d+)$"
       errorMessage: "Invalid layer type for flexible profile"
 
 # Flexible validation settings

@@ -6,10 +6,10 @@
 params:
   two:
     directiveType:
-      pattern: "to|summary|defect"
+      pattern: "^(to|summary|defect)$"
       errorMessage: "Invalid directive type for test profile"
     layerType:
-      pattern: "project|issue|task"
+      pattern: "^(project|issue|task)$"
       errorMessage: "Invalid layer type for test profile"
 
 # Additional test-specific patterns

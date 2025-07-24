@@ -16,9 +16,7 @@ export async function loadUserConfig(profile: ConfigProfile): Promise<Record<str
   const configPath = join(
     moduleDir,
     "../..", // Go up from lib/config to project root
-    "tests",
-    "fixtures",
-    "configs",
+    "config",
     `${profile.value}-user.yml`,
   );
 

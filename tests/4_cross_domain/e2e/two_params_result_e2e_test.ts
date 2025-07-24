@@ -113,7 +113,7 @@ class E2ETestSetup {
         const content = await Deno.readTextFile(file.from);
         const targetPath = join(this.agentPromptsDir, file.to);
         await Deno.writeTextFile(targetPath, content);
-      } catch (error) {
+      } catch (_error) {
         // If source file doesn't exist, create a minimal template
         const targetPath = join(this.agentPromptsDir, file.to);
         const minimalTemplate =
