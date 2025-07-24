@@ -131,10 +131,41 @@ else
   echo "Using existing prod configuration: ${CONFIG_DIR}/prod-app.yml"
 fi
 
+# Create user configuration files for each environment
+if [ ! -f "${CONFIG_DIR}/dev-user.yml" ]; then
+  cat > "${CONFIG_DIR}/dev-user.yml" << 'EOF'
+working_dir: ".agent/breakdown/examples"
+EOF
+  echo "Created dev user configuration: ${CONFIG_DIR}/dev-user.yml"
+else
+  echo "Using existing dev user configuration: ${CONFIG_DIR}/dev-user.yml"
+fi
+
+if [ ! -f "${CONFIG_DIR}/staging-user.yml" ]; then
+  cat > "${CONFIG_DIR}/staging-user.yml" << 'EOF'
+working_dir: ".agent/breakdown/examples"
+EOF
+  echo "Created staging user configuration: ${CONFIG_DIR}/staging-user.yml"
+else
+  echo "Using existing staging user configuration: ${CONFIG_DIR}/staging-user.yml"
+fi
+
+if [ ! -f "${CONFIG_DIR}/prod-user.yml" ]; then
+  cat > "${CONFIG_DIR}/prod-user.yml" << 'EOF'
+working_dir: ".agent/breakdown/examples"
+EOF
+  echo "Created prod user configuration: ${CONFIG_DIR}/prod-user.yml"
+else
+  echo "Using existing prod user configuration: ${CONFIG_DIR}/prod-user.yml"
+fi
+
 echo "Created environment configurations:"
 echo "- ${CONFIG_DIR}/dev-app.yml"
 echo "- ${CONFIG_DIR}/staging-app.yml"
 echo "- ${CONFIG_DIR}/prod-app.yml"
+echo "- ${CONFIG_DIR}/dev-user.yml"
+echo "- ${CONFIG_DIR}/staging-user.yml"
+echo "- ${CONFIG_DIR}/prod-user.yml"
 
 # Create test data in working directory
 cat > ./environment_test.md << 'EOF'
