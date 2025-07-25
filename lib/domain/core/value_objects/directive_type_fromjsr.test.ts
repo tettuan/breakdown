@@ -7,6 +7,7 @@
 
 import { assertEquals } from "@std/assert";
 import { DirectiveType } from "./directive_type.ts";
+import { DEFAULT_SCHEMA_BASE_DIR } from "../../../config/constants.ts";
 
 Deno.test("DirectiveType.fromJSR - Valid JSR-validated values", async (t) => {
   await t.step("Should create DirectiveType from valid JSR string", () => {
@@ -138,8 +139,8 @@ Deno.test("DirectiveType.fromJSR - Integration with domain operations", async (t
       const promptDir = directive.getPromptDirectory("prompts", mockLayer);
       assertEquals(promptDir, "prompts/to/issue");
 
-      const schemaDir = directive.getSchemaDirectory("schemas", mockLayer);
-      assertEquals(schemaDir, "schemas/to/issue");
+      const schemaDir = directive.getSchemaDirectory(DEFAULT_SCHEMA_BASE_DIR, mockLayer);
+      assertEquals(schemaDir, `${DEFAULT_SCHEMA_BASE_DIR}/to/issue`);
     }
   });
 

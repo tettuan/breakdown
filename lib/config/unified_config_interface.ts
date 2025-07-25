@@ -24,6 +24,11 @@ import { DEPENDENCY_VERSIONS } from "./versions.ts";
 import { existsSync } from "@std/fs";
 import { resolve } from "@std/path";
 import { type BaseConfigStructure, extractBaseDir, extractNestedProperty } from "./types.ts";
+import {
+  _DEFAULT_WORKSPACE_STRUCTURE,
+  DEFAULT_PROMPT_BASE_DIR,
+  DEFAULT_SCHEMA_BASE_DIR,
+} from "./constants.ts";
 
 /**
  * Configuration errors (unified with system-wide error types)
@@ -368,9 +373,9 @@ export class UnifiedConfigInterface {
   ): Promise<Result<UnifiedConfig, ConfigurationError>> {
     // Extract paths with defaults using type-safe helpers
     const promptBaseDir = extractBaseDir(baseConfig, "app_prompt") ||
-      ".agent/breakdown/prompts";
+      `${_DEFAULT_WORKSPACE_STRUCTURE.root}/${DEFAULT_PROMPT_BASE_DIR}`;
     const schemaBaseDir = extractBaseDir(baseConfig, "app_schema") ||
-      ".agent/breakdown/schema";
+      `${_DEFAULT_WORKSPACE_STRUCTURE.root}/${DEFAULT_SCHEMA_BASE_DIR}`;
     const outputBaseDir = extractBaseDir(baseConfig, "output") || "output";
 
     // Get patterns from provider
@@ -399,7 +404,7 @@ export class UnifiedConfigInterface {
 
       paths: {
         workingDirectory: workingDir,
-        resourceDirectory: resolve(workingDir, ".agent/breakdown"),
+        resourceDirectory: resolve(workingDir, _DEFAULT_WORKSPACE_STRUCTURE.root),
         promptBaseDir: this.resolvePath(workingDir, promptBaseDir),
         schemaBaseDir: this.resolvePath(workingDir, schemaBaseDir),
         outputBaseDir: this.resolvePath(workingDir, outputBaseDir),

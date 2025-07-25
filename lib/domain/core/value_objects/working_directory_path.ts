@@ -665,16 +665,34 @@ export class WorkingDirectoryPath extends BasePathValueObject {
         }
       } catch (statError) {
         if (config.verifyExistence) {
-          return error({
-            kind: "DirectoryNotFound",
-            message: `Directory does not exist: ${
-              statError instanceof Error ? statError.message : String(statError)
-            }`,
-            path: path,
-          });
+          if (config.createIfMissing) {
+            try {
+              Deno.mkdirSync(path, { recursive: true });
+              exists = true;
+            } catch (createError) {
+              return error({
+                kind: "FileSystemError",
+                message: `Failed to create directory: ${
+                  createError instanceof Error ? createError.message : String(createError)
+                }`,
+                path: path,
+                operation: "mkdir",
+                originalError: createError instanceof Error ? createError : undefined,
+              });
+            }
+          } else {
+            return error({
+              kind: "DirectoryNotFound",
+              message: `Directory does not exist: ${
+                statError instanceof Error ? statError.message : String(statError)
+              }`,
+              path: path,
+            });
+          }
+        } else {
+          // If not verifying existence, assume it doesn't exist
+          exists = false;
         }
-        // If not verifying existence, assume it doesn't exist
-        exists = false;
       }
     }
 

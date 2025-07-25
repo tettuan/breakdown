@@ -9,6 +9,7 @@
 
 import { ensureDir } from "@std/fs";
 import { JSRPatternAdapter } from "../../config/jsr_pattern_adapter.ts";
+import { DEFAULT_WORKSPACE_ROOT } from "../../config/constants.ts";
 
 /**
  * Initialize breakdown configuration and directory structure
@@ -17,7 +18,7 @@ export async function initializeBreakdownConfiguration(): Promise<void> {
   console.log("🚀 Initializing breakdown configuration...");
 
   const cwd = Deno.cwd?.() || ".";
-  const baseDir = `${cwd}/.agent/breakdown`;
+  const baseDir = `${cwd}/${DEFAULT_WORKSPACE_ROOT}`;
 
   // Create directory structure
   // Initialize JSR pattern adapter for type extraction
@@ -59,9 +60,9 @@ export async function initializeBreakdownConfiguration(): Promise<void> {
   // Build configuration content dynamically
   const configContent = `# Breakdown Configuration
 app_prompt:
-  base_dir: "${cwd}/.agent/breakdown/prompts"
+  base_dir: "${cwd}/${DEFAULT_WORKSPACE_ROOT}/prompts"
 app_schema:
-  base_dir: "${cwd}/.agent/breakdown/schema"
+  base_dir: "${cwd}/${DEFAULT_WORKSPACE_ROOT}/schema"
 params:
   two:
     directiveType:
@@ -70,7 +71,7 @@ params:
       pattern: "^(${layerTypes.join("|")})$"
 workspace:
   working_dir: "${cwd}"
-  temp_dir: "${cwd}/.agent/breakdown/temp"
+  temp_dir: "${cwd}/${DEFAULT_WORKSPACE_ROOT}/temp"
 `;
 
   // Use BreakdownConfig for configuration management

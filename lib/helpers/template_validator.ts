@@ -8,6 +8,7 @@
 
 import { exists } from "@std/fs";
 import { join } from "@std/path";
+import { DEFAULT_WORKSPACE_ROOT } from "../config/constants.ts";
 
 /**
  * Template validation result
@@ -209,7 +210,7 @@ export class TemplateValidator {
     }
 
     // Check if config directory exists
-    const configDir = join(this.projectRoot, "examples/.agent/breakdown/config");
+    const configDir = join(this.projectRoot, `examples/${DEFAULT_WORKSPACE_ROOT}/config`);
     if (!(await exists(configDir))) {
       issues.push("Config directory structure missing");
       recommendations.push("Run: deno run -A cli/breakdown.ts init (from examples directory)");

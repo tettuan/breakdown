@@ -12,6 +12,7 @@ import type { Result } from "../../../types/result.ts";
 import { error, ok } from "../../../types/result.ts";
 import type { ValidationError } from "../../../types/unified_error_types.ts";
 import { ErrorFactory } from "../../../types/unified_error_types.ts";
+import { DEFAULT_SCHEMA_BASE_DIR } from "../../../config/constants.ts";
 
 /**
  * DirectiveType validation errors following Discriminated Union pattern
@@ -249,10 +250,10 @@ export class DirectiveType {
    * Domain operation for complete path resolution in schema context.
    *
    * @param layer - LayerType for path construction
-   * @param baseDir - Base directory for schemas (default: "schemas")
+   * @param baseDir - Base directory for schemas (default: DEFAULT_SCHEMA_BASE_DIR)
    * @returns Complete file path string
    */
-  getSchemaPath(layer: { value: string }, baseDir = "schemas"): string {
+  getSchemaPath(layer: { value: string }, baseDir = DEFAULT_SCHEMA_BASE_DIR): string {
     const dir = this.getSchemaDirectory(baseDir, layer);
     const canonicalLayer = typeof layer === "object" && "getCanonicalLayerName" in layer
       ? (layer as { getCanonicalLayerName(): string }).getCanonicalLayerName()

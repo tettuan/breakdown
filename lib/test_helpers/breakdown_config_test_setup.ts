@@ -2,7 +2,7 @@
  * @fileoverview BreakdownConfig Test Setup Utility
  *
  * Provides setup functions to ensure BreakdownConfig works properly in test environments
- * by creating the required .agent/breakdown/config directory structure.
+ * by creating the required workspace config directory structure.
  *
  * @module lib/test_helpers/breakdown_config_test_setup
  */
@@ -12,21 +12,21 @@ import { join } from "@std/path";
 import { DEFAULT_CONFIG_DIR } from "../config/constants.ts";
 
 /**
- * Ensure .agent directory structure exists for BreakdownConfig tests
+ * Ensure workspace directory structure exists for BreakdownConfig tests
  *
- * This function creates the .agent/breakdown/config directory and copies
+ * This function creates the workspace config directory and copies
  * configuration files from the project config/ directory. This is required
- * because BreakdownConfig expects configuration files to be in .agent/breakdown/config/
+ * because BreakdownConfig expects configuration files to be in the workspace config directory
  * but this directory is gitignored and needs to be created for tests.
  */
 export async function ensureBreakdownConfigTestSetup(): Promise<void> {
   const cwd = Deno.cwd?.() || ".";
   const agentConfigDir = join(cwd, DEFAULT_CONFIG_DIR);
 
-  // Create .agent/breakdown/config directory if it doesn't exist
+  // Create workspace config directory if it doesn't exist
   await ensureDir(agentConfigDir);
 
-  // Copy config files from test fixtures to .agent/breakdown/config/
+  // Copy config files from test fixtures to workspace config directory
   const fixturesConfigDir = join(cwd, "tests", "fixtures", "configs");
   try {
     // Get list of config files from test fixtures

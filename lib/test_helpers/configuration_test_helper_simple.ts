@@ -46,10 +46,10 @@ export class ConfigurationTestHelper {
     const cwd = Deno.cwd?.() || ".";
     const agentConfigDir = join(cwd, DEFAULT_CONFIG_DIR);
 
-    // Create .agent/breakdown/config directory if it doesn't exist
+    // Create workspace config directory if it doesn't exist
     await ensureDir(agentConfigDir);
 
-    // Copy config files from test fixtures to .agent/breakdown/config/
+    // Copy config files from test fixtures to workspace config directory
     const fixturesConfigDir = join(cwd, "tests", "fixtures", "configs");
     try {
       // Get list of config files from test fixtures

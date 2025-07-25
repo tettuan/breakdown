@@ -19,6 +19,7 @@ import {
   type PromptCliParams,
   PromptVariablesFactory,
 } from "$lib/factory/prompt_variables_factory.ts";
+import { DEFAULT_SCHEMA_BASE_DIR } from "$lib/config/constants.ts";
 
 /**
  * Application service errors following Discriminated Union pattern
@@ -169,7 +170,7 @@ export class TwoParamsApplicationService {
     // Step 5: Create PromptVariablesFactory configuration
     const config = {
       app_prompt: { base_dir: "prompts" },
-      app_schema: { base_dir: "schemas" },
+      app_schema: { base_dir: DEFAULT_SCHEMA_BASE_DIR },
     };
 
     const cliParams = this.createCliParams(twoParams, input, processedVariables);
@@ -305,7 +306,7 @@ export class TwoParamsApplicationService {
       // - Final prompt assembly
 
       const promptPath = twoParams.resolvePromptFilePath("prompts");
-      const schemaPath = twoParams.resolveSchemaFilePath("schemas");
+      const schemaPath = twoParams.resolveSchemaFilePath(DEFAULT_SCHEMA_BASE_DIR);
 
       // Mock prompt generation for now
       const mockPrompt = `# Generated Prompt

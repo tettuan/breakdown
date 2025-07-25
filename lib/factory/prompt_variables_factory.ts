@@ -991,13 +991,15 @@ export class PromptVariablesFactory {
         this._schemaFilePath = schemaResult.data.value;
       } else {
         // Schema path resolution failed - use fallback
-        this._schemaFilePath =
-          `${this.config.app_schema?.base_dir || DEFAULT_SCHEMA_BASE_DIR}/${this.cliParams.directiveType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.json`;
+        this._schemaFilePath = `${
+          this.config.app_schema?.base_dir || DEFAULT_SCHEMA_BASE_DIR
+        }/${this.cliParams.directiveType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.json`;
       }
     } else {
       // No schema resolver - use fallback path
-      this._schemaFilePath =
-        `${this.config.app_schema?.base_dir || DEFAULT_SCHEMA_BASE_DIR}/${this.cliParams.directiveType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.json`;
+      this._schemaFilePath = `${
+        this.config.app_schema?.base_dir || DEFAULT_SCHEMA_BASE_DIR
+      }/${this.cliParams.directiveType}/${this.cliParams.layerType}/f_${this.cliParams.layerType}.json`;
     }
 
     return ok(undefined);

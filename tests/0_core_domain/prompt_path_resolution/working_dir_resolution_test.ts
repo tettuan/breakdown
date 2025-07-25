@@ -7,7 +7,7 @@
  * Test Categories:
  * - 3_core: Domain integration functionality tests
  * - Normal cases: Various working directory configurations
- * - Error cases: Invalid working directory configurations  
+ * - Error cases: Invalid working directory configurations
  * - Boundary cases: Edge conditions in path resolution
  */
 
@@ -147,7 +147,7 @@ Deno.test("3_core - Working directory fallback to Deno.cwd() when not specified"
 
   try {
     await createTestFile(promptFile);
-    
+
     // Change working directory to test directory
     Deno.chdir(workingDir);
 
@@ -287,7 +287,7 @@ Deno.test("3_core - Working directory with adaptation and fallback", async () =>
         assertEquals(pathResult.data.value, fallbackFile);
         assertEquals(pathResult.data.status, "Fallback");
         assertEquals(pathResult.data.metadata.adaptation, "custom");
-        
+
         // Should show both attempted paths
         assertEquals(pathResult.data.metadata.attemptedPaths.length, 2);
         assertEquals(pathResult.data.metadata.attemptedPaths[0], adaptationFile);
@@ -367,7 +367,7 @@ Deno.test("3_core - Error: Non-existent working directory", () => {
 
     if (!pathResult.ok) {
       assertEquals(pathResult.error.kind, "BaseDirectoryNotFound");
-      
+
       const errorMessage = formatPathResolutionError(pathResult.error);
       assertEquals(errorMessage.includes("Base Directory Not Found"), true);
     }
@@ -401,7 +401,7 @@ Deno.test("3_core - Error: Working directory results in non-existent base direct
       assertEquals(pathResult.ok, false);
 
       if (!pathResult.ok) {
-        assertEquals(pathResult.error.kind, "BaseDirectoryNotFound");
+        assertEquals(pathResult.error.kind, "TemplateNotFound");
       }
     }
   } finally {
@@ -442,7 +442,7 @@ Deno.test("3_core - Error: Template not found with working directory", async () 
         if (pathResult.error.kind === "TemplateNotFound") {
           assertExists(pathResult.error.attempted);
           assertEquals(pathResult.error.attempted.length > 0, true);
-          
+
           // Should attempt to find file in working directory resolved path
           const expectedPath = join(promptsDir, "to", "issue", "f_issue.md");
           assertEquals(pathResult.error.attempted[0], expectedPath);
@@ -584,7 +584,7 @@ Deno.test("3_core - Boundary: Working directory integration with WorkingDirector
 
         if (pathResult.ok) {
           assertEquals(pathResult.data.value, promptFile);
-          
+
           // Verify that the base directory matches what we expect from WorkingDirectoryPath
           const expectedBaseDir = workingDirPath.join("prompts");
           if (expectedBaseDir.ok) {

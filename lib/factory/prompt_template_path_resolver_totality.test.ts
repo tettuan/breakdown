@@ -16,6 +16,7 @@ import {
   formatPathResolutionError,
   PromptTemplatePathResolverTotality,
 } from "./prompt_template_path_resolver_totality.ts";
+import { DEFAULT_SCHEMA_BASE_DIR } from "../config/constants.ts";
 import type { TwoParams_Result } from "../deps.ts";
 
 // Helper to create test directories
@@ -203,14 +204,14 @@ Deno.test("PromptTemplatePathResolverTotality - Working directory fallback to De
 Deno.test("PromptTemplatePathResolverTotality - Schema path resolution with working_dir", async () => {
   const testBaseDir = await Deno.makeTempDir();
   const workingDir = join(testBaseDir, "workspace");
-  const schemaDir = join(workingDir, "schemas");
+  const schemaDir = join(workingDir, DEFAULT_SCHEMA_BASE_DIR);
   const schemaFile = join(schemaDir, "to", "issue", "f_issue.json");
 
   try {
     await createTestFile(schemaFile);
 
     const config = {
-      app_schema: { base_dir: "schemas" }, // Relative path
+      app_schema: { base_dir: DEFAULT_SCHEMA_BASE_DIR }, // Relative path
       working_dir: workingDir,
     };
     const cliParams: TwoParams_Result = {

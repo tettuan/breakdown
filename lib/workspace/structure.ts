@@ -13,6 +13,7 @@ import { WorkspaceConfig, WorkspaceStructure } from "./interfaces.ts";
 import { ensureDir } from "jsr:@std/fs@0.224.0";
 import { join } from "jsr:@std/path@0.224.0";
 import { WorkspaceInitError } from "./errors.ts";
+import { DEFAULT_WORKSPACE_ROOT as _DEFAULT_WORKSPACE_ROOT } from "../config/constants.ts";
 import { _DEFAULT_WORKSPACE_STRUCTURE, DEFAULT_CONFIG_DIR } from "../config/constants.ts";
 
 /**
@@ -42,7 +43,7 @@ export class WorkspaceStructureImpl implements WorkspaceStructure {
    *
    * @example
    * ```typescript
-   * const config = { workingDir: ".agent/breakdown" };
+   * const config = { workingDir: DEFAULT_WORKSPACE_ROOT };
    * const workspace = new WorkspaceStructureImpl(config);
    * await workspace.initialize();
    * ```

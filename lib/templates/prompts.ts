@@ -1,6 +1,6 @@
 // This file is auto-generated. Do not edit directly.
 /**
- * Source: Markdown templates under .agent/breakdown/lib/breakdown/prompts (English only)
+ * Source: Markdown templates under workspace lib/breakdown/prompts (English only)
  */
 export const prompts = {
   "defect/error_schema.md":

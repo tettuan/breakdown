@@ -11,6 +11,7 @@
 
 import { PathResolutionStrategy } from "../interfaces.ts";
 import { join, normalize } from "jsr:@std/path@0.224.0";
+import { DEFAULT_WORKSPACE_ROOT } from "../../config/constants.ts";
 
 /**
  * Path resolution strategy for Unix-style paths.
@@ -387,10 +388,10 @@ export class DefaultPathResolutionStrategy implements PathResolutionStrategy {
    * Creates a new DefaultPathResolutionStrategy instance with the specified base directory.
    *
    * Initializes the default path strategy with a configurable base directory.
-   * If no base directory is provided, it defaults to ".agent/breakdown" which
+   * If no base directory is provided, it defaults to the DEFAULT_WORKSPACE_ROOT which
    * follows the standard Breakdown workspace structure.
    *
-   * @param baseDir - The base directory for path resolution. Defaults to ".agent/breakdown"
+   * @param baseDir - The base directory for path resolution. Defaults to DEFAULT_WORKSPACE_ROOT
    *
    * @example
    * ```typescript
@@ -404,7 +405,7 @@ export class DefaultPathResolutionStrategy implements PathResolutionStrategy {
    * // Result: <workspace-root>/projects/my-app
    * ```
    */
-  constructor(baseDir: string = ".agent/breakdown") {
+  constructor(baseDir: string = DEFAULT_WORKSPACE_ROOT) {
     this.baseDir = baseDir;
   }
 
@@ -428,7 +429,7 @@ export class DefaultPathResolutionStrategy implements PathResolutionStrategy {
    *
    * // Resolve configuration path
    * const configPath = await strategy.resolve('config/workspace.json');
-   * // Result: .agent/breakdown/config/workspace.json
+   * // Result: ${DEFAULT_WORKSPACE_ROOT}/config/workspace.json
    * ```
    */
   resolve(path: string): Promise<string> {
