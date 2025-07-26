@@ -28,7 +28,7 @@ echo
 
 # Set up
 OUTPUT_DIR="./output/input_parameter_test"
-TEMPLATE_DIR="./prompts/to/task"
+TEMPLATE_DIR="./.agent/breakdown/prompts/to/task"
 mkdir -p "$OUTPUT_DIR"
 mkdir -p "$TEMPLATE_DIR"
 
@@ -205,12 +205,12 @@ fi
 echo
 
 # Example 4: With short form -i
-echo "【Example 4: Using short form -i】"
-echo "Command: breakdown to task --from=task_list.md -i task"
+echo "【Example 4: Using short form -i=】"
+echo "Command: breakdown to task --from=task_list.md -i=task"
 echo "Expected: Should use f_task.md template"
 echo
 
-$BREAKDOWN to task --from="$OUTPUT_DIR/task_list.md" -i task -o="$OUTPUT_DIR/result_short_form.md" > "$OUTPUT_DIR/result_short_form.md" 2>&1
+$BREAKDOWN to task --from="$OUTPUT_DIR/task_list.md" -i=task -o="$OUTPUT_DIR/result_short_form.md" > "$OUTPUT_DIR/result_short_form.md" 2>&1
 
 if [ -f "$OUTPUT_DIR/result_short_form.md" ]; then
     echo "Result preview:"
@@ -223,8 +223,11 @@ if [ -f "$OUTPUT_DIR/result_short_form.md" ]; then
     else
         echo "❌ Did not use expected template"
     fi
+else
+    echo "❌ Command failed with -i=task format"
 fi
 echo
+
 
 # Summary
 echo "=== Summary of --input Parameter Behavior ==="

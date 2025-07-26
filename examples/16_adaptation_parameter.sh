@@ -237,12 +237,12 @@ fi
 echo
 
 # Example 4: With short form -a
-echo "【Example 4: Using short form -a】"
-echo "Command: breakdown to task --from=project_requirements.md --input=project -a detailed"
+echo "【Example 4: Using short form -a=】"
+echo "Command: breakdown to task --from=project_requirements.md --input=project -a=detailed"
 echo "Expected: Should use f_project_detailed.md template"
 echo
 
-$BREAKDOWN to task --from="$OUTPUT_DIR/project_requirements.md" --input=project -a detailed -o="$OUTPUT_DIR/result_detailed.md" > "$OUTPUT_DIR/result_detailed.md" 2>&1
+$BREAKDOWN to task --from="$OUTPUT_DIR/project_requirements.md" --input=project -a=detailed -o="$OUTPUT_DIR/result_detailed.md" > "$OUTPUT_DIR/result_detailed.md" 2>&1
 
 if [ -f "$OUTPUT_DIR/result_detailed.md" ]; then
     echo "Result preview:"
@@ -339,11 +339,10 @@ else
     echo "✅ Adaptation parameter is working as expected"
 fi
 
-echo
 echo "=== Adaptation Parameter Example Complete ==="
 echo
 echo "Key Takeaways:"
 echo "- The --adaptation parameter adds a suffix to template filename"
 echo "- Allows maintaining multiple prompt variations for different use cases"
 echo "- Falls back gracefully when adaptation template doesn't exist"
-echo "- Short form -a works the same as --adaptation"
+echo "- Short form -a= works the same as --adaptation (必ずイコール記号を使用)"

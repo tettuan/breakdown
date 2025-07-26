@@ -56,8 +56,8 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 14. `14_config_production_custom.sh` - 本番環境カスタム設定とFind Bugs
 
 ### パラメータ動作確認 (15-17)
-15. `15_input_parameter.sh` - --input/-i パラメータの動作確認
-16. `16_adaptation_parameter.sh` - --adaptation/-a パラメータの動作確認
+15. `15_input_parameter.sh` - --input/-i= パラメータの動作確認
+16. `16_adaptation_parameter.sh` - --adaptation/-a= パラメータの動作確認
 17. `17_custom_variables.sh` - カスタム変数（--uv-*）の動作確認
 
 ### 応用例 (18-20)
@@ -211,7 +211,7 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 ./examples/15_input_parameter.sh
 ```
 このスクリプトは以下を実行します：
-- --input/-i パラメータがテンプレート選択に与える影響の確認
+- --input/-i= パラメータがテンプレート選択に与える影響の確認（短縮形使用時は必ずイコール記号）
 - f_{fromLayerType}.md ファイル名パターンの検証
 - project/issue/task 各レベルでの動作確認
 
@@ -220,7 +220,7 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 ./examples/16_adaptation_parameter.sh
 ```
 このスクリプトは以下を実行します：
-- --adaptation/-a パラメータがテンプレート選択に与える影響の確認
+- --adaptation/-a= パラメータがテンプレート選択に与える影響の確認（短縮形使用時は必ずイコール記号）
 - f_{fromLayerType}_{adaptation}.md ファイル名パターンの検証
 - strict/agile/detailed 各アダプテーションでの動作確認
 - フォールバック動作の確認
@@ -309,9 +309,13 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 主なオプション：
 - `--from` または `-f`: 入力ファイルを指定
 - `--destination` または `-o`: 出力ファイルまたはディレクトリを指定
-- `--input` または `-i`: 入力レイヤータイプを指定
-- `--adaptation` または `-a`: プロンプトの適応タイプを指定
+- `--input` または `-i=<type>`: 入力レイヤータイプを指定（短縮形使用時は必ずイコール記号を使用）
+- `--adaptation` または `-a=<type>`: プロンプトの適応タイプを指定（短縮形使用時は必ずイコール記号を使用）
 - `--uv-*`: カスタム変数を指定（例：`--uv-userName=太郎` `--uv-project=example`）
+
+**重要**: 短縮形式（-i, -a）を使用する場合は、必ずイコール記号（=）を使用してください。
+- ✅ 正しい: `-i=task`, `-a=detailed`
+- ❌ 間違い: `-i task`, `-a detailed`
 
 ### 自動ファイル名生成
 

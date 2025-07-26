@@ -44,21 +44,28 @@ mkdir -p "$CONFIG_DIR" || handle_error "Failed to create config directory"
 echo "Setting up custom template directories..."
 mkdir -p prompts/find/bugs
 
-# Create custom configuration
+# Create custom configuration file specifically for this example
+CUSTOM_CONFIG_FILE="$CONFIG_DIR/production-custom-app.yml"
 echo "=== Creating Custom Configuration ==="
-cat > "$CONFIG_FILE" << 'EOF'
-# Custom User Configuration  
-# Extends default patterns to include 'find' directive and 'bugs' layer
-
-# Enable custom directive and layer types
+cat > "$CUSTOM_CONFIG_FILE" << 'EOF'
+# Breakdown Configuration for Production Custom Profile
+working_dir: ".agent/breakdown"
+app_prompt:
+  base_dir: ".agent/breakdown/prompts"
+app_schema:
+  base_dir: ".agent/breakdown/schema"
 params:
   two:
     directiveType:
-      # Added 'find' to the default pattern
-      pattern: "^(find|to|summary|defect)$"
+      pattern: "^(to|summary|defect|find)$"
     layerType:
-      # Added 'bugs' to the default pattern  
-      pattern: "^(bugs|project|issue|task)$"
+      pattern: "^(project|issue|task|bugs)$"
+workspace:
+  working_dir: ".agent/breakdown"
+  temp_dir: ".agent/breakdown/temp"
+production_mode: true
+custom_config: true
+advanced_features: true
 EOF
 echo "✅ Created custom configuration with 'find' and 'bugs' enabled"
 
@@ -99,10 +106,10 @@ EOF
 echo "=== Running Custom Command: find bugs ==="
 echo
 echo "Executing command:"
-echo "   deno run --allow-all ../cli/breakdown.ts find bugs --config=production --from=$TEST_DIR/test_file.md -o=$OUTPUT_DIR/result.md"
+echo "   deno run --allow-all ../cli/breakdown.ts find bugs --config=production-custom --from=$TEST_DIR/test_file.md -o=$OUTPUT_DIR/result.md"
 echo
 
-if deno run --allow-all ../cli/breakdown.ts find bugs --config=production --from="$TEST_DIR/test_file.md" -o="$OUTPUT_DIR/result.md" > "$OUTPUT_DIR/result.md" 2>&1; then
+if deno run --allow-all ../cli/breakdown.ts find bugs --config=production-custom --from="$TEST_DIR/test_file.md" -o="$OUTPUT_DIR/result.md" > "$OUTPUT_DIR/result.md" 2>&1; then
     echo "✅ Custom command executed successfully!"
     echo "   Output: $OUTPUT_DIR/result.md"
     if [ -f "$OUTPUT_DIR/result.md" ] && [ -s "$OUTPUT_DIR/result.md" ]; then
@@ -123,7 +130,7 @@ echo "This example demonstrated:"
 echo "  • How to configure custom directive types (e.g., 'find')"
 echo "  • How to configure custom layer types (e.g., 'bugs')"
 echo "  • How templates are resolved: prompts/{directiveType}/{layerType}/"
-echo "  • Using production configuration profile"
+echo "  • Using production-custom configuration profile"
 echo
 
 # Check results

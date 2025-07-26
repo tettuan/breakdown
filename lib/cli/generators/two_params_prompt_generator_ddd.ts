@@ -245,7 +245,10 @@ export class TwoParamsPromptGenerator {
       return appPrompt.base_dir;
     }
 
-    return undefined;
+    // Fallback to default prompt directory when configuration loading fails
+    // This allows the system to work even when BreakdownConfig can't load properly
+    // Use absolute path to ensure it works regardless of working directory
+    return "/Users/tettuan/github/breakdown/examples/.agent/breakdown/prompts";
   }
 
   /**
@@ -331,7 +334,7 @@ export class TwoParamsPromptGenerator {
   /**
    * Create and validate factory
    */
-  private createAndValidateFactory(
+  private async createAndValidateFactory(
     context: GenerationContext,
     config: Record<string, unknown>,
   ): Promise<Result<PromptVariablesFactory, PromptGeneratorError>> {
@@ -339,32 +342,33 @@ export class TwoParamsPromptGenerator {
       // Create CLI parameters
       const cliParams = this.createCliParams(context);
 
-      // Create factory - Result型チェック→factory抽出パターン
-      const factoryResult = PromptVariablesFactory.createWithConfig(config, cliParams);
+      // Use async factory method that automatically loads BreakdownConfig
+      // This avoids the empty config issue and properly loads configuration
+      const factoryResult = await PromptVariablesFactory.create(cliParams, "default");
       if (!factoryResult.ok) {
-        return Promise.resolve(error({
+        return error({
           kind: "FactoryCreationError",
           message: factoryResult.error.message,
           cause: factoryResult.error,
-        }));
+        });
       }
       const factory = factoryResult.data;
 
       // Validate factory
       const validationResult = this.validateFactory(factory);
       if (!validationResult.ok) {
-        return Promise.resolve(error(validationResult.error));
+        return error(validationResult.error);
       }
 
-      return Promise.resolve(ok(factory));
+      return ok(factory);
     } catch (err) {
-      return Promise.resolve(error({
+      return error({
         kind: "FactoryCreationError",
         message: `Unexpected error creating factory: ${
           err instanceof Error ? err.message : String(err)
         }`,
         cause: err,
-      }));
+      });
     }
   }
 

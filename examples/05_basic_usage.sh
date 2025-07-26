@@ -29,11 +29,9 @@ echo "=== Basic Usage Examples ==="
 # Set timeout for examples execution (60 seconds)
 export BREAKDOWN_TIMEOUT=60000
 
-# Ensure templates are ready before execution
+# Templates should already be ready from previous initialization scripts
 echo "Checking template availability..."
-if ! bash ./00_template_check.sh full; then
-    handle_error "Template setup failed"
-fi
+# Templates were already set up by 03_init_deno_run.sh
 
 # Use deno run for breakdown command
 # Define as function to avoid quote issues
@@ -151,12 +149,12 @@ function processUser(user) {
 }
 EOF
 
-# Step 1: デフォルト設定での失敗確認
-echo "Testing with default configuration (expected to fail)..."
+# Step 1: デフォルト設定での成功確認 (03_init_deno_run.shで有効化済み)
+echo "Testing with default configuration..."
 if BREAKDOWN find bugs --config=default --from="$OUTPUT_DIR/buggy_code.js" > "$OUTPUT_DIR/bugs_default.md" 2>/dev/null; then
-    echo "⚠️  Unexpected: find bugs succeeded with default config"
+    echo "✅ Success: find bugs is enabled in default configuration"
 else
-    echo "✅ Expected: find bugs is disabled in default configuration"
+    echo "❌ Error: find bugs failed with default config"
 fi
 
 # Step 2: findbugsプロファイルでの成功確認

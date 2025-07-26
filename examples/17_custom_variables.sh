@@ -37,12 +37,12 @@ cat > "$TEMPLATE_DIR/f_project.md" << 'EOF'
 # Project Template
 
 ## Project Information
-- Company: {{uv-company_name}}
-- Project Name: {{uv-project_name}}
-- Tech Stack: {{uv-tech_stack}}
-- Team Size: {{uv-team_size}}
-- Deadline: {{uv-deadline}}
-- Budget: {{uv-budget}}
+- Company: {{company_name}}
+- Project Name: {{project_name}}
+- Tech Stack: {{tech_stack}}
+- Team Size: {{team_size}}
+- Deadline: {{deadline}}
+- Budget: {{budget}}
 
 ## Input Content
 {{input}}
@@ -147,8 +147,8 @@ cat > "$TEMPLATE_DIR2/f_task.md" << 'EOF'
 # Task Summary Template
 
 ## Sprint Information
-- Sprint Length: {{uv-sprint_length}}
-- Story Point Scale: {{uv-story_point_scale}}
+- Sprint Length: {{sprint_length}}
+- Story Point Scale: {{story_point_scale}}
 
 ## Input Content
 {{input}}
@@ -187,7 +187,7 @@ if [ -f "$OUTPUT_DIR/agile_tasks.md" ]; then
     
     echo
     echo "カスタム変数の置換状況:"
-    if grep -q "{{uv-sprint_length}}\|{{uv-story_point_scale}}" "$OUTPUT_DIR/agile_tasks.md"; then
+    if grep -q "{{sprint_length}}\|{{story_point_scale}}" "$OUTPUT_DIR/agile_tasks.md"; then
         echo "  ❌ 変数が未置換 (テンプレート変数が残っている)"
     elif grep -q "2週間\|フィボナッチ数列" "$OUTPUT_DIR/agile_tasks.md"; then
         echo "  ✅ 変数の値が出力に含まれている"
@@ -253,7 +253,7 @@ VAR_REPLACED=false
 echo
 echo "使用方法:"
 echo "1. --uv-* でカスタム変数を定義"
-echo "2. テンプレート内で {{uv-*}} の形式で参照（--uv-company_name → {{uv-company_name}}）"
+echo "2. テンプレート内で {{variable}} の形式で参照（--uv-company_name → {{company_name}}）"
 echo "3. --adaptation でプロンプトの適応スタイルを指定"
 
 echo

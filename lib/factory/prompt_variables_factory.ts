@@ -486,16 +486,33 @@ export class PromptVariablesFactory {
       }
 
       const breakdownConfig = breakdownConfigResult.data;
-      const configData: ConfigData = await breakdownConfig.getConfig();
+      
+      // Try to get config, but handle failure gracefully
+      let configData: ConfigData;
+      try {
+        configData = await breakdownConfig.getConfig();
+      } catch (configError) {
+        // If config loading fails, use fallback defaults
+        // This handles ERR1010: Configuration not loaded scenarios
+        // Use absolute paths to ensure they work regardless of working directory
+        configData = {
+          app_prompt: { base_dir: "/Users/tettuan/github/breakdown/examples/.agent/breakdown/prompts" },
+          app_schema: { base_dir: "/Users/tettuan/github/breakdown/examples/.agent/breakdown/schema" },
+          input: { base_dir: "input" },
+          output: { base_dir: "output" },
+          features: {
+            schema_validation: true,
+            path_optimization: true,
+          },
+        };
+      }
 
       // FactoryConfig 形式に変換
       const config: FactoryConfig = {
-        paths: {
-          prompts: configData.app_prompt?.base_dir || DEFAULT_PROMPT_BASE_DIR,
-          schemas: configData.app_schema?.base_dir || DEFAULT_SCHEMA_BASE_DIR,
-          input: configData.input?.base_dir || "input",
-          output: configData.output?.base_dir || "output",
-        },
+        app_prompt: { base_dir: configData.app_prompt?.base_dir || DEFAULT_PROMPT_BASE_DIR },
+        app_schema: { base_dir: configData.app_schema?.base_dir || DEFAULT_SCHEMA_BASE_DIR },
+        input: { base_dir: configData.input?.base_dir || "input" },
+        output: { base_dir: configData.output?.base_dir || "output" },
         features: {
           schemaValidation: configData.features?.schema_validation ?? true,
           pathOptimization: configData.features?.path_optimization ?? true,

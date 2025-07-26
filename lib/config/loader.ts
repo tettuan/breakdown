@@ -302,9 +302,11 @@ export type ConfigLoadError =
   | ConfigFilePathError;
 
 export type BreakdownConfigLoadError =
-  | { kind: "CreateError"; message: string; cause: string }
-  | { kind: "LoadError"; message: string; cause: string }
-  | { kind: "ConfigError"; message: string; cause: string }
+  | { kind: "ImportError"; message: string; cause: string; importPath?: string }
+  | { kind: "CreateError"; message: string; cause: string; prefix?: string }
+  | { kind: "LoadError"; message: string; cause: string; context?: string }
+  | { kind: "ConfigError"; message: string; cause: string; operation?: string }
+  | { kind: "UnexpectedError"; message: string; cause: string; phase?: string }
   | ConfigPrefixError
   | WorkingDirectoryError;
 
@@ -397,7 +399,7 @@ export class ConfigLoader {
   }
 
   /**
-   * Load configuration using BreakdownConfig with type safety
+   * Load configuration using BreakdownConfig with type safety and comprehensive error handling
    * @param configPrefix Optional config prefix for BreakdownConfig
    * @param workingDir Working directory for BreakdownConfig
    * @returns Result with merged configuration or BreakdownConfigLoadError
@@ -406,66 +408,149 @@ export class ConfigLoader {
     configPrefix?: unknown,
     workingDir?: unknown,
   ): Promise<Result<Record<string, unknown>, BreakdownConfigLoadError>> {
-    // Validate config prefix using Smart Constructor
-    const prefixResult = ConfigPrefix.create(configPrefix as string | null | undefined);
-    if (!prefixResult.ok) {
-      return error(prefixResult.error);
-    }
-
-    // Validate working directory using Smart Constructor
-    const workingDirResult = WorkingDirectory.create(workingDir);
-    if (!workingDirResult.ok) {
-      return error(workingDirResult.error);
-    }
-
-    const prefix = prefixResult.data;
-    const _workDir = workingDirResult.data;
-
+    // Phase 1: Input Validation
     try {
-      // Dynamic import using latest version (managed in versions.ts: 1.1.4)
-      const { BreakdownConfig } = await import("jsr:@tettuan/breakdownconfig@^1.1.4");
+      // Validate config prefix using Smart Constructor
+      const prefixResult = ConfigPrefix.create(configPrefix as string | null | undefined);
+      if (!prefixResult.ok) {
+        return error(prefixResult.error);
+      }
 
-      // Use BreakdownConfig static factory method (convert null to undefined)
-      const configResult = await BreakdownConfig.create(prefix.value ?? undefined);
+      // Validate working directory using Smart Constructor
+      // If no working directory is provided, use current working directory
+      const resolvedWorkingDir = workingDir ?? Deno.cwd();
+      const workingDirResult = WorkingDirectory.create(resolvedWorkingDir);
+      if (!workingDirResult.ok) {
+        return error(workingDirResult.error);
+      }
+
+      const prefix = prefixResult.data;
+      const workDir = workingDirResult.data;
+
+      // Phase 2: BreakdownConfig Package Import
+      let BreakdownConfig: any;
+      try {
+        const importPath = "jsr:@tettuan/breakdownconfig@^1.1.4";
+        const importResult = await import(importPath);
+        BreakdownConfig = importResult.BreakdownConfig;
+        
+        if (!BreakdownConfig || typeof BreakdownConfig.create !== 'function') {
+          return error({
+            kind: "ImportError",
+            message: "BreakdownConfig class or create method not found in imported module",
+            cause: "Invalid BreakdownConfig API structure",
+            importPath,
+          });
+        }
+      } catch (importError) {
+        return error({
+          kind: "ImportError",
+          message: "Failed to import BreakdownConfig package",
+          cause: importError instanceof Error ? importError.message : String(importError),
+          importPath: "jsr:@tettuan/breakdownconfig@^1.1.4",
+        });
+      }
+
+      // Phase 3: BreakdownConfig Instance Creation
+      let configResult: any;
+      try {
+        // Use BreakdownConfig static factory method - only pass prefix
+        // BreakdownConfig should detect working directory automatically
+        configResult = await BreakdownConfig.create(
+          prefix.value ?? undefined
+        );
+      } catch (createCallError) {
+        return error({
+          kind: "CreateError",
+          message: "BreakdownConfig.create method threw an exception",
+          cause: createCallError instanceof Error ? createCallError.message : String(createCallError),
+          prefix: prefix.value ?? "undefined",
+        });
+      }
+
+      // Validate creation result
+      if (!configResult || typeof configResult.success !== 'boolean') {
+        return error({
+          kind: "CreateError",
+          message: "BreakdownConfig.create returned invalid result structure",
+          cause: "Expected result with 'success' boolean property",
+          prefix: prefix.value ?? "undefined",
+        });
+      }
+
       if (!configResult.success) {
         return error({
           kind: "CreateError",
-          message: "Failed to create BreakdownConfig instance",
-          cause: "BreakdownConfig.create returned failure",
+          message: "BreakdownConfig instance creation failed",
+          cause: configResult.error || "BreakdownConfig.create returned failure without error details",
+          prefix: prefix.value ?? "undefined",
+        });
+      }
+
+      if (!configResult.data) {
+        return error({
+          kind: "CreateError",
+          message: "BreakdownConfig.create succeeded but returned no data",
+          cause: "Missing data property in successful result",
+          prefix: prefix.value ?? "undefined",
         });
       }
 
       const config = configResult.data;
 
-      // Load configuration
+      // Phase 4: Configuration Loading
       try {
         await config.loadConfig();
       } catch (loadError) {
+        // Enhanced error handling with more specific error information
+        const errorMessage = loadError instanceof Error ? loadError.message : String(loadError);
+        const isConfigNotFound = errorMessage.includes("Failed to load BreakdownConfig profile") ||
+                                 errorMessage.includes("Configuration not found") ||
+                                 errorMessage.includes("ENOENT") ||
+                                 errorMessage.includes("No such file or directory");
+        
         return error({
           kind: "LoadError",
-          message: "Failed to load BreakdownConfig",
-          cause: loadError instanceof Error ? loadError.message : String(loadError),
+          message: isConfigNotFound 
+            ? `Configuration file not found for profile '${prefix.value ?? "default"}'. Please run 'breakdown init' to create configuration files.`
+            : "Failed to load configuration files",
+          cause: errorMessage,
+          context: `prefix: ${prefix.value ?? "undefined"}, workingDir: ${workDir.value}`,
         });
       }
 
-      // Get configuration data
+      // Phase 5: Configuration Data Retrieval
       let configData: Record<string, unknown>;
       try {
         configData = await config.getConfig();
       } catch (getConfigError) {
         return error({
           kind: "ConfigError",
-          message: "Failed to get configuration data",
+          message: "Failed to retrieve configuration data",
           cause: getConfigError instanceof Error ? getConfigError.message : String(getConfigError),
+          operation: "getConfig",
+        });
+      }
+
+      // Validate retrieved configuration data
+      if (!configData || typeof configData !== 'object') {
+        return error({
+          kind: "ConfigError",
+          message: "Retrieved configuration data is not a valid object",
+          cause: `Expected object, got ${typeof configData}`,
+          operation: "getConfig validation",
         });
       }
 
       return ok(configData);
-    } catch (importError) {
+
+    } catch (unexpectedError) {
+      // Catch-all for any unexpected errors during the entire process
       return error({
-        kind: "CreateError",
-        message: "Failed to import or initialize BreakdownConfig",
-        cause: importError instanceof Error ? importError.message : String(importError),
+        kind: "UnexpectedError",
+        message: "Unexpected error during BreakdownConfig processing",
+        cause: unexpectedError instanceof Error ? unexpectedError.message : String(unexpectedError),
+        phase: "loadBreakdownConfig",
       });
     }
   }
