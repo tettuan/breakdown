@@ -35,43 +35,47 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 
 ## 構成
 
-### 前準備 (00-03)
-1. `00_instructions.sh` - 使用方法の説明とガイダンス
-2. `01_install.sh` - Breakdownのインストール案内
-3. `02_init_deno_run.sh` - プロジェクトの初期化 (deno run で直接実行)
-4. `03_create_user_config.sh` - ユーザー設定の作成 (deno run で直接実行)
+### 環境準備 (01-04)
+1. `01_instructions.sh` - 使用方法の説明とガイダンス
+2. `02_install.sh` - Breakdownのインストール案内
+3. `03_init_deno_run.sh` - プロジェクトの初期化 (deno run で直接実行)
+4. `04_create_user_config.sh` - ユーザー設定の作成 (deno run で直接実行)
 
-### 基本使用例 (04-05)
-5. `04_stdin_example.sh` - STDIN入力の利用例
-6. `05_basic_usage.sh` - 基本的なコマンド使用例 (to, summary, defect)
+### 基本動作確認 (05-08)
+5. `05_basic_usage.sh` - 基本的なコマンド使用例 (to, summary, defect)
+6. `06_stdin_example.sh` - STDIN入力の利用例
+7. `07_summary_issue.sh` - summary issueコマンドの例
+8. `08_defect_patterns.sh` - defect issue/taskコマンドの例
 
-### 設定例 (06-11)
-7. `06_config_basic.sh` - 基本的な設定例
-8. `07_config_production.sh` - 本番環境用設定例
-9. `08_config_team.sh` - チーム開発用設定例
-10. `09_config_environments.sh` - 環境別設定例
-11. `10_config_production_example.sh` - 本番環境設定とバグ検出例
-12. `11_config_production_custom.sh` - 本番環境カスタム設定とFind Bugs
+### 設定確認 (09-14)
+9. `09_config_basic.sh` - 基本的な設定例
+10. `10_config_environments.sh` - 環境別設定例
+11. `11_config_team.sh` - チーム開発用設定例
+12. `12_config_production.sh` - 本番環境用設定例
+13. `13_config_production_example.sh` - 本番環境設定とバグ検出例
+14. `14_config_production_custom.sh` - 本番環境カスタム設定とFind Bugs
 
-### 追加例 (12-17)
-13. `12_summary_issue.sh` - summary issueコマンドの例
-14. `13_defect_patterns.sh` - defect issue/taskコマンドの例
-15. `14_custom_variables.sh` - カスタム変数とadaptationオプション
-16. `15_pipeline_processing.sh` - パイプライン処理の例
-17. `16_batch_processing.sh` - バッチ処理の例
-18. `17_error_handling.sh` - エラーハンドリングの例
+### パラメータ動作確認 (15-17)
+15. `15_input_parameter.sh` - --input/-i パラメータの動作確認
+16. `16_adaptation_parameter.sh` - --adaptation/-a パラメータの動作確認
+17. `17_custom_variables.sh` - カスタム変数（--uv-*）の動作確認
 
-### クリーンアップ
-19. `18_clean.sh` - 生成されたファイルのクリーンアップ
+### 応用例 (18-20)
+18. `18_pipeline_processing.sh` - パイプライン処理の例
+19. `19_batch_processing.sh` - バッチ処理の例
+20. `20_error_handling.sh` - エラーハンドリングの例
+
+### クリーンアップ (21)
+21. `21_clean.sh` - 生成されたファイルのクリーンアップ
 
 - クリーンアップは全ての動作確認が正常に完了した最後に実行すること
 - 異常終了時に最初から実行する際には、クリーンアップしてから再実行すること
 
-## 前準備の詳細
+## 環境準備の詳細
 
 ### 1. 使用方法の説明とガイダンス
 ```bash
-./examples/00_instructions.sh
+./examples/01_instructions.sh
 ```
 このスクリプトは以下を案内します：
 - Examples の使用方法とワークフロー
@@ -79,14 +83,14 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 
 ### 2. インストール案内
 ```bash
-./examples/01_install.sh
+./examples/02_install.sh
 ```
 このスクリプトは以下を案内します：
 - Breakdown CLIの推奨利用方法（deno task, バイナリ, グローバルインストール）
 
 ### 3. 初期化 (deno run で直接実行)
 ```bash
-./examples/02_init_deno_run.sh
+./examples/03_init_deno_run.sh
 ```
 このスクリプトは以下を実行します（`deno run` で `cli/breakdown.ts` を直接使用）：
 - プロジェクト構造の初期化
@@ -95,25 +99,16 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 
 ### 4. ユーザー設定 (deno run で直接実行)
 ```bash
-./examples/03_create_user_config.sh
+./examples/04_create_user_config.sh
 ```
 このスクリプトは以下を実行します（`deno run` で `cli/breakdown.ts` を直接使用）：
 - `./.agent/breakdown/config/default-user.yml` の作成
 - working_dirの設定（`./.agent/breakdown/examples`）
 - 基本設定の構成
 
-## 使用例の詳細
+## 基本動作確認の詳細
 
-### 5. STDIN入力の利用例
-```bash
-./examples/04_stdin_example.sh
-```
-このスクリプトは以下を実行します：
-- echoやcatでパイプしてBreakdown CLIにSTDIN入力を渡す
-- summaryコマンドでプロジェクトサマリーを生成
-- 生成ファイルの確認
-
-### 6. 基本的なコマンド使用例
+### 5. 基本的なコマンド使用例
 ```bash
 ./examples/05_basic_usage.sh
 ```
@@ -123,47 +118,72 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 - `breakdown defect project` - エラーログから欠陥分析
 - `breakdown find bugs` - コード内のバグ検出（※カスタム設定が必要。デフォルトでは利用不可）
 
-## 設定例の詳細
-
-### 7. 基本的な設定例
+### 6. STDIN入力の利用例
 ```bash
-./examples/06_config_basic.sh
+./examples/06_stdin_example.sh
+```
+このスクリプトは以下を実行します：
+- echoやcatでパイプしてBreakdown CLIにSTDIN入力を渡す
+- summaryコマンドでプロジェクトサマリーを生成
+- 生成ファイルの確認
+
+### 7. Summary Issueの例
+```bash
+./examples/07_summary_issue.sh
+```
+このスクリプトは以下を実行します：
+- 散らかったタスクリストからイシューサマリーを生成
+- summary issueコマンドの実用例
+
+### 8. Defectパターンの例
+```bash
+./examples/08_defect_patterns.sh
+```
+このスクリプトは以下を実行します：
+- defect issue: バグレポートからの欠陥分析
+- defect task: 改善要求からのタスク分析
+
+## 設定確認の詳細
+
+### 9. 基本的な設定例
+```bash
+./examples/09_config_basic.sh
 ```
 このスクリプトは以下を実行します：
 - 基本的な設定ファイルの作成
 - デフォルト設定の確認
 - 簡単な設定のカスタマイズ
 
-### 8. 本番環境用設定例
-```bash
-./examples/07_config_production.sh
-```
-このスクリプトは以下を実行します：
-- 本番環境向けの設定ファイル作成
-- セキュリティ設定の強化
-- パフォーマンス最適化設定
-
-### 9. チーム開発用設定例
-```bash
-./examples/08_config_team.sh
-```
-このスクリプトは以下を実行します：
-- チーム開発向けの共有設定
-- コラボレーション設定
-- 権限管理の設定
-
 ### 10. 環境別設定例
 ```bash
-./examples/09_config_environments.sh
+./examples/10_config_environments.sh
 ```
 このスクリプトは以下を実行します：
 - 開発、ステージング、本番環境の設定切り替え
 - 環境変数による設定管理
 - 環境別のプロンプト設定
 
-### 11. 本番環境設定とバグ検出例
+### 11. チーム開発用設定例
 ```bash
-./examples/10_config_production_example.sh
+./examples/11_config_team.sh
+```
+このスクリプトは以下を実行します：
+- チーム開発向けの共有設定
+- コラボレーション設定
+- 権限管理の設定
+
+### 12. 本番環境用設定例
+```bash
+./examples/12_config_production.sh
+```
+このスクリプトは以下を実行します：
+- 本番環境向けの設定ファイル作成
+- セキュリティ設定の強化
+- パフォーマンス最適化設定
+
+### 13. 本番環境設定とバグ検出例
+```bash
+./examples/13_config_production_example.sh
 ```
 このスクリプトは以下を実行します：
 - production-user.ymlを使用した `breakdown find bugs` コマンドのデモンストレーション
@@ -172,9 +192,9 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 - `breakdown find bugs` コマンドの実行と結果表示
 - 本番環境設定の詳細表示（検出パターン、対象ファイル拡張子、除外ディレクトリ等）
 
-### 12. 本番環境カスタム設定とFind Bugs
+### 14. 本番環境カスタム設定とFind Bugs
 ```bash
-./examples/11_config_production_custom.sh
+./examples/14_config_production_custom.sh
 ```
 このスクリプトは以下を実行します：
 - production-user.ymlを使用したCustomConfig機能のデモンストレーション
@@ -184,61 +204,70 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 - `find bugs` 二パラメータコマンドのサポート確認
 - 設定ファイルの検証とロードテスト
 
-### 13. Summary Issueの例
-```bash
-./examples/12_summary_issue.sh
-```
-このスクリプトは以下を実行します：
-- 散らかったタスクリストからイシューサマリーを生成
-- summary issueコマンドの実用例
+## パラメータ動作確認の詳細
 
-### 14. Defectパターンの例
+### 15. Inputパラメータの動作確認
 ```bash
-./examples/13_defect_patterns.sh
+./examples/15_input_parameter.sh
 ```
 このスクリプトは以下を実行します：
-- defect issue: バグレポートからの欠陥分析
-- defect task: 改善要求からのタスク分析
+- --input/-i パラメータがテンプレート選択に与える影響の確認
+- f_{fromLayerType}.md ファイル名パターンの検証
+- project/issue/task 各レベルでの動作確認
 
-### 15. カスタム変数の例
+### 16. Adaptationパラメータの動作確認
 ```bash
-./examples/14_custom_variables.sh
+./examples/16_adaptation_parameter.sh
 ```
 このスクリプトは以下を実行します：
-- --uv-*カスタム変数の使用方法
-- --adaptationオプションの活用
+- --adaptation/-a パラメータがテンプレート選択に与える影響の確認
+- f_{fromLayerType}_{adaptation}.md ファイル名パターンの検証
+- strict/agile/detailed 各アダプテーションでの動作確認
+- フォールバック動作の確認
+
+### 17. カスタム変数の動作確認
+```bash
+./examples/17_custom_variables.sh
+```
+このスクリプトは以下を実行します：
+- --uv-*カスタム変数の使用方法と動作確認
+- テンプレート内での変数置換の検証
 - 複数の変数を組み合わせたカスタマイズ
 
-### 16. パイプライン処理の例
+## 応用例の詳細
+
+### 18. パイプライン処理の例
 ```bash
-./examples/15_pipeline_processing.sh
+./examples/18_pipeline_processing.sh
 ```
 このスクリプトは以下を実行します：
 - 複数のbreakdownコマンドの連携
 - UNIXツールとの統合
 - プロセス置換の活用
 
-### 17. バッチ処理の例
+### 19. バッチ処理の例
 ```bash
-./examples/16_batch_processing.sh
+./examples/19_batch_processing.sh
 ```
 このスクリプトは以下を実行します：
 - 複数ファイルの一括処理
 - 処理結果のレポート生成
 - 定期実行用スクリプトの作成
 
-### 18. エラーハンドリングの例
+### 20. エラーハンドリングの例
 ```bash
-./examples/17_error_handling.sh
+./examples/20_error_handling.sh
 ```
 このスクリプトは以下を実行します：
 - エラーの捕捉と記録
 - リトライ機能の実装
 - フォールバック処理
 
-### 19. クリーンアップ
+## クリーンアップの詳細
+
+### 21. クリーンアップ
 ```bash
-./examples/18_clean.sh
+./examples/21_clean.sh
 ```
 このスクリプトは以下を実行します：
 - 生成された全ての出力ファイルの削除
