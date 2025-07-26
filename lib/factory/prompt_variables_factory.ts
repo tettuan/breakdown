@@ -486,18 +486,20 @@ export class PromptVariablesFactory {
       }
 
       const breakdownConfig = breakdownConfigResult.data;
-      
+
       // Try to get config, but handle failure gracefully
       let configData: ConfigData;
       try {
         configData = await breakdownConfig.getConfig();
-      } catch (configError) {
+      } catch (_configError) {
         // If config loading fails, use fallback defaults
         // This handles ERR1010: Configuration not loaded scenarios
-        // Use absolute paths to ensure they work regardless of working directory
+        // Check if we're in examples directory and adjust paths accordingly
+        const cwd = Deno.cwd();
+        const inExamples = cwd.endsWith("/examples") || cwd.includes("/examples/");
         configData = {
-          app_prompt: { base_dir: "/Users/tettuan/github/breakdown/examples/.agent/breakdown/prompts" },
-          app_schema: { base_dir: "/Users/tettuan/github/breakdown/examples/.agent/breakdown/schema" },
+          app_prompt: { base_dir: inExamples ? "./prompts" : "./.agent/breakdown/prompts" },
+          app_schema: { base_dir: inExamples ? "./schema" : "./.agent/breakdown/schema" },
           input: { base_dir: "input" },
           output: { base_dir: "output" },
           features: {

@@ -3,7 +3,9 @@
 - この階層は Breakdown本体である
 - Breakdownは、複数のライブラリ（パッケージ）に役割を分けている
   - BreakdownParams, BreakdownConfig, BreakdownPrompts
-  - デバッグは BreakdownLogger
+  - デバッグは BreakdownLogger（ただし tests ファイルでのみ動作 ）
+  - メインコードのデバッグは 環境変数 LOG_LEVEL=debug のとき、console.log で出力する
+    - ドメイン境界線にのみ永続的なデバッグ出力が許可される。
 - パッケージが実装した役割を、Breakdown自身は実装しない
   - BreakdownParams: args CLI引数の分解、バリデーション。CLI引数は全てBreakdownParamsへ移譲し、BreakdownParamsの結果だけを使う。
   - BreakdownConfig: 設定ファイルを用いた設定値。設定の読み込みはすべてBreakdownConfigへ移譲し、Breakdown本体はBreakdownConfigの結果を使うだけ。
@@ -25,8 +27,6 @@
 # テストファイル
 
 0_architecture, 1_structure, 2_unit テストは、実装コードと同じ階層に置く。 同一階層または tests/ 内。
-
-
 
 # チームの構成
 

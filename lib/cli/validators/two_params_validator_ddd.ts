@@ -535,7 +535,7 @@ export class TwoParamsValidator {
    * This method should read from config/default-user.yml or return error
    */
   private async getDefaultPatterns(
-    profile: ProfileName,
+    _profile: ProfileName,
   ): Promise<Result<ValidationPatterns, ValidationError>> {
     try {
       let directivePatterns: string[] = [];
@@ -552,7 +552,7 @@ export class TwoParamsValidator {
               : this.config;
           directivePatterns = configData?.params?.two?.directiveType?.pattern?.split("|") || [];
           layerPatterns = configData?.params?.two?.layerType?.pattern?.split("|") || [];
-        } catch (configError) {
+        } catch (_configError) {
           // Fall through to fallback patterns below
         }
       }
@@ -571,7 +571,7 @@ export class TwoParamsValidator {
       };
 
       return ok(patterns);
-    } catch (err) {
+    } catch (_err) {
       // Last resort: provide absolute minimal fallback
       const patterns: ValidationPatterns = {
         directivePatterns: ["to", "summary", "defect"],

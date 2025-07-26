@@ -75,17 +75,37 @@ class TwoParamsOrchestrator {
     config: Record<string, unknown>,
     options: Record<string, unknown>,
   ): Promise<Result<void, TwoParamsHandlerError>> {
+    const isDebug = Deno.env.get("LOG_LEVEL") === "debug";
+    if (isDebug) {
+      console.log("[TwoParamsOrchestrator] Starting execution with:", {
+        params,
+        config: Object.keys(config),
+        options: Object.keys(options),
+      });
+    }
     // 1. Validate parameters with type safety
     const validationResult = await this.validator.validate(params);
+    if (isDebug) {
+      console.log("[TwoParamsValidator] Returning:", JSON.stringify(validationResult, null, 2));
+    }
     if (!validationResult.ok) {
       return error(this.mapValidationError(validationResult.error));
     }
 
     // 2. Read STDIN
+    if (isDebug) {
+      console.log("[TwoParamsValidator → TwoParamsStdinProcessor] Passing:", {
+        config: Object.keys(config),
+        options: Object.keys(options),
+      });
+    }
     const stdinResult = await this.stdinProcessor.process(
       config as BreakdownConfigCompatible,
       options,
     );
+    if (isDebug) {
+      console.log("[TwoParamsStdinProcessor] Returning:", JSON.stringify(stdinResult, null, 2));
+    }
 
     if (!stdinResult.ok) {
       return error({
@@ -95,10 +115,22 @@ class TwoParamsOrchestrator {
     }
 
     // 3. Process variables
+    if (isDebug) {
+      console.log("[TwoParamsStdinProcessor → TwoParamsVariableProcessor] Passing:", {
+        options: Object.keys(options),
+        stdinData: stdinResult.data ? "(has content)" : "(empty)",
+      });
+    }
     const variablesResult = this.variableProcessor.processVariables(
       options,
       stdinResult.data,
     );
+    if (isDebug) {
+      console.log(
+        "[TwoParamsVariableProcessor] Returning:",
+        JSON.stringify(variablesResult, null, 2),
+      );
+    }
     if (!variablesResult.ok) {
       return error({
         kind: "VariablesBuilderError",
@@ -118,22 +150,48 @@ class TwoParamsOrchestrator {
     }
 
     // 4. Generate prompt with validated parameters
+    if (isDebug) {
+      console.log("[TwoParamsVariableProcessor → TwoParamsPromptGenerator] Passing:", {
+        config: Object.keys(config),
+        validatedParams: validationResult.data,
+        options: Object.keys(options),
+        processedVariables: Object.keys(variablesResult.data),
+      });
+    }
     const promptResult = await this.promptGenerator.generatePrompt(
       config,
       validationResult.data,
       options,
       variablesResult.data,
     );
+    if (isDebug) {
+      console.log("[TwoParamsPromptGenerator] Returning:", {
+        ok: promptResult.ok,
+        dataLength: promptResult.ok ? promptResult.data.length : 0,
+        error: !promptResult.ok ? promptResult.error : undefined,
+      });
+    }
     if (!promptResult.ok) {
       return error(this.mapPromptError(promptResult.error));
     }
 
     // 5. Write output using processor
+    if (isDebug) {
+      console.log("[TwoParamsPromptGenerator → TwoParamsOutputProcessor] Passing:", {
+        promptLength: promptResult.data.length,
+      });
+    }
     const writeResult = await this.outputProcessor.writeOutput(promptResult.data);
+    if (isDebug) {
+      console.log("[TwoParamsOutputProcessor] Returning:", JSON.stringify(writeResult, null, 2));
+    }
     if (!writeResult.ok) {
       return error(this.mapOutputError(writeResult.error));
     }
 
+    if (isDebug) {
+      console.log("[TwoParamsOrchestrator] Execution completed successfully");
+    }
     return ok(undefined);
   }
 

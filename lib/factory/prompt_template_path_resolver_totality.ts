@@ -137,6 +137,13 @@ export class PromptTemplatePathResolverTotality {
     config: Record<string, unknown>,
     cliParams: PromptCliParams | TwoParams_Result,
   ): Result<PromptTemplatePathResolverTotality, PathResolutionError> {
+    const isDebug = Deno.env.get("LOG_LEVEL") === "debug";
+    if (isDebug) {
+      console.log("[PromptTemplatePathResolverTotality] create called with:", {
+        configKeys: Object.keys(config),
+        cliParams: JSON.stringify(cliParams, null, 2),
+      });
+    }
     // Validate configuration presence and type
     if (!config || typeof config !== "object" || Array.isArray(config)) {
       return resultError({
@@ -179,7 +186,14 @@ export class PromptTemplatePathResolverTotality {
     // Convert config to discriminated union
     const resolverConfig = PromptTemplatePathResolverTotality.normalizeConfig(config);
 
-    return resultOk(new PromptTemplatePathResolverTotality(resolverConfig, cliParams));
+    const resolver = new PromptTemplatePathResolverTotality(resolverConfig, cliParams);
+    if (isDebug) {
+      console.log("[PromptTemplatePathResolverTotality] Returning:", {
+        ok: true,
+        resolverConfigKind: resolverConfig.kind,
+      });
+    }
+    return resultOk(resolver);
   }
 
   /**
@@ -244,8 +258,19 @@ export class PromptTemplatePathResolverTotality {
    * Resolves the complete prompt template file path
    */
   public getPath(): Result<PromptTemplatePath, PathResolutionError> {
+    const isDebug = Deno.env.get("LOG_LEVEL") === "debug";
+    if (isDebug) {
+      console.log("[PromptTemplatePathResolverTotality] getPath called");
+    }
+
     // Resolve base directory
     const baseDirResult = this.resolveBaseDirSafe();
+    if (isDebug) {
+      console.log(
+        "[PromptTemplatePathResolverTotality] resolveBaseDirSafe result:",
+        JSON.stringify(baseDirResult, null, 2),
+      );
+    }
     if (!baseDirResult.ok) {
       return baseDirResult;
     }
@@ -255,6 +280,23 @@ export class PromptTemplatePathResolverTotality {
     const fileName = this.buildFileName();
     const promptPath = this.buildPromptPath(baseDir, fileName);
     const attemptedPaths: string[] = [promptPath];
+
+    if (isDebug) {
+      console.log(
+        "[PromptTemplatePathResolverTotality] getPath:",
+        JSON.stringify(
+          {
+            baseDir,
+            fileName,
+            promptPath,
+            directiveType: this.getDirectiveType(),
+            layerType: this.getLayerType(),
+          },
+          null,
+          2,
+        ),
+      );
+    }
 
     // Collect metadata
     const directiveType = this.getDirectiveType();
@@ -284,6 +326,15 @@ export class PromptTemplatePathResolverTotality {
         return resultError({
           kind: "InvalidConfiguration",
           details: pathResult.error.message,
+        });
+      }
+      if (isDebug) {
+        console.log("[PromptTemplatePathResolverTotality] Returning:", {
+          ok: true,
+          path: promptPath,
+          status: "Found",
+          directiveType,
+          layerType,
         });
       }
       return pathResult;
@@ -316,6 +367,23 @@ export class PromptTemplatePathResolverTotality {
     }
 
     // No template found
+    if (isDebug) {
+      console.log(
+        "[PromptTemplatePathResolverTotality] Returning:",
+        JSON.stringify(
+          {
+            ok: false,
+            error: {
+              kind: "TemplateNotFound",
+              attempted: attemptedPaths,
+              fallback: adaptation ? "Attempted fallback to base template" : undefined,
+            },
+          },
+          null,
+          2,
+        ),
+      );
+    }
     return resultError({
       kind: "TemplateNotFound",
       attempted: attemptedPaths,
@@ -327,9 +395,27 @@ export class PromptTemplatePathResolverTotality {
    * Safely resolves the base directory with Result type
    */
   private resolveBaseDirSafe(): Result<string, PathResolutionError> {
+    const isDebug = Deno.env.get("LOG_LEVEL") === "debug";
+
     // Check if schema path should be used based on options
     const useSchema = this.getUseSchemaFlag();
     let baseDir: string;
+
+    if (isDebug) {
+      console.log(
+        "[PromptTemplatePathResolverTotality] resolveBaseDirSafe:",
+        JSON.stringify(
+          {
+            configKind: this.config.kind,
+            useSchema,
+            workingDir: this.config.working_dir,
+            cwd: Deno.cwd(),
+          },
+          null,
+          2,
+        ),
+      );
+    }
 
     switch (this.config.kind) {
       case "WithPromptConfig":
@@ -355,6 +441,23 @@ export class PromptTemplatePathResolverTotality {
       // Use working_dir if available, otherwise use current working directory
       const workingDir = this.config.working_dir || Deno.cwd();
       baseDir = resolve(workingDir, baseDir);
+
+      if (isDebug) {
+        console.log(
+          "[PromptTemplatePathResolverTotality] Resolved relative path:",
+          JSON.stringify(
+            {
+              originalBaseDir: this.config.kind === "WithPromptConfig"
+                ? this.config.app_prompt.base_dir
+                : "DEFAULT",
+              workingDir,
+              resolvedBaseDir: baseDir,
+            },
+            null,
+            2,
+          ),
+        );
+      }
     }
 
     // Verify base directory exists
@@ -363,6 +466,10 @@ export class PromptTemplatePathResolverTotality {
         kind: "BaseDirectoryNotFound",
         path: baseDir,
       });
+    }
+
+    if (isDebug) {
+      console.log("[PromptTemplatePathResolverTotality] Returning baseDir:", baseDir);
     }
 
     return resultOk(baseDir);

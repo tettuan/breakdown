@@ -105,8 +105,20 @@ type BreakdownError =
 export async function runBreakdown(
   args: string[] = Deno.args,
 ): Promise<Result<void, BreakdownError>> {
+  // Debug flag
+  const isDebug = Deno.env.get("LOG_LEVEL") === "debug";
+
+  if (isDebug) {
+    console.log("[breakdown.ts] Starting runBreakdown with args:", JSON.stringify(args, null, 2));
+  }
+
   // 1. Extract and create config profile name with Result pattern matching
   const detectedPrefix = ConfigPrefixDetector.detect(args);
+
+  if (isDebug) {
+    console.log("[breakdown.ts] Detected config prefix:", detectedPrefix ?? "null (using default)");
+  }
+
   const configProfileResult = ConfigProfile.createOrError(
     detectedPrefix ?? DEFAULT_CONFIG_PROFILE,
   );
@@ -143,6 +155,10 @@ export async function runBreakdown(
     };
   }
 
+  if (isDebug) {
+    console.log("[breakdown.ts] ConfigProfile created:", configProfile.value);
+  }
+
   // 2. Initialize BreakdownConfig with profile name (with error handling)
   let config: Record<string, unknown> = {};
   const breakdownConfigResult = await ConfigLoader.loadBreakdownConfig(
@@ -175,6 +191,10 @@ export async function runBreakdown(
     config = {};
   } else {
     config = breakdownConfigResult.data;
+
+    if (isDebug) {
+      console.log("[breakdown.ts] BreakdownConfig loaded:", JSON.stringify(config, null, 2));
+    }
   }
 
   // 3. Pass BreakdownConfig settings to BreakdownParams using ParamsCustomConfig
@@ -194,10 +214,29 @@ export async function runBreakdown(
 
   const result = paramsParser.parse(args);
 
+  if (isDebug) {
+    console.log("[breakdown.ts] ParamsParser result:", JSON.stringify(result, null, 2));
+  }
+
   // 4. Determine zero/one/two params and branch
   switch (result.type) {
     case "two": {
+      if (isDebug) {
+        console.log("[breakdown.ts] Calling handleTwoParams with:", {
+          params: result.params,
+          options: result.options,
+        });
+      }
+
       const handlerResult = await handleTwoParams(result.params, config, result.options);
+
+      if (isDebug) {
+        console.log(
+          "[breakdown.ts] handleTwoParams result:",
+          handlerResult.ok ? "Success" : "Error",
+        );
+      }
+
       if (!handlerResult.ok) {
         // Use centralized error handler
         if (!handleTwoParamsError(handlerResult.error, config)) {
@@ -214,10 +253,21 @@ export async function runBreakdown(
       return { ok: true, data: undefined };
     }
     case "one": {
+      if (isDebug) {
+        console.log("[breakdown.ts] Calling handleOneParams with:", {
+          params: result.params,
+          options: result.options,
+        });
+      }
+
       await handleOneParams(result.params, config, result.options);
       return { ok: true, data: undefined };
     }
     case "zero": {
+      if (isDebug) {
+        console.log("[breakdown.ts] Calling handleZeroParams with options:", result.options);
+      }
+
       // Pass original args for backward compatibility
       await handleZeroParams(args, config, result.options);
       return { ok: true, data: undefined };

@@ -10,6 +10,7 @@
 import type { Result } from "$lib/types/result.ts";
 import { error, ok } from "$lib/types/result.ts";
 import { readStdinEnhanced } from "$lib/io/enhanced_stdin.ts";
+import type { StdinReader } from "$lib/io/stdin_reader_interface.ts";
 import {
   type BreakdownConfigCompatible,
   createTimeoutManagerFromConfig,
@@ -155,10 +156,18 @@ export class TwoParamsStdinProcessor {
       // Use enhanced stdin with environment-aware configuration
       // Force read when --from - is explicitly specified
       const forceRead = options.from === "-" || options.fromFile === "-";
+
+      // Extract StdinReader from options if provided
+      const stdinReader = (options.stdinReader && typeof options.stdinReader === "object" &&
+          "read" in options.stdinReader)
+        ? options.stdinReader as StdinReader
+        : undefined;
+
       const inputText = await readStdinEnhanced({
         timeoutManager,
         forceRead: forceRead, // Force read when stdin is explicitly requested
         allowEmpty: true,
+        stdinReader: stdinReader, // Pass custom stdin reader if provided
       });
 
       return ok(inputText);

@@ -428,13 +428,13 @@ export class ConfigLoader {
       const workDir = workingDirResult.data;
 
       // Phase 2: BreakdownConfig Package Import
-      let BreakdownConfig: any;
+      let BreakdownConfig: { create: (profile: string) => Promise<unknown> };
       try {
         const importPath = "jsr:@tettuan/breakdownconfig@^1.1.4";
         const importResult = await import(importPath);
         BreakdownConfig = importResult.BreakdownConfig;
-        
-        if (!BreakdownConfig || typeof BreakdownConfig.create !== 'function') {
+
+        if (!BreakdownConfig || typeof BreakdownConfig.create !== "function") {
           return error({
             kind: "ImportError",
             message: "BreakdownConfig class or create method not found in imported module",
@@ -452,24 +452,31 @@ export class ConfigLoader {
       }
 
       // Phase 3: BreakdownConfig Instance Creation
-      let configResult: any;
+      let configResult: unknown;
       try {
         // Use BreakdownConfig static factory method - only pass prefix
         // BreakdownConfig should detect working directory automatically
         configResult = await BreakdownConfig.create(
-          prefix.value ?? undefined
+          prefix.value || "default",
         );
       } catch (createCallError) {
         return error({
           kind: "CreateError",
           message: "BreakdownConfig.create method threw an exception",
-          cause: createCallError instanceof Error ? createCallError.message : String(createCallError),
+          cause: createCallError instanceof Error
+            ? createCallError.message
+            : String(createCallError),
           prefix: prefix.value ?? "undefined",
         });
       }
 
       // Validate creation result
-      if (!configResult || typeof configResult.success !== 'boolean') {
+      if (
+        !configResult ||
+        typeof configResult !== "object" ||
+        !("success" in configResult) ||
+        typeof (configResult as { success: unknown }).success !== "boolean"
+      ) {
         return error({
           kind: "CreateError",
           message: "BreakdownConfig.create returned invalid result structure",
@@ -478,16 +485,19 @@ export class ConfigLoader {
         });
       }
 
-      if (!configResult.success) {
+      const typedResult = configResult as { success: boolean; error?: unknown; data?: unknown };
+
+      if (!typedResult.success) {
         return error({
           kind: "CreateError",
           message: "BreakdownConfig instance creation failed",
-          cause: configResult.error || "BreakdownConfig.create returned failure without error details",
+          cause: String(typedResult.error) ||
+            "BreakdownConfig.create returned failure without error details",
           prefix: prefix.value ?? "undefined",
         });
       }
 
-      if (!configResult.data) {
+      if (!typedResult.data) {
         return error({
           kind: "CreateError",
           message: "BreakdownConfig.create succeeded but returned no data",
@@ -496,7 +506,10 @@ export class ConfigLoader {
         });
       }
 
-      const config = configResult.data;
+      const config = typedResult.data as {
+        loadConfig: () => Promise<void>;
+        getConfig: () => Promise<Record<string, unknown>>;
+      };
 
       // Phase 4: Configuration Loading
       try {
@@ -505,14 +518,16 @@ export class ConfigLoader {
         // Enhanced error handling with more specific error information
         const errorMessage = loadError instanceof Error ? loadError.message : String(loadError);
         const isConfigNotFound = errorMessage.includes("Failed to load BreakdownConfig profile") ||
-                                 errorMessage.includes("Configuration not found") ||
-                                 errorMessage.includes("ENOENT") ||
-                                 errorMessage.includes("No such file or directory");
-        
+          errorMessage.includes("Configuration not found") ||
+          errorMessage.includes("ENOENT") ||
+          errorMessage.includes("No such file or directory");
+
         return error({
           kind: "LoadError",
-          message: isConfigNotFound 
-            ? `Configuration file not found for profile '${prefix.value ?? "default"}'. Please run 'breakdown init' to create configuration files.`
+          message: isConfigNotFound
+            ? `Configuration file not found for profile '${
+              prefix.value ?? "default"
+            }'. Please run 'breakdown init' to create configuration files.`
             : "Failed to load configuration files",
           cause: errorMessage,
           context: `prefix: ${prefix.value ?? "undefined"}, workingDir: ${workDir.value}`,
@@ -533,7 +548,7 @@ export class ConfigLoader {
       }
 
       // Validate retrieved configuration data
-      if (!configData || typeof configData !== 'object') {
+      if (!configData || typeof configData !== "object") {
         return error({
           kind: "ConfigError",
           message: "Retrieved configuration data is not a valid object",
@@ -542,8 +557,12 @@ export class ConfigLoader {
         });
       }
 
-      return ok(configData);
+      // Ensure working_dir is set if not provided by BreakdownConfig
+      if (!configData.working_dir) {
+        configData.working_dir = workDir.value;
+      }
 
+      return ok(configData);
     } catch (unexpectedError) {
       // Catch-all for any unexpected errors during the entire process
       return error({

@@ -132,8 +132,24 @@ export class TwoParamsPromptGenerator {
     options: Record<string, unknown>,
     variables: ProcessedVariables,
   ): Promise<Result<string, PromptGeneratorError>> {
+    const isDebug = Deno.env.get("LOG_LEVEL") === "debug";
+
     // 1. Validate and create configuration
     const configResult = this.createConfiguration(config, options);
+    if (isDebug) {
+      console.log(
+        "[TwoParamsPromptGenerator] createConfiguration result:",
+        JSON.stringify(
+          {
+            ok: configResult.ok,
+            data: configResult.ok ? configResult.data : undefined,
+            error: !configResult.ok ? configResult.error : undefined,
+          },
+          null,
+          2,
+        ),
+      );
+    }
     if (!configResult.ok) {
       return error(configResult.error);
     }
@@ -145,6 +161,20 @@ export class TwoParamsPromptGenerator {
       variables,
       options,
     );
+    if (isDebug) {
+      console.log(
+        "[TwoParamsPromptGenerator] createGenerationContext result:",
+        JSON.stringify(
+          {
+            ok: contextResult.ok,
+            data: contextResult.ok ? contextResult.data : undefined,
+            error: !contextResult.ok ? contextResult.error : undefined,
+          },
+          null,
+          2,
+        ),
+      );
+    }
     if (!contextResult.ok) {
       return error(contextResult.error);
     }
@@ -154,6 +184,19 @@ export class TwoParamsPromptGenerator {
       contextResult.data,
       config,
     );
+    if (isDebug) {
+      console.log(
+        "[TwoParamsPromptGenerator] createPromptFactory result:",
+        JSON.stringify(
+          {
+            ok: factoryResult.ok,
+            error: !factoryResult.ok ? factoryResult.error : undefined,
+          },
+          null,
+          2,
+        ),
+      );
+    }
     if (!factoryResult.ok) {
       return error(factoryResult.error);
     }
@@ -163,6 +206,20 @@ export class TwoParamsPromptGenerator {
       factoryResult.data,
       contextResult.data,
     );
+    if (isDebug) {
+      console.log(
+        "[TwoParamsPromptGenerator] buildVariables result:",
+        JSON.stringify(
+          {
+            ok: variablesResult.ok,
+            data: variablesResult.ok ? variablesResult.data : undefined,
+            error: !variablesResult.ok ? variablesResult.error : undefined,
+          },
+          null,
+          2,
+        ),
+      );
+    }
     if (!variablesResult.ok) {
       return error(variablesResult.error);
     }
@@ -172,6 +229,22 @@ export class TwoParamsPromptGenerator {
       factoryResult.data,
       variablesResult.data,
     );
+    if (isDebug) {
+      console.log(
+        "[TwoParamsPromptGenerator] generatePromptContent result:",
+        JSON.stringify(
+          {
+            ok: promptResult.ok,
+            content: promptResult.ok
+              ? promptResult.data.content.substring(0, 200) + "..."
+              : undefined,
+            error: !promptResult.ok ? promptResult.error : undefined,
+          },
+          null,
+          2,
+        ),
+      );
+    }
     if (!promptResult.ok) {
       return error(promptResult.error);
     }
@@ -247,8 +320,13 @@ export class TwoParamsPromptGenerator {
 
     // Fallback to default prompt directory when configuration loading fails
     // This allows the system to work even when BreakdownConfig can't load properly
-    // Use absolute path to ensure it works regardless of working directory
-    return "/Users/tettuan/github/breakdown/examples/.agent/breakdown/prompts";
+    // Check if we're in examples directory and adjust path accordingly
+    const cwd = Deno.cwd();
+    if (cwd.endsWith("/examples") || cwd.includes("/examples/")) {
+      return "./prompts";
+    }
+    // Use relative path to work from current working directory
+    return "./.agent/breakdown/prompts";
   }
 
   /**
@@ -342,9 +420,11 @@ export class TwoParamsPromptGenerator {
       // Create CLI parameters
       const cliParams = this.createCliParams(context);
 
-      // Use async factory method that automatically loads BreakdownConfig
-      // This avoids the empty config issue and properly loads configuration
-      const factoryResult = await PromptVariablesFactory.create(cliParams, "default");
+      // Use config passed from test if available, otherwise load BreakdownConfig
+      // This allows tests to override configuration without affecting production behavior
+      const factoryResult = config && Object.keys(config).length > 0
+        ? PromptVariablesFactory.createWithConfig(config, cliParams)
+        : await PromptVariablesFactory.create(cliParams, "default");
       if (!factoryResult.ok) {
         return error({
           kind: "FactoryCreationError",
