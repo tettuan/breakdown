@@ -323,7 +323,7 @@ echo "Checking if adaptation templates were actually used..."
 echo
 
 # Count how many results contain template markers
-DEFAULT_COUNT=$(grep -l "Template: DEFAULT" "$OUTPUT_DIR"/result_*.md 2>/dev/null | wc -l)
+DEFAULT_COUNT=$(grep -l "Template: DEFAULT" "$OUTPUT_DIR"/result_*.md 2>/dev/null | wc -l || echo "0")
 ADAPTATION_COUNT=$(grep -l "Template: \(STRICT\|AGILE\|DETAILED\)" "$OUTPUT_DIR"/result_*.md 2>/dev/null | wc -l)
 
 echo "Results using default template: $DEFAULT_COUNT"
