@@ -2,6 +2,7 @@ import { ensureDir, exists } from "@std/fs";
 import { join, resolve } from "@std/path";
 import { BreakdownConfig } from "@tettuan/breakdownconfig";
 import { DEFAULT_PROMPT_BASE_DIR, DEFAULT_SCHEMA_BASE_DIR } from "../../config/constants.ts";
+import { INITIALIZATION_DEFAULTS } from "../../config/initialization_defaults.ts";
 
 /**
  * 初期化サービスの設定オプション
@@ -122,9 +123,9 @@ export class InitService {
    */
   private getWorkspaceDirectories(): string[] {
     // デフォルトのディレクトリ構造を返す（BreakdownConfigへの依存を避けるため）
-    // Use minimal defaults to avoid hardcoding - these should come from configuration
-    const directiveTypes = this.getMinimalDirectiveTypes();
-    const layerTypes = this.getMinimalLayerTypes();
+    // Use values from initialization_defaults.ts
+    const directiveTypes = INITIALIZATION_DEFAULTS.sampleValues.directiveTypes;
+    const layerTypes = INITIALIZATION_DEFAULTS.sampleValues.layerTypes;
 
     const directories: string[] = [];
 
@@ -254,30 +255,30 @@ logging:
    * ユーザー設定の生成
    */
   private generateUserConfig(profileName: string): string {
+    // Use sample values from initialization_defaults.ts
+    const directiveTypes = INITIALIZATION_DEFAULTS.sampleValues.directiveTypes;
+    const layerTypes = INITIALIZATION_DEFAULTS.sampleValues.layerTypes;
+
     return `# Breakdown User Configuration
 # Profile: ${profileName}
 
 # DirectiveType patterns
 directiveTypes:
-  - pattern: "to"
-    description: "Transform content to target format"
-  - pattern: "find"
-    description: "Find specific elements"
-  - pattern: "summary"
-    description: "Summarize content"
-  - pattern: "defect"
-    description: "Detect defects or issues"
+${
+      directiveTypes.map((dt) =>
+        `  - pattern: "${dt}"
+    description: "Sample ${dt} directive"`
+      ).join("\n")
+    }
 
 # LayerType patterns  
 layerTypes:
-  - pattern: "project"
-    description: "Project level tasks"
-  - pattern: "issue"
-    description: "Issue level tasks"
-  - pattern: "task"
-    description: "Task level subtasks"
-  - pattern: "bugs"
-    description: "Bug related tasks"
+${
+      layerTypes.map((lt) =>
+        `  - pattern: "${lt}"
+    description: "Sample ${lt} layer"`
+      ).join("\n")
+    }
 
 # Custom settings
 custom:
@@ -293,7 +294,12 @@ custom:
     result: InitializationResult,
   ): Promise<void> {
     // サンプルプロンプトファイル
-    const samplePromptPath = join(workspaceDir, `${DEFAULT_PROMPT_BASE_DIR}/to/project/example.md`);
+    const defaultDirective = INITIALIZATION_DEFAULTS.sampleValues.directiveTypes[0];
+    const defaultLayer = INITIALIZATION_DEFAULTS.sampleValues.layerTypes[0];
+    const samplePromptPath = join(
+      workspaceDir,
+      `${DEFAULT_PROMPT_BASE_DIR}/${defaultDirective}/${defaultLayer}/example.md`,
+    );
     const samplePromptContent = `# Project Breakdown Prompt
 
 This is a sample prompt for breaking down a project.
@@ -316,7 +322,7 @@ Please structure your response according to the project schema.
     // サンプルスキーマファイル
     const sampleSchemaPath = join(
       workspaceDir,
-      `${DEFAULT_SCHEMA_BASE_DIR}/to/project/example.json`,
+      `${DEFAULT_SCHEMA_BASE_DIR}/${defaultDirective}/${defaultLayer}/example.json`,
     );
     const sampleSchemaContent = JSON.stringify(
       {
@@ -390,25 +396,5 @@ Please structure your response according to the project schema.
     );
 
     return lines.join("\n");
-  }
-
-  /**
-   * Gets minimal directive types for initialization
-   * ✅ Emergency fix: Use minimal fallback to prevent CI failure
-   */
-  private getMinimalDirectiveTypes(): string[] {
-    // Emergency fallback to prevent CI failures during template generation
-    // These are the most commonly used directive types for basic functionality
-    return ["to", "summary", "defect"];
-  }
-
-  /**
-   * Gets minimal layer types for initialization
-   * ✅ Emergency fix: Use minimal fallback to prevent CI failure
-   */
-  private getMinimalLayerTypes(): string[] {
-    // Emergency fallback to prevent CI failures during template generation
-    // These are the most commonly used layer types for basic functionality
-    return ["project", "issue", "task"];
   }
 }

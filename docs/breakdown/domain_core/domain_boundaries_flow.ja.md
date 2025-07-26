@@ -197,6 +197,40 @@ type BreakdownError =
   | { domain: "cli-parsing" | "config-management" | "prompt-path-resolution" | "prompt-variable-generation" | "prompt-generation" | "stdout-output"; error: ValidationError };
 ```
 
+### DirectiveType と layerType のハードコーディング禁止
+
+```typescript
+// ✅ 許可される実装：設定ファイル読み込み
+const userConfig = await loadUserConfig(profileName);
+const directivePattern = userConfig.params.two.directiveType.pattern;
+const layerPattern = userConfig.params.two.layerType.pattern;
+const directiveErrorMessage = userConfig.params.two.directiveType.errorMessage;
+const layerErrorMessage = userConfig.params.two.layerType.errorMessage;
+
+// ✅ 許可される実装：設定ベース条件分岐
+const specialCombinations = userConfig.specialCombinations || {};
+if (specialCombinations[`${directive}/${layer}`]) {
+  // 設定で定義された特別処理
+}
+
+// ❌ 禁止される実装：ハードコード配列
+const validDirectives = ["to", "summary", "defect"];
+const validLayers = ["project", "issue", "task"];
+const getDirectiveTypes = () => ["to", "summary"];
+const getLayerTypes = () => ["project", "issue"];
+
+// ❌ 禁止される実装：ハードコードパターン
+const pattern = TwoParamsDirectivePattern.create("^(to|summary|defect)$");
+this.directivePattern = TwoParamsDirectivePattern.create("^(to|summary|defect)$");
+pattern: configData.params?.two?.directiveType?.pattern || "^(to|summary|defect|find|analyze|extract)$",
+
+// ❌ 禁止される実装：ハードコード条件分岐
+if (directive === "find" && layer === "bugs") { /* 処理 */ }
+if (directive === "find") continue;
+if (directive !== "find") { /* 処理 */ }
+```
+
+
 ## 第3章：ドメイン間データフロー
 
 ### 完全なデータフロー図

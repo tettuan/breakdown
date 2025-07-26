@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# This script demonstrates using --from option input with the Breakdown CLI
+# This script demonstrates using STDIN input with the Breakdown CLI
 
 set -euo pipefail
 
@@ -8,8 +8,6 @@ set -euo pipefail
 ORIGINAL_CWD="$(pwd)"
 
 # Initialize temp file variables
-TEMP_FILE1=""
-TEMP_FILE2=""
 TEMP_FILE3=""
 
 # Cleanup function
@@ -17,11 +15,9 @@ cleanup() {
     local exit_code=$?
     
     # Remove temp files if they exist
-    for temp_file in "$TEMP_FILE1" "$TEMP_FILE2" "$TEMP_FILE3"; do
-        if [[ -n "$temp_file" && -f "$temp_file" ]]; then
-            rm -f "$temp_file" || echo "Warning: Failed to remove temp file: $temp_file"
-        fi
-    done
+    if [[ -n "$TEMP_FILE3" && -f "$TEMP_FILE3" ]]; then
+        rm -f "$TEMP_FILE3" || echo "Warning: Failed to remove temp file: $TEMP_FILE3"
+    fi
     
     # Return to original directory
     cd "$ORIGINAL_CWD" || true
@@ -39,7 +35,7 @@ if ! cd "$SCRIPT_DIR"; then
     exit 1
 fi
 
-echo "=== --from Option Input Example ==="
+echo "=== STDIN Input Example ==="
 
 # Define the config directory path
 CONFIG_DIR="./.agent/breakdown/config"
@@ -60,10 +56,40 @@ if [ ! -f "${CONFIG_DIR}/default-user.yml" ]; then
     fi
 fi
 
+# Check if template directories and files exist
+echo "Checking required template files for STDIN examples..."
+TEMPLATE_BASE_DIR=".agent/breakdown/prompts"
+
+# Define required templates (only those used in this script)
+# This script uses: summary project --config=stdin
+REQUIRED_TEMPLATES=(
+    "${TEMPLATE_BASE_DIR}/summary/project/f_project.md"
+)
+
+# Check for missing templates
+MISSING_TEMPLATES=()
+for template in "${REQUIRED_TEMPLATES[@]}"; do
+    if [ ! -f "$template" ]; then
+        MISSING_TEMPLATES+=("$template")
+    fi
+done
+
+if [ ${#MISSING_TEMPLATES[@]} -gt 0 ]; then
+    echo "Error: Missing template files detected:"
+    for missing in "${MISSING_TEMPLATES[@]}"; do
+        echo "  - $missing"
+    done
+    echo ""
+    echo "Please run './02_init_deno_run.sh' first to create template files."
+    exit 1
+fi
+
+echo "✓ All required template files exist"
+
 # Ensure local template directories exist following DirectiveType x LayerType structure
-echo "Setting up local template directories..."
+# (This creates local prompts directories that may be used for custom templates)
 if ! mkdir -p prompts/to/project prompts/to/issue prompts/to/task prompts/summary/project prompts/summary/issue prompts/defect/project prompts/defect/issue; then
-    echo "Error: Failed to create template directories"
+    echo "Error: Failed to create local template directories"
     exit 1
 fi
 
@@ -96,59 +122,44 @@ This is a sample project that needs to be broken down into tasks.
 - Implement proper error handling
 - Write comprehensive tests"
 
-# Example 1: Using --from option with temporary file
-echo "Example 1: Processing project overview with --from option"
-TEMP_FILE1=$(mktemp) || {
-    echo "Error: Failed to create temporary file for Example 1"
-    exit 1
-}
-echo "$SAMPLE_INPUT" > "$TEMP_FILE1"
-if run_breakdown summary project --config=stdin --from="$TEMP_FILE1"; then
+# Example 1: Using pipe to send data via STDIN
+echo "Example 1: Processing project overview with pipe"
+if echo "$SAMPLE_INPUT" | run_breakdown summary project --config=stdin; then
     echo "✓ Example 1 completed successfully"
-    rm -f "$TEMP_FILE1"
 else
     echo "✗ Example 1 failed"
     echo "Error: Breakdown execution failed for Example 1"
-    rm -f "$TEMP_FILE1"
 fi
 
 echo
 echo "---"
 echo
 
-# Example 2: Using --from option with existing temporary file
-echo "Example 2: Processing with --from option using reusable temporary file"
-TEMP_FILE2=$(mktemp) || {
-    echo "Error: Failed to create temporary file for Example 2"
-    exit 1
-}
-
-if echo "$SAMPLE_INPUT" > "$TEMP_FILE2"; then
-    if run_breakdown summary project --config=stdin --from="$TEMP_FILE2"; then
-        echo "✓ Example 2 completed successfully"
-        rm -f "$TEMP_FILE2"
-    else
-        echo "✗ Example 2 failed"
-        echo "Error: Breakdown execution failed for Example 2"
-        rm -f "$TEMP_FILE2"
-    fi
+# Example 2: Using here-document to send data via STDIN
+echo "Example 2: Processing with here-document"
+if run_breakdown summary project --config=stdin <<EOF
+$SAMPLE_INPUT
+EOF
+then
+    echo "✓ Example 2 completed successfully"
 else
-    echo "Error: Failed to write to temporary file"
-    rm -f "$TEMP_FILE2"
+    echo "✗ Example 2 failed"
+    echo "Error: Breakdown execution failed for Example 2"
 fi
 
 echo
 echo "---"
 echo
 
-# Example 3: Using --from option with quick task list
-echo "Example 3: Processing with --from option using quick task data"
+# Example 3: Using cat with pipe to send file content via STDIN
+echo "Example 3: Processing with cat and pipe"
+# Create temporary file for demonstration
 TEMP_FILE3=$(mktemp) || {
     echo "Error: Failed to create temporary file for Example 3"
     exit 1
 }
 
-cat > "$TEMP_FILE3" << EOF
+cat > "$TEMP_FILE3" << 'EOF'
 # Quick Task List
 
 - Fix login bug
@@ -158,14 +169,15 @@ cat > "$TEMP_FILE3" << EOF
 - Update documentation
 EOF
 
-if run_breakdown summary project --config=stdin --from="$TEMP_FILE3"; then
+if cat "$TEMP_FILE3" | run_breakdown summary project --config=stdin; then
     echo "✓ Example 3 completed successfully"
-    rm -f "$TEMP_FILE3"
 else
     echo "✗ Example 3 failed"
     echo "Error: Breakdown execution failed for Example 3"
-    rm -f "$TEMP_FILE3"
 fi
 
+# Clean up temporary file
+rm -f "$TEMP_FILE3"
+
 echo
-echo "=== --from Option Examples Completed ==="
+echo "=== STDIN Examples Completed ==="

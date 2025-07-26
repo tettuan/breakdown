@@ -303,10 +303,9 @@ export class TwoParamsVariableProcessor {
   ): Record<string, string> {
     const standardVariables: Record<string, string> = {};
 
-    // Add stdin content if available
-    if (stdinContent) {
-      standardVariables.input_text = stdinContent;
-    }
+    // Add stdin content - always set input_text (even if empty string)
+    // This ensures input_text is always available in standardVariables
+    standardVariables.input_text = stdinContent || "";
 
     // Add input file name (from -f/--from option)
     const inputFile = options.from ?? options.fromFile;

@@ -177,9 +177,10 @@ $(cat sample_code/user_auth.py)
 \`\`\`
 EOF
 
-# Run breakdown find bugs command
+# Run breakdown find bugs command (using defect issue as find bugs is not implemented)
 echo ""
-echo "Running breakdown find bugs command..."
+echo "Running breakdown defect analysis for bug detection..."
+echo "Note: 'find bugs' command is not implemented, using 'defect issue' instead"
 echo "Command: deno run --allow-all ../cli/breakdown.ts defect issue --config=production-bugs < code_files.md"
 deno run --allow-all ../cli/breakdown.ts defect issue --config=production-bugs < code_files.md > bugs_report.md
 

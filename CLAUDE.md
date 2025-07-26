@@ -27,7 +27,7 @@ Implement target use cases using Domain Driven Design & totality functions with 
 - Use explicit type definitions
 
 # Readable:
-- don't use magic numbers, use ENUM
+- don't use magic numbers, hard-coding. use ENUM and const.
 - use JSDoc
 
 # Lint and Format

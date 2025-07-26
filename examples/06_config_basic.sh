@@ -130,20 +130,14 @@ echo "Searching for template files in project root..."
 find .. -name "f_issue.md" -type f 2>/dev/null | head -5 || echo "No f_issue.md files found"
 find .. -name "f_project.md" -type f 2>/dev/null | head -5 || echo "No f_project.md files found"
 
-# Copy templates with error handling
+# Templates are already created by 02_init_deno_run.sh in .agent/breakdown/prompts/
 echo ""
-echo "🔍 DEBUG: Attempting template copy operations"
-copy_template "../.agent/breakdown/lib/breakdown/prompts/summary/issue/f_issue.md" \
-              "prompts/summary/issue/f_issue.md" \
-              "summary issue"
-
-copy_template "../.agent/breakdown/lib/breakdown/prompts/summary/project/f_project.md" \
-              "prompts/summary/project/f_project.md" \
-              "summary project"
-
-copy_template "../.agent/breakdown/lib/breakdown/prompts/defect/issue/f_issue.md" \
-              "prompts/defect/issue/f_issue.md" \
-              "defect issue"
+echo "🔍 DEBUG: Checking existing templates"
+if [ -f ".agent/breakdown/prompts/summary/issue/f_issue.md" ]; then
+    echo "✓ Templates already exist in .agent/breakdown/prompts/"
+else
+    echo "⚠️ Templates not found. Please run 02_init_deno_run.sh first"
+fi
 
 # Create a basic configuration file (only if it doesn't exist)
 if [ ! -f "${CONFIG_DIR}/basic-app.yml" ]; then

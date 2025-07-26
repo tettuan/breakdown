@@ -345,13 +345,15 @@ export class StandardVariable implements PromptVariable {
   constructor(private key: string, private value: string) {}
 
   static create(key: string, value: string): Result<StandardVariable, ValidationError> {
-    if (!key || !key.trim() || !value || !value.trim()) {
+    if (!key || !key.trim()) {
       return error(ErrorFactory.validationError("EmptyValue", {
-        field: (!key || !key.trim()) ? "key" : "value",
+        field: "key",
         context: { key, value },
       }));
     }
-    return ok(new StandardVariable(key, value));
+    // Allow empty values for template flexibility
+    const sanitizedValue = value || "";
+    return ok(new StandardVariable(key, sanitizedValue));
   }
 
   toRecord(): Record<string, string> {
@@ -363,13 +365,15 @@ export class FilePathVariable implements PromptVariable {
   constructor(private key: string, private readonly _value: string) {}
 
   static create(key: string, value: string): Result<FilePathVariable, ValidationError> {
-    if (!key || !key.trim() || !value || !value.trim()) {
+    if (!key || !key.trim()) {
       return error(ErrorFactory.validationError("EmptyValue", {
-        field: (!key || !key.trim()) ? "key" : "value",
+        field: "key",
         context: { key, value },
       }));
     }
-    return ok(new FilePathVariable(key, value));
+    // Allow empty values for template flexibility
+    const sanitizedValue = value || "";
+    return ok(new FilePathVariable(key, sanitizedValue));
   }
 
   get value(): string {
@@ -385,13 +389,16 @@ export class StdinVariable implements PromptVariable {
   constructor(private key: string, private value: string) {}
 
   static create(key: string, value: string): Result<StdinVariable, ValidationError> {
-    if (!key || !key.trim() || !value || !value.trim()) {
+    if (!key || !key.trim()) {
       return error(ErrorFactory.validationError("EmptyValue", {
-        field: (!key || !key.trim()) ? "key" : "value",
+        field: "key",
         context: { key, value },
       }));
     }
-    return ok(new StdinVariable(key, value));
+
+    // Allow empty value for stdin variables (e.g., when stdin is skipped in tests)
+    const sanitizedValue = value || "";
+    return ok(new StdinVariable(key, sanitizedValue));
   }
 
   toRecord(): Record<string, string> {
@@ -403,13 +410,15 @@ export class UserVariable implements PromptVariable {
   constructor(private key: string, private value: string) {}
 
   static create(key: string, value: string): Result<UserVariable, ValidationError> {
-    if (!key || !key.trim() || !value || !value.trim()) {
+    if (!key || !key.trim()) {
       return error(ErrorFactory.validationError("EmptyValue", {
-        field: (!key || !key.trim()) ? "key" : "value",
+        field: "key",
         context: { key, value },
       }));
     }
-    return ok(new UserVariable(key, value));
+    // Allow empty values for template flexibility
+    const sanitizedValue = value || "";
+    return ok(new UserVariable(key, sanitizedValue));
   }
 
   toRecord(): Record<string, string> {

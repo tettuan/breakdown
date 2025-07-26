@@ -21,7 +21,9 @@ export type ConfigErrorKind =
   | "config-permission-denied"
   | "config-io-error"
   | "profile-not-found"
-  | "profile-invalid";
+  | "profile-invalid"
+  | "config-data-invalid"
+  | "config-hardcoded-fallback";
 
 /**
  * Configuration Error
@@ -210,6 +212,43 @@ export class ConfigError extends BaseBreakdownError {
   }
 
   /**
+   * Create error for invalid configuration data
+   */
+  static dataInvalid(reason: string, context?: Record<string, unknown>): ConfigError {
+    return new ConfigError(
+      "config-data-invalid",
+      `Invalid configuration data: ${reason}`,
+      { context },
+    );
+  }
+
+  /**
+   * Create error for hardcoded fallback usage
+   */
+  static hardcodedFallbackUsed(
+    missingFields: string[],
+    configPath: string,
+    profileName?: string,
+  ): ConfigError {
+    const fields = missingFields.join(", ");
+    const message = profileName
+      ? `Using hardcoded fallback values for missing fields in profile '${profileName}': ${fields}`
+      : `Using hardcoded fallback values for missing fields: ${fields}`;
+
+    return new ConfigError(
+      "config-hardcoded-fallback",
+      message,
+      {
+        context: {
+          configPath,
+          profileName,
+          missingFields,
+        },
+      },
+    );
+  }
+
+  /**
    * Get user-friendly error message
    */
   override getUserMessage(): string {
@@ -235,6 +274,10 @@ export class ConfigError extends BaseBreakdownError {
         return `${base}\n\nCheck available profiles or create the required profile configuration.`;
       case "profile-invalid":
         return `${base}\n\nValidate your profile configuration format and values.`;
+      case "config-data-invalid":
+        return `${base}\n\nReview your configuration data structure and fix any issues.`;
+      case "config-hardcoded-fallback":
+        return `${base}\n\nWARNING: Using fallback values. Update your configuration file to specify these fields explicitly.`;
     }
   }
 
@@ -267,6 +310,12 @@ export class ConfigError extends BaseBreakdownError {
         return true;
       case "profile-invalid":
         // Can be recovered by fixing profile configuration
+        return true;
+      case "config-data-invalid":
+        // Can be recovered by fixing configuration data
+        return true;
+      case "config-hardcoded-fallback":
+        // Can be recovered by providing explicit configuration
         return true;
     }
   }
@@ -376,6 +425,37 @@ export class ConfigError extends BaseBreakdownError {
           description: "Retry the operation after a moment",
         });
         break;
+      case "config-data-invalid":
+        suggestions.push({
+          action: "validate-structure",
+          description: "Validate your configuration data structure",
+        });
+        suggestions.push({
+          action: "check-types",
+          description: "Ensure all fields have the correct types",
+        });
+        break;
+      case "config-hardcoded-fallback":
+        if (this.context?.missingFields && Array.isArray(this.context.missingFields)) {
+          suggestions.push({
+            action: "add-missing-fields",
+            description: `Add the following fields to your configuration: ${
+              this.context.missingFields.join(", ")
+            }`,
+          });
+          suggestions.push({
+            action: "update-config",
+            description: `Update ${
+              this.context.configPath || "configuration file"
+            } with the missing fields`,
+          });
+        }
+        suggestions.push({
+          action: "use-init",
+          description: "Run 'breakdown init' to generate a complete configuration template",
+          command: "breakdown init",
+        });
+        break;
     }
 
     return suggestions;
@@ -462,6 +542,44 @@ directiveTypes:
   - summary
 layerTypes:
   - project
+  - task`;
+      case "config-data-invalid":
+        return `# Valid configuration structure example
+directiveTypes:
+  - to
+  - summary
+  - defect
+layerTypes:
+  - project
+  - issue
+  - task
+params:
+  two:
+    directiveType:
+      pattern: "^(to|summary|defect)$"
+    layerType:
+      pattern: "^(project|issue|task)$"`;
+      case "config-hardcoded-fallback":
+        if (this.context?.missingFields && Array.isArray(this.context.missingFields)) {
+          const fields = this.context.missingFields;
+          if (fields.some((f) => f.includes("params.two"))) {
+            return `# Add missing params.two configuration
+params:
+  two:
+    directiveType:
+      pattern: "^(to|summary|defect)$"
+    layerType:
+      pattern: "^(project|issue|task)$"`;
+          }
+        }
+        return `# Complete configuration with all required fields
+directiveTypes:
+  - to
+  - summary
+  - defect
+layerTypes:
+  - project
+  - issue
   - task`;
     }
   }

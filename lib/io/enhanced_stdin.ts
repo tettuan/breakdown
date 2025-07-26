@@ -128,10 +128,10 @@ export function detectEnvironment(config?: EnvironmentDetectionConfig): Environm
   }
 
   // Test environment detection
+  // Only check environment variables, not globalThis.Deno.test which exists in all Deno runtimes
   const isTest = config?.isTest ?? !!(
     getEnvVar("DENO_TEST") === "true" ||
-    getEnvVar("TEST") === "true" ||
-    globalThis.Deno?.test
+    getEnvVar("TEST") === "true"
   );
 
   // Terminal detection with fallback

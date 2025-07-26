@@ -74,7 +74,7 @@ export class DenoStdinReader implements StdinReader {
 
   constructor(options?: { isTestEnvironment?: boolean }) {
     this.isTestEnvironment = options?.isTestEnvironment ??
-      (Deno.env.get("DENO_TEST") === "true" || !!globalThis.Deno?.test);
+      (Deno.env.get("DENO_TEST") === "true");
   }
 
   async read(signal?: AbortSignal): Promise<Uint8Array> {

@@ -165,9 +165,18 @@ export class PromptGenerationServiceImpl implements PromptGenerationService {
       builder.addStdinVariable(inputText);
     }
 
-    // Add custom variables
-    if (context.customVariables) {
-      builder.addCustomVariables(context.customVariables);
+    // Add custom variables with null/empty check
+    if (context.customVariables && Object.keys(context.customVariables).length > 0) {
+      // Filter out empty values before passing to builder
+      const filteredCustomVariables = Object.fromEntries(
+        Object.entries(context.customVariables).filter(([_key, value]) =>
+          value && typeof value === "string" && value.trim().length > 0
+        ),
+      );
+
+      if (Object.keys(filteredCustomVariables).length > 0) {
+        builder.addCustomVariables(filteredCustomVariables);
+      }
     }
 
     return builder.toTemplateRecord();

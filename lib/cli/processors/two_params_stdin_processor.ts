@@ -139,6 +139,7 @@ export class TwoParamsStdinProcessor {
     try {
       // First, check if a file path is specified
       const filePath = this.getFilePath(options);
+
       if (filePath) {
         return await this.readFile(filePath);
       }
@@ -152,9 +153,11 @@ export class TwoParamsStdinProcessor {
       const timeoutManager = createTimeoutManagerFromConfig(config);
 
       // Use enhanced stdin with environment-aware configuration
+      // Force read when --from - is explicitly specified
+      const forceRead = options.from === "-" || options.fromFile === "-";
       const inputText = await readStdinEnhanced({
         timeoutManager,
-        forceRead: false, // Respect environment detection and BREAKDOWN_SKIP_STDIN
+        forceRead: forceRead, // Force read when stdin is explicitly requested
         allowEmpty: true,
       });
 

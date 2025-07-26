@@ -399,10 +399,11 @@ Timestamp: ${new Date().toISOString()}
     const userVariables: Record<string, string> = {};
 
     // Extract options that start with "uv-" prefix
+    // Keep the "uv-" prefix for VariablesBuilder to process correctly
     for (const [key, value] of Object.entries(options)) {
       if (key.startsWith("uv-") && typeof value === "string") {
-        const varName = key.substring(3); // Remove "uv-" prefix
-        userVariables[varName] = value;
+        // Keep the full key with "uv-" prefix
+        userVariables[key] = value;
       }
     }
 

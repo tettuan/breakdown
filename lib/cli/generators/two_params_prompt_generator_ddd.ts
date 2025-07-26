@@ -435,7 +435,9 @@ export class TwoParamsPromptGenerator {
         outputFilePath: allParams.outputFilePath || "output.md",
         schemaFilePath: allParams.schemaFilePath || "",
         customVariables: context.variables.customVariables,
-        inputText: context.variables.standardVariables.input_text,
+        // Fallback: Use inputText if available, otherwise use standardVariables.input_text
+        inputText: (context.variables as { inputText?: string }).inputText ||
+          context.variables.standardVariables.input_text,
       };
 
       // Create and validate builder

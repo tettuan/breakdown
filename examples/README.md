@@ -64,6 +64,9 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 ### クリーンアップ
 19. `18_clean.sh` - 生成されたファイルのクリーンアップ
 
+- クリーンアップは全ての動作確認が正常に完了した最後に実行すること
+- 異常終了時に最初から実行する際には、クリーンアップしてから再実行すること
+
 ## 前準備の詳細
 
 ### 1. 使用方法の説明とガイダンス
@@ -354,3 +357,12 @@ breakdown summary issue --config=default
 # stdinプロファイルを使用（ファイル: stdin-app.yml + stdin-user.yml）
 breakdown summary project --config=stdin
 ``` 
+
+
+# 最終報告
+
+- 実装要件に基づいて、項目ごとに報告
+  - デフォルト設定でのパラメータ通過
+  - 設定ファイルへパターン記載したあとのパラメータ実行
+  - --uv-* カスタム変数オプション置換
+  - STDIN入力の {input_text} 置換

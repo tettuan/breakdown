@@ -15,7 +15,9 @@ SCRIPT_DIR="$(dirname "$0")"
 cd "$SCRIPT_DIR" || exit 1
 
 echo "=== Custom Variables Example ==="
-echo "プロジェクト固有の変数を使用してカスタマイズされたプロンプトを生成"
+echo "カスタム変数機能のデモンストレーション"
+echo "Note: 現在のバージョンではカスタム変数(--uv-*)の置換は実装されていません"
+echo "      入力ファイルの内容は処理されますが、カスタム変数は無視されます"
 echo
 
 # Ensure breakdown is available

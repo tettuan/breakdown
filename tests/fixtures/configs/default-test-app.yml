@@ -3,10 +3,10 @@
 
 # Application metadata
 app_prompt:
-  base_dir: tests/fixtures/prompts
+  base_dir: .agent/breakdown/prompts
 
 app_schema:
-  base_dir: tests/fixtures/schema
+  base_dir: .agent/breakdown/schemas
 
 # Working directory for tests
 working_dir: .
