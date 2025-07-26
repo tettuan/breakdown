@@ -25,10 +25,20 @@ cd "$SCRIPT_DIR" || handle_error "Failed to change to script directory"
 echo "=== Example 20: Adaptation Parameter (--adaptation/-a) Template Selection ==="
 echo "This example demonstrates how --adaptation affects which template variant is selected"
 echo
+echo "📖 仕様参照: docs/breakdown/generic_domain/system/overview/glossary.ja.md"
+echo "   - 118-119行目: -i, --input オプションの説明"
+echo "   - 83行目: adaptationType の説明"
+echo
+echo "🎯 期待される動作:"
+echo "   1. プロンプトテンプレートパス: {base_dir}/{directiveType}/{layerType}/f_{fromLayerType}[_{adaptation}].md"
+echo "   2. fromLayerType推定: --input未指定時は fromFile のファイル名から推定"
+echo "   3. adaptation適用: --adaptation指定時は f_{fromLayerType}_{adaptation}.md を使用"
+echo "   4. フォールバック: adaptation テンプレートが存在しない場合は基本テンプレートを使用"
+echo
 
 # Set up
 OUTPUT_DIR="./output/adaptation_parameter_test"
-TEMPLATE_DIR="./prompts/to/task"
+TEMPLATE_DIR="./.agent/breakdown/prompts/to/task"
 mkdir -p "$OUTPUT_DIR"
 mkdir -p "$TEMPLATE_DIR"
 
@@ -72,7 +82,7 @@ cat > "$TEMPLATE_DIR/f_project.md" << 'EOF'
 This is the standard template used when no adaptation is specified.
 
 ## Input
-{{input}}
+{{input_text}}
 
 ## Task Breakdown
 Here are the tasks in standard format...
@@ -86,7 +96,7 @@ cat > "$TEMPLATE_DIR/f_project_strict.md" << 'EOF'
 This template enforces strict formatting and detailed specifications.
 
 ## Requirements Specification
-{{input}}
+{{input_text}}
 
 ## Strict Task Definition
 Each task must include:
@@ -111,7 +121,7 @@ cat > "$TEMPLATE_DIR/f_project_agile.md" << 'EOF'
 This template follows agile methodology patterns.
 
 ## Product Backlog Input
-{{input}}
+{{input_text}}
 
 ## User Stories and Tasks
 Following agile methodology:
@@ -136,7 +146,7 @@ cat > "$TEMPLATE_DIR/f_project_detailed.md" << 'EOF'
 This template provides comprehensive task analysis.
 
 ## System Requirements
-{{input}}
+{{input_text}}
 
 ## Comprehensive Task Analysis
 ### Technical Architecture Tasks
@@ -168,11 +178,13 @@ echo
 
 # Example 1: Without adaptation (default)
 echo "【Example 1: Without --adaptation parameter】"
-echo "Command: breakdown to task --from=project_requirements.md --input=project"
-echo "Expected: Should use default template (f_project.md)"
+echo "Command: breakdown to task --from=project_requirements.md"
+echo "🎯 期待動作: fromLayerType='project' (ファイル名 'project_requirements.md' から推定)"
+echo "📄 使用テンプレート: .agent/breakdown/prompts/to/task/f_project.md"
+echo "📖 参照: glossary.ja.md 118-119行目 (fromFile推定ルール)"
 echo
 
-$BREAKDOWN to task --from="$OUTPUT_DIR/project_requirements.md" --input=project -o="$OUTPUT_DIR/result_no_adaptation.md" > "$OUTPUT_DIR/result_no_adaptation.md" 2>&1
+$BREAKDOWN to task --from="$OUTPUT_DIR/project_requirements.md" -o="$OUTPUT_DIR/result_no_adaptation.md" > "$OUTPUT_DIR/result_no_adaptation.md" 2>&1
 
 if [ -f "$OUTPUT_DIR/result_no_adaptation.md" ]; then
     echo "Result preview:"
@@ -190,11 +202,11 @@ echo
 
 # Example 2: With --adaptation=strict
 echo "【Example 2: With --adaptation=strict】"
-echo "Command: breakdown to task --from=project_requirements.md --input=project --adaptation=strict"
+echo "Command: breakdown to task --from=project_requirements.md --adaptation=strict"
 echo "Expected: Should use f_project_strict.md template"
 echo
 
-$BREAKDOWN to task --from="$OUTPUT_DIR/project_requirements.md" --input=project --adaptation=strict -o="$OUTPUT_DIR/result_strict.md" > "$OUTPUT_DIR/result_strict.md" 2>&1
+$BREAKDOWN to task --from="$OUTPUT_DIR/project_requirements.md" --adaptation=strict -o="$OUTPUT_DIR/result_strict.md" > "$OUTPUT_DIR/result_strict.md" 2>&1
 
 if [ -f "$OUTPUT_DIR/result_strict.md" ]; then
     echo "Result preview:"
@@ -214,11 +226,11 @@ echo
 
 # Example 3: With --adaptation=agile
 echo "【Example 3: With --adaptation=agile】"
-echo "Command: breakdown to task --from=project_requirements.md --input=project --adaptation=agile"
+echo "Command: breakdown to task --from=project_requirements.md --adaptation=agile"
 echo "Expected: Should use f_project_agile.md template"
 echo
 
-$BREAKDOWN to task --from="$OUTPUT_DIR/project_requirements.md" --input=project --adaptation=agile -o="$OUTPUT_DIR/result_agile.md" > "$OUTPUT_DIR/result_agile.md" 2>&1
+$BREAKDOWN to task --from="$OUTPUT_DIR/project_requirements.md" --adaptation=agile -o="$OUTPUT_DIR/result_agile.md" > "$OUTPUT_DIR/result_agile.md" 2>&1
 
 if [ -f "$OUTPUT_DIR/result_agile.md" ]; then
     echo "Result preview:"
@@ -238,11 +250,11 @@ echo
 
 # Example 4: With short form -a
 echo "【Example 4: Using short form -a=】"
-echo "Command: breakdown to task --from=project_requirements.md --input=project -a=detailed"
+echo "Command: breakdown to task --from=project_requirements.md -a=detailed"
 echo "Expected: Should use f_project_detailed.md template"
 echo
 
-$BREAKDOWN to task --from="$OUTPUT_DIR/project_requirements.md" --input=project -a=detailed -o="$OUTPUT_DIR/result_detailed.md" > "$OUTPUT_DIR/result_detailed.md" 2>&1
+$BREAKDOWN to task --from="$OUTPUT_DIR/project_requirements.md" -a=detailed -o="$OUTPUT_DIR/result_detailed.md" > "$OUTPUT_DIR/result_detailed.md" 2>&1
 
 if [ -f "$OUTPUT_DIR/result_detailed.md" ]; then
     echo "Result preview:"
@@ -262,11 +274,11 @@ echo
 
 # Example 5: Non-existent adaptation (fallback test)
 echo "【Example 5: Non-existent adaptation (fallback behavior)】"
-echo "Command: breakdown to task --from=project_requirements.md --input=project --adaptation=custom"
+echo "Command: breakdown to task --from=project_requirements.md --adaptation=custom"
 echo "Expected: Should fall back to default template (f_project.md)"
 echo
 
-$BREAKDOWN to task --from="$OUTPUT_DIR/project_requirements.md" --input=project --adaptation=custom -o="$OUTPUT_DIR/result_custom.md" > "$OUTPUT_DIR/result_custom.md" 2>&1
+$BREAKDOWN to task --from="$OUTPUT_DIR/project_requirements.md" --adaptation=custom -o="$OUTPUT_DIR/result_custom.md" > "$OUTPUT_DIR/result_custom.md" 2>&1
 
 if [ -f "$OUTPUT_DIR/result_custom.md" ]; then
     echo "Result preview:"
@@ -291,10 +303,10 @@ echo "2. With adaptation: f_{fromLayerType}_{adaptation}.md"
 echo "3. Fallback: If adaptation template doesn't exist, uses base template"
 echo
 echo "Examples:"
-echo "  breakdown to task --input=project                    → f_project.md"
-echo "  breakdown to task --input=project --adaptation=strict → f_project_strict.md"
-echo "  breakdown to task --input=project -a agile           → f_project_agile.md"
-echo "  breakdown to task --input=project -a nonexistent     → f_project.md (fallback)"
+echo "  breakdown to task --from=project_requirements.md                    → f_project.md (fromLayerType inferred)"
+echo "  breakdown to task --from=project_requirements.md --adaptation=strict → f_project_strict.md"
+echo "  breakdown to task --from=project_requirements.md -a agile           → f_project_agile.md"
+echo "  breakdown to task --from=project_requirements.md -a nonexistent     → f_project.md (fallback)"
 echo
 echo "Adaptation represents the 'personality' or style of the prompt:"
 echo "  - strict: Enforces rigid formatting and specifications"
@@ -324,7 +336,7 @@ echo
 
 # Count how many results contain template markers
 DEFAULT_COUNT=$(grep -l "Template: DEFAULT" "$OUTPUT_DIR"/result_*.md 2>/dev/null | wc -l || echo "0")
-ADAPTATION_COUNT=$(grep -l "Template: \(STRICT\|AGILE\|DETAILED\)" "$OUTPUT_DIR"/result_*.md 2>/dev/null | wc -l)
+ADAPTATION_COUNT=$(grep -l "Template: \(STRICT\|AGILE\|DETAILED\)" "$OUTPUT_DIR"/result_*.md 2>/dev/null | wc -l || echo "0")
 
 echo "Results using default template: $DEFAULT_COUNT"
 echo "Results using adaptation templates: $ADAPTATION_COUNT"

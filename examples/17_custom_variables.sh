@@ -30,22 +30,22 @@ OUTPUT_DIR="./output/custom_variables"
 mkdir -p "$OUTPUT_DIR"
 
 # Create test template to check variable substitution
-TEMPLATE_DIR="./prompts/to/project"
+TEMPLATE_DIR="./.agent/breakdown/prompts/to/project"
 mkdir -p "$TEMPLATE_DIR"
 
 cat > "$TEMPLATE_DIR/f_project.md" << 'EOF'
 # Project Template
 
 ## Project Information
-- Company: {{company_name}}
-- Project Name: {{project_name}}
-- Tech Stack: {{tech_stack}}
-- Team Size: {{team_size}}
-- Deadline: {{deadline}}
-- Budget: {{budget}}
+- Company: {{uv-company_name}}
+- Project Name: {{uv-project_name}}
+- Tech Stack: {{uv-tech_stack}}
+- Team Size: {{uv-team_size}}
+- Deadline: {{uv-deadline}}
+- Budget: {{uv-budget}}
 
 ## Input Content
-{{input}}
+{{input_text}}
 
 ## Generated Project Plan
 Based on the above information, here is the project breakdown...
@@ -104,13 +104,17 @@ if [ -f "$OUTPUT_DIR/custom_project.md" ]; then
     for var in uv-company_name uv-project_name uv-tech_stack uv-team_size uv-deadline uv-budget; do
         if grep -q "{{$var}}" "$OUTPUT_DIR/custom_project.md"; then
             echo "  ❌ $var: 未置換 ({{$var}} が残っている)"
-        elif grep -q "テックコーポレーション\|ECサイトリニューアル\|Next.js\|5名\|2024年3月末\|500万円" "$OUTPUT_DIR/custom_project.md"; then
-            echo "  ✅ 変数の値が出力に含まれている"
-            break
         else
-            echo "  ⚠️  $var: 確認できず"
+            echo "  ✅ $var: テンプレート変数は残っていない"
         fi
     done
+    
+    # Check if actual values appear
+    if grep -q "テックコーポレーション\|ECサイトリニューアル\|Next.js\|5名\|2024年3月末\|500万円" "$OUTPUT_DIR/custom_project.md"; then
+        echo "  ✅ カスタム変数の値が出力に含まれている"
+    else
+        echo "  ❌ カスタム変数の値が出力に見つからない"
+    fi
     
     echo
     echo "生成内容（先頭20行）:"
@@ -140,18 +144,18 @@ cat > "$OUTPUT_DIR/feature_request.md" << 'EOF'
 EOF
 
 # Create template for summary task
-TEMPLATE_DIR2="./prompts/summary/task"
+TEMPLATE_DIR2="./.agent/breakdown/prompts/summary/task"
 mkdir -p "$TEMPLATE_DIR2"
 
 cat > "$TEMPLATE_DIR2/f_task.md" << 'EOF'
 # Task Summary Template
 
 ## Sprint Information
-- Sprint Length: {{sprint_length}}
-- Story Point Scale: {{story_point_scale}}
+- Sprint Length: {{uv-sprint_length}}
+- Story Point Scale: {{uv-story_point_scale}}
 
 ## Input Content
-{{input}}
+{{input_text}}
 
 ## Task Breakdown
 Based on the input, here are the tasks...
@@ -187,12 +191,16 @@ if [ -f "$OUTPUT_DIR/agile_tasks.md" ]; then
     
     echo
     echo "カスタム変数の置換状況:"
-    if grep -q "{{sprint_length}}\|{{story_point_scale}}" "$OUTPUT_DIR/agile_tasks.md"; then
+    if grep -q "{{uv-sprint_length}}\|{{uv-story_point_scale}}" "$OUTPUT_DIR/agile_tasks.md"; then
         echo "  ❌ 変数が未置換 (テンプレート変数が残っている)"
-    elif grep -q "2週間\|フィボナッチ数列" "$OUTPUT_DIR/agile_tasks.md"; then
-        echo "  ✅ 変数の値が出力に含まれている"
     else
-        echo "  ⚠️  確認できず"
+        echo "  ✅ テンプレート変数は残っていない"
+    fi
+    
+    if grep -q "2週間\|フィボナッチ数列" "$OUTPUT_DIR/agile_tasks.md"; then
+        echo "  ✅ カスタム変数の値が出力に含まれている"
+    else
+        echo "  ❌ カスタム変数の値が出力に見つからない"
     fi
     
     echo
@@ -253,7 +261,7 @@ VAR_REPLACED=false
 echo
 echo "使用方法:"
 echo "1. --uv-* でカスタム変数を定義"
-echo "2. テンプレート内で {{variable}} の形式で参照（--uv-company_name → {{company_name}}）"
+echo "2. テンプレート内で {{uv-variable}} の形式で参照（--uv-company_name → {{uv-company_name}}）"
 echo "3. --adaptation でプロンプトの適応スタイルを指定"
 
 echo

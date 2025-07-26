@@ -31,6 +31,74 @@ mkdir -p prompts/dev/defect/issue
 mkdir -p prompts/staging/defect/issue  
 mkdir -p prompts/prod/defect/issue
 
+# Create defect templates for each environment
+cat > prompts/dev/defect/issue/f_issue.md << 'EOF'
+# Development Defect Analysis
+
+## Environment: Development
+**Debug Mode**: Enabled
+
+## Issue Description
+{{input_text}}
+
+## Development Analysis
+- Local debugging enabled
+- Verbose logging active
+- Stack traces available
+
+## Next Steps
+1. Reproduce locally
+2. Add debug statements
+3. Check development logs
+4. Run local tests
+EOF
+
+cat > prompts/staging/defect/issue/f_issue.md << 'EOF'
+# Staging Defect Analysis
+
+## Environment: Staging 
+**Load Testing**: Active
+
+## Issue Description
+{{input_text}}
+
+## Staging Analysis
+- Load testing conditions
+- Database pool monitoring
+- Performance metrics
+- Integration testing
+
+## Investigation Steps
+1. Check staging logs
+2. Monitor resource usage
+3. Verify integration points
+4. Test under load
+EOF
+
+cat > prompts/prod/defect/issue/f_issue.md << 'EOF'
+# Production Defect Analysis
+
+## Environment: Production
+**CRITICAL ALERT**: Production Issue
+
+## Issue Description
+{{input_text}}
+
+## Production Analysis
+- Impact assessment required
+- Rollback plan needed
+- Customer notification
+- SLA monitoring
+
+## Emergency Protocol
+1. Assess business impact
+2. Implement hotfix/rollback
+3. Customer communication
+4. Post-incident review
+EOF
+
+echo "Created environment-specific templates in each prompt directory"
+
 # Create development configuration (only if it doesn't exist)
 if [ ! -f "${CONFIG_DIR}/dev-app.yml" ]; then
   cat > "${CONFIG_DIR}/dev-app.yml" << 'EOF'
