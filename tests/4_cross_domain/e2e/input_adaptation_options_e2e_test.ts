@@ -28,7 +28,7 @@ const logger = new BreakdownLogger("e2e-input-adaptation");
  */
 class InputAdaptationE2ESetup {
   private readonly tempDir = "./tmp";
-  private readonly agentPromptsDir = "./.agent/breakdown/prompts";
+  private readonly agentPromptsDir = "tests/fixtures/prompts";
 
   async setupTempDirectory(): Promise<string> {
     try {
@@ -164,10 +164,33 @@ class InputAdaptationE2ESetup {
         path: "summary/task/f_task.md",
         content: "# Task Summary Template\n\nInput: {input_text}\n\nGenerate task summary.",
       },
+
+      // Defect templates for stdin test compatibility
+      {
+        path: "defect/issue/f_default.md",
+        content:
+          "# Defect Analysis Template\n\nInput: {input_text}\n\nAnalyze defects and issues in the provided content.",
+      },
+      {
+        path: "summary/project/f_default.md",
+        content:
+          "# Project Summary Template\n\nInput: {input_text}\n\nGenerate a comprehensive project summary.",
+      },
     ];
 
     for (const file of templateFiles) {
       const targetPath = join(this.agentPromptsDir, file.path);
+      const targetDir = targetPath.substring(0, targetPath.lastIndexOf("/"));
+
+      // Ensure directory exists before writing file
+      try {
+        await Deno.mkdir(targetDir, { recursive: true });
+      } catch (error) {
+        if (!(error instanceof Deno.errors.AlreadyExists)) {
+          throw error;
+        }
+      }
+
       await Deno.writeTextFile(targetPath, file.content);
     }
 
@@ -175,9 +198,9 @@ class InputAdaptationE2ESetup {
     const configContent = `# E2E Test Configuration for --input and --adaptation
 working_dir: "."
 app_prompt:
-  base_dir: "./.agent/breakdown/prompts"
+  base_dir: "tests/fixtures/prompts"
 app_schema:
-  base_dir: "./.agent/breakdown/schema"
+  base_dir: "tests/fixtures/schema"
 params:
   two:
     directiveType:

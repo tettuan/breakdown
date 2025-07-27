@@ -97,3 +97,4 @@ instructions/project-worker.md
 # Claude specific
 .claude
 .claude/
+tests/fixtures/prompts/
