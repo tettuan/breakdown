@@ -43,33 +43,51 @@
 ### 2. 作業開始
 4. テンプレートFILE名の決まり方を仕様や設計情報から調べる
 5. 実装のテンプレートFILE名を調べる
-6. `tmp/example_results/*` に実行ログがあるので15,16の `--input`, ``
-6. 「修正対象の内容」に対し、修正対象を端的に指示文章へ整理する
-7. 修正指示を添えて、エラー修正作業をワーカープールに割り当て、修正後に8のステップを再確認する
-8. `LOG_LEVEL=debug deno task ci:dirty` を実行。
-9. 新たな問題は `tmp/next_issue.md` へ記載し、 「2. 作業開始」を最初から実施する
+6. `tmp/saved_example_results/*` に`examples/*.sh`実行ログがあるので15,16の `--input`, `--adaptation` について把握する
+6. 「修正対象の内容」に対し、解決策の調査指示を端的に作成する
+7. 調査指示を添えて、調査作業をワーカープールに割り当てる
+8. 調査結果に基づき、背景や経緯を含めた修正指示を作成し、修正作業をワーカープールに割り当てる
+9. 修正後に10のステップを再確認する
+10. `LOG_LEVEL=debug deno task ci:dirty` を実行。
+11. 新たな問題は `tmp/next_issue.md` へ記載し、 「2. 作業開始」を最初から実施する
 
+**禁止事項**: examples/*.sh の変更は禁止。
 
 #### 修正対象の内容
 
 `````
+## 15_input_parameter.sh - Input パラメータテスト
+**Exit Code**: 0
+**生成ファイル**: 5ファイル (output/input_parameter_test/)
+- result_no_input.md
+- result_input_project.md  
+- result_input_issue.md
+- result_short_form.md
 
-#### --input パラメータ (15_input_parameter.sh)
-- **問題**: --input パラメータの値に関わらず、常に f_task.md テンプレートが使用される
-- **期待動作**: --input=project → f_project.md、--input=issue → f_issue.md を使用
-- **影響**: テンプレート選択ロジックが仕様と異なる
+**⚠️ 問題発見**: 
+- --input=project 指定時に f_project.md が使用されない
+- 常に f_task.md (デフォルト) が使用される
+- 期待されるテンプレート選択動作が機能していない
 
-#### --adaptation パラメータ
-- **問題1**: fromLayerType の推定が削除されていない
-- **問題2**: --adaptation パラメータが無視されている
-- **期待動作**: adaptation付きテンプレートを選択
-- **影響**: adaptation テンプレートが使用されない
+## 16_adaptation_parameter.sh - Adaptation パラメータテスト
+**Exit Code**: 0
+**生成ファイル**: 5ファイル (output/adaptation_parameter_test/)
+- result_no_adaptation.md
+- result_strict.md
+- result_agile.md
+- result_detailed.md
+- result_custom.md
+
+**⚠️ 問題発見**:
+- --adaptation=strict 指定時に f_task_strict.md が使用されない
+- adaptationサフィックス付きテンプレートが無視される
+- フォールバック動作により基本テンプレートが使用される
 
 `````
 
 #### 完了条件
 
-1. `-i`,`-a` によるテンプレートファイル名の決定が完了した
+1. `-i`,`-a` によるテンプレートファイル名の決定調査と修正が完了した
 2. ハードコーディングが無くなった
 3. `-a`,`-i`のPATH決定のテストが成功した
 4. [実装のAI複雑性制御](`docs/breakdown/domain_core/ai-complexity-control_compact.ja.md`) の原則に従い、最小限のコード量で最大の効果を得ること。

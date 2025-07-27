@@ -292,15 +292,15 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 
 ### 基本コマンド
 
-| Command \ Layer | Project | Issue | Task |
+| Directive \ Layer | Project | Issue | Task |
 | --------------- | ------- | ----- | ---- |
 | to | breakdown to project <written_project_summary.md> -o <project_dir> | breakdown to issue <project_summary.md\|written_issue.md> -o <issue_dir> | breakdown to task <issue.md\|written_task.md> -o <tasks_dir> |
 | summary | echo "<messy_something>" \| breakdown summary project -o=<project_summary.md> | breakdown summary issue --from=<aggregated_tasks.md> --input=task -o=<issue_markdown_dir> | breakdown summary task --from=<unorganized_tasks.md> -o=<task_markdown_dir> |
 | defect | tail -100 "<error_log_file>" \| breakdown defect project -o=<project_defect.md> | breakdown defect issue --from=<bug_report.md> -o=<issue_defect_dir> | breakdown defect task --from=<improvement_request.md> -o=<task_defect_dir> |
 
-### 3語コマンド（カスタムコマンド）
+### 応用のカスタムコマンド
 
-| Command | Description | Example |
+| Directive Layer  | Description | Example |
 | ------- | ----------- | ------- |
 | find bugs | コード内のバグ検出と分析 | breakdown find bugs --from=<code_file.md> -o=<bugs_report.md> |
 
