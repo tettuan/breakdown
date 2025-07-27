@@ -33,9 +33,9 @@ if [ ! -d ".agent/breakdown" ]; then
 # Breakdown Default Configuration
 working_dir: ".agent/breakdown"
 app_prompt:
-  base_dir: ".agent/breakdown/prompts"
+  base_dir: "prompts"
 app_schema:
-  base_dir: ".agent/breakdown/schema"
+  base_dir: "schema"
 params:
   two:
     directiveType:
@@ -610,6 +610,184 @@ EOF
 EOF
   fi
 
+  # Create missing default templates (Issue 2 fix)
+  echo "Creating missing default templates..."
+  
+  # Create default template for to/task
+  if [ ! -f ".agent/breakdown/prompts/to/task/f_default.md" ]; then
+    cat > .agent/breakdown/prompts/to/task/f_default.md << 'EOF'
+# DEFAULT Template - should be used when no --input specified
+
+## Input
+
+{input_text}
+
+> Note: {input_text} will be replaced with actual input when using STDIN.
+> When running without STDIN, this placeholder will remain as-is for manual replacement.
+
+## Output
+
+- output.md
+
+---
+
+## Default Breakdown Perspectives
+
+- Basic task analysis and decomposition
+- Standard implementation approach
+- Resource requirements assessment
+- Timeline and milestone planning
+- Risk identification and mitigation
+- Quality assurance considerations
+
+## Instructions
+
+1. Analyze the input information using standard breakdown methodology
+2. Create actionable tasks with clear definitions
+3. Identify basic dependencies and prerequisites
+4. Provide standard risk assessment
+5. Structure as implementable work units
+
+## Output Format
+
+- Output as structured Markdown according to the default task schema
+EOF
+  fi
+
+  # Create default strict adaptation template
+  if [ ! -f ".agent/breakdown/prompts/to/task/f_default_strict.md" ]; then
+    cat > .agent/breakdown/prompts/to/task/f_default_strict.md << 'EOF'
+# DEFAULT STRICT Template - should be used with --adaptation=strict when no --input specified
+
+## Template: DEFAULT STRICT ADAPTATION
+This template combines default behavior with strict formatting requirements.
+
+## Input
+
+{input_text}
+
+## Output
+
+- output.md
+
+---
+
+## Strict Default Analysis
+
+1. **Standard Requirements**: Basic specifications with strict validation
+2. **Compliance Requirements**: Standard compliance checks
+3. **Default Structure**: Standard task breakdown with strict formatting
+4. **Quality Control**: Default quality gates with strict criteria
+5. **Documentation Standards**: Comprehensive documentation requirements
+6. **Validation Protocols**: Rigorous testing and verification procedures
+
+## Instructions
+
+1. Apply strict formatting standards to all outputs
+2. Ensure comprehensive documentation for all components
+3. Include detailed acceptance criteria for each task
+4. Specify exact deliverables and quality metrics
+5. Define clear validation and testing requirements
+6. Provide detailed timeline with strict milestones
+
+## Output Format
+
+- Output as strictly formatted Markdown with comprehensive details
+- Include all required metadata and validation criteria
+- Follow exact formatting specifications and standards
+EOF
+  fi
+
+  # Create default agile adaptation template
+  if [ ! -f ".agent/breakdown/prompts/to/task/f_default_agile.md" ]; then
+    cat > .agent/breakdown/prompts/to/task/f_default_agile.md << 'EOF'
+# DEFAULT AGILE Template - should be used with --adaptation=agile when no --input specified
+
+## Template: DEFAULT AGILE ADAPTATION
+This template applies agile methodology to default task breakdown.
+
+## Input
+
+{input_text}
+
+## Output
+
+- output.md
+
+---
+
+## Agile Default Analysis
+
+1. **User Stories**: Convert requirements into user-centered stories
+2. **Sprint Planning**: Break down into sprint-sized increments
+3. **Story Points**: Apply relative estimation techniques
+4. **Definition of Done**: Clear completion criteria for each item
+5. **Backlog Prioritization**: Order items by business value
+6. **Retrospective Items**: Identify improvement opportunities
+
+## Instructions
+
+1. Structure all tasks as user stories with clear value proposition
+2. Estimate using story points or similar relative sizing
+3. Organize into sprint-compatible increments
+4. Define clear acceptance criteria and definition of done
+5. Prioritize based on business value and dependencies
+6. Include retrospective and improvement considerations
+
+## Output Format
+
+- Output as agile-formatted Markdown with user stories
+- Include story points, priorities, and sprint assignments
+- Follow agile documentation standards and practices
+EOF
+  fi
+
+  # Create default detailed adaptation template
+  if [ ! -f ".agent/breakdown/prompts/to/task/f_default_detailed.md" ]; then
+    cat > .agent/breakdown/prompts/to/task/f_default_detailed.md << 'EOF'
+# DEFAULT DETAILED Template - should be used with --adaptation=detailed when no --input specified
+
+## Template: DEFAULT DETAILED ADAPTATION
+This template provides comprehensive detailed analysis for default task breakdown.
+
+## Input
+
+{input_text}
+
+## Output
+
+- output.md
+
+---
+
+## Detailed Default Analysis
+
+1. **Comprehensive Requirements**: Exhaustive requirement analysis and documentation
+2. **Technical Architecture**: Detailed technical approach and design considerations
+3. **Resource Planning**: Comprehensive resource allocation and skill requirements
+4. **Risk Management**: Detailed risk assessment with mitigation strategies
+5. **Quality Assurance**: Extensive testing and quality control procedures
+6. **Documentation**: Complete documentation and knowledge management
+7. **Performance Metrics**: Detailed success criteria and measurement approaches
+
+## Instructions
+
+1. Provide exhaustive analysis of all aspects of the task
+2. Include detailed technical specifications and architecture
+3. Create comprehensive resource and timeline planning
+4. Develop detailed risk assessment with contingency plans
+5. Specify extensive testing and quality assurance procedures
+6. Include complete documentation and knowledge transfer plans
+7. Define detailed performance metrics and success criteria
+
+## Output Format
+
+- Output as extensively detailed Markdown with comprehensive coverage
+- Include all technical specifications, timelines, and documentation
+- Follow detailed documentation standards with complete traceability
+EOF
+  fi
+
   # Verify the created structure
   if [ -d ".agent/breakdown" ]; then
     echo "✅ Successfully initialized project structure"
@@ -634,9 +812,9 @@ cat > .agent/breakdown/config/default-app.yml << 'EOF'
 # Breakdown Default Configuration (with find bugs support)
 working_dir: ".agent/breakdown"
 app_prompt:
-  base_dir: ".agent/breakdown/prompts"
+  base_dir: "prompts"
 app_schema:
-  base_dir: ".agent/breakdown/schema"
+  base_dir: "schema"
 params:
   two:
     directiveType:
@@ -655,9 +833,9 @@ if [ ! -f ".agent/breakdown/config/findbugs-app.yml" ]; then
 # Breakdown Configuration with Find Bugs Support
 working_dir: ".agent/breakdown"
 app_prompt:
-  base_dir: ".agent/breakdown/prompts"
+  base_dir: "prompts"
 app_schema:
-  base_dir: ".agent/breakdown/schema"
+  base_dir: "schema"
 params:
   two:
     directiveType:
@@ -677,9 +855,9 @@ if [ ! -f ".agent/breakdown/config/stdin-app.yml" ]; then
 # Breakdown Configuration for STDIN Profile
 working_dir: ".agent/breakdown"
 app_prompt:
-  base_dir: ".agent/breakdown/prompts"
+  base_dir: "prompts"
 app_schema:
-  base_dir: ".agent/breakdown/schema"
+  base_dir: "schema"
 params:
   two:
     directiveType:
@@ -708,9 +886,9 @@ if [ ! -f ".agent/breakdown/config/timeout-app.yml" ]; then
 # Breakdown Configuration for Timeout Profile
 working_dir: ".agent/breakdown"
 app_prompt:
-  base_dir: ".agent/breakdown/prompts"
+  base_dir: "prompts"
 app_schema:
-  base_dir: ".agent/breakdown/schema"
+  base_dir: "schema"
 params:
   two:
     directiveType:
@@ -740,9 +918,9 @@ if [ ! -f ".agent/breakdown/config/basic-app.yml" ]; then
 # Breakdown Configuration for Basic Profile
 working_dir: ".agent/breakdown"
 app_prompt:
-  base_dir: ".agent/breakdown/prompts"
+  base_dir: "prompts"
 app_schema:
-  base_dir: ".agent/breakdown/schema"
+  base_dir: "schema"
 params:
   two:
     directiveType:
@@ -772,10 +950,10 @@ if [ ! -f ".agent/breakdown/config/team-app.yml" ]; then
 # Team development configuration
 working_dir: ".agent/breakdown"
 app_prompt:
-  base_dir: ".agent/breakdown/prompts"
+  base_dir: "prompts"
   template_prefix: "team_"
 app_schema:
-  base_dir: ".agent/breakdown/schema"
+  base_dir: "schema"
   validation_enabled: true
   strict_mode: false
 params:
@@ -828,9 +1006,9 @@ if [ ! -f ".agent/breakdown/config/production-bugs-app.yml" ]; then
 # Breakdown Configuration for Production Bugs Profile
 working_dir: ".agent/breakdown"
 app_prompt:
-  base_dir: ".agent/breakdown/prompts"
+  base_dir: "prompts"
 app_schema:
-  base_dir: ".agent/breakdown/schema"
+  base_dir: "schema"
 params:
   two:
     directiveType:
@@ -862,9 +1040,9 @@ if [ ! -f ".agent/breakdown/config/production-custom-app.yml" ]; then
 # Breakdown Configuration for Production Custom Profile
 working_dir: ".agent/breakdown"
 app_prompt:
-  base_dir: ".agent/breakdown/prompts"
+  base_dir: "prompts"
 app_schema:
-  base_dir: ".agent/breakdown/schema"
+  base_dir: "schema"
 params:
   two:
     directiveType:
@@ -900,9 +1078,9 @@ if [ ! -f ".agent/breakdown/config/production-app.yml" ]; then
 # Breakdown Configuration for Production Profile
 working_dir: ".agent/breakdown"
 app_prompt:
-  base_dir: ".agent/breakdown/prompts"
+  base_dir: "prompts"
 app_schema:
-  base_dir: ".agent/breakdown/schema"
+  base_dir: "schema"
 params:
   two:
     directiveType:
@@ -956,9 +1134,9 @@ if [ ! -f ".agent/breakdown/config/dev-app.yml" ]; then
 # Development environment configuration
 working_dir: ".agent/breakdown"
 app_prompt:
-  base_dir: ".agent/breakdown/prompts"
+  base_dir: "prompts"
 app_schema:
-  base_dir: ".agent/breakdown/schema"
+  base_dir: "schema"
 params:
   two:
     directiveType:
@@ -995,9 +1173,9 @@ if [ ! -f ".agent/breakdown/config/staging-app.yml" ]; then
 # Staging environment configuration
 working_dir: ".agent/breakdown"
 app_prompt:
-  base_dir: ".agent/breakdown/prompts"
+  base_dir: "prompts"
 app_schema:
-  base_dir: ".agent/breakdown/schema"
+  base_dir: "schema"
 params:
   two:
     directiveType:
@@ -1036,9 +1214,9 @@ if [ ! -f ".agent/breakdown/config/prod-app.yml" ]; then
 # Production environment configuration
 working_dir: ".agent/breakdown"
 app_prompt:
-  base_dir: ".agent/breakdown/prompts"
+  base_dir: "prompts"
 app_schema:
-  base_dir: ".agent/breakdown/schema"
+  base_dir: "schema"
 params:
   two:
     directiveType:
@@ -1086,6 +1264,7 @@ REQUIRED_TEMPLATES=(
   ".agent/breakdown/prompts/to/project/f_project.md"
   ".agent/breakdown/prompts/to/issue/f_issue.md"  
   ".agent/breakdown/prompts/to/task/f_task.md"
+  ".agent/breakdown/prompts/to/task/f_default.md"
   ".agent/breakdown/prompts/summary/project/f_project.md"
   ".agent/breakdown/prompts/summary/issue/f_issue.md"
   ".agent/breakdown/prompts/summary/task/f_task.md"

@@ -29,7 +29,7 @@ echo
 
 # Set up
 OUTPUT_DIR="./output/input_parameter_test"
-TEMPLATE_DIR="./.agent/breakdown/prompts/to/task"
+TEMPLATE_DIR="./prompts/to/task"
 mkdir -p "$OUTPUT_DIR"
 mkdir -p "$TEMPLATE_DIR"
 
