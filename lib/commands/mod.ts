@@ -55,9 +55,13 @@ export async function initWorkspace(
     const workingDir = _workingDir ?? Deno.cwd();
     // In production, use BreakdownConfig to load these values
     const workspace = new Workspace({
-      workingDir,
-      promptBaseDir: config?.app_prompt?.base_dir || DEFAULT_PROMPT_BASE_DIR,
-      schemaBaseDir: config?.app_schema?.base_dir || DEFAULT_SCHEMA_BASE_DIR,
+      working_dir: workingDir,
+      app_prompt: {
+        base_dir: config?.app_prompt?.base_dir || DEFAULT_PROMPT_BASE_DIR,
+      },
+      app_schema: {
+        base_dir: config?.app_schema?.base_dir || DEFAULT_SCHEMA_BASE_DIR,
+      },
     });
     await workspace.initialize();
     return {

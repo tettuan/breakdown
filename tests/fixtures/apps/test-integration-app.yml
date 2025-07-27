@@ -1,17 +1,18 @@
-# 統合テスト用アプリケーション設定
-application:
-  name: "Breakdown Test Integration"
-  version: "1.0.0"
+# Test integration application configuration
+# SINGLE SOURCE OF TRUTH
+working_dir: "tests/fixtures"
+app_prompt:
+  base_dir: "prompts"
 
-paths:
-  workDir: "./tests/fixtures"
-  resourceDir: "./tests/fixtures"
-  promptDir: "./prompts"
-  schemaDir: "./schema"
+app_schema:
+  base_dir: "schema"
 
-settings:
-  debug: true
-  logLevel: "debug"
+features:
+  debugMode: true
+  strictValidation: false
+
+logging:
+  level: "debug"
 
 integrationTests:
   defaultCases:

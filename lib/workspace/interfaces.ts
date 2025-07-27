@@ -1,24 +1,16 @@
 /**
- * Workspace configuration interface for type safety in workspace modules.
+ * Unified workspace configuration interface following working_dir + relative base_dir pattern.
  *
  * This interface defines the structure for workspace configuration data,
  * providing type safety across the breakdown workspace management system.
+ * Uses the unified pattern: working_dir + relative base_dir for consistent path resolution.
  *
- * @example Basic workspace configuration
+ * @example Unified configuration pattern
  * ```typescript
  * const config: WorkspaceConfig = {
- *   workingDir: "/home/user/projects/my-app",
- *   promptBaseDir: "/home/user/.breakdown/prompts",
- *   schemaBaseDir: "/home/user/.breakdown/schemas"
- * };
- * ```
- *
- * @example Relative path configuration
- * ```typescript
- * const relativeConfig: WorkspaceConfig = {
- *   workingDir: "./projects/current",
- *   promptBaseDir: "./.breakdown/prompts",
- *   schemaBaseDir: "./.breakdown/schemas"
+ *   working_dir: ".agent/breakdown",
+ *   app_prompt: { base_dir: "prompts" },     // Always relative
+ *   app_schema: { base_dir: "schemas" }      // Always relative
  * };
  * ```
  *
@@ -28,24 +20,33 @@
 export interface WorkspaceConfig {
   /**
    * The working directory for the workspace.
-   * @property workingDir - The absolute or relative path to the workspace root directory
-   * where breakdown operations will be performed
+   * @property working_dir - Single source of truth for workspace root directory
    */
-  workingDir: string;
+  working_dir: string;
 
   /**
-   * The base directory for prompt files.
-   * @property promptBaseDir - The absolute or relative path to the directory containing
-   * prompt template files used for breakdown operations
+   * App prompt configuration with relative base directory.
+   * @property app_prompt - Configuration for prompt template files
    */
-  promptBaseDir: string;
+  app_prompt: {
+    /**
+     * Relative base directory for prompt files.
+     * @property base_dir - Always relative path from working_dir
+     */
+    base_dir: string;
+  };
 
   /**
-   * The base directory for schema files.
-   * @property schemaBaseDir - The absolute or relative path to the directory containing
-   * JSON schema files for validation and structure definition
+   * App schema configuration with relative base directory.
+   * @property app_schema - Configuration for JSON schema files
    */
-  schemaBaseDir: string;
+  app_schema: {
+    /**
+     * Relative base directory for schema files.
+     * @property base_dir - Always relative path from working_dir
+     */
+    base_dir: string;
+  };
 }
 
 /**

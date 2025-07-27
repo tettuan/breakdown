@@ -1,23 +1,19 @@
 # Test Helper Application Configuration for Unit Tests
-# This is the app-level configuration that pairs with test-helper-user.yml
+# SINGLE SOURCE OF TRUTH
+working_dir: "tests/fixtures"
+app_prompt:
+  base_dir: "prompts"
 
-resourceDirectory: tests/fixtures
-workingDirectory: .
+app_schema:
+  base_dir: "schema"
 
-# Application settings for test environment
-settings:
-  prompt:
-    enableCache: false
-    cacheDirectory: tmp/test-cache
-  schema:
-    enableValidation: true
-    strictMode: false
-  output:
-    format: markdown
-    includeTimestamp: false
-  debug:
-    enabled: true
-    level: info
+features:
+  debugMode: true
+  strictValidation: false
+  enableCache: false
+
+logging:
+  level: "info"
 
 # Test environment configuration
 testEnvironment:

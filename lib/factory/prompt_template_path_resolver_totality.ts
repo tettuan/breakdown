@@ -22,31 +22,22 @@ import type { PathResolutionError } from "../types/path_resolution_option.ts";
 // type DoubleParams_Result = PromptCliParams; // Deprecated: use TwoParams_Result
 
 /**
- * Configuration with explicit union types instead of optionals
+ * Simplified configuration type with clear base directory resolution
  */
-export type PromptResolverConfig =
-  | {
-    kind: "WithPromptConfig";
-    app_prompt: { base_dir: string };
-    app_schema?: { base_dir?: string };
-    working_dir?: string;
-  }
-  | {
-    kind: "WithSchemaConfig";
-    app_schema: { base_dir: string };
-    app_prompt?: { base_dir?: string };
-    working_dir?: string;
-  }
-  | { kind: "NoConfig"; working_dir?: string };
+export type PromptResolverConfig = {
+  readonly promptBaseDir: string;
+  readonly schemaBaseDir: string;
+  readonly workingDir: string;
+};
 
 /**
- * CLI options with explicit union types
+ * CLI options with unified string types for consistency
  */
 export type CliOptions = {
-  useSchema: boolean | undefined;
-  adaptation: string | undefined;
-  fromLayerType: string | undefined;
-  fromFile: string | undefined;
+  readonly useSchema: boolean;
+  readonly adaptation: string;
+  readonly fromLayerType: string;
+  readonly fromFile: string;
 };
 
 /**
@@ -143,6 +134,12 @@ export class PromptTemplatePathResolverTotality {
       });
     }
 
+    // Validate base_dir paths are relative (Single Source of Truth validation)
+    const baseDirValidationResult = PromptTemplatePathResolverTotality.validateBaseDirs(config);
+    if (!baseDirValidationResult.ok) {
+      return baseDirValidationResult;
+    }
+
     // Validate cliParams presence and type
     if (!cliParams || typeof cliParams !== "object" || Array.isArray(cliParams)) {
       return resultError({
@@ -174,46 +171,68 @@ export class PromptTemplatePathResolverTotality {
       });
     }
 
-    // Convert config to discriminated union
+    // Convert config to simplified structure
     const resolverConfig = PromptTemplatePathResolverTotality.normalizeConfig(config);
 
     const resolver = new PromptTemplatePathResolverTotality(resolverConfig, cliParams);
     if (isDebug) {
       console.log("[PromptTemplatePathResolverTotality] Returning:", {
         ok: true,
-        resolverConfigKind: resolverConfig.kind,
+        promptBaseDir: resolverConfig.promptBaseDir,
+        schemaBaseDir: resolverConfig.schemaBaseDir,
       });
     }
     return resultOk(resolver);
   }
 
   /**
-   * Convert raw config to discriminated union
+   * Validates that base_dir configurations are relative paths only
+   * Implements Single Source of Truth validation
+   */
+  private static validateBaseDirs(
+    config: Record<string, unknown>,
+  ): Result<void, PathResolutionError> {
+    const appPrompt = config.app_prompt as { base_dir?: string } | undefined;
+    const appSchema = config.app_schema as { base_dir?: string } | undefined;
+
+    if (appPrompt?.base_dir && isAbsolute(appPrompt.base_dir)) {
+      return resultError({
+        kind: "AbsolutePathNotAllowed",
+        path: appPrompt.base_dir,
+        configKey: "app_prompt.base_dir",
+        message:
+          `Absolute path not allowed in app_prompt.base_dir: ${appPrompt.base_dir}. Use relative paths only.`,
+        context: { field: "app_prompt.base_dir", value: appPrompt.base_dir },
+      });
+    }
+
+    if (appSchema?.base_dir && isAbsolute(appSchema.base_dir)) {
+      return resultError({
+        kind: "AbsolutePathNotAllowed",
+        path: appSchema.base_dir,
+        configKey: "app_schema.base_dir",
+        message:
+          `Absolute path not allowed in app_schema.base_dir: ${appSchema.base_dir}. Use relative paths only.`,
+        context: { field: "app_schema.base_dir", value: appSchema.base_dir },
+      });
+    }
+
+    return resultOk(undefined);
+  }
+
+  /**
+   * Convert raw config to simplified structure with defaults
    */
   private static normalizeConfig(config: Record<string, unknown>): PromptResolverConfig {
     const appPrompt = config.app_prompt as { base_dir?: string } | undefined;
     const appSchema = config.app_schema as { base_dir?: string } | undefined;
-
-    // ✅ SINGLE SOURCE OF TRUTH: Only use working_dir at root level
     const workingDir = config.working_dir as string | undefined;
 
-    if (appPrompt?.base_dir) {
-      return {
-        kind: "WithPromptConfig",
-        app_prompt: { base_dir: appPrompt.base_dir },
-        app_schema: appSchema,
-        working_dir: workingDir,
-      };
-    } else if (appSchema?.base_dir) {
-      return {
-        kind: "WithSchemaConfig",
-        app_schema: { base_dir: appSchema.base_dir },
-        app_prompt: appPrompt,
-        working_dir: workingDir,
-      };
-    } else {
-      return { kind: "NoConfig", working_dir: workingDir };
-    }
+    return {
+      promptBaseDir: appPrompt?.base_dir || DEFAULT_PROMPT_BASE_DIR,
+      schemaBaseDir: appSchema?.base_dir || DEFAULT_PROMPT_BASE_DIR,
+      workingDir: workingDir || Deno.cwd(),
+    };
   }
 
   /**
@@ -383,87 +402,37 @@ export class PromptTemplatePathResolverTotality {
   }
 
   /**
-   * Safely resolves the base directory with Result type
+   * Safely resolves the base directory with simplified logic
    */
   private resolveBaseDirSafe(): Result<string, PathResolutionError> {
     const isDebug = Deno.env.get("LOG_LEVEL") === "debug";
-
-    // Check if schema path should be used based on options
     const useSchema = this.getUseSchemaFlag();
-    let baseDir: string;
+
+    // Simple selection: use schema or prompt base directory
+    const baseDir = useSchema ? this.config.schemaBaseDir : this.config.promptBaseDir;
+
+    // Resolve relative paths
+    const resolvedBaseDir = isAbsolute(baseDir)
+      ? baseDir
+      : resolve(this.config.workingDir, baseDir);
 
     if (isDebug) {
-      console.log(
-        "[PromptTemplatePathResolverTotality] resolveBaseDirSafe:",
-        JSON.stringify(
-          {
-            configKind: this.config.kind,
-            useSchema,
-            workingDir: this.config.working_dir,
-            cwd: Deno.cwd(),
-          },
-          null,
-          2,
-        ),
-      );
-    }
-
-    switch (this.config.kind) {
-      case "WithPromptConfig":
-        if (useSchema && this.config.app_schema?.base_dir) {
-          baseDir = this.config.app_schema.base_dir;
-        } else {
-          baseDir = this.config.app_prompt.base_dir;
-        }
-        break;
-      case "WithSchemaConfig":
-        if (useSchema) {
-          baseDir = this.config.app_schema.base_dir;
-        } else {
-          baseDir = this.config.app_prompt?.base_dir || DEFAULT_PROMPT_BASE_DIR;
-        }
-        break;
-      case "NoConfig":
-        baseDir = DEFAULT_PROMPT_BASE_DIR;
-        break;
-    }
-
-    if (!isAbsolute(baseDir)) {
-      // Use working_dir if available, otherwise use current working directory
-      const workingDir = this.config.working_dir || Deno.cwd();
-      baseDir = resolve(workingDir, baseDir);
-
-      if (isDebug) {
-        console.log(
-          "[PromptTemplatePathResolverTotality] Resolved relative path:",
-          JSON.stringify(
-            {
-              originalBaseDir: this.config.kind === "WithPromptConfig"
-                ? this.config.app_prompt.base_dir
-                : "DEFAULT",
-              workingDir,
-              resolvedBaseDir: baseDir,
-            },
-            null,
-            2,
-          ),
-        );
-      }
-    }
-
-    // Verify base directory exists
-    if (!existsSync(baseDir)) {
-      return resultError({
-        kind: "BaseDirectoryNotFound",
-        path: baseDir,
+      console.log("[PromptTemplatePathResolverTotality] Resolved base directory:", {
+        useSchema,
+        originalBaseDir: baseDir,
+        resolvedBaseDir,
       });
     }
 
-    if (isDebug) {
-      console.log("[PromptTemplatePathResolverTotality] Returning baseDir:", baseDir);
+    // Verify directory exists
+    if (!existsSync(resolvedBaseDir)) {
+      return resultError({
+        kind: "BaseDirectoryNotFound",
+        path: resolvedBaseDir,
+      });
     }
 
-    return resultOk(baseDir);
+    return resultOk(resolvedBaseDir);
   }
 
   /**
@@ -482,7 +451,7 @@ export class PromptTemplatePathResolverTotality {
 
     // Prompt files use .md extension and may have adaptation suffix
     const adaptation = this.getAdaptation();
-    const adaptationSuffix = adaptation ? `_${adaptation}` : "";
+    const adaptationSuffix = adaptation.length > 0 ? `_${adaptation}` : "";
     return `f_${fromLayerType}${adaptationSuffix}.md`;
   }
 
@@ -495,15 +464,15 @@ export class PromptTemplatePathResolverTotality {
   }
 
   /**
-   * Gets the adaptation option
+   * Gets the adaptation option with default empty string
    */
-  private getAdaptation(): string | undefined {
+  private getAdaptation(): string {
     const options = this.getOptions();
     return options.adaptation;
   }
 
   /**
-   * Extract options with proper type handling
+   * Extract options with default values ensuring type safety
    */
   private getOptions(): CliOptions {
     const isDebug = Deno.env.get("LOG_LEVEL") === "debug";
@@ -517,11 +486,10 @@ export class PromptTemplatePathResolverTotality {
         );
       }
       return {
-        useSchema: opts?.useSchema as boolean | undefined,
-        adaptation: opts?.adaptation as string | undefined,
-        // Support both fromLayerType and input options
-        fromLayerType: (opts?.fromLayerType || opts?.input) as string | undefined,
-        fromFile: opts?.fromFile as string | undefined,
+        useSchema: Boolean(opts?.useSchema),
+        adaptation: String(opts?.adaptation || ""),
+        fromLayerType: String(opts?.fromLayerType || opts?.input || DEFAULT_FROM_LAYER_TYPE),
+        fromFile: String(opts?.fromFile || ""),
       };
     }
 
@@ -529,11 +497,10 @@ export class PromptTemplatePathResolverTotality {
     const twoParams = this._cliParams as TwoParams_Result;
     const opts = (twoParams as unknown as { options?: Record<string, unknown> }).options || {};
     return {
-      useSchema: opts.useSchema as boolean | undefined,
-      adaptation: opts.adaptation as string | undefined,
-      // Support both fromLayerType and input options
-      fromLayerType: (opts.fromLayerType || opts.input) as string | undefined,
-      fromFile: opts.fromFile as string | undefined,
+      useSchema: Boolean(opts.useSchema),
+      adaptation: String(opts.adaptation || ""),
+      fromLayerType: String(opts.fromLayerType || opts.input || DEFAULT_FROM_LAYER_TYPE),
+      fromFile: String(opts.fromFile || ""),
     };
   }
 
@@ -610,7 +577,7 @@ export class PromptTemplatePathResolverTotality {
    */
   public shouldFallback(promptPath: string): boolean {
     const adaptation = this.getAdaptation();
-    return Boolean(adaptation) && !existsSync(promptPath);
+    return adaptation.length > 0 && !existsSync(promptPath);
   }
 
   /**
@@ -632,7 +599,7 @@ export class PromptTemplatePathResolverTotality {
     }
 
     // Use explicit fromLayerType if provided (--input option)
-    if (options.fromLayerType) {
+    if (options.fromLayerType.length > 0 && options.fromLayerType !== DEFAULT_FROM_LAYER_TYPE) {
       if (isDebug) {
         console.log(
           "[PromptTemplatePathResolverTotality] Using fromLayerType:",
@@ -643,7 +610,7 @@ export class PromptTemplatePathResolverTotality {
     }
 
     // Infer layerType from fromFile option
-    if (options.fromFile) {
+    if (options.fromFile.length > 0) {
       const inferredResult = this.inferLayerTypeFromFileName(options.fromFile);
       if (inferredResult.ok) {
         if (isDebug) {
@@ -698,6 +665,12 @@ export class PromptTemplatePathResolverTotality {
  * Format path resolution error for user-friendly display
  */
 export function formatPathResolutionError(error: PathResolutionError): string {
+  if (error.kind === "AbsolutePathNotAllowed") {
+    return `Configuration Error: ${error.message}\n` +
+      `Field: ${error.configKey}\n` +
+      `Path: ${error.path}\n` +
+      `Please use relative paths only. Update your configuration to use relative paths from working_dir.`;
+  }
   switch (error.kind) {
     case "InvalidConfiguration":
       return `Configuration Error: ${error.details}`;

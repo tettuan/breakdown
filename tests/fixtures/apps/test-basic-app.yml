@@ -1,14 +1,15 @@
-# 基本テスト用アプリケーション設定
-application:
-  name: "Breakdown Test Basic"
-  version: "1.0.0"
+# Test basic application configuration
+# SINGLE SOURCE OF TRUTH
+working_dir: "tests/fixtures"
+app_prompt:
+  base_dir: "prompts"
 
-paths:
-  workDir: "./tests/fixtures"
-  resourceDir: "./tests/fixtures"
-  promptDir: "./prompts"
-  schemaDir: "./schema"
+app_schema:
+  base_dir: "schema"
 
-settings:
-  debug: false
-  logLevel: "info"
+features:
+  debugMode: false
+  strictValidation: false
+
+logging:
+  level: "info"

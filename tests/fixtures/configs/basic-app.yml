@@ -1,15 +1,11 @@
 # Basic application configuration
-# This configuration is used with basic-user.yml for testing
-
-# Application metadata
+# SINGLE SOURCE OF TRUTH
+working_dir: "tests/fixtures"
 app_prompt:
-  base_dir: tests/fixtures/prompts
+  base_dir: "prompts"
 
 app_schema:
-  base_dir: tests/fixtures/schema
-
-# Working directory (defaults to current directory)
-working_dir: .
+  base_dir: "schema"
 
 # Logging configuration
 log_level: info

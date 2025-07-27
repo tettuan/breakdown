@@ -55,7 +55,7 @@ export function formatFactoryInitError(error: FactoryInitError): string {
 }
 
 /**
- * Format path resolution error
+ * Format factory path resolution error
  */
 export function formatPathResolutionError(error: PathResolutionError): string {
   switch (error.kind) {

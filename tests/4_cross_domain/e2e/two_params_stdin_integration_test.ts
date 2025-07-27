@@ -185,7 +185,7 @@ Deno.test("E2E-STDIN: Complex Content Processing", async () => {
   // Load app config as well
   const appConfigPath = join(Deno.cwd(), DEFAULT_CONFIG_DIR, "flexible-test-app.yml");
   const appConfigContent = await Deno.readTextFile(appConfigPath);
-  const appConfig = parseYaml(appConfigContent) as Record<string, unknown>;
+  const _appConfig = parseYaml(appConfigContent) as Record<string, unknown>;
 
   // Complex STDIN content with various elements
   const complexStdinContent = `# Enterprise System Analysis
@@ -261,12 +261,8 @@ This document provides a comprehensive analysis of our enterprise system's curre
       // Test the integration flow without actual stdin content
       stdoutCapture.start();
 
-      // Merge app and user configs
-      const config = {
-        ...appConfig,
-        ...configResult.userConfig,
-        app_prompt: appConfig.app_prompt, // Ensure app_prompt is included
-      };
+      // Use the loaded configuration directly
+      const config = configResult.userConfig;
 
       const params = [validDirective, validLayer];
       const options = {}; // Don't request stdin since it returns empty in tests
@@ -546,10 +542,7 @@ Additional Information:
         // Load appropriate configuration
         const configResult = await ConfigurationTestHelper.loadTestConfiguration("flexible-test");
 
-        // Load app config as well
-        const appConfigPath = join(Deno.cwd(), DEFAULT_CONFIG_DIR, "flexible-test-app.yml");
-        const appConfigContent = await Deno.readTextFile(appConfigPath);
-        const appConfig = parseYaml(appConfigContent) as Record<string, unknown>;
+        // The test configuration already includes app configuration
 
         // Validate that the directive and layer are supported
         const validDirectives = configResult.userConfig.testData.validDirectives;
@@ -563,12 +556,8 @@ Additional Information:
         // Test the integration flow without actual stdin content
         stdoutCapture.start();
 
-        // Merge app and user configs
-        const config = {
-          ...appConfig,
-          ...configResult.userConfig,
-          app_prompt: appConfig.app_prompt, // Ensure app_prompt is included
-        };
+        // Use the loaded configuration directly
+        const config = configResult.userConfig;
 
         const params = [directive, layer];
         const options = {}; // Don't request stdin since it returns empty in tests

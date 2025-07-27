@@ -1,15 +1,11 @@
 # Default test application configuration
-# This is for testing with default patterns
-
-# Application metadata
+# SINGLE SOURCE OF TRUTH
+working_dir: "tests/fixtures"
 app_prompt:
-  base_dir: tests/fixtures/prompts
+  base_dir: "prompts"
 
 app_schema:
-  base_dir: tests/fixtures/schemas
-
-# Working directory for tests
-working_dir: .
+  base_dir: "schemas"
 
 # Test environment settings
 test:

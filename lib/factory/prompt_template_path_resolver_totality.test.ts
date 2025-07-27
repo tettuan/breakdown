@@ -42,7 +42,8 @@ async function cleanupTestDirectory(path: string): Promise<void> {
 
 Deno.test("PromptTemplatePathResolverTotality - Basic creation with valid parameters", () => {
   const config = {
-    app_prompt: { base_dir: "/test/prompts" },
+    working_dir: "/tmp/test",
+    app_prompt: { base_dir: "prompts" },
   };
   const cliParams: TwoParams_Result = {
     type: "two",
@@ -77,7 +78,7 @@ Deno.test("PromptTemplatePathResolverTotality - Handles various config objects c
 
 Deno.test("PromptTemplatePathResolverTotality - Creation fails with missing parameters", () => {
   const config = {
-    app_prompt: { base_dir: "/test/prompts" },
+    app_prompt: { base_dir: "test/prompts" },
   };
 
   // Missing directiveType
@@ -286,7 +287,7 @@ Deno.test("PromptTemplatePathResolverTotality - Adaptation with fallback and wor
 
 Deno.test("PromptTemplatePathResolverTotality - Base directory not found error", () => {
   const config = {
-    app_prompt: { base_dir: "/non/existent/path" },
+    app_prompt: { base_dir: "non/existent/path" },
   };
   const cliParams: TwoParams_Result = {
     type: "two",
@@ -314,8 +315,12 @@ Deno.test("PromptTemplatePathResolverTotality - Template not found error", async
   const testBaseDir = await Deno.makeTempDir();
 
   try {
+    // Create the base directory but not the template files
+    await Deno.mkdir(join(testBaseDir, "prompts"), { recursive: true });
+
     const config = {
-      app_prompt: { base_dir: testBaseDir },
+      app_prompt: { base_dir: "prompts" },
+      working_dir: testBaseDir,
     };
     const cliParams: TwoParams_Result = {
       type: "two",
@@ -348,13 +353,14 @@ Deno.test("PromptTemplatePathResolverTotality - Template not found error", async
 
 Deno.test("PromptTemplatePathResolverTotality - TwoParams_Result structure support", async () => {
   const testBaseDir = await Deno.makeTempDir();
-  const promptFile = join(testBaseDir, "to", "issue", "f_default.md"); // Changed to match default fromLayerType
+  const promptFile = join(testBaseDir, "prompts", "to", "issue", "f_default.md"); // Changed to match default fromLayerType
 
   try {
     await createTestFile(promptFile);
 
     const config = {
-      app_prompt: { base_dir: testBaseDir },
+      app_prompt: { base_dir: "prompts" },
+      working_dir: testBaseDir,
     };
     const cliParams: TwoParams_Result = {
       type: "two",
@@ -385,8 +391,8 @@ Deno.test("PromptTemplatePathResolverTotality - TwoParams_Result structure suppo
 Deno.test("PromptTemplatePathResolverTotality - Config normalization to discriminated unions", () => {
   // Test WithPromptConfig
   const config1 = {
-    app_prompt: { base_dir: "/prompts" },
-    app_schema: { base_dir: "/schemas" },
+    app_prompt: { base_dir: "prompts" },
+    app_schema: { base_dir: "schemas" },
   };
   const cliParams: TwoParams_Result = {
     type: "two",
@@ -402,7 +408,7 @@ Deno.test("PromptTemplatePathResolverTotality - Config normalization to discrimi
 
   // Test WithSchemaConfig
   const config2 = {
-    app_schema: { base_dir: "/schemas" },
+    app_schema: { base_dir: "schemas" },
   };
   const result2 = PromptTemplatePathResolverTotality.create(config2, cliParams);
   assertExists(result2.ok);
@@ -490,7 +496,7 @@ Deno.test("PromptTemplatePathResolverTotality - fromFile option with working_dir
 
 Deno.test("PromptTemplatePathResolverTotality - Default fromLayerType when no -i option", () => {
   const config = {
-    app_prompt: { base_dir: "/test/prompts" },
+    app_prompt: { base_dir: "test/prompts" },
   };
   const cliParams: TwoParams_Result = {
     type: "two",
@@ -528,7 +534,7 @@ Deno.test("PromptTemplatePathResolverTotality - Single source working_dir config
 
   // Test configuration with only root working_dir (should work)
   const validConfig1 = {
-    app_prompt: { base_dir: "/test/prompts" },
+    app_prompt: { base_dir: "test/prompts" },
     working_dir: "/test/workspace",
   };
   const result1 = PromptTemplatePathResolverTotality.create(validConfig1, cliParams);
@@ -536,14 +542,14 @@ Deno.test("PromptTemplatePathResolverTotality - Single source working_dir config
 
   // Test configuration with no working_dir (should work - uses current directory)
   const validConfig2 = {
-    app_prompt: { base_dir: "/test/prompts" },
+    app_prompt: { base_dir: "test/prompts" },
   };
   const result2 = PromptTemplatePathResolverTotality.create(validConfig2, cliParams);
   assertEquals(result2.ok, true);
 
   // Test configuration with workspace structure but no working_dir inside (should work)
   const validConfig3 = {
-    app_prompt: { base_dir: "/test/prompts" },
+    app_prompt: { base_dir: "test/prompts" },
     workspace: { temp_dir: "/tmp" },
   };
   const result3 = PromptTemplatePathResolverTotality.create(validConfig3, cliParams);

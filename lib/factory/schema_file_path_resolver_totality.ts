@@ -605,6 +605,12 @@ export function pathResolutionErrorToSchemaFilePathError(
         message: error.message,
         setting: "config_load",
       };
+    case "AbsolutePathNotAllowed":
+      return {
+        kind: "ConfigurationError",
+        message: error.message,
+        setting: error.configKey,
+      };
     default: {
       // Exhaustive check - TypeScript ensures all cases are handled
       const _exhaustive: never = error;

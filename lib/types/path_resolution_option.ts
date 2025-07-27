@@ -41,6 +41,13 @@ export type PathResolutionError =
     attempted: string[];
     fallback?: string;
     context?: Record<string, unknown>;
+  }
+  | {
+    kind: "AbsolutePathNotAllowed";
+    path: string;
+    configKey: string;
+    message: string;
+    context?: Record<string, unknown>;
   };
 
 /**

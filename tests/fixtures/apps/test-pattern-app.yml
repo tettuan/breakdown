@@ -1,19 +1,20 @@
-# パターンテスト用アプリケーション設定
-application:
-  name: "Breakdown Test Pattern"
-  version: "1.0.0"
+# Test pattern application configuration
+# SINGLE SOURCE OF TRUTH
+working_dir: "tests/fixtures"
+app_prompt:
+  base_dir: "prompts"
 
-paths:
-  workDir: "./tests/fixtures"
-  resourceDir: "./tests/fixtures"
-  promptDir: "./prompts"
-  schemaDir: "./schema"
+app_schema:
+  base_dir: "schema"
 
-settings:
-  debug: false
-  logLevel: "warn"
+features:
+  debugMode: false
+  strictValidation: false
 
-# パターンマッチングテスト設定
+logging:
+  level: "warn"
+
+# Pattern matching test settings
 patternTests:
   enabled: true
   strictMode: false

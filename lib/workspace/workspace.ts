@@ -25,7 +25,7 @@ import {
   WorkspaceConfigError,
 } from "./errors.ts";
 import { stringify } from "jsr:@std/yaml@1.0.6";
-import { Workspace, WorkspaceConfig as WorkspaceConfigInterface } from "./interfaces.ts";
+import { Workspace, WorkspaceConfig } from "./interfaces.ts";
 import { WorkspaceStructureImpl } from "./structure.ts";
 import { BreakdownConfig } from "../deps.ts";
 import { WorkspacePathResolverImpl } from "./path/resolver.ts";
@@ -58,13 +58,13 @@ import { schema } from "../templates/schema.ts";
 export class WorkspaceImpl implements Workspace {
   private _structure: WorkspaceStructureImpl;
   private _pathResolver: WorkspacePathResolverImpl;
-  private config: WorkspaceConfigInterface;
+  private config: WorkspaceConfig;
 
   /**
    * Creates a new WorkspaceImpl instance.
    * @param config The workspace configuration.
    */
-  constructor(config: WorkspaceConfigInterface) {
+  constructor(config: WorkspaceConfig) {
     // Deep copy to ensure immutability
     this.config = this.deepCopyConfig(config);
     this._structure = new WorkspaceStructureImpl(config);
@@ -76,11 +76,15 @@ export class WorkspaceImpl implements Workspace {
    * @param config - The workspace configuration to copy
    * @returns Deep copy of the workspace configuration
    */
-  private deepCopyConfig(config: WorkspaceConfigInterface): WorkspaceConfigInterface {
+  private deepCopyConfig(config: WorkspaceConfig): WorkspaceConfig {
     return {
-      workingDir: config.workingDir,
-      promptBaseDir: config.promptBaseDir,
-      schemaBaseDir: config.schemaBaseDir,
+      working_dir: config.working_dir,
+      app_prompt: {
+        base_dir: config.app_prompt.base_dir,
+      },
+      app_schema: {
+        base_dir: config.app_schema.base_dir,
+      },
     };
   }
 
@@ -90,14 +94,14 @@ export class WorkspaceImpl implements Workspace {
    */
   async initialize(): Promise<void> {
     try {
-      await ensureDir(this.config.workingDir);
-      await ensureDir(join(this.config.workingDir, this.config.promptBaseDir));
-      await ensureDir(join(this.config.workingDir, this.config.schemaBaseDir));
+      await ensureDir(this.config.working_dir);
+      await ensureDir(join(this.config.working_dir, this.config.app_prompt.base_dir));
+      await ensureDir(join(this.config.working_dir, this.config.app_schema.base_dir));
       await this._structure.initialize();
 
       // Create config file if it doesn't exist
       const configDir = join(
-        this.config.workingDir,
+        this.config.working_dir,
         _DEFAULT_WORKSPACE_STRUCTURE.root,
         _DEFAULT_WORKSPACE_STRUCTURE.config,
       );
@@ -109,11 +113,12 @@ export class WorkspaceImpl implements Workspace {
         if (error instanceof Deno.errors.NotFound) {
           await ensureDir(configDir);
           const config = {
+            working_dir: this.config.working_dir,
             app_prompt: {
-              base_dir: this.config.promptBaseDir,
+              base_dir: this.config.app_prompt.base_dir,
             },
             app_schema: {
-              base_dir: this.config.schemaBaseDir,
+              base_dir: this.config.app_schema.base_dir,
             },
           };
           await Deno.writeTextFile(configFile, stringify(config));
@@ -124,14 +129,14 @@ export class WorkspaceImpl implements Workspace {
 
       // Create custom base directories if specified
       const customPromptDir = join(
-        this.config.workingDir,
+        this.config.working_dir,
         _DEFAULT_WORKSPACE_STRUCTURE.root,
-        this.config.promptBaseDir,
+        this.config.app_prompt.base_dir,
       );
       const customSchemaDir = join(
-        this.config.workingDir,
+        this.config.working_dir,
         _DEFAULT_WORKSPACE_STRUCTURE.root,
-        this.config.schemaBaseDir,
+        this.config.app_schema.base_dir,
       );
 
       await ensureDir(customPromptDir);
@@ -170,7 +175,7 @@ export class WorkspaceImpl implements Workspace {
       if (error instanceof Deno.errors.PermissionDenied) {
         throw createWorkspaceInitError(
           `Permission denied: Cannot create directory structure in ${
-            join(this.config.workingDir, "breakdown")
+            join(this.config.working_dir, "breakdown")
           }`,
         );
       }
@@ -215,19 +220,19 @@ export class WorkspaceImpl implements Workspace {
   }
 
   /**
-   * Gets the base directory for prompt files.
-   * @returns A promise resolving to the prompt base directory.
+   * Gets the base directory for prompt files using unified path resolution.
+   * @returns A promise resolving to the absolute prompt base directory.
    */
   getPromptBaseDir(): Promise<string> {
-    return Promise.resolve(resolve(this.config.workingDir, this.config.promptBaseDir));
+    return Promise.resolve(resolve(this.config.working_dir, this.config.app_prompt.base_dir));
   }
 
   /**
-   * Gets the base directory for schema files.
-   * @returns A promise resolving to the schema base directory.
+   * Gets the base directory for schema files using unified path resolution.
+   * @returns A promise resolving to the absolute schema base directory.
    */
   getSchemaBaseDir(): Promise<string> {
-    return Promise.resolve(resolve(this.config.workingDir, this.config.schemaBaseDir));
+    return Promise.resolve(resolve(this.config.working_dir, this.config.app_schema.base_dir));
   }
 
   /**
@@ -235,7 +240,7 @@ export class WorkspaceImpl implements Workspace {
    * @returns A promise resolving to the working directory.
    */
   getWorkingDir(): Promise<string> {
-    return Promise.resolve(this.config.workingDir);
+    return Promise.resolve(this.config.working_dir);
   }
 
   /**
@@ -243,7 +248,7 @@ export class WorkspaceImpl implements Workspace {
    * @throws {WorkspaceConfigError} If the working directory does not exist
    */
   async validateConfig(): Promise<void> {
-    if (!await exists(this.config.workingDir)) {
+    if (!await exists(this.config.working_dir)) {
       throw new WorkspaceConfigError("Working directory does not exist");
     }
   }
@@ -256,7 +261,10 @@ export class WorkspaceImpl implements Workspace {
     // Reload configuration using BreakdownConfig
     try {
       // Create BreakdownConfig instance with default profile using static factory method
-      const breakdownConfigResult = await BreakdownConfig.create("default", this.config.workingDir);
+      const breakdownConfigResult = await BreakdownConfig.create(
+        "default",
+        this.config.working_dir,
+      );
 
       if (!breakdownConfigResult.success || !breakdownConfigResult.data) {
         throw createWorkspaceConfigError(`Failed to create BreakdownConfig`);
@@ -270,11 +278,15 @@ export class WorkspaceImpl implements Workspace {
       // Get merged configuration
       const mergedConfig = await breakdownConfig.getConfig();
 
-      // Extract the necessary configuration values
+      // Extract the necessary configuration values using unified format
       this.config = {
-        workingDir: this.config.workingDir,
-        promptBaseDir: mergedConfig.app_prompt?.base_dir || DEFAULT_PROMPT_BASE_DIR,
-        schemaBaseDir: mergedConfig.app_schema?.base_dir || DEFAULT_SCHEMA_BASE_DIR,
+        working_dir: mergedConfig.working_dir || this.config.working_dir,
+        app_prompt: {
+          base_dir: mergedConfig.app_prompt?.base_dir || DEFAULT_PROMPT_BASE_DIR,
+        },
+        app_schema: {
+          base_dir: mergedConfig.app_schema?.base_dir || DEFAULT_SCHEMA_BASE_DIR,
+        },
       };
     } catch (error) {
       if (error instanceof Deno.errors.NotFound) {
@@ -303,9 +315,13 @@ export async function initWorkspace(
 ): Promise<void> {
   // In production, use BreakdownConfig to load these values
   const workspace = new WorkspaceImpl({
-    workingDir,
-    promptBaseDir: config?.app_prompt?.base_dir ?? DEFAULT_PROMPT_BASE_DIR,
-    schemaBaseDir: config?.app_schema?.base_dir ?? DEFAULT_SCHEMA_BASE_DIR,
+    working_dir: workingDir,
+    app_prompt: {
+      base_dir: config?.app_prompt?.base_dir ?? DEFAULT_PROMPT_BASE_DIR,
+    },
+    app_schema: {
+      base_dir: config?.app_schema?.base_dir ?? DEFAULT_SCHEMA_BASE_DIR,
+    },
   });
   await workspace.initialize();
 }

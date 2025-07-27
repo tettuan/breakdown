@@ -43,7 +43,7 @@ export class WorkspaceStructureImpl implements WorkspaceStructure {
    *
    * @example
    * ```typescript
-   * const config = { workingDir: DEFAULT_WORKSPACE_ROOT };
+   * const config = { working_dir: DEFAULT_WORKSPACE_ROOT };
    * const workspace = new WorkspaceStructureImpl(config);
    * await workspace.initialize();
    * ```
@@ -105,7 +105,7 @@ export class WorkspaceStructureImpl implements WorkspaceStructure {
    */
   async ensureDirectories(): Promise<void> {
     for (const dir of this.#directories) {
-      const path = join(this.#config.workingDir, dir);
+      const path = join(this.#config.working_dir, dir);
       try {
         const stat = await Deno.stat(path);
         if (!stat.isDirectory) {
@@ -145,7 +145,7 @@ export class WorkspaceStructureImpl implements WorkspaceStructure {
    */
   async exists(path?: string): Promise<boolean> {
     try {
-      const targetPath = path ? join(this.#config.workingDir, path) : this.#config.workingDir;
+      const targetPath = path ? join(this.#config.working_dir, path) : this.#config.working_dir;
       await Deno.stat(targetPath);
       return true;
     } catch {
@@ -177,7 +177,7 @@ export class WorkspaceStructureImpl implements WorkspaceStructure {
    * ```
    */
   async createDirectory(path: string): Promise<void> {
-    const targetPath = join(this.#config.workingDir, path);
+    const targetPath = join(this.#config.working_dir, path);
     await ensureDir(targetPath);
   }
 
@@ -205,7 +205,7 @@ export class WorkspaceStructureImpl implements WorkspaceStructure {
    * ```
    */
   async removeDirectory(path: string): Promise<void> {
-    const targetPath = join(this.#config.workingDir, path);
+    const targetPath = join(this.#config.working_dir, path);
     await Deno.remove(targetPath, { recursive: true });
   }
 }
