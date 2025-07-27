@@ -16,7 +16,7 @@ import {
   formatPathResolutionError,
   PromptTemplatePathResolverTotality,
 } from "./prompt_template_path_resolver_totality.ts";
-import { DEFAULT_SCHEMA_BASE_DIR } from "../config/constants.ts";
+import { DEFAULT_FROM_LAYER_TYPE, DEFAULT_SCHEMA_BASE_DIR } from "../config/constants.ts";
 import type { TwoParams_Result } from "../deps.ts";
 
 // Helper to create test directories
@@ -113,7 +113,7 @@ Deno.test("PromptTemplatePathResolverTotality - Working directory resolution wit
   const testBaseDir = await Deno.makeTempDir();
   const workingDir = join(testBaseDir, "workspace");
   const promptsDir = join(workingDir, "prompts");
-  const promptFile = join(promptsDir, "to", "issue", "f_issue.md");
+  const promptFile = join(promptsDir, "to", "issue", "f_default.md"); // Changed to match default fromLayerType
 
   try {
     await createTestFile(promptFile);
@@ -160,7 +160,7 @@ Deno.test("PromptTemplatePathResolverTotality - Working directory fallback to De
     Deno.chdir(testBaseDir);
 
     const promptsDir = join(testBaseDir, "prompts");
-    const promptFile = join(promptsDir, "to", "issue", "f_issue.md");
+    const promptFile = join(promptsDir, "to", "issue", "f_default.md"); // Changed to match default fromLayerType
     await createTestFile(promptFile);
 
     // Test with relative base_dir and no working_dir specified
@@ -205,7 +205,7 @@ Deno.test("PromptTemplatePathResolverTotality - Schema path resolution with work
   const testBaseDir = await Deno.makeTempDir();
   const workingDir = join(testBaseDir, "workspace");
   const schemaDir = join(workingDir, DEFAULT_SCHEMA_BASE_DIR);
-  const schemaFile = join(schemaDir, "to", "issue", "f_issue.json");
+  const schemaFile = join(schemaDir, "to", "issue", "f_default.json"); // Changed to match default fromLayerType
 
   try {
     await createTestFile(schemaFile);
@@ -245,7 +245,7 @@ Deno.test("PromptTemplatePathResolverTotality - Adaptation with fallback and wor
   const testBaseDir = await Deno.makeTempDir();
   const workingDir = join(testBaseDir, "workspace");
   const promptsDir = join(workingDir, "prompts");
-  const fallbackFile = join(promptsDir, "to", "issue", "f_issue.md");
+  const fallbackFile = join(promptsDir, "to", "issue", "f_default.md"); // Changed to match default fromLayerType
 
   try {
     // Create only the fallback file, not the adaptation file
@@ -348,7 +348,7 @@ Deno.test("PromptTemplatePathResolverTotality - Template not found error", async
 
 Deno.test("PromptTemplatePathResolverTotality - TwoParams_Result structure support", async () => {
   const testBaseDir = await Deno.makeTempDir();
-  const promptFile = join(testBaseDir, "to", "issue", "f_issue.md");
+  const promptFile = join(testBaseDir, "to", "issue", "f_default.md"); // Changed to match default fromLayerType
 
   try {
     await createTestFile(promptFile);
@@ -448,11 +448,11 @@ Deno.test("formatPathResolutionError - Error message formatting", () => {
   assertEquals(error4.includes("試行したパス"), true);
 });
 
-Deno.test("PromptTemplatePathResolverTotality - fromLayerType resolution with working_dir", async () => {
+Deno.test("PromptTemplatePathResolverTotality - fromFile option with working_dir", async () => {
   const testBaseDir = await Deno.makeTempDir();
   const workingDir = join(testBaseDir, "workspace");
   const promptsDir = join(workingDir, "prompts");
-  const promptFile = join(promptsDir, "to", "issue", "f_task.md");
+  const promptFile = join(promptsDir, "to", "issue", "f_task.md"); // Changed to f_task.md to match inference
 
   try {
     await createTestFile(promptFile);
@@ -466,7 +466,7 @@ Deno.test("PromptTemplatePathResolverTotality - fromLayerType resolution with wo
       params: ["to", "issue"],
       directiveType: "to",
       layerType: "issue",
-      options: { fromLayerType: "task" },
+      options: { fromFile: "task_notes.md" }, // fromFile option (should infer "task" from filename)
     };
 
     const resolverResult = PromptTemplatePathResolverTotality.create(config, cliParams);
@@ -480,11 +480,40 @@ Deno.test("PromptTemplatePathResolverTotality - fromLayerType resolution with wo
 
       if (pathResult.ok) {
         assertEquals(pathResult.data.value, promptFile);
-        assertEquals(pathResult.data.metadata.fromLayerType, "task");
+        assertEquals(pathResult.data.metadata.fromLayerType, "task"); // Inferred from task_notes.md
       }
     }
   } finally {
     await cleanupTestDirectory(testBaseDir);
+  }
+});
+
+Deno.test("PromptTemplatePathResolverTotality - Default fromLayerType when no -i option", () => {
+  const config = {
+    app_prompt: { base_dir: "/test/prompts" },
+  };
+  const cliParams: TwoParams_Result = {
+    type: "two",
+    params: ["to", "issue"],
+    directiveType: "to",
+    layerType: "issue",
+    options: {}, // No fromLayerType, no fromFile - should use DEFAULT_FROM_LAYER_TYPE
+  };
+
+  const resolverResult = PromptTemplatePathResolverTotality.create(config, cliParams);
+  assertEquals(resolverResult.ok, true);
+
+  if (resolverResult.ok) {
+    const fromLayerTypeResult = resolverResult.data.resolveFromLayerTypeSafe();
+    assertEquals(fromLayerTypeResult.ok, true);
+
+    if (fromLayerTypeResult.ok) {
+      assertEquals(fromLayerTypeResult.data, DEFAULT_FROM_LAYER_TYPE);
+
+      // Verify the filename uses default
+      const fileName = resolverResult.data.buildFileName();
+      assertEquals(fileName, `f_${DEFAULT_FROM_LAYER_TYPE}.md`);
+    }
   }
 });
 

@@ -59,3 +59,9 @@ export const DEFAULT_WORKSPACE_ROOT = _DEFAULT_WORKSPACE_STRUCTURE.root;
  * Used when full workspace path is needed.
  */
 export const DEFAULT_WORKSPACE_WORKING_DIR = _DEFAULT_WORKSPACE_STRUCTURE.root;
+
+/**
+ * The default fromLayerType value when no -i option is specified.
+ * Used as fallback in prompt template path resolution.
+ */
+export const DEFAULT_FROM_LAYER_TYPE = "default" as const;

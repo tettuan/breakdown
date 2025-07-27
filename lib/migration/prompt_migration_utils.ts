@@ -237,9 +237,6 @@ export function migratePromptCliParams(
   if (params.options?.adaptation) {
     warnings.push("Option 'adaptation' is deprecated and was ignored");
   }
-  if (params.options?.fromLayerType) {
-    warnings.push("Option 'fromLayerType' is deprecated and was ignored");
-  }
   if (params.options?.extended) {
     warnings.push("Option 'extended' is deprecated and was ignored");
   }

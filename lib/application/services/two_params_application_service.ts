@@ -378,7 +378,6 @@ Timestamp: ${new Date().toISOString()}
         destinationFile: input.options?.destinationFile as string | undefined,
         adaptation: input.options?.adaptation as string | undefined,
         promptDir: input.options?.promptDir as string | undefined,
-        fromLayerType: input.options?.fromLayerType as string | undefined,
         input_text: variables.inputText || "",
         customVariables: variables.customVariables,
         extended: input.options?.extended as boolean | undefined,

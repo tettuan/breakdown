@@ -467,7 +467,6 @@ export class TwoParamsPromptGenerator {
           "output.md",
         adaptation: configuration.adaptation,
         promptDir: configuration.promptDir,
-        fromLayerType: options.input as string,
         input_text: variables.standardVariables.input_text || "",
         customVariables: variables.customVariables,
         extended: configuration.extended,

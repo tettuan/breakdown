@@ -118,7 +118,7 @@ async function example4_factoryBuilder() {
     layerType: "issue",
     options: {
       adaptation: "detailed",
-      fromLayerType: "task",
+      fromFile: "task_notes.md", // Use fromFile instead of fromLayerType
     },
   };
 

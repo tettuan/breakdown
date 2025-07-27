@@ -84,7 +84,6 @@ export type InputResolverConfig =
  */
 export type InputCliOptions = {
   fromFile: string | undefined;
-  fromLayerType: string | undefined;
 };
 
 /**
@@ -439,7 +438,6 @@ export class InputFilePathResolverTotality {
       const opts = this._cliParams.options as Record<string, unknown>;
       return {
         fromFile: opts?.fromFile as string | undefined,
-        fromLayerType: opts?.fromLayerType as string | undefined,
       };
     }
 
@@ -448,7 +446,6 @@ export class InputFilePathResolverTotality {
     const opts = (twoParams as unknown as { options?: Record<string, unknown> }).options || {};
     return {
       fromFile: opts.fromFile as string | undefined,
-      fromLayerType: opts.fromLayerType as string | undefined,
     };
   }
 
@@ -637,8 +634,6 @@ export class InputFilePathResolverTotality {
    * Get the target directory for file organization
    */
   public getTargetDirectory(): Result<string, InputFilePathError> {
-    const options = this.extractOptions();
-
     // Check if it's TotalityPromptCliParams structure
     const hasTotalityProps = (p: unknown): p is TotalityPromptCliParams => {
       if (!p || typeof p !== "object" || Array.isArray(p)) return false;
@@ -656,17 +651,16 @@ export class InputFilePathResolverTotality {
 
     if (hasTotalityProps(this._cliParams as unknown)) {
       // TotalityPromptCliParams structure - use layer.value
-      const fromLayerType = options.fromLayerType;
       const totalityParams = this._cliParams as unknown as TotalityPromptCliParams;
-      directory = fromLayerType || totalityParams.layer?.value || "";
+      directory = totalityParams.layer?.value || "";
     } else if ("layerType" in this._cliParams) {
       // Legacy PromptCliParams structure
       const legacyParams = this._cliParams as DoubleParamsResult;
-      directory = options.fromLayerType || legacyParams.layerType || "";
+      directory = legacyParams.layerType || "";
     } else {
       // TwoParams_Result structure
       const twoParams = this._cliParams as TwoParams_Result;
-      directory = options.fromLayerType || twoParams.layerType || "";
+      directory = twoParams.layerType || "";
     }
 
     if (!directory) {

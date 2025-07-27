@@ -62,7 +62,7 @@ async function cleanupTestEnvironment(testDir: string): Promise<void> {
 
 Deno.test("3_core - Working directory with relative prompt base_dir", async () => {
   const { testDir, workingDir, promptsDir } = await createTestEnvironment();
-  const promptFile = join(promptsDir, "to", "issue", "f_issue.md");
+  const promptFile = join(promptsDir, "to", "issue", "f_default.md");
 
   try {
     await createTestFile(promptFile);
@@ -103,7 +103,7 @@ Deno.test("3_core - Working directory with relative prompt base_dir", async () =
 
 Deno.test("3_core - Working directory with schema base_dir resolution", async () => {
   const { testDir, workingDir, schemasDir } = await createTestEnvironment();
-  const schemaFile = join(schemasDir, "to", "issue", "f_issue.json");
+  const schemaFile = join(schemasDir, "to", "issue", "f_default.json");
 
   try {
     await createTestFile(schemaFile);
@@ -143,7 +143,7 @@ Deno.test("3_core - Working directory with schema base_dir resolution", async ()
 Deno.test("3_core - Working directory fallback to Deno.cwd() when not specified", async () => {
   const originalCwd = Deno.cwd();
   const { testDir, workingDir, promptsDir } = await createTestEnvironment();
-  const promptFile = join(promptsDir, "to", "issue", "f_issue.md");
+  const promptFile = join(promptsDir, "to", "issue", "f_default.md");
 
   try {
     await createTestFile(promptFile);
@@ -188,8 +188,8 @@ Deno.test("3_core - Working directory fallback to Deno.cwd() when not specified"
 
 Deno.test("3_core - Working directory with both prompt and schema directories", async () => {
   const { testDir, workingDir, promptsDir, schemasDir } = await createTestEnvironment();
-  const promptFile = join(promptsDir, "summary", "task", "f_task.md");
-  const schemaFile = join(schemasDir, "summary", "task", "f_task.json");
+  const promptFile = join(promptsDir, "summary", "task", "f_default.md");
+  const schemaFile = join(schemasDir, "summary", "task", "f_default.json");
 
   try {
     await createTestFile(promptFile);
@@ -253,8 +253,8 @@ Deno.test("3_core - Working directory with both prompt and schema directories", 
 
 Deno.test("3_core - Working directory with adaptation and fallback", async () => {
   const { testDir, workingDir, promptsDir } = await createTestEnvironment();
-  const fallbackFile = join(promptsDir, "to", "project", "f_project.md");
-  const adaptationFile = join(promptsDir, "to", "project", "f_project_custom.md");
+  const fallbackFile = join(promptsDir, "to", "project", "f_default.md");
+  const adaptationFile = join(promptsDir, "to", "project", "f_default_custom.md"); // Changed to match default fromLayerType
 
   try {
     // Create only the fallback file (not the adaptation file)
@@ -299,9 +299,9 @@ Deno.test("3_core - Working directory with adaptation and fallback", async () =>
   }
 });
 
-Deno.test("3_core - Working directory with fromLayerType option", async () => {
+Deno.test("3_core - Working directory with fromFile option", async () => {
   const { testDir, workingDir, promptsDir } = await createTestEnvironment();
-  const promptFile = join(promptsDir, "defect", "issue", "f_task.md"); // Note: using f_task.md for fromLayerType
+  const promptFile = join(promptsDir, "defect", "issue", "f_task.md"); // Changed to match inference from task_data.md
 
   try {
     await createTestFile(promptFile);
@@ -316,7 +316,7 @@ Deno.test("3_core - Working directory with fromLayerType option", async () => {
       params: ["defect", "issue"],
       directiveType: "defect",
       layerType: "issue",
-      options: { fromLayerType: "task" }, // Override layerType for file lookup
+      options: { fromFile: "task_data.md" }, // fromFile option (should infer "task" from filename)
     };
 
     const resolverResult = PromptTemplatePathResolverTotality.create(config, cliParams);
@@ -330,7 +330,7 @@ Deno.test("3_core - Working directory with fromLayerType option", async () => {
 
       if (pathResult.ok) {
         assertEquals(pathResult.data.value, promptFile);
-        assertEquals(pathResult.data.metadata.fromLayerType, "task");
+        assertEquals(pathResult.data.metadata.fromLayerType, "task"); // Inferred from task_data.md
         assertEquals(pathResult.data.metadata.layerType, "issue"); // Original layerType preserved
       }
     }
@@ -444,7 +444,7 @@ Deno.test("3_core - Error: Template not found with working directory", async () 
           assertEquals(pathResult.error.attempted.length > 0, true);
 
           // Should attempt to find file in working directory resolved path
-          const expectedPath = join(promptsDir, "to", "issue", "f_issue.md");
+          const expectedPath = join(promptsDir, "to", "issue", "f_default.md");
           assertEquals(pathResult.error.attempted[0], expectedPath);
         }
       }
@@ -462,7 +462,7 @@ Deno.test("3_core - Boundary: Working directory with special characters", async 
   const { testDir } = await createTestEnvironment();
   const specialWorkingDir = join(testDir, "workspace with spaces & special-chars_123");
   const specialPromptsDir = join(specialWorkingDir, "prompts");
-  const promptFile = join(specialPromptsDir, "to", "issue", "f_issue.md");
+  const promptFile = join(specialPromptsDir, "to", "issue", "f_default.md");
 
   try {
     await createTestFile(promptFile);
@@ -503,7 +503,7 @@ Deno.test("3_core - Boundary: Deep nested working directory structure", async ()
   const { testDir } = await createTestEnvironment();
   const deepWorkingDir = join(testDir, "level1", "level2", "level3", "workspace");
   const deepPromptsDir = join(deepWorkingDir, "prompts");
-  const promptFile = join(deepPromptsDir, "summary", "project", "f_project.md");
+  const promptFile = join(deepPromptsDir, "summary", "project", "f_default.md");
 
   try {
     await createTestFile(promptFile);
@@ -542,7 +542,7 @@ Deno.test("3_core - Boundary: Deep nested working directory structure", async ()
 
 Deno.test("3_core - Boundary: Working directory integration with WorkingDirectoryPath value object", async () => {
   const { testDir, workingDir, promptsDir } = await createTestEnvironment();
-  const promptFile = join(promptsDir, "to", "task", "f_task.md");
+  const promptFile = join(promptsDir, "to", "task", "f_default.md");
 
   try {
     await createTestFile(promptFile);

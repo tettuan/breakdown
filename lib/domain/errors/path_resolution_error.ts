@@ -38,7 +38,6 @@ export class PathResolutionError extends BaseBreakdownError {
         basePath?: string;
         directiveType?: string;
         layerType?: string;
-        fromLayerType?: string;
         adaptation?: string;
         resolvedPath?: string;
         availablePaths?: string[];
@@ -110,14 +109,12 @@ export class PathResolutionError extends BaseBreakdownError {
   static templateNotFound(
     directiveType: string,
     layerType: string,
-    fromLayerType?: string,
     adaptation?: string,
   ): PathResolutionError {
     const parts = [directiveType, layerType];
-    if (fromLayerType) parts.push(`from ${fromLayerType}`);
     if (adaptation) parts.push(`(${adaptation})`);
 
-    const expectedPath = `prompts/${directiveType}/${layerType}/f_${fromLayerType || layerType}${
+    const expectedPath = `prompts/${directiveType}/${layerType}/f_${layerType}${
       adaptation ? `_${adaptation}` : ""
     }.md`;
 
@@ -128,7 +125,6 @@ export class PathResolutionError extends BaseBreakdownError {
         context: {
           directiveType,
           layerType,
-          fromLayerType,
           adaptation,
           path: expectedPath,
           reason: "Template file does not exist",
@@ -366,7 +362,7 @@ export class PathResolutionError extends BaseBreakdownError {
     switch (this.kind) {
       case "template-not-found":
         if (this.context?.directiveType && this.context?.layerType) {
-          const from = this.context.fromLayerType || this.context.layerType;
+          const from = this.context.layerType;
           const adapt = this.context.adaptation ? `_${this.context.adaptation}` : "";
           return `prompts/${this.context.directiveType}/${this.context.layerType}/f_${from}${adapt}.md`;
         }

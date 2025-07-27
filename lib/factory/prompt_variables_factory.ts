@@ -60,7 +60,6 @@ export interface PromptCliOptions {
   readonly destinationFile?: string;
   readonly adaptation?: string;
   readonly promptDir?: string;
-  readonly fromLayerType?: string;
   readonly input_text?: string;
   readonly customVariables?: Record<string, string>;
   readonly extended?: boolean;

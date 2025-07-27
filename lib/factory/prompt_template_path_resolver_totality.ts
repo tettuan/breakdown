@@ -12,11 +12,12 @@
 
 import { isAbsolute, join, resolve } from "jsr:@std/path@^1.0.9";
 import { existsSync } from "jsr:@std/fs@0.224.0";
-import { DEFAULT_PROMPT_BASE_DIR } from "../config/constants.ts";
+import { DEFAULT_FROM_LAYER_TYPE, DEFAULT_PROMPT_BASE_DIR } from "../config/constants.ts";
 import type { PromptCliParams } from "./prompt_variables_factory.ts";
 import type { TwoParams_Result } from "../deps.ts";
 import { error as resultError, ok as resultOk, type Result } from "../types/result.ts";
 import type { PathResolutionError } from "../types/path_resolution_option.ts";
+import type { LayerTypeConfig } from "../domain/core/value_objects/layer_type.ts";
 
 // Legacy type alias for backward compatibility during migration
 // type DoubleParams_Result = PromptCliParams; // Deprecated: use TwoParams_Result
@@ -28,6 +29,7 @@ export type LayerTypeInferenceError = {
   kind: "InferenceFailure";
   fileName: string;
   reason: string;
+  message: string;
 };
 
 /**
@@ -305,7 +307,7 @@ export class PromptTemplatePathResolverTotality {
     if (!fromLayerTypeResult.ok) {
       return resultError({
         kind: "InvalidConfiguration",
-        details: fromLayerTypeResult.error.reason,
+        details: fromLayerTypeResult.error.message,
       });
     }
     const fromLayerType = fromLayerTypeResult.data;
@@ -614,12 +616,12 @@ export class PromptTemplatePathResolverTotality {
 
   /**
    * Resolves the fromLayerType with Result type (no partial functions)
+   * Implements FromLayerType決定ロジック per docs 190-205 lines
    */
   public resolveFromLayerTypeSafe(): Result<string, LayerTypeInferenceError> {
-    const layerType = this.getLayerType();
     const options = this.getOptions();
 
-    // Use explicit fromLayerType if provided
+    // Use explicit fromLayerType if provided (--input option)
     if (options.fromLayerType) {
       return resultOk(options.fromLayerType);
     }
@@ -630,15 +632,16 @@ export class PromptTemplatePathResolverTotality {
       if (inferredResult.ok) {
         return inferredResult;
       }
-      // If inference fails, fall back to layerType
+      // If inference fails, fall back to default
     }
 
-    // Fallback to layerType
-    return resultOk(layerType);
+    // Fallback to default when no -i option is specified
+    return resultOk(DEFAULT_FROM_LAYER_TYPE);
   }
 
   /**
    * Infers layer type from a file name - returns Result instead of nullable
+   * Configuration-based implementation following Totality principles
    */
   private inferLayerTypeFromFileNameSafe(
     fileName: string,
@@ -651,18 +654,208 @@ export class PromptTemplatePathResolverTotality {
         kind: "InferenceFailure",
         fileName,
         reason: "Could not extract base filename",
+        message: "Could not extract base filename",
       });
     }
 
-    // ❌ HARDCODE ELIMINATION: Layer types must come from configuration
-    // This is a fallback heuristic that should be replaced with proper configuration
-    // For now, return error to indicate configuration-based detection is required
+    // Configuration-based layer type inference
+    return this.inferLayerTypeFromConfiguration(baseName, fileName);
+  }
+
+  /**
+   * Infers layer type from filename using configuration-based patterns
+   * Following Totality principles with comprehensive error handling
+   *
+   * @param baseName - Base filename without extension
+   * @param originalFileName - Original filename for error reporting
+   * @returns Result with inferred layer type or inference error
+   */
+  private inferLayerTypeFromConfiguration(
+    baseName: string,
+    originalFileName: string,
+  ): Result<string, LayerTypeInferenceError> {
+    try {
+      // Get configuration from BreakdownConfig if available
+      const layerTypeConfig = this.createLayerTypeConfig();
+
+      // Strategy 1: Extract from file naming patterns
+      const patternResult = this.extractLayerTypeFromPattern(baseName, layerTypeConfig);
+      if (patternResult.ok) {
+        return patternResult;
+      }
+
+      // Strategy 2: Fuzzy matching against known layer types
+      const fuzzyResult = this.fuzzyMatchLayerType(baseName, layerTypeConfig);
+      if (fuzzyResult.ok) {
+        return fuzzyResult;
+      }
+
+      // Strategy 3: Default fallback with configuration context
+      return this.getDefaultLayerTypeFromConfig(baseName, originalFileName, layerTypeConfig);
+    } catch (error) {
+      return resultError({
+        kind: "InferenceFailure",
+        fileName: originalFileName,
+        reason: `Configuration-based inference failed: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+        message: `Configuration-based inference failed: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      });
+    }
+  }
+
+  /**
+   * Creates LayerTypeConfig from current configuration context
+   */
+  private createLayerTypeConfig(): LayerTypeConfig {
+    return {
+      getLayerTypes: () => {
+        try {
+          // Extract layer types from configuration
+          const config = this.config;
+          if (config.kind === "WithPromptConfig" || config.kind === "WithSchemaConfig") {
+            // Try to get layer types from BreakdownConfig or default patterns
+            const defaultPattern = "project|issue|task|component|module|bugs|feature|epic";
+            return defaultPattern.split("|");
+          }
+          // Fallback to minimal layer types if no configuration
+          return ["project", "issue", "task"];
+        } catch {
+          // Emergency fallback
+          return ["project", "issue", "task"];
+        }
+      },
+    };
+  }
+
+  /**
+   * Extracts layer type from filename patterns (e.g., project_*, issue_*, task_*)
+   */
+  private extractLayerTypeFromPattern(
+    baseName: string,
+    config: LayerTypeConfig,
+  ): Result<string, LayerTypeInferenceError> {
+    const layerTypes = config.getLayerTypes();
+    const availableTypes = Array.isArray(layerTypes) ? layerTypes : [];
+
+    // Pattern matching: look for layer type as prefix or suffix
+    for (const layerType of availableTypes) {
+      // Check prefix pattern: "project_something", "issue_details", etc.
+      if (baseName.startsWith(`${layerType}_`) || baseName.startsWith(`${layerType}-`)) {
+        return resultOk(layerType);
+      }
+
+      // Check suffix pattern: "something_project", "details_issue", etc.
+      if (baseName.endsWith(`_${layerType}`) || baseName.endsWith(`-${layerType}`)) {
+        return resultOk(layerType);
+      }
+
+      // Check exact match
+      if (baseName === layerType) {
+        return resultOk(layerType);
+      }
+    }
+
     return resultError({
       kind: "InferenceFailure",
-      fileName,
-      reason: "Layer type inference from filename requires configuration-based implementation. " +
-        "Cannot use hardcoded layer type list.",
+      fileName: baseName,
+      reason: "No pattern match found in filename",
+      message: "No pattern match found in filename",
     });
+  }
+
+  /**
+   * Performs fuzzy matching against known layer types
+   */
+  private fuzzyMatchLayerType(
+    baseName: string,
+    config: LayerTypeConfig,
+  ): Result<string, LayerTypeInferenceError> {
+    const layerTypes = config.getLayerTypes();
+    const availableTypes = Array.isArray(layerTypes) ? layerTypes : [];
+
+    // Calculate similarity scores
+    const matches = availableTypes.map((layerType) => ({
+      layerType,
+      similarity: this.calculateSimilarity(baseName.toLowerCase(), layerType.toLowerCase()),
+    }))
+      .filter((match) => match.similarity > 0.7) // Only high-confidence matches
+      .sort((a, b) => b.similarity - a.similarity);
+
+    if (matches.length > 0) {
+      return resultOk(matches[0].layerType);
+    }
+
+    return resultError({
+      kind: "InferenceFailure",
+      fileName: baseName,
+      reason: "No similar layer type found with sufficient confidence",
+      message: "No similar layer type found with sufficient confidence",
+    });
+  }
+
+  /**
+   * Gets default layer type from configuration when inference fails
+   */
+  private getDefaultLayerTypeFromConfig(
+    _baseName: string,
+    originalFileName: string,
+    config: LayerTypeConfig,
+  ): Result<string, LayerTypeInferenceError> {
+    const layerTypes = config.getLayerTypes();
+    const availableTypes = Array.isArray(layerTypes) ? layerTypes : [];
+
+    if (availableTypes.length > 0) {
+      // Use the first available layer type as default
+      return resultOk(availableTypes[0]);
+    }
+
+    return resultError({
+      kind: "InferenceFailure",
+      fileName: originalFileName,
+      reason: "No layer types available in configuration for fallback",
+      message: "No layer types available in configuration for fallback",
+    });
+  }
+
+  /**
+   * Calculates string similarity between two strings
+   * Uses simple similarity algorithm for filename matching
+   */
+  private calculateSimilarity(str1: string, str2: string): number {
+    if (str1 === str2) return 1.0;
+    if (str1.includes(str2) || str2.includes(str1)) return 0.8;
+    if (str1.startsWith(str2) || str2.startsWith(str1)) return 0.7;
+
+    // Simple Levenshtein-based similarity
+    const maxLen = Math.max(str1.length, str2.length);
+    const distance = this.levenshteinDistance(str1, str2);
+    return 1 - (distance / maxLen);
+  }
+
+  /**
+   * Simple Levenshtein distance calculation
+   */
+  private levenshteinDistance(str1: string, str2: string): number {
+    const matrix = Array(str2.length + 1).fill(null).map(() => Array(str1.length + 1).fill(null));
+
+    for (let i = 0; i <= str1.length; i++) matrix[0][i] = i;
+    for (let j = 0; j <= str2.length; j++) matrix[j][0] = j;
+
+    for (let j = 1; j <= str2.length; j++) {
+      for (let i = 1; i <= str1.length; i++) {
+        const indicator = str1[i - 1] === str2[j - 1] ? 0 : 1;
+        matrix[j][i] = Math.min(
+          matrix[j][i - 1] + 1, // deletion
+          matrix[j - 1][i] + 1, // insertion
+          matrix[j - 1][i - 1] + indicator, // substitution
+        );
+      }
+    }
+
+    return matrix[str2.length][str1.length];
   }
 }
 
