@@ -58,6 +58,7 @@ import {
 export interface PromptCliOptions {
   readonly fromFile?: string;
   readonly destinationFile?: string;
+  readonly input?: string; // Input layer type (for --input option)
   readonly adaptation?: string;
   readonly promptDir?: string;
   readonly input_text?: string;

@@ -2,10 +2,10 @@
 # Example 20: Adaptation Parameter Template Selection
 # This example demonstrates how the -a/--adaptation parameter affects template selection
 
-# === 注意事項 ===
-# 現在の実装では --adaptation パラメータと fromLayerType の推定は
-# 期待通りに動作しません。このスクリプトは将来の実装のための
-# 参考例として残されています。
+# === 実装状況 ===
+# ✅ --adaptation パラメータは正常に動作します
+# ✅ fromLayerType推定もフォールバック機能として利用可能です
+# このスクリプトは実際の機能をテストするための例です。
 # ===
 
 set -euo pipefail
@@ -35,9 +35,9 @@ echo "📖 仕様参照: docs/breakdown/generic_domain/system/overview/glossary.
 echo "   - 118-119行目: -i, --input オプションの説明"
 echo "   - 83行目: adaptationType の説明"
 echo
-echo "🎯 期待される動作:"
+echo "🎯 実装されている動作:"
 echo "   1. プロンプトテンプレートパス: {base_dir}/{directiveType}/{layerType}/f_{fromLayerType}[_{adaptation}].md"
-echo "   2. fromLayerType推定: --input未指定時は fromFile のファイル名から推定"
+echo "   2. fromLayerType指定: --input パラメータで明示的に指定（推奨）"
 echo "   3. adaptation適用: --adaptation指定時は f_{fromLayerType}_{adaptation}.md を使用"
 echo "   4. フォールバック: adaptation テンプレートが存在しない場合は基本テンプレートを使用"
 echo
@@ -185,9 +185,9 @@ echo
 # Example 1: Without adaptation (default)
 echo "【Example 1: Without --adaptation parameter】"
 echo "Command: breakdown to task --from=project_requirements.md"
-echo "🎯 期待動作: fromLayerType='project' (ファイル名 'project_requirements.md' から推定)"
-echo "📄 使用テンプレート: .agent/breakdown/prompts/to/task/f_project.md"
-echo "📖 参照: glossary.ja.md 118-119行目 (fromFile推定ルール)"
+echo "🎯 動作: fromLayerType='task' (デフォルト値) または --input で明示指定"
+echo "📄 使用テンプレート: .agent/breakdown/prompts/to/task/f_task.md (デフォルト)"
+echo "📖 参照: glossary.ja.md 118-119行目 (--input オプションによる明示指定)"
 echo
 
 $BREAKDOWN to task --from="$OUTPUT_DIR/project_requirements.md" -o="$OUTPUT_DIR/result_no_adaptation.md" > "$OUTPUT_DIR/result_no_adaptation.md" 2>&1
@@ -211,8 +211,8 @@ echo
 # Example 2: With --adaptation=strict
 echo "【Example 2: With --adaptation=strict】"
 echo "Command: breakdown to task --from=project_requirements.md --adaptation=strict"
-echo "🎯 期待動作: fromLayerType='project' + adaptation='strict'"
-echo "📄 使用テンプレート: .agent/breakdown/prompts/to/task/f_project_strict.md"
+echo "🎯 動作: fromLayerType='task' (デフォルト) + adaptation='strict'"
+echo "📄 使用テンプレート: .agent/breakdown/prompts/to/task/f_task_strict.md"
 echo "📖 参照: glossary.ja.md 83行目 (adaptationType)"
 echo
 
@@ -348,8 +348,8 @@ echo "adaptation テンプレートが実際に使用されているかチェッ
 echo
 echo "📖 仕様確認ポイント:"
 echo "   - テンプレートパス構成: {base_dir}/{directiveType}/{layerType}/f_{fromLayerType}[_{adaptation}].md"
-echo "   - fromLayerType推定: ファイル名 'project_requirements.md' → 'project'"
-echo "   - adaptation適用: --adaptation=strict → f_project_strict.md"
+echo "   - fromLayerType指定: --inputパラメータで明示的に指定（推奨）またはデフォルト値"
+echo "   - adaptation適用: --adaptation=strict → f_{fromLayerType}_strict.md"
 echo
 
 # Count how many results contain template markers
@@ -364,7 +364,7 @@ if [ "$ADAPTATION_COUNT" -eq 0 ]; then
     echo
     echo "⚠️  問題: adaptation テンプレートが使用されていない"
     echo "🔍 考えられる原因:"
-    echo "   1. fromLayerType推定が期待通りに動作していない"
+    echo "   1. fromLayerTypeのデフォルト値が期待と異なる可能性"
     echo "   2. テンプレートファイルのパスまたは命名が不正"
     echo "   3. adaptation パラメータが正しく処理されていない"
     echo

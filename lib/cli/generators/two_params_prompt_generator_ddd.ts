@@ -133,6 +133,13 @@ export class TwoParamsPromptGenerator {
     variables: ProcessedVariables,
   ): Promise<Result<string, PromptGeneratorError>> {
     const isDebug = Deno.env.get("LOG_LEVEL") === "debug";
+    if (isDebug) {
+      console.log(
+        "[TwoParamsPromptGenerator] generatePrompt options:",
+        JSON.stringify(options, null, 2),
+      );
+      console.log("[TwoParamsPromptGenerator] options.input:", options.input);
+    }
 
     // 1. Validate and create configuration
     const configResult = this.createConfiguration(config, options);
@@ -465,6 +472,7 @@ export class TwoParamsPromptGenerator {
         fromFile: (options.from as string) || (options.fromFile as string),
         destinationFile: (options.destination as string) || (options.output as string) ||
           "output.md",
+        input: options.input as string, // Add input option for fromLayerType
         adaptation: configuration.adaptation,
         promptDir: configuration.promptDir,
         input_text: variables.standardVariables.input_text || "",

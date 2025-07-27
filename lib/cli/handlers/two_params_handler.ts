@@ -473,5 +473,14 @@ export async function handleTwoParams(
   config: Record<string, unknown>,
   options: Record<string, unknown>,
 ): Promise<Result<void, TwoParamsHandlerError>> {
+  const isDebug = Deno.env.get("LOG_LEVEL") === "debug";
+  if (isDebug) {
+    console.log("[handleTwoParams] Received options:", JSON.stringify(options, null, 2));
+    console.log(
+      "[handleTwoParams] --input parameter present:",
+      "input" in options ? `Yes, value: "${options.input}"` : "No",
+    );
+    console.log("[handleTwoParams] All option keys:", Object.keys(options).join(", "));
+  }
   return await twoParamsHandler(params, config, options);
 }

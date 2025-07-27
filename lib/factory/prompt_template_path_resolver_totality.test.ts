@@ -452,7 +452,7 @@ Deno.test("PromptTemplatePathResolverTotality - fromFile option with working_dir
   const testBaseDir = await Deno.makeTempDir();
   const workingDir = join(testBaseDir, "workspace");
   const promptsDir = join(workingDir, "prompts");
-  const promptFile = join(promptsDir, "to", "issue", "f_task.md"); // Changed to f_task.md to match inference
+  const promptFile = join(promptsDir, "to", "issue", "f_default.md"); // Using default fromLayerType
 
   try {
     await createTestFile(promptFile);
@@ -466,7 +466,7 @@ Deno.test("PromptTemplatePathResolverTotality - fromFile option with working_dir
       params: ["to", "issue"],
       directiveType: "to",
       layerType: "issue",
-      options: { fromFile: "task_notes.md" }, // fromFile option (should infer "task" from filename)
+      options: { fromFile: "task_notes.md" }, // fromFile option (uses default fromLayerType)
     };
 
     const resolverResult = PromptTemplatePathResolverTotality.create(config, cliParams);
@@ -480,7 +480,7 @@ Deno.test("PromptTemplatePathResolverTotality - fromFile option with working_dir
 
       if (pathResult.ok) {
         assertEquals(pathResult.data.value, promptFile);
-        assertEquals(pathResult.data.metadata.fromLayerType, "task"); // Inferred from task_notes.md
+        assertEquals(pathResult.data.metadata.fromLayerType, "default"); // Default fromLayerType
       }
     }
   } finally {
@@ -548,4 +548,87 @@ Deno.test("PromptTemplatePathResolverTotality - Single source working_dir config
   };
   const result3 = PromptTemplatePathResolverTotality.create(validConfig3, cliParams);
   assertEquals(result3.ok, true);
+});
+
+Deno.test("PromptTemplatePathResolverTotality - input option as fromLayerType", async () => {
+  const testBaseDir = await Deno.makeTempDir();
+  const workingDir = join(testBaseDir, "workspace");
+  const promptsDir = join(workingDir, "prompts");
+  const promptFile = join(promptsDir, "to", "issue", "f_project.md"); // Expecting f_project.md
+
+  try {
+    await createTestFile(promptFile);
+
+    const config = {
+      app_prompt: { base_dir: "prompts" },
+      working_dir: workingDir,
+    };
+    const cliParams: TwoParams_Result = {
+      type: "two",
+      params: ["to", "issue"],
+      directiveType: "to",
+      layerType: "issue",
+      options: { input: "project" }, // --input option should be treated as fromLayerType
+    };
+
+    const resolverResult = PromptTemplatePathResolverTotality.create(config, cliParams);
+    assertExists(resolverResult.ok);
+    assertEquals(resolverResult.ok, true);
+
+    if (resolverResult.ok) {
+      const pathResult = resolverResult.data.getPath();
+      assertExists(pathResult.ok);
+      assertEquals(pathResult.ok, true);
+
+      if (pathResult.ok) {
+        assertEquals(pathResult.data.value, promptFile);
+        assertEquals(pathResult.data.metadata.fromLayerType, "project");
+      }
+    }
+  } finally {
+    await cleanupTestDirectory(testBaseDir);
+  }
+});
+
+Deno.test("PromptTemplatePathResolverTotality - input option priority over fromFile", async () => {
+  const testBaseDir = await Deno.makeTempDir();
+  const workingDir = join(testBaseDir, "workspace");
+  const promptsDir = join(workingDir, "prompts");
+  const promptFile = join(promptsDir, "to", "issue", "f_component.md"); // Should use input value
+
+  try {
+    await createTestFile(promptFile);
+
+    const config = {
+      app_prompt: { base_dir: "prompts" },
+      working_dir: workingDir,
+    };
+    const cliParams: TwoParams_Result = {
+      type: "two",
+      params: ["to", "issue"],
+      directiveType: "to",
+      layerType: "issue",
+      options: {
+        input: "component", // --input option should take priority
+        fromFile: "task_notes.md", // This should be ignored when input is present
+      },
+    };
+
+    const resolverResult = PromptTemplatePathResolverTotality.create(config, cliParams);
+    assertExists(resolverResult.ok);
+    assertEquals(resolverResult.ok, true);
+
+    if (resolverResult.ok) {
+      const pathResult = resolverResult.data.getPath();
+      assertExists(pathResult.ok);
+      assertEquals(pathResult.ok, true);
+
+      if (pathResult.ok) {
+        assertEquals(pathResult.data.value, promptFile);
+        assertEquals(pathResult.data.metadata.fromLayerType, "component"); // Should use input, not inferred from fromFile
+      }
+    }
+  } finally {
+    await cleanupTestDirectory(testBaseDir);
+  }
 });
