@@ -286,6 +286,18 @@ export class PromptTemplatePathResolverTotality {
     }
     const baseDir = baseDirResult.data;
 
+    // Check directory structure existence before building paths
+    const directoryCheckResult = this.verifyDirectoryStructure(baseDir);
+    if (!directoryCheckResult.ok) {
+      if (isDebug) {
+        console.log(
+          "[PromptTemplatePathResolverTotality] Directory structure check failed:",
+          directoryCheckResult.error,
+        );
+      }
+      return directoryCheckResult;
+    }
+
     // Build file names
     const fileName = this.buildFileName();
     const promptPath = this.buildPromptPath(baseDir, fileName);
@@ -436,23 +448,124 @@ export class PromptTemplatePathResolverTotality {
   }
 
   /**
+   * Verifies directory structure exists before attempting file operations (CRITICAL fix)
+   * Implements timeout prevention and graceful degradation
+   */
+  private verifyDirectoryStructure(baseDir: string): Result<void, PathResolutionError> {
+    const isDebug = Deno.env.get("LOG_LEVEL") === "debug";
+    const directiveType = this.getDirectiveType();
+    const layerType = this.getLayerType();
+
+    // Construct the expected directory path
+    const directoryPath = join(baseDir, directiveType, layerType);
+
+    if (isDebug) {
+      console.log("[verifyDirectoryStructure] Checking directory:", directoryPath);
+    }
+
+    // Check if directory exists with timeout protection
+    try {
+      if (!existsSync(directoryPath)) {
+        if (isDebug) {
+          console.log(
+            "[verifyDirectoryStructure] Directory not found, attempting graceful fallback",
+          );
+        }
+
+        // Graceful degradation: check parent directories exist
+        const directiveDir = join(baseDir, directiveType);
+        if (!existsSync(directiveDir)) {
+          return resultError({
+            kind: "TemplateNotFound",
+            attempted: [`${directiveDir}/ (directive directory missing)`],
+            fallback:
+              `Directory structure incomplete: missing directive directory '${directiveType}/'`,
+          });
+        }
+
+        return resultError({
+          kind: "TemplateNotFound",
+          attempted: [`${directoryPath}/ (layer directory missing)`],
+          fallback:
+            `Directory structure incomplete: missing layer directory '${directiveType}/${layerType}/'`,
+        });
+      }
+
+      if (isDebug) {
+        console.log("[verifyDirectoryStructure] Directory structure verified successfully");
+      }
+      return resultOk(undefined);
+    } catch (error) {
+      // Timeout protection: if filesystem operation fails
+      if (isDebug) {
+        console.log("[verifyDirectoryStructure] Filesystem error:", error);
+      }
+      return resultError({
+        kind: "InvalidConfiguration",
+        details: `Filesystem access error for directory: ${directoryPath}. ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      });
+    }
+  }
+
+  /**
    * Builds the filename for the prompt template
    */
   public buildFileName(): string {
     const useSchema = this.getUseSchemaFlag();
+
+    const isDebug = Deno.env.get("LOG_LEVEL") === "debug";
+    if (isDebug) {
+      console.log("[buildFileName] START - useSchema:", useSchema);
+      console.log("[buildFileName] this.getLayerType():", this.getLayerType());
+    }
+
     const fromLayerTypeResult = this.resolveFromLayerTypeSafe();
+
+    if (isDebug) {
+      console.log(
+        "[buildFileName] resolveFromLayerTypeSafe() result:",
+        JSON.stringify(fromLayerTypeResult, null, 2),
+      );
+      if (!fromLayerTypeResult.ok) {
+        console.log(
+          "[buildFileName] resolveFromLayerTypeSafe() FAILED - error:",
+          fromLayerTypeResult.error,
+        );
+      }
+    }
+
     // Use default if resolution fails
     const fromLayerType = fromLayerTypeResult.ok ? fromLayerTypeResult.data : this.getLayerType();
 
+    if (isDebug) {
+      console.log("[buildFileName] final fromLayerType:", fromLayerType);
+      console.log("[buildFileName] fallback used:", !fromLayerTypeResult.ok);
+      console.log("[buildFileName] original layerType:", this.getLayerType());
+    }
+
     if (useSchema) {
       // Schema files use .json extension and no adaptation suffix
-      return `f_${fromLayerType}.json`;
+      const fileName = `f_${fromLayerType}.json`;
+      if (isDebug) {
+        console.log("[buildFileName] SCHEMA file generated:", fileName);
+      }
+      return fileName;
     }
 
     // Prompt files use .md extension and may have adaptation suffix
     const adaptation = this.getAdaptation();
     const adaptationSuffix = adaptation.length > 0 ? `_${adaptation}` : "";
-    return `f_${fromLayerType}${adaptationSuffix}.md`;
+    const fileName = `f_${fromLayerType}${adaptationSuffix}.md`;
+
+    if (isDebug) {
+      console.log("[buildFileName] PROMPT file generated:", fileName);
+      console.log("[buildFileName] adaptation:", adaptation);
+      console.log("[buildFileName] adaptationSuffix:", adaptationSuffix);
+    }
+
+    return fileName;
   }
 
   /**
@@ -631,7 +744,13 @@ export class PromptTemplatePathResolverTotality {
       }
     }
 
-    // Fallback to default when no --input option is specified
+    // Fallback to DEFAULT_FROM_LAYER_TYPE when no --input option is specified
+    if (isDebug) {
+      console.log(
+        "[PromptTemplatePathResolverTotality] Using DEFAULT_FROM_LAYER_TYPE as fallback:",
+        DEFAULT_FROM_LAYER_TYPE,
+      );
+    }
     return resultOk(DEFAULT_FROM_LAYER_TYPE);
   }
 
