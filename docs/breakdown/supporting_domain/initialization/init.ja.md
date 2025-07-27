@@ -18,6 +18,17 @@ Breakdownプロジェクトの初期化コマンド(`init`)は、AI開発支援�
 - デフォルトの作業ディレクトリは `.agent/breakdown/` とする。
 - `.agent/breakdown/config/default-app.yml` の `working_dir` 設定値に記載され、その設定値が使われて定まる。
 
+## パス解決の統一方針
+### SINGLE SOURCE OF TRUTH原則
+- `working_dir`: 唯一の基準ディレクトリ（プロジェクト空間の定義）
+- `base_dir`: 常に相対パス（相対的な役割分担の定義）
+- 実際のパス: `resolve(working_dir, base_dir)`
+
+### 設定の意図
+- `working_dir`: プロジェクト全体の作業空間を定義
+- `base_dir`: working_dir相対での機能別ディレクトリを定義
+- プロジェクト移動時は working_dir のみ変更すれば全体が追従
+
 ## 初期化時に作成されるディレクトリ構成
 - `.agent/breakdown/`
   - `projects/`
@@ -39,10 +50,10 @@ Breakdownプロジェクトの初期化コマンド(`init`)は、AI開発支援�
   ```yaml
   working_dir: .agent/breakdown # use for output and tmporary
   app_prompt:
-    base_dir: .agent/breakdown/prompts # use for prompts. when init, command copy prompt files from app default (lib配下) to this dir.
+    base_dir: prompts # use for prompts. when init, command copy prompt files from app default (lib配下) to this dir.
     # Prompt template source: lib/prompts/to/issue/, lib/prompts/to/task/, etc.
   app_schema:
-    base_dir: .agent/breakdown/schema # use for JSON schema. when init, command copy schema files from app default (lib配下) to this dir.
+    base_dir: schemas # use for JSON schema. when init, command copy schema files from app default (lib配下) to this dir.
     # Schema file source: lib/schemas/
   ```
 - `app_prompt.base_dir` や `app_schema.base_dir` をカスタマイズした場合、指定ディレクトリも作成

@@ -10,63 +10,66 @@ Breakdown CLIの**パス解決**は、**プロンプトパス決定ドメイン*
 
 ```
 プロジェクトルート/
-├── lib/breakdown/prompts/        # app_prompt.base_dir
-│   ├── to/                      # DirectiveType
-│   │   ├── project/            # LayerType
-│   │   │   ├── f_project.md    # 基本プロンプト
-│   │   │   └── f_project_strict.md  # 適応タイプ付き
-│   │   ├── issue/              # LayerType
-│   │   │   ├── f_issue.md
-│   │   │   └── f_task_detailed.md   # fromLayer指定
-│   │   └── task/               # LayerType
-│   │       ├── f_task.md
-│   │       └── f_issue_quick.md     # fromLayer指定
-│   ├── summary/                # DirectiveType
-│   │   └── project/
-│   │       └── f_project.md
-│   └── defect/                 # DirectiveType
-│       └── issue/
-│           └── f_issue.md
-└── lib/breakdown/schema/       # app_schema.base_dir
-    ├── to/                     # DirectiveType
-    │   ├── project/            # LayerType
-    │   │   └── base.schema.json
-    │   ├── issue/
-    │   │   └── base.schema.json
-    │   └── task/
-    │       └── base.schema.json
-    └── defect/
-        └── issue/
-            └── base.schema.json
+└── .agent/breakdown/           # working_dir (SINGLE SOURCE OF TRUTH)
+    ├── prompts/                # app_prompt.base_dir (working_dir相対)
+    │   ├── to/                 # DirectiveType
+    │   │   ├── project/        # LayerType
+    │   │   │   ├── f_project.md    # 基本プロンプト
+    │   │   │   └── f_project_strict.md  # 適応タイプ付き
+    │   │   ├── issue/          # LayerType
+    │   │   │   ├── f_issue.md
+    │   │   │   └── f_task_detailed.md   # fromLayer指定
+    │   │   └── task/           # LayerType
+    │   │       ├── f_task.md
+    │   │       └── f_issue_quick.md     # fromLayer指定
+    │   ├── summary/            # DirectiveType
+    │   │   └── project/
+    │   │       └── f_project.md
+    │   └── defect/             # DirectiveType
+    │       └── issue/
+    │           └── f_issue.md
+    └── schemas/                # app_schema.base_dir (working_dir相対)
+        ├── to/                 # DirectiveType
+        │   ├── project/        # LayerType
+        │   │   └── base.schema.json
+        │   ├── issue/
+        │   │   └── base.schema.json
+        │   └── task/
+        │       └── base.schema.json
+        └── defect/
+            └── issue/
+                └── base.schema.json
 ```
 
 ## プロンプトファイルパス解決
 
-### 基本的なパス解決ルール
+### Plan1統一パス解決ルール
 
-1. **ベースディレクトリ** - `app_prompt.base_dir`
-2. **DirectiveType** - 処理方向（to, summary, defect等）
-3. **LayerType** - 処理階層（project, issue, task等）
-4. **ファイル名** - `f_{fromLayer}[_{adaptation}].md`
+1. **基準ディレクトリ** - `working_dir` (SINGLE SOURCE OF TRUTH)
+2. **相対パス** - `app_prompt.base_dir` (working_dir相対)
+3. **実際のパス** - `resolve(working_dir, base_dir)`
+4. **DirectiveType** - 処理方向（to, summary, defect等）
+5. **LayerType** - 処理階層（project, issue, task等）
+6. **ファイル名** - `f_{fromLayer}[_{adaptation}].md`
 
 ### パス解決の実例
 
 ```bash
 # 基本的なパス解決
 breakdown to task
-# → lib/breakdown/prompts/to/task/f_task.md
+# → .agent/breakdown/prompts/to/task/f_task.md
 
 # 適応タイプ付きパス解決
 breakdown to task --adaptation strict
-# → lib/breakdown/prompts/to/task/f_task_strict.md
+# → .agent/breakdown/prompts/to/task/f_task_strict.md
 
 # fromLayer指定パス解決
 breakdown to task --input issue
-# → lib/breakdown/prompts/to/task/f_issue.md
+# → .agent/breakdown/prompts/to/task/f_issue.md
 
 # 複合指定パス解決
 breakdown to task --input issue --adaptation detailed
-# → lib/breakdown/prompts/to/task/f_issue_detailed.md
+# → .agent/breakdown/prompts/to/task/f_issue_detailed.md
 ```
 
 ### ファイル名の構成ルール
@@ -95,15 +98,15 @@ f_{fromLayer}[_{adaptation}].md
 ```bash
 # 基本的なスキーマパス解決
 breakdown to task
-# → lib/breakdown/schema/to/task/base.schema.json
+# → .agent/breakdown/schemas/to/task/base.schema.json
 
 # 異なるDirectiveTypeでのスキーマパス解決
 breakdown summary project
-# → lib/breakdown/schema/summary/project/base.schema.json
+# → .agent/breakdown/schemas/summary/project/base.schema.json
 
 # 欠陥検出のスキーマパス解決
 breakdown defect issue
-# → lib/breakdown/schema/defect/issue/base.schema.json
+# → .agent/breakdown/schemas/defect/issue/base.schema.json
 ```
 
 ## 入力・出力ファイルパス解決
@@ -158,15 +161,15 @@ breakdown to task -f input.md -o result/output.txt
 ```bash
 # 1. 理想的なケース（全て存在）
 breakdown to task --input issue --adaptation detailed
-# → lib/breakdown/prompts/to/task/f_issue_detailed.md
+# → .agent/breakdown/prompts/to/task/f_issue_detailed.md
 
 # 2. 適応タイプなしのフォールバック
 breakdown to task --input issue --adaptation nonexistent
-# → lib/breakdown/prompts/to/task/f_issue.md
+# → .agent/breakdown/prompts/to/task/f_issue.md
 
 # 3. 基本ファイルへのフォールバック
 breakdown to task --input nonexistent
-# → lib/breakdown/prompts/to/task/f_task.md
+# → .agent/breakdown/prompts/to/task/f_task.md
 ```
 
 ## ハッシュ値生成とファイル名規則
@@ -201,20 +204,20 @@ breakdown to task -f input.md -o output.txt
 
 1. **プロンプトファイルが見つからない**
    ```
-   エラー: パスは正確に生成されました: lib/breakdown/prompts/to/task/f_task_strict.md
+   エラー: パスは正確に生成されました: .agent/breakdown/prompts/to/task/f_task_strict.md
    しかし、このファイルは存在しません。
    プロンプトテンプレートファイルの準備が必要です。
    ```
 
 2. **設定ディレクトリが見つからない**
    ```
-   エラー: ベースディレクトリが存在しません: lib/breakdown/prompts
-   app_prompt.base_dir の設定を確認してください。
+   エラー: ベースディレクトリが存在しません: .agent/breakdown/prompts
+   working_dir と app_prompt.base_dir の設定を確認してください。
    ```
 
 3. **権限エラー**
    ```
-   エラー: ファイルの読み込み権限がありません: lib/breakdown/prompts/to/task/f_task.md
+   エラー: ファイルの読み込み権限がありません: .agent/breakdown/prompts/to/task/f_task.md
    ファイルの権限を確認してください。
    ```
 
@@ -223,19 +226,19 @@ breakdown to task -f input.md -o output.txt
 ### プロファイル別ディレクトリ
 
 ```yaml
-# breakdown プロファイル
-breakdown:
-  app_prompt:
-    base_dir: "lib/breakdown/prompts"
-  app_schema:
-    base_dir: "lib/breakdown/schema"
+# Plan1統一設定形式 - breakdown プロファイル
+working_dir: ".agent/breakdown"
+app_prompt:
+  base_dir: "prompts"  # working_dir相対
+app_schema:
+  base_dir: "schemas"  # working_dir相対
 
-# search プロファイル
-search:
-  app_prompt:
-    base_dir: "lib/search/prompts"
-  app_schema:
-    base_dir: "lib/search/schema"
+# Plan1統一設定形式 - search プロファイル 
+working_dir: ".agent/search"
+app_prompt:
+  base_dir: "prompts"  # working_dir相対
+app_schema:
+  base_dir: "schemas"  # working_dir相対
 ```
 
 ### プロファイル別パス解決
@@ -243,11 +246,31 @@ search:
 ```bash
 # breakdown プロファイル
 breakdown to task
-# → lib/breakdown/prompts/to/task/f_task.md
+# → .agent/breakdown/prompts/to/task/f_task.md
 
 # search プロファイル
 breakdown -c search web query
-# → lib/search/prompts/web/query/f_query.md
+# → .agent/search/prompts/web/query/f_query.md
+```
+
+## Plan1パス解決の統一方針
+
+### SINGLE SOURCE OF TRUTH原則
+- **`working_dir`**: 唯一の基準ディレクトリ（プロジェクト空間の定義）
+- **`base_dir`**: 常に相対パス（相対的な役割分担の定義）
+- **実際のパス**: `resolve(working_dir, base_dir)`
+
+### 設定の意図
+- **`working_dir`**: プロジェクト全体の作業空間を定義
+- **`base_dir`**: working_dir相対での機能別ディレクトリを定義
+- **プロジェクト移動時**: working_dir のみ変更すれば全体が追従
+
+```yaml
+# 統一後のパス解決方法
+working_dir: ".agent/breakdown"     # ベースディレクトリ  
+app_prompt:
+  base_dir: "prompts"               # 相対パス
+# 実際のパス: .agent/breakdown/prompts/
 ```
 
 ## パス解決のベストプラクティス
@@ -292,12 +315,12 @@ f_task_minimal.md      # 最小限の適応
 ### 3. 設定の明確化
 
 ```yaml
-# default-app.yml
-working_dir: ".agent/breakdown"
+# Plan1統一設定形式 - default-app.yml
+working_dir: ".agent/breakdown"  # SINGLE SOURCE OF TRUTH
 app_prompt:
-  base_dir: "lib/breakdown/prompts"  # 明確なパス指定
+  base_dir: "prompts"             # working_dir相対パス
 app_schema:
-  base_dir: "lib/breakdown/schema"   # 明確なパス指定
+  base_dir: "schemas"             # working_dir相対パス
 ```
 
 ## 関連ドキュメント

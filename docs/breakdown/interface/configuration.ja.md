@@ -33,13 +33,15 @@ Breakdown CLIの設定管理は、**ドメイン駆動設計**の**設定管理�
 working_dir: ".agent/breakdown"
 
 app_prompt:
-  base_dir: "lib/breakdown/prompts"
+  base_dir: "prompts"
 
 app_schema:
-  base_dir: "lib/breakdown/schema"
+  base_dir: "schemas"
 
-# 注意：working_dirは出力・入力ファイルの解決にのみ使用
-# プロンプトやスキーマのディレクトリ解決には使用しません
+# 注意：working_dirとbase_dirの関係性
+# - working_dir: プロジェクト空間の基準ディレクトリ
+# - base_dir: working_dir相対の役割分担ディレクトリ
+# - 実際のパス: resolve(working_dir, base_dir)
 ```
 
 ### 設定項目の詳細
@@ -47,8 +49,8 @@ app_schema:
 | 設定項目 | 説明 | デフォルト値 | 用途 |
 |----------|------|--------------|------|
 | `working_dir` | 作業ディレクトリ | `.agent/breakdown` | 出力・入力ファイルの解決（-o, -i オプション） |
-| `app_prompt.base_dir` | プロンプトベースディレクトリ | `lib/breakdown/prompts` | プロンプトテンプレートファイルの配置 |
-| `app_schema.base_dir` | スキーマベースディレクトリ | `lib/breakdown/schema` | JSONスキーマファイルの配置 |
+| `app_prompt.base_dir` | プロンプトベースディレクトリ | `prompts` | プロンプトテンプレートファイルの配置 |
+| `app_schema.base_dir` | スキーマベースディレクトリ | `schemas` | JSONスキーマファイルの配置 |
 
 ## ユーザー設定（*-user.yml）
 
@@ -123,7 +125,7 @@ breakdown -c custom analyze document
 # search-app.yml
 working_dir: ".agent/search"
 app_prompt:
-  base_dir: "lib/search/prompts"
+  base_dir: "prompts"
 
 # search-user.yml
 search:
@@ -180,13 +182,13 @@ const schemaBaseDir = settings.app_schema.base_dir;
 development:
   working_dir: ".agent/dev"
   app_prompt:
-    base_dir: "dev/prompts"
+    base_dir: "prompts"
 
 # 本番環境用設定
 production:
   working_dir: ".agent/prod"
   app_prompt:
-    base_dir: "prod/prompts"
+    base_dir: "prompts"
 ```
 
 ### 2. チーム共有設定
@@ -195,9 +197,9 @@ production:
 # team-app.yml（チーム共有）
 working_dir: ".agent/team"
 app_prompt:
-  base_dir: "shared/prompts"
+  base_dir: "prompts"
 app_schema:
-  base_dir: "shared/schema"
+  base_dir: "schemas"
 ```
 
 ### 3. 個人設定のカスタマイズ

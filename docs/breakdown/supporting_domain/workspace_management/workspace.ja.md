@@ -40,11 +40,12 @@ Workspaceは、Breakdownツールのコアとなる機能として、workspace�
 設定ファイルは以下の構造を持ちます：
 
 ```yaml
-working_dir: ".agent/breakdown"
+# Plan1統一設定形式
+working_dir: ".agent/breakdown"    # SINGLE SOURCE OF TRUTH
 app_prompt:
-  base_dir: "prompts"
+  base_dir: "prompts"              # working_dir相対パス
 app_schema:
-  base_dir: "schemas"
+  base_dir: "schemas"              # working_dir相対パス
 ```
 
 ## 主要なインターフェース

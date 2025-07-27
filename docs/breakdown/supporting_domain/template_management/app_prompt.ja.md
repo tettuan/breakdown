@@ -20,13 +20,12 @@ BreakdownPromptの責務は「特定されたプロンプトファイルに対�
 **設定例**
 app_configファイルで baseDir や debug オプションを指定することで、プロンプトの格納ディレクトリやデバッグモードの有効化など、柔軟な運用が可能です。
 
-```json
-{
-  "app_prompt": {
-    "base_dir": "./.agent/breakdown/prompts/",
-    "debug": false
-  }
-}
+```yaml
+# Plan1統一設定形式
+working_dir: ".agent/breakdown"
+app_prompt:
+  base_dir: "prompts"  # working_dir相対パス
+  debug: false
 ```
 
 # テンプレート変数の記述方法
