@@ -55,4 +55,4 @@ DemonstrativeType
 
 - LayerTypeは常に出力の層を指定
 - `-i`オプションで入力の層を指定（FromLayerType）
-- `-f`オプションで入力ファイルを指定、-iがない時にFromLayerType判定にも利用
+- `-f`オプションで入力ファイルを指定

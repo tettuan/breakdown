@@ -44,7 +44,7 @@ echo
 
 # Set up
 OUTPUT_DIR="./output/adaptation_parameter_test"
-TEMPLATE_DIR="./prompts/to/task"
+TEMPLATE_DIR="./.agent/breakdown/prompts/to/task"
 mkdir -p "$OUTPUT_DIR"
 mkdir -p "$TEMPLATE_DIR"
 
@@ -315,10 +315,10 @@ if [ -f "$OUTPUT_DIR/result_strict.md" ]; then
     echo
     
     # Check which template was used
-    if grep -q "Template: STRICT" "$OUTPUT_DIR/result_strict.md"; then
-        echo "✅ Used strict adaptation template (f_task_strict.md)"
-    elif grep -q "Template: DEFAULT" "$OUTPUT_DIR/result_strict.md"; then
-        echo "❌ Incorrectly used default template instead of strict adaptation"
+    if grep -q "Template: DEFAULT STRICT ADAPTATION" "$OUTPUT_DIR/result_strict.md"; then
+        echo "✅ Used strict adaptation template (f_default_strict.md)"
+    elif grep -q "Template: DEFAULT" "$OUTPUT_DIR/result_strict.md" && ! grep -q "STRICT" "$OUTPUT_DIR/result_strict.md"; then
+        echo "❌ Incorrectly used basic default template instead of strict adaptation"
     else
         echo "⚠️ Template content differs from expected pattern"
     fi
@@ -339,10 +339,10 @@ if [ -f "$OUTPUT_DIR/result_agile.md" ]; then
     echo
     
     # Check which template was used
-    if grep -q "Template: AGILE" "$OUTPUT_DIR/result_agile.md"; then
-        echo "✅ Used agile adaptation template (f_task_agile.md)"
-    elif grep -q "Template: DEFAULT" "$OUTPUT_DIR/result_agile.md"; then
-        echo "❌ Incorrectly used default template instead of agile adaptation"
+    if grep -q "Template: DEFAULT AGILE ADAPTATION" "$OUTPUT_DIR/result_agile.md"; then
+        echo "✅ Used agile adaptation template (f_default_agile.md)"
+    elif grep -q "Template: DEFAULT" "$OUTPUT_DIR/result_agile.md" && ! grep -q "AGILE" "$OUTPUT_DIR/result_agile.md"; then
+        echo "❌ Incorrectly used basic default template instead of agile adaptation"
     else
         echo "⚠️ Template content differs from expected pattern"
     fi
@@ -364,10 +364,10 @@ if [ -f "$OUTPUT_DIR/result_detailed.md" ]; then
     echo
     
     # Check which template was used
-    if grep -q "Template: DETAILED" "$OUTPUT_DIR/result_detailed.md"; then
-        echo "✅ Used detailed adaptation template (f_task_detailed.md)"
-    elif grep -q "Template: DEFAULT" "$OUTPUT_DIR/result_detailed.md"; then
-        echo "❌ Incorrectly used default template instead of detailed adaptation"
+    if grep -q "Template: DEFAULT DETAILED ADAPTATION" "$OUTPUT_DIR/result_detailed.md"; then
+        echo "✅ Used detailed adaptation template (f_default_detailed.md)"
+    elif grep -q "Template: DEFAULT" "$OUTPUT_DIR/result_detailed.md" && ! grep -q "DETAILED" "$OUTPUT_DIR/result_detailed.md"; then
+        echo "❌ Incorrectly used basic default template instead of detailed adaptation"
     else
         echo "⚠️ Template content differs from expected pattern"
     fi
@@ -450,7 +450,7 @@ if ls "$OUTPUT_DIR"/result_*.md >/dev/null 2>&1; then
         if grep -q "Template: DEFAULT" "$file" 2>/dev/null; then
             DEFAULT_COUNT=$((DEFAULT_COUNT + 1))
         fi
-        if grep -q "Template: STRICT\|Template: AGILE\|Template: DETAILED" "$file" 2>/dev/null; then
+        if grep -q "Template: DEFAULT STRICT ADAPTATION\|Template: DEFAULT AGILE ADAPTATION\|Template: DEFAULT DETAILED ADAPTATION" "$file" 2>/dev/null; then
             ADAPTATION_COUNT=$((ADAPTATION_COUNT + 1))
         fi
     done

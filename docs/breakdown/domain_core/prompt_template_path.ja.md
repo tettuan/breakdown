@@ -39,7 +39,8 @@ Breakdown CLIにおいて、AIが理解すべきプロンプトテンプレー�
 
 **AdaptationType**: ユーザーの「どのような特性のプロンプトを使うか」を表現し、プロンプトファイル名のサフィックスを決定する**個性の表現**です。`--adaptation`オプションから生成され、未指定時はundefinedとなります。
 
-**FromLayerType**: 「どの階層からの変換か」を表現し、プロンプトファイル名のプレフィックスを決定する**変換元の表現**です。`--input`オプションまたは`fromFile`からの推定により確定します。
+**FromLayerType**: 「どの階層からの変換か」を表現し、プロンプトファイル名のプレフィックスを決定する**変換元の表現**です。`--input`オプションから指定します。
+未指定の場合は "default" を用います。
 
 ## 第3章：ドメインサービスの協働
 
@@ -190,7 +191,7 @@ enum PathResolutionErrorType {
     // FromLayerTypeの決定ロジック
     const fromLayerType = context.inputOption 
       ? context.inputOption 
-      : this.layerDetector.detectFromFile(context.fromFile);
+      : DEFAULT_FROM_LALYER_TYPE;
 
     // ファイル名の構築ロジック  
     const baseFileName = `f_${fromLayerType}`;
