@@ -45,6 +45,80 @@ else
     BREAKDOWN='deno run --allow-all ../cli/breakdown.ts'
 fi
 
+# Create required template files for CLI commands in this script
+echo "=== Creating Required Template Files ==="
+
+# This script runs multiple "breakdown to task" commands with different --input parameters
+# Required templates: f_project.md, f_issue.md, f_task.md
+
+mkdir -p "$TEMPLATE_DIR"
+
+# Template for --input=project: f_project.md
+cat > "$TEMPLATE_DIR/f_project.md" << 'EOF'
+# Task Breakdown from PROJECT Level
+
+## Input Type: PROJECT
+When input is from project level, we create high-level tasks for project implementation.
+
+## Input Content
+{{input_text}}
+
+## Task Generation
+Break down the project into:
+1. **Planning Tasks**: Requirements, design, architecture
+2. **Development Tasks**: Core features and functionality  
+3. **Integration Tasks**: System integration and testing
+4. **Deployment Tasks**: Infrastructure and release preparation
+
+## Output Format
+Structured task list with priorities and dependencies.
+EOF
+
+# Template for --input=issue: f_issue.md  
+cat > "$TEMPLATE_DIR/f_issue.md" << 'EOF'
+# Task Breakdown from ISSUE Level
+
+## Input Type: ISSUE
+When input is from issue level, we create specific tasks to resolve the issue.
+
+## Input Content
+{{input_text}}
+
+## Task Generation
+Create tasks to address the issue:
+1. **Investigation Tasks**: Analysis and root cause identification
+2. **Implementation Tasks**: Code changes and fixes
+3. **Testing Tasks**: Verification and validation
+4. **Documentation Tasks**: Updates and communication
+
+## Output Format
+Actionable task list with clear acceptance criteria.
+EOF
+
+# Template for --input=task or default: f_task.md
+cat > "$TEMPLATE_DIR/f_task.md" << 'EOF'
+# Task Breakdown from TASK Level
+
+## Input Type: TASK
+When input is from task level, we create subtasks or implementation details.
+
+## Input Content
+{{input_text}}
+
+## Task Generation
+Break down tasks into smaller, actionable items:
+1. **Subtasks**: Detailed implementation steps
+2. **Dependencies**: Required resources and prerequisites
+3. **Acceptance Criteria**: Definition of done
+4. **Estimation**: Time and effort requirements
+
+## Output Format
+Detailed subtask breakdown with clear deliverables.
+EOF
+
+echo "✓ Created templates: f_project.md, f_issue.md, f_task.md"
+echo
+
 # Create test input files for different layer types
 echo "=== Creating Test Input Files ==="
 

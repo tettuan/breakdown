@@ -42,7 +42,7 @@ mkdir -p "$CONFIG_DIR" || handle_error "Failed to create config directory"
 
 # Create custom template directories
 echo "Setting up custom template directories..."
-mkdir -p prompts/find/bugs
+mkdir -p .agent/breakdown/prompts/find/bugs
 
 # Create custom configuration file specifically for this example
 CUSTOM_CONFIG_FILE="$CONFIG_DIR/production-custom-app.yml"
@@ -51,9 +51,9 @@ cat > "$CUSTOM_CONFIG_FILE" << 'EOF'
 # Breakdown Configuration for Production Custom Profile
 working_dir: ".agent/breakdown"
 app_prompt:
-  base_dir: ".agent/breakdown/prompts"
+  base_dir: "prompts"
 app_schema:
-  base_dir: ".agent/breakdown/schema"
+  base_dir: "schema"
 params:
   two:
     directiveType:
@@ -95,7 +95,7 @@ echo "Test file created."
 echo
 
 # Create a custom template for 'find bugs'
-cat > "prompts/find/bugs/f_bugs.md" << 'EOF'
+cat > ".agent/breakdown/prompts/find/bugs/f_bugs.md" << 'EOF'
 # Find Bugs Template
 
 Input: {{input}}

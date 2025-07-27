@@ -55,6 +55,99 @@ else
     BREAKDOWN='deno run --allow-all ../cli/breakdown.ts'
 fi
 
+# Create required template files for CLI commands in this script
+echo "=== Creating Required Template Files ==="
+
+# This script tests --adaptation parameter with "breakdown to task" commands
+# Commands executed: 
+# - breakdown to task (default, needs f_task.md)
+# - breakdown to task --adaptation=strict (needs f_task_strict.md)
+# - breakdown to task --adaptation=agile (needs f_task_agile.md) 
+# - breakdown to task --adaptation=detailed (needs f_task_detailed.md)
+# - breakdown to task --adaptation=custom (fallback to f_task.md)
+
+mkdir -p "$TEMPLATE_DIR"
+
+# Base template (no adaptation)
+cat > "$TEMPLATE_DIR/f_task.md" << 'EOF'
+# Standard Task Breakdown
+
+## Template: DEFAULT (no adaptation)
+This is the standard template used when no adaptation is specified.
+
+## Input
+{{input_text}}
+
+## Task Breakdown
+Here are the tasks in standard format...
+
+## Output
+Standard task list with basic structure.
+EOF
+
+# Strict adaptation template
+cat > "$TEMPLATE_DIR/f_task_strict.md" << 'EOF'
+# Strict Task Breakdown
+
+## Template: STRICT ADAPTATION
+This template enforces rigid formatting and detailed specifications.
+
+## Input
+{{input_text}}
+
+## Strict Task Analysis
+1. **Mandatory Requirements**: Non-negotiable specifications
+2. **Compliance Checks**: Required validations and standards
+3. **Detailed Specifications**: Comprehensive technical requirements
+4. **Quality Gates**: Strict acceptance criteria
+
+## Output
+Highly detailed, compliance-focused task breakdown with strict formatting.
+EOF
+
+# Agile adaptation template  
+cat > "$TEMPLATE_DIR/f_task_agile.md" << 'EOF'
+# Agile Task Breakdown
+
+## Template: AGILE ADAPTATION  
+This template follows agile methodology patterns and practices.
+
+## Input
+{{input_text}}
+
+## Agile Task Analysis
+1. **User Stories**: Feature breakdown from user perspective
+2. **Sprint Planning**: Iterative development approach
+3. **Story Points**: Relative estimation and complexity
+4. **Definition of Done**: Clear completion criteria
+
+## Output
+Agile-formatted task breakdown with user stories and sprint structure.
+EOF
+
+# Detailed adaptation template
+cat > "$TEMPLATE_DIR/f_task_detailed.md" << 'EOF'
+# Detailed Task Breakdown
+
+## Template: DETAILED ADAPTATION
+This template provides comprehensive analysis and extensive documentation.
+
+## Input  
+{{input_text}}
+
+## Detailed Task Analysis
+1. **Comprehensive Planning**: Thorough requirement analysis
+2. **Risk Assessment**: Detailed risk identification and mitigation
+3. **Resource Planning**: Extensive resource allocation and timeline
+4. **Documentation**: Complete specification and design docs
+
+## Output
+Extensively detailed task breakdown with comprehensive documentation.
+EOF
+
+echo "✓ Created adaptation templates: f_task.md, f_task_strict.md, f_task_agile.md, f_task_detailed.md"
+echo
+
 # Create test input file
 echo "=== Creating Test Input File ==="
 cat > "$OUTPUT_DIR/project_requirements.md" << 'EOF'
@@ -353,8 +446,8 @@ echo "   - adaptation適用: --adaptation=strict → f_{fromLayerType}_strict.md
 echo
 
 # Count how many results contain template markers
-DEFAULT_COUNT=$(grep -l "Template: DEFAULT" "$OUTPUT_DIR"/result_*.md 2>/dev/null | wc -l || echo "0")
-ADAPTATION_COUNT=$(grep -l "Template: \(STRICT\|AGILE\|DETAILED\)" "$OUTPUT_DIR"/result_*.md 2>/dev/null | wc -l || echo "0")
+DEFAULT_COUNT=$(grep -l "Template: DEFAULT" "$OUTPUT_DIR"/result_*.md 2>/dev/null | wc -l | xargs echo | tr -d ' ' || echo "0")
+ADAPTATION_COUNT=$(grep -l "Template: \(STRICT\|AGILE\|DETAILED\)" "$OUTPUT_DIR"/result_*.md 2>/dev/null | wc -l | xargs echo | tr -d ' ' || echo "0")
 
 echo "結果分析:"
 echo "  デフォルトテンプレート使用: $DEFAULT_COUNT ファイル"

@@ -88,10 +88,35 @@ echo "✓ All required template files exist"
 
 # Ensure local template directories exist following DirectiveType x LayerType structure
 # (This creates local prompts directories that may be used for custom templates)
-if ! mkdir -p prompts/to/project prompts/to/issue prompts/to/task prompts/summary/project prompts/summary/issue prompts/defect/project prompts/defect/issue; then
+if ! mkdir -p .agent/breakdown/prompts/to/project .agent/breakdown/prompts/to/issue .agent/breakdown/prompts/to/task .agent/breakdown/prompts/summary/project .agent/breakdown/prompts/summary/issue .agent/breakdown/prompts/defect/project .agent/breakdown/prompts/defect/issue; then
     echo "Error: Failed to create local template directories"
     exit 1
 fi
+
+# Create required template files for this example's CLI commands
+echo "Creating required template files for CLI commands used in this script..."
+
+# This script executes: breakdown summary project --config=stdin
+# Required template: prompts/summary/project/f_project.md
+cat > ".agent/breakdown/prompts/summary/project/f_project.md" << 'EOF'
+# STDIN Project Summary Template
+
+## Input Content
+{{input_text}}
+
+## Summary Processing
+Create a structured project summary from the input:
+
+1. **Project Overview**: Extract main goals and objectives
+2. **Key Components**: Identify major deliverables and components  
+3. **Timeline**: Note any mentioned deadlines or milestones
+4. **Requirements**: List resource and technical requirements
+
+## Output Format
+Provide a clear, organized markdown summary.
+EOF
+
+echo "✓ Created template: prompts/summary/project/f_project.md"
 
 # Check if stdin configuration files exist, if not create them
 if [ ! -f "${CONFIG_DIR}/stdin-app.yml" ] || [ ! -f "${CONFIG_DIR}/stdin-user.yml" ]; then

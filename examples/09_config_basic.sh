@@ -68,7 +68,7 @@ fi
 
 # Ensure local template directories exist following DirectiveType x LayerType structure
 echo "Setting up local template directories..."
-if ! mkdir -p prompts/to/project prompts/to/issue prompts/to/task prompts/summary/project prompts/summary/issue prompts/defect/project prompts/defect/issue; then
+if ! mkdir -p .agent/breakdown/prompts/to/project .agent/breakdown/prompts/to/issue .agent/breakdown/prompts/to/task .agent/breakdown/prompts/summary/project .agent/breakdown/prompts/summary/issue .agent/breakdown/prompts/defect/project .agent/breakdown/prompts/defect/issue; then
     echo "Error: Failed to create template directories"
     exit 1
 fi
@@ -210,6 +210,31 @@ fi
 
 echo ""
 echo "🔍 VERIFICATION: All breakdown commands are fully implemented and functional"
+
+# Create required template file for CLI command in this script
+echo "Creating required template for: breakdown summary project"
+mkdir -p .agent/breakdown/prompts/summary/project
+
+# This command needs: prompts/summary/project/f_project.md (default fromLayerType)
+cat > ".agent/breakdown/prompts/summary/project/f_project.md" << 'EOF'
+# Project Summary Template
+
+## Input Content
+{{input_text}}
+
+## Project Summary Analysis
+Provide a structured summary of the project:
+
+1. **Project Overview**: Main objectives and scope
+2. **Key Components**: Primary features and modules
+3. **Timeline & Milestones**: Important deadlines and phases
+4. **Resources & Requirements**: Technical and human resources needed
+
+## Output Format
+Well-organized project summary in markdown format.
+EOF
+
+echo "✓ Created template: prompts/summary/project/f_project.md"
 echo "Testing breakdown summary project command with basic configuration..."
 
 # Test summary project command with basic config

@@ -56,6 +56,32 @@ echo "入力ファイル: $OUTPUT_DIR/messy_tasks.md"
 echo "処理中..."
 echo
 
+# Create required template file for this CLI command
+echo "Creating required template for: breakdown summary issue --input=task"
+mkdir -p .agent/breakdown/prompts/summary/issue
+
+# This command needs: prompts/summary/issue/f_task.md (because --input=task)
+cat > ".agent/breakdown/prompts/summary/issue/f_task.md" << 'EOF'
+# Issue Summary from Task Input
+
+## Input Tasks
+{{input_text}}
+
+## Issue Analysis
+Transform the task list into structured issues:
+
+1. **Issue Identification**: Group related tasks into logical issues
+2. **Priority Assessment**: Evaluate urgency and importance
+3. **Dependencies**: Identify blocking relationships
+4. **Resource Requirements**: Estimate effort and skills needed
+
+## Output Format
+Create organized issues with clear titles, descriptions, and acceptance criteria.
+EOF
+
+echo "✓ Created template: prompts/summary/issue/f_task.md"
+echo
+
 # Run summary issue command
 echo "実行コマンド:"
 echo "breakdown summary issue --config=default --from=$OUTPUT_DIR/messy_tasks.md --input=task -o=$OUTPUT_DIR/issue_summary.md > $OUTPUT_DIR/issue_summary.md"

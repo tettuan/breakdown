@@ -27,7 +27,7 @@ fi
 
 # Ensure local template directories exist
 echo "Setting up local team template directories..."
-mkdir -p prompts/team/to/task
+mkdir -p .agent/breakdown/prompts/team/to/task
 
 # Create team configuration (only if it doesn't exist or if different)
 if [ ! -f "${CONFIG_DIR}/team-app.yml" ]; then
@@ -125,6 +125,31 @@ cat > team_planning.md << 'EOF'
 EOF
 
 echo "Created team planning document"
+
+# Create required template file for CLI command in this script
+echo "Creating required template for: breakdown to task --config=team"
+mkdir -p .agent/breakdown/prompts/to/task
+
+# This command needs: prompts/to/task/f_task.md (default fromLayerType)
+cat > ".agent/breakdown/prompts/to/task/f_task.md" << 'EOF'
+# Team Task Breakdown Template
+
+## Input Content
+{{input_text}}
+
+## Team Task Analysis
+Break down the input into team-oriented tasks:
+
+1. **Team Assignments**: Who does what and when
+2. **Collaboration Points**: Where team members need to coordinate
+3. **Dependencies**: Task interdependencies and blockers
+4. **Communication**: Required meetings and status updates
+
+## Output Format
+Team-focused task breakdown with clear ownership and coordination points.
+EOF
+
+echo "✓ Created template: prompts/to/task/f_task.md"
 
 # Run breakdown with team configuration
 echo ""

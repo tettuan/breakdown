@@ -27,7 +27,7 @@ fi
 
 # Ensure local template directories exist
 echo "Setting up local production template directories..."
-mkdir -p prompts/production/defect/issue
+mkdir -p .agent/breakdown/prompts/production/defect/issue
 
 # Create production configuration (only if it doesn't exist)
 if [ ! -f "${CONFIG_DIR}/production-app.yml" ]; then
@@ -99,6 +99,31 @@ Our production system handles millions of requests daily with high availability 
 EOF
 
 echo "Created sample production report"
+
+# Create required template file for CLI command in this script
+echo "Creating required template for: breakdown summary issue --config=production"
+mkdir -p .agent/breakdown/prompts/summary/issue
+
+# This command needs: prompts/summary/issue/f_issue.md (default fromLayerType)
+cat > ".agent/breakdown/prompts/summary/issue/f_issue.md" << 'EOF'
+# Production Issue Summary Template
+
+## Input Content
+{{input_text}}
+
+## Production Issue Analysis
+Analyze the production issue for:
+
+1. **Impact Assessment**: Severity and user impact
+2. **Root Cause**: Technical analysis and investigation
+3. **Resolution Strategy**: Fix approach and timeline
+4. **Prevention**: Measures to avoid recurrence
+
+## Output Format
+Production-ready issue summary with clear action items and escalation paths.
+EOF
+
+echo "✓ Created template: prompts/summary/issue/f_issue.md"
 
 # Run breakdown with production configuration
 echo ""

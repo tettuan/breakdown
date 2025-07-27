@@ -27,7 +27,7 @@ fi
 
 # Ensure local template directories exist
 echo "Setting up local production template directories..."
-mkdir -p prompts/production/defect/issue
+mkdir -p .agent/breakdown/prompts/production/defect/issue
 
 # Create production configuration with find bugs settings
 # Create production configuration with find bugs settings (only if it doesn't exist)
@@ -176,6 +176,31 @@ $(cat sample_code/payment_service.ts)
 $(cat sample_code/user_auth.py)
 \`\`\`
 EOF
+
+# Create required template file for CLI command in this script
+echo "Creating required template for: breakdown find bugs --config=production-bugs"
+mkdir -p .agent/breakdown/prompts/find/bugs
+
+# This command needs: prompts/find/bugs/f_bugs.md (default fromLayerType)
+cat > ".agent/breakdown/prompts/find/bugs/f_bugs.md" << 'EOF'
+# Production Bug Detection Template
+
+## Input Content
+{{input_text}}
+
+## Bug Detection Analysis
+Systematically analyze the code for:
+
+1. **Security Vulnerabilities**: Authentication, authorization, input validation
+2. **Performance Issues**: Inefficient algorithms, memory leaks, bottlenecks
+3. **Logic Errors**: Edge cases, error handling, business logic flaws
+4. **Code Quality**: Maintainability, readability, best practices
+
+## Output Format
+Structured bug report with severity, location, description, and recommended fixes.
+EOF
+
+echo "✓ Created template: prompts/find/bugs/f_bugs.md"
 
 # Run breakdown find bugs command
 echo ""
