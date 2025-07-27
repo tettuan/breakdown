@@ -141,7 +141,7 @@ breakdown to issue --from=project.md \
 
 | 入力オプション         | inputFilePath         | outputFilePath        | promptFilePath        | schemaFilePath        | fromLayerType        | adaptationType      | customVariables |
 |------------------------|-----------------------|-----------------------|-----------------------|-----------------------|----------------------|---------------------|--------------------------|
-| --from, -f             | 入力ファイルパスとして利用 |                       |                       |                       | fromFileから推定      |                     |                          |
+| --from, -f             | 入力ファイルパスとして利用 |                       |                       |                       |                      |                     |                          |
 | --destination, -o      |                       | 出力ファイルパスとして利用 |                       |                       |                      |                     |                          |
 | --input, -i            |                       |                       |                       |                       | 入力レイヤー種別を指定 |                     |                          |
 | --adaptation, -a       |                       |                       | プロンプトファイル名のsuffix |                       |                      | プロンプト種別を指定   |                          |
@@ -151,7 +151,7 @@ breakdown to issue --from=project.md \
 
 ### 補足
 - inputFilePath, outputFilePath, promptFilePath, schemaFilePath などの予約変数は PromptVariablesFactory で一元的に構築される。
-- fromLayerType は --input で明示指定されない場合、fromFile のパスやファイル名から推定される。
+- fromLayerType は --input で明示指定されない場合、"default" を使用する。
 - adaptationType は --adaptation で指定された場合、プロンプトファイル名のsuffixとして利用される。
 - directiveType, layerType はコマンドの主要引数であり、各種パス解決のディレクトリ名等に利用される。
 - カスタム変数（--*）は customVariables オブジェクトに格納され、テンプレート内で `{変数名}` として参照可能。

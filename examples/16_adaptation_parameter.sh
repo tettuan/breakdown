@@ -195,7 +195,9 @@ if [ -f "$OUTPUT_DIR/result_no_adaptation.md" ]; then
     if grep -q "Template: DEFAULT" "$OUTPUT_DIR/result_no_adaptation.md"; then
         echo "✅ Used default template (f_project.md)"
     else
-        echo "⚠️  Template detection marker not found"
+        echo "⚠️  期待されたテンプレートマーカーが見つからない"
+        echo "💡 デバッグ情報: 実際のテンプレートファイル確認 → ls -la $TEMPLATE_DIR/f_*.md"
+        echo "📖 仕様確認: glossary.ja.md でfromLayerType推定ロジックを参照"
     fi
 fi
 echo
@@ -203,7 +205,9 @@ echo
 # Example 2: With --adaptation=strict
 echo "【Example 2: With --adaptation=strict】"
 echo "Command: breakdown to task --from=project_requirements.md --adaptation=strict"
-echo "Expected: Should use f_project_strict.md template"
+echo "🎯 期待動作: fromLayerType='project' + adaptation='strict'"
+echo "📄 使用テンプレート: .agent/breakdown/prompts/to/task/f_project_strict.md"
+echo "📖 参照: glossary.ja.md 83行目 (adaptationType)"
 echo
 
 $BREAKDOWN to task --from="$OUTPUT_DIR/project_requirements.md" --adaptation=strict -o="$OUTPUT_DIR/result_strict.md" > "$OUTPUT_DIR/result_strict.md" 2>&1
@@ -219,7 +223,10 @@ if [ -f "$OUTPUT_DIR/result_strict.md" ]; then
     elif grep -q "Task ID:" "$OUTPUT_DIR/result_strict.md"; then
         echo "✅ Found strict format markers"
     else
-        echo "⚠️  May have fallen back to default template"
+        echo "⚠️  adaptation テンプレートが使用されていない可能性"
+        echo "💡 フォールバック動作: adaptation テンプレートが見つからない場合は基本テンプレートを使用"
+        echo "🔍 確認手順: 1) テンプレートファイル存在確認 2) fromLayerType推定結果確認"
+        echo "📖 仕様: glossary.ja.md template path resolution"
     fi
 fi
 echo
@@ -330,25 +337,42 @@ fi
 
 # Verify actual behavior
 echo
-echo "=== Verifying Actual Behavior ==="
-echo "Checking if adaptation templates were actually used..."
+echo "=== 実際の動作の検証 ==="
+echo "adaptation テンプレートが実際に使用されているかチェック中..."
+echo
+echo "📖 仕様確認ポイント:"
+echo "   - テンプレートパス構成: {base_dir}/{directiveType}/{layerType}/f_{fromLayerType}[_{adaptation}].md"
+echo "   - fromLayerType推定: ファイル名 'project_requirements.md' → 'project'"
+echo "   - adaptation適用: --adaptation=strict → f_project_strict.md"
 echo
 
 # Count how many results contain template markers
 DEFAULT_COUNT=$(grep -l "Template: DEFAULT" "$OUTPUT_DIR"/result_*.md 2>/dev/null | wc -l || echo "0")
 ADAPTATION_COUNT=$(grep -l "Template: \(STRICT\|AGILE\|DETAILED\)" "$OUTPUT_DIR"/result_*.md 2>/dev/null | wc -l || echo "0")
 
-echo "Results using default template: $DEFAULT_COUNT"
-echo "Results using adaptation templates: $ADAPTATION_COUNT"
+echo "結果分析:"
+echo "  デフォルトテンプレート使用: $DEFAULT_COUNT ファイル"
+echo "  adaptation テンプレート使用: $ADAPTATION_COUNT ファイル"
 
 if [ "$ADAPTATION_COUNT" -eq 0 ]; then
     echo
-    echo "⚠️  Note: Adaptation templates may not be used in current implementation"
-    echo "    All results appear to use the default template regardless of --adaptation parameter"
-    echo "    This suggests the feature may be planned but not yet implemented"
+    echo "⚠️  問題: adaptation テンプレートが使用されていない"
+    echo "🔍 考えられる原因:"
+    echo "   1. fromLayerType推定が期待通りに動作していない"
+    echo "   2. テンプレートファイルのパスまたは命名が不正"
+    echo "   3. adaptation パラメータが正しく処理されていない"
+    echo
+    echo "💡 デバッグ手順:"
+    echo "   1. LOG_LEVEL=debug で実行してパス解決過程を確認"
+    echo "   2. 実際のテンプレートファイル存在確認: ls -la $TEMPLATE_DIR/"
+    echo "   3. --input=project で明示的にfromLayerTypeを指定してテスト"
+    echo
+    echo "📖 仕様参照:"
+    echo "   - docs/breakdown/generic_domain/system/overview/glossary.ja.md"
+    echo "   - docs/breakdown/domain_core/prompt_template_path.ja.md"
 else
     echo
-    echo "✅ Adaptation parameter is working as expected"
+    echo "✅ Adaptation parameter は期待通りに動作している"
 fi
 
 echo "=== Adaptation Parameter Example Complete ==="

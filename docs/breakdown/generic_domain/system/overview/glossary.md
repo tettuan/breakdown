@@ -78,7 +78,7 @@
 |------|----------|------|------------|
 | -f, --from | [options.ja.md](./docs/breakdown/options.ja.md) | Option to specify input file. Specifies file path and uses its content as `input_text_file`. Works independently from stdin, both can be used simultaneously. | stdin, input_text_file |
 | -o, --destination | [options.ja.md](./docs/breakdown/options.ja.md) | Option to specify output destination. Specifies file path or directory path and uses that value as `destination_path`. Filename is automatically generated for directories. | destination_path, destinationFile |
-| -i, --input | [options.ja.md](./docs/breakdown/options.ja.md) | Option to specify input layer type. Overwrites `fromLayerType` with specified value. If not specified, inferred from fromFile. | fromLayerType, layerType |
+| -i, --input | [options.ja.md](./docs/breakdown/options.ja.md) | Option to specify input layer type. Sets `fromLayerType` with specified value. If not specified, uses "default". | fromLayerType, layerType |
 | -a, --adaptation | [options.ja.md](./docs/breakdown/options.ja.md) | Option to specify prompt type. Sets `adaptationType` with specified value and is used as suffix for prompt filename. | adaptationType, prompt type |
 | --help | [options.ja.md](./docs/breakdown/options.ja.md) | Option to display help message. Shows command usage and option descriptions. | NoParamsResult, help |
 | --version | [options.ja.md](./docs/breakdown/options.ja.md) | Option to display version information. Shows application version number. | NoParamsResult, version |

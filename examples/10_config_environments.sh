@@ -15,6 +15,18 @@ SCRIPT_DIR="$(dirname "$0")"
 cd "$SCRIPT_DIR" || exit 1
 
 echo "=== Environment-Specific Configuration Example ==="
+echo
+echo "📖 仕様参照: docs/breakdown/generic_domain/system/overview/glossary.ja.md"
+echo "   - 39行目: プロファイルプレフィクス (Profile Prefix) の説明"
+echo "   - 99-101行目: *-app.yml, *-user.yml の階層化設定"
+echo "   - 102行目: プロファイルプレフィクスによる設定切り替え"
+echo
+echo "🎯 期待される動作:"
+echo "   1. 環境別設定ファイル: {env}-app.yml, {env}-user.yml"
+echo "   2. 環境別プロンプトディレクトリ: prompts/{env}/"
+echo "   3. --config={env} で環境別設定を切り替え"
+echo "   4. 各環境で異なるテンプレートとロギング設定を使用"
+echo
 
 # Run from examples directory
 CONFIG_DIR="./.agent/breakdown/config"
@@ -256,16 +268,32 @@ Started after deployment version 2.3.1
 EOF
 
 echo ""
-echo "Testing different environments..."
+echo "🔍 環境別設定のテスト実行"
+echo "📖 検証ポイント: 各環境で異なるテンプレートとロギング設定が使用されることを確認"
 
 # Test each environment
 for ENV in dev staging prod; do
     echo ""
     echo "=== Testing ${ENV} environment ==="
     echo "Command: deno run --allow-all ../cli/breakdown.ts defect issue --config=${ENV} --from=./environment_test.md"
+    echo "🎯 期待動作:"
+    echo "   - 設定: ${ENV}-app.yml, ${ENV}-user.yml を使用"
+    echo "   - テンプレート: prompts/${ENV}/defect/issue/f_issue.md を使用"
+    echo "   - ログレベル: ${ENV}環境固有の設定を適用"
+    
     deno run --allow-all ../cli/breakdown.ts defect issue --config=${ENV} --from=./environment_test.md > ./${ENV}_output.md
-    echo "Output preview:"
+    
+    echo "📊 Output preview:"
     head -10 ./${ENV}_output.md
+    
+    # Check if environment-specific template was used
+    if grep -q "Environment: ${ENV^}" ./${ENV}_output.md; then
+        echo "✅ ${ENV} 環境専用テンプレートが使用されました"
+    else
+        echo "⚠️  ${ENV} 環境専用テンプレートが使用されていない可能性"
+        echo "💡 確認: prompts/${ENV}/defect/issue/f_issue.md の存在とアクセス権限"
+    fi
+    
     rm -f ./${ENV}_output.md
 done
 
