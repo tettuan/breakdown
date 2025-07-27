@@ -23,6 +23,7 @@ import type { PromptCliParams } from "$lib/types/mod.ts";
 import { type FactoryResolvedValues, VariablesBuilder } from "$lib/builder/variables_builder.ts";
 import type { ProcessedVariables } from "../../processor/variable_processor.ts";
 import { PromptManagerAdapter } from "$lib/prompt/prompt_manager_adapter.ts";
+import { DEFAULT_PROMPT_BASE_DIR } from "$lib/config/constants.ts";
 import { PromptPath } from "$lib/types/prompt_types.ts";
 import type { PromptError, PromptVariables } from "$lib/types/prompt_types.ts";
 
@@ -327,13 +328,7 @@ export class TwoParamsPromptGenerator {
 
     // Fallback to default prompt directory when configuration loading fails
     // This allows the system to work even when BreakdownConfig can't load properly
-    // Check if we're in examples directory and adjust path accordingly
-    const cwd = Deno.cwd();
-    if (cwd.endsWith("/examples") || cwd.includes("/examples/")) {
-      return "./prompts";
-    }
-    // Use relative path to work from current working directory
-    return "./.agent/breakdown/prompts";
+    return DEFAULT_PROMPT_BASE_DIR;
   }
 
   /**

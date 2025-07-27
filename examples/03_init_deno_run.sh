@@ -43,8 +43,8 @@ params:
     layerType:
       pattern: "^(project|issue|task|bugs)$"
 workspace:
-  working_dir: ".agent/breakdown"
-  temp_dir: ".agent/breakdown/temp"
+  working_dir: "."
+  temp_dir: "temp"
 EOF
   echo "✅ Successfully created directory structure and default-app.yml"
 
@@ -822,8 +822,8 @@ params:
     layerType:
       pattern: "^(project|issue|task|bugs)$"
 workspace:
-  working_dir: ".agent/breakdown"
-  temp_dir: ".agent/breakdown/temp"
+  working_dir: "."
+  temp_dir: "temp"
 EOF
 echo "✅ Created default-app.yml with find bugs support"
 
@@ -843,8 +843,8 @@ params:
     layerType:
       pattern: "^(project|issue|task|bugs)$"
 workspace:
-  working_dir: ".agent/breakdown"
-  temp_dir: ".agent/breakdown/temp"
+  working_dir: "."
+  temp_dir: "temp"
 EOF
   echo "✅ Created findbugs-app.yml"
 fi
@@ -865,15 +865,15 @@ params:
     layerType:
       pattern: "^(project|issue|task|bugs)$"
 workspace:
-  working_dir: ".agent/breakdown"
-  temp_dir: ".agent/breakdown/temp"
+  working_dir: "."
+  temp_dir: "temp"
 EOF
   echo "✅ Created stdin-app.yml"
 fi
 
 if [ ! -f ".agent/breakdown/config/stdin-user.yml" ]; then
   cat > .agent/breakdown/config/stdin-user.yml << 'EOF'
-working_dir: ".agent/breakdown"
+working_dir: "."
 username: "stdin-user"
 project_name: "stdin-project"
 EOF
@@ -896,8 +896,8 @@ params:
     layerType:
       pattern: "^(project|issue|task|bugs)$"
 workspace:
-  working_dir: ".agent/breakdown"
-  temp_dir: ".agent/breakdown/temp"
+  working_dir: "."
+  temp_dir: "temp"
 timeout_seconds: 30
 EOF
   echo "✅ Created timeout-app.yml"
@@ -905,7 +905,7 @@ fi
 
 if [ ! -f ".agent/breakdown/config/timeout-user.yml" ]; then
   cat > .agent/breakdown/config/timeout-user.yml << 'EOF'
-working_dir: ".agent/breakdown"
+working_dir: "."
 username: "timeout-user"
 project_name: "timeout-project"
 EOF
@@ -928,8 +928,8 @@ params:
     layerType:
       pattern: "^(project|issue|task|bugs)$"
 workspace:
-  working_dir: ".agent/breakdown"
-  temp_dir: ".agent/breakdown/temp"
+  working_dir: "."
+  temp_dir: "temp"
 basic_mode: true
 EOF
   echo "✅ Created basic-app.yml"
@@ -937,7 +937,7 @@ fi
 
 if [ ! -f ".agent/breakdown/config/basic-user.yml" ]; then
   cat > .agent/breakdown/config/basic-user.yml << 'EOF'
-working_dir: ".agent/breakdown"
+working_dir: "."
 username: "basic-user"
 project_name: "basic-project"
 EOF
@@ -963,8 +963,8 @@ params:
     layerType:
       pattern: "^(project|issue|task|bugs)$"
 workspace:
-  working_dir: ".agent/breakdown"
-  temp_dir: ".agent/breakdown/temp"
+  working_dir: "."
+  temp_dir: "temp"
 logger:
   level: "debug"
   format: "text"
@@ -992,7 +992,7 @@ fi
 
 if [ ! -f ".agent/breakdown/config/team-user.yml" ]; then
   cat > .agent/breakdown/config/team-user.yml << 'EOF'
-working_dir: ".agent/breakdown"
+working_dir: "."
 username: "team-user"
 project_name: "team-project"
 team_name: "development-team"
@@ -1016,8 +1016,8 @@ params:
     layerType:
       pattern: "^(project|issue|task|bugs)$"
 workspace:
-  working_dir: ".agent/breakdown"
-  temp_dir: ".agent/breakdown/temp"
+  working_dir: "."
+  temp_dir: "temp"
 production_mode: true
 bug_detection: true
 EOF
@@ -1026,7 +1026,7 @@ fi
 
 if [ ! -f ".agent/breakdown/config/production-bugs-user.yml" ]; then
   cat > .agent/breakdown/config/production-bugs-user.yml << 'EOF'
-working_dir: ".agent/breakdown"
+working_dir: "."
 username: "production-bugs-user"
 project_name: "production-bugs-project"
 environment: "production"
@@ -1050,8 +1050,8 @@ params:
     layerType:
       pattern: "^(project|issue|task|bugs)$"
 workspace:
-  working_dir: ".agent/breakdown"
-  temp_dir: ".agent/breakdown/temp"
+  working_dir: "."
+  temp_dir: "temp"
 production_mode: true
 custom_config: true
 advanced_features: true
@@ -1061,7 +1061,7 @@ fi
 
 if [ ! -f ".agent/breakdown/config/production-custom-user.yml" ]; then
   cat > .agent/breakdown/config/production-custom-user.yml << 'EOF'
-working_dir: ".agent/breakdown"
+working_dir: "."
 username: "production-custom-user"
 project_name: "production-custom-project"
 environment: "production"
@@ -1088,8 +1088,8 @@ params:
     layerType:
       pattern: "^(project|issue|task|bugs)$"
 workspace:
-  working_dir: ".agent/breakdown"
-  temp_dir: ".agent/breakdown/temp"
+  working_dir: "."
+  temp_dir: "temp"
 production_mode: true
 logger:
   level: "warn"
@@ -1120,7 +1120,7 @@ fi
 # Create missing production-user.yml (to complete production profile)
 if [ ! -f ".agent/breakdown/config/production-user.yml" ]; then
   cat > .agent/breakdown/config/production-user.yml << 'EOF'
-working_dir: ".agent/breakdown"
+working_dir: "."
 username: "production-user"
 project_name: "production-project"
 environment: "production"
@@ -1144,8 +1144,8 @@ params:
     layerType:
       pattern: "^(project|issue|task|bugs)$"
 workspace:
-  working_dir: ".agent/breakdown"
-  temp_dir: ".agent/breakdown/temp"
+  working_dir: "."
+  temp_dir: "temp"
 logger:
   level: "debug"
   format: "text"
@@ -1160,7 +1160,7 @@ fi
 
 if [ ! -f ".agent/breakdown/config/dev-user.yml" ]; then
   cat > .agent/breakdown/config/dev-user.yml << 'EOF'
-working_dir: ".agent/breakdown"
+working_dir: "."
 username: "dev-user"
 project_name: "dev-project"
 environment: "development"
@@ -1183,8 +1183,8 @@ params:
     layerType:
       pattern: "^(project|issue|task|bugs)$"
 workspace:
-  working_dir: ".agent/breakdown"
-  temp_dir: ".agent/breakdown/temp"
+  working_dir: "."
+  temp_dir: "temp"
 logger:
   level: "info"
   format: "json"
@@ -1201,7 +1201,7 @@ fi
 
 if [ ! -f ".agent/breakdown/config/staging-user.yml" ]; then
   cat > .agent/breakdown/config/staging-user.yml << 'EOF'
-working_dir: ".agent/breakdown"
+working_dir: "."
 username: "staging-user"
 project_name: "staging-project"
 environment: "staging"
@@ -1224,8 +1224,8 @@ params:
     layerType:
       pattern: "^(project|issue|task|bugs)$"
 workspace:
-  working_dir: ".agent/breakdown"
-  temp_dir: ".agent/breakdown/temp"
+  working_dir: "."
+  temp_dir: "temp"
 logger:
   level: "error"
   format: "json"
@@ -1247,7 +1247,7 @@ fi
 
 if [ ! -f ".agent/breakdown/config/prod-user.yml" ]; then
   cat > .agent/breakdown/config/prod-user.yml << 'EOF'
-working_dir: ".agent/breakdown"
+working_dir: "."
 username: "prod-user"
 project_name: "prod-project"
 environment: "production"

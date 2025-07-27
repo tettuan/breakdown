@@ -327,7 +327,7 @@ export class PathResolutionPresets {
     return PathResolutionOption.create(
       "workspace",
       baseDir,
-      ["lib/breakdown/prompts", "prompts", ".breakdown/prompts"],
+      [], // Fallbacks should be configured, not hardcoded
       {
         required: ["must-exist", "must-be-directory", "must-be-readable"],
       },

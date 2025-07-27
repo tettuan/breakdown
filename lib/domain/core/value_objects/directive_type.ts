@@ -222,7 +222,7 @@ export class DirectiveType {
    */
   getPromptPath(
     layer: { value: string },
-    baseDir = "prompts",
+    baseDir: string,
     fromLayerType?: string,
     adaptation?: string,
   ): string {

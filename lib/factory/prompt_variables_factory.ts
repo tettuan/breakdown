@@ -494,12 +494,9 @@ export class PromptVariablesFactory {
       } catch (_configError) {
         // If config loading fails, use fallback defaults
         // This handles ERR1010: Configuration not loaded scenarios
-        // Check if we're in examples directory and adjust paths accordingly
-        const cwd = Deno.cwd();
-        const inExamples = cwd.endsWith("/examples") || cwd.includes("/examples/");
         configData = {
-          app_prompt: { base_dir: inExamples ? "./prompts" : "./.agent/breakdown/prompts" },
-          app_schema: { base_dir: inExamples ? "./schema" : "./.agent/breakdown/schema" },
+          app_prompt: { base_dir: DEFAULT_PROMPT_BASE_DIR },
+          app_schema: { base_dir: DEFAULT_SCHEMA_BASE_DIR },
           input: { base_dir: "input" },
           output: { base_dir: "output" },
           features: {

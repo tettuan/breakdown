@@ -11,6 +11,7 @@ import type { DirectiveType, LayerType } from "../../types/mod.ts";
 import { TemplatePath, TemplateVariables } from "./prompt_generation_aggregate.ts";
 import { SchemaPath } from "./schema_management_aggregate.ts";
 import { SchemaId, TemplateId } from "./template_value_objects.ts";
+import { DEFAULT_PROMPT_BASE_DIR, DEFAULT_SCHEMA_BASE_DIR } from "../../config/constants.ts";
 
 /**
  * Type factory for creating template paths from types
@@ -172,8 +173,8 @@ export class TypedPathResolver {
     config: PathResolverConfig = {},
   ) {
     this.baseDirectory = config.baseDirectory || Deno.cwd();
-    this.promptBaseDir = config.promptBaseDir || "prompts";
-    this.schemaBaseDir = config.schemaBaseDir || "schema";
+    this.promptBaseDir = config.promptBaseDir || DEFAULT_PROMPT_BASE_DIR;
+    this.schemaBaseDir = config.schemaBaseDir || DEFAULT_SCHEMA_BASE_DIR;
   }
 
   /**

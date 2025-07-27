@@ -12,7 +12,11 @@
 
 import { isAbsolute, join, resolve } from "jsr:@std/path@^1.0.9";
 import { existsSync } from "jsr:@std/fs@0.224.0";
-import { DEFAULT_FROM_LAYER_TYPE, DEFAULT_PROMPT_BASE_DIR } from "../config/constants.ts";
+import {
+  DEFAULT_FROM_LAYER_TYPE,
+  DEFAULT_PROMPT_BASE_DIR,
+  DEFAULT_SCHEMA_BASE_DIR,
+} from "../config/constants.ts";
 import type { PromptCliParams } from "./prompt_variables_factory.ts";
 import type { TwoParams_Result } from "../deps.ts";
 import { error as resultError, ok as resultOk, type Result } from "../types/result.ts";
@@ -235,12 +239,17 @@ export class PromptTemplatePathResolverTotality {
   private static normalizeConfig(config: Record<string, unknown>): PromptResolverConfig {
     const appPrompt = config.app_prompt as { base_dir?: string } | undefined;
     const appSchema = config.app_schema as { base_dir?: string } | undefined;
-    const workingDir = config.working_dir as string | undefined;
+    const workingDir = (config.working_dir as string | undefined) || Deno.cwd();
 
+    // base_dir のデフォルト値を取得
+    const promptBaseDir = appPrompt?.base_dir || DEFAULT_PROMPT_BASE_DIR;
+    const schemaBaseDir = appSchema?.base_dir || DEFAULT_SCHEMA_BASE_DIR;
+
+    // working_dir と結合して正規化
     return {
-      promptBaseDir: appPrompt?.base_dir || DEFAULT_PROMPT_BASE_DIR,
-      schemaBaseDir: appSchema?.base_dir || DEFAULT_PROMPT_BASE_DIR,
-      workingDir: workingDir || Deno.cwd(),
+      promptBaseDir: isAbsolute(promptBaseDir) ? promptBaseDir : resolve(workingDir, promptBaseDir),
+      schemaBaseDir: isAbsolute(schemaBaseDir) ? schemaBaseDir : resolve(workingDir, schemaBaseDir),
+      workingDir: workingDir,
     };
   }
 

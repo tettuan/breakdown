@@ -20,7 +20,12 @@ import {
   type PromptCliParams,
   PromptVariablesFactory,
 } from "$lib/factory/prompt_variables_factory.ts";
-import { DEFAULT_SCHEMA_BASE_DIR } from "$lib/config/constants.ts";
+import type {
+  PromptGenerationContext,
+  PromptGenerationService,
+} from "$lib/prompt/prompt_generation_service.ts";
+import { DefaultPromptGenerationServiceFactory } from "$lib/prompt/prompt_generation_service_factory.ts";
+import type { PromptError } from "$lib/types/prompt_types.ts";
 
 /**
  * Application service errors following Discriminated Union pattern
@@ -51,6 +56,8 @@ export interface ProcessedVariables {
   readonly standardVariables: Record<string, string>;
   readonly customVariables: Record<string, string>;
   readonly inputText?: string;
+  readonly inputFile?: string;
+  readonly outputFile?: string;
 }
 
 /**
@@ -99,11 +106,15 @@ export interface TwoParamsOutput {
  * ```
  */
 export class TwoParamsApplicationService {
+  private readonly promptGenerationService: PromptGenerationService;
+
   /**
    * Constructor with dependency injection
    */
-  constructor() {
+  constructor(promptGenerationService?: PromptGenerationService) {
     // Simplified constructor - dependencies resolved at runtime
+    this.promptGenerationService = promptGenerationService ??
+      new DefaultPromptGenerationServiceFactory().create();
   }
 
   /**
@@ -189,10 +200,11 @@ export class TwoParamsApplicationService {
 
       const factory = factoryResult.data;
 
-      // Step 6: Generate prompt using PromptManagerAdapter
-      const promptResult = await this.generatePromptWithAdapter(
-        factory.promptFilePath,
+      // Step 6: Generate prompt using domain service
+      const promptResult = await this.generatePrompt(
+        twoParams,
         processedVariables,
+        factory,
       );
 
       if (!promptResult.ok) {
@@ -308,38 +320,52 @@ export class TwoParamsApplicationService {
    * @param variables - Processed variables
    * @returns Result with generated prompt content or generation error
    */
-  private generatePrompt(
-    twoParams: TwoParams,
+  private async generatePrompt(
+    _twoParams: TwoParams,
     variables: ProcessedVariables,
-  ): Result<string, TwoParamsApplicationServiceError> {
+    factory: PromptVariablesFactory,
+  ): Promise<Result<string, TwoParamsApplicationServiceError>> {
     try {
-      // Placeholder for actual prompt generation
-      // This would typically involve:
-      // - Loading prompt template from resolved path
-      // - Variable substitution
-      // - Schema reference injection
-      // - Final prompt assembly
+      // Use paths from factory which has proper config with working_dir + base_dir
+      const promptPath = factory.promptFilePath;
+      const schemaPath = factory.schemaFilePath;
 
-      const promptPath = twoParams.resolvePromptFilePath("prompts");
-      const schemaPath = twoParams.resolveSchemaFilePath(DEFAULT_SCHEMA_BASE_DIR);
+      // Create context for prompt generation
+      const context: PromptGenerationContext = {
+        promptFilePath: promptPath,
+        inputFilePath: variables.inputFile || "-",
+        outputFilePath: variables.outputFile || "output.json",
+        schemaFilePath: schemaPath,
+        customVariables: variables.customVariables,
+        inputText: variables.inputText,
+      };
 
-      // Mock prompt generation for now
-      const mockPrompt = `# Generated Prompt
+      // Validate context
+      const validationResult = this.promptGenerationService.validateContext(
+        context,
+        { hasValidBaseDir: true },
+      );
 
-Directive: ${twoParams.directive.value}
-Layer: ${twoParams.layer.value}
-Profile: ${twoParams.profile.value}
+      if (!validationResult.ok) {
+        return error({
+          kind: "PromptGenerationError",
+          message: this.formatPromptError(validationResult.error),
+          cause: validationResult.error,
+        });
+      }
 
-Prompt Path: ${promptPath}
-Schema Path: ${schemaPath}
+      // Generate prompt
+      const promptResult = await this.promptGenerationService.generatePrompt(context);
 
-Variables:
-${JSON.stringify(variables, null, 2)}
+      if (!promptResult.ok) {
+        return error({
+          kind: "PromptGenerationError",
+          message: this.formatPromptError(promptResult.error),
+          cause: promptResult.error,
+        });
+      }
 
-Timestamp: ${new Date().toISOString()}
-`;
-
-      return ok(mockPrompt);
+      return ok(promptResult.data.content);
     } catch (cause) {
       return error({
         kind: "PromptGenerationError",
@@ -348,6 +374,29 @@ Timestamp: ${new Date().toISOString()}
         }`,
         cause,
       });
+    }
+  }
+
+  /**
+   * Format prompt error for user-friendly display
+   *
+   * @param promptError - Prompt generation error
+   * @returns Formatted error message
+   */
+  private formatPromptError(promptError: PromptError): string {
+    switch (promptError.kind) {
+      case "TemplateNotFound":
+        return `Template not found: ${promptError.path}`;
+      case "InvalidVariables":
+        return `Invalid variables: ${promptError.details.join(", ")}`;
+      case "SchemaError":
+        return `Schema error in ${promptError.schema}: ${promptError.error}`;
+      case "InvalidPath":
+        return "Invalid path";
+      case "ConfigurationError":
+        return `Configuration error: ${promptError.message}`;
+      default:
+        return "Unknown prompt error";
     }
   }
 
@@ -425,51 +474,6 @@ Timestamp: ${new Date().toISOString()}
   }
 
   /**
-   * Generate prompt using PromptManagerAdapter
-   *
-   * @param promptPath - Path to prompt template
-   * @param variables - Processed variables
-   * @returns Result with generated prompt content or generation error
-   */
-  private async generatePromptWithAdapter(
-    promptPath: string,
-    variables: ProcessedVariables,
-  ): Promise<Result<string, TwoParamsApplicationServiceError>> {
-    try {
-      // Import PromptManager from JSR package
-      const { PromptManager } = await import("@tettuan/breakdownprompt");
-
-      // Create PromptManager instance
-      const promptManager = new PromptManager();
-
-      // Merge all variables into a single object
-      const variableDict = {
-        ...variables.standardVariables,
-        ...variables.customVariables,
-      };
-
-      // Generate prompt using the PromptManager
-      const content = await promptManager.generatePrompt(promptPath, variableDict);
-
-      // Handle the response - PromptManager returns the generated content as a string
-      if (typeof content === "string") {
-        return ok(content);
-      }
-
-      // If content is not a string, convert it
-      return ok(String(content));
-    } catch (cause) {
-      return error({
-        kind: "PromptGenerationError",
-        message: `Failed to generate prompt: ${
-          cause instanceof Error ? cause.message : String(cause)
-        }`,
-        cause,
-      });
-    }
-  }
-
-  /**
    * Get service health status for monitoring
    *
    * @returns Service health information
@@ -483,7 +487,7 @@ Timestamp: ${new Date().toISOString()}
       status: "healthy",
       timestamp: new Date(),
       dependencies: {
-        "PromptManagerAdapter": "available",
+        "PromptGenerationService": "available",
         "PromptVariablesFactory": "available",
         "TwoParams": "available",
       },
