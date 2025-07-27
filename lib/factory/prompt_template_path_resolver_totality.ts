@@ -120,17 +120,26 @@ export class PromptTemplatePathResolverTotality {
     cliParams: PromptCliParams | TwoParams_Result,
   ): Result<PromptTemplatePathResolverTotality, PathResolutionError> {
     const isDebug = Deno.env.get("LOG_LEVEL") === "debug";
+
+    // Validate configuration presence and type before any debug output
+    if (!config || typeof config !== "object" || Array.isArray(config)) {
+      if (isDebug) {
+        console.log("[PromptTemplatePathResolverTotality] create called with invalid config:", {
+          config: config,
+          configType: typeof config,
+          isArray: Array.isArray(config),
+        });
+      }
+      return resultError({
+        kind: "InvalidConfiguration",
+        details: "Configuration must be a non-null object",
+      });
+    }
+
     if (isDebug) {
       console.log("[PromptTemplatePathResolverTotality] create called with:", {
         configKeys: Object.keys(config),
         cliParams: JSON.stringify(cliParams, null, 2),
-      });
-    }
-    // Validate configuration presence and type
-    if (!config || typeof config !== "object" || Array.isArray(config)) {
-      return resultError({
-        kind: "InvalidConfiguration",
-        details: "Configuration must be a non-null object",
       });
     }
 

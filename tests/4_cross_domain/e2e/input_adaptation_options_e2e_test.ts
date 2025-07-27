@@ -16,7 +16,6 @@
 
 import { assertEquals, assertExists } from "@std/assert";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { ConfigurationTestHelper } from "../../../lib/test_helpers/configuration_test_helper_simple.ts";
 import { runBreakdown } from "../../../cli/breakdown.ts";
 import { join } from "@std/path";
 import { DEFAULT_CONFIG_DIR } from "../../../lib/config/constants.ts";
@@ -71,7 +70,7 @@ class InputAdaptationE2ESetup {
     // Create prompt directories that will be used in tests
     const promptDirs = [
       "to/project",
-      "to/issue", 
+      "to/issue",
       "to/task",
       "summary/project",
       "summary/issue",
@@ -92,25 +91,79 @@ class InputAdaptationE2ESetup {
     // Create template files for --input and --adaptation testing
     const templateFiles = [
       // Base templates (no adaptation)
-      { path: "to/project/f_project.md", content: "# Project Template\n\nInput: {input_text}\n\nGenerate project analysis." },
-      { path: "to/project/f_task.md", content: "# Task from Project Template\n\nInput: {input_text}\n\nGenerate task breakdown from project scope." },
-      { path: "to/issue/f_issue.md", content: "# Issue Template\n\nInput: {input_text}\n\nGenerate issue analysis." },
-      { path: "to/issue/f_project.md", content: "# Project to Issue Template\n\nInput: {input_text}\n\nGenerate issue breakdown from project scope." },
-      { path: "to/task/f_task.md", content: "# Task Template\n\nInput: {input_text}\n\nGenerate task details." },
-      { path: "to/task/f_project.md", content: "# Project to Task Template\n\nInput: {input_text}\n\nGenerate task breakdown from project scope." },
-      
+      {
+        path: "to/project/f_project.md",
+        content: "# Project Template\n\nInput: {input_text}\n\nGenerate project analysis.",
+      },
+      {
+        path: "to/project/f_task.md",
+        content:
+          "# Task from Project Template\n\nInput: {input_text}\n\nGenerate task breakdown from project scope.",
+      },
+      {
+        path: "to/issue/f_issue.md",
+        content: "# Issue Template\n\nInput: {input_text}\n\nGenerate issue analysis.",
+      },
+      {
+        path: "to/issue/f_project.md",
+        content:
+          "# Project to Issue Template\n\nInput: {input_text}\n\nGenerate issue breakdown from project scope.",
+      },
+      {
+        path: "to/task/f_task.md",
+        content: "# Task Template\n\nInput: {input_text}\n\nGenerate task details.",
+      },
+      {
+        path: "to/task/f_project.md",
+        content:
+          "# Project to Task Template\n\nInput: {input_text}\n\nGenerate task breakdown from project scope.",
+      },
+
       // Adaptation templates (with _strict suffix)
-      { path: "to/project/f_project_strict.md", content: "# Strict Project Template\n\nInput: {input_text}\n\nGenerate STRICT project analysis with detailed constraints." },
-      { path: "to/project/f_task_strict.md", content: "# Strict Task from Project Template\n\nInput: {input_text}\n\nGenerate STRICT task breakdown from project scope." },
-      { path: "to/issue/f_issue_strict.md", content: "# Strict Issue Template\n\nInput: {input_text}\n\nGenerate STRICT issue analysis with detailed validation." },
-      { path: "to/issue/f_project_strict.md", content: "# Strict Project to Issue Template\n\nInput: {input_text}\n\nGenerate STRICT issue breakdown from project scope." },
-      { path: "to/task/f_task_strict.md", content: "# Strict Task Template\n\nInput: {input_text}\n\nGenerate STRICT task details with validation." },
-      { path: "to/task/f_project_strict.md", content: "# Strict Project to Task Template\n\nInput: {input_text}\n\nGenerate STRICT task breakdown from project scope." },
+      {
+        path: "to/project/f_project_strict.md",
+        content:
+          "# Strict Project Template\n\nInput: {input_text}\n\nGenerate STRICT project analysis with detailed constraints.",
+      },
+      {
+        path: "to/project/f_task_strict.md",
+        content:
+          "# Strict Task from Project Template\n\nInput: {input_text}\n\nGenerate STRICT task breakdown from project scope.",
+      },
+      {
+        path: "to/issue/f_issue_strict.md",
+        content:
+          "# Strict Issue Template\n\nInput: {input_text}\n\nGenerate STRICT issue analysis with detailed validation.",
+      },
+      {
+        path: "to/issue/f_project_strict.md",
+        content:
+          "# Strict Project to Issue Template\n\nInput: {input_text}\n\nGenerate STRICT issue breakdown from project scope.",
+      },
+      {
+        path: "to/task/f_task_strict.md",
+        content:
+          "# Strict Task Template\n\nInput: {input_text}\n\nGenerate STRICT task details with validation.",
+      },
+      {
+        path: "to/task/f_project_strict.md",
+        content:
+          "# Strict Project to Task Template\n\nInput: {input_text}\n\nGenerate STRICT task breakdown from project scope.",
+      },
 
       // Summary templates for additional coverage
-      { path: "summary/project/f_project.md", content: "# Project Summary Template\n\nInput: {input_text}\n\nGenerate project summary." },
-      { path: "summary/issue/f_issue.md", content: "# Issue Summary Template\n\nInput: {input_text}\n\nGenerate issue summary." },
-      { path: "summary/task/f_task.md", content: "# Task Summary Template\n\nInput: {input_text}\n\nGenerate task summary." },
+      {
+        path: "summary/project/f_project.md",
+        content: "# Project Summary Template\n\nInput: {input_text}\n\nGenerate project summary.",
+      },
+      {
+        path: "summary/issue/f_issue.md",
+        content: "# Issue Summary Template\n\nInput: {input_text}\n\nGenerate issue summary.",
+      },
+      {
+        path: "summary/task/f_task.md",
+        content: "# Task Summary Template\n\nInput: {input_text}\n\nGenerate task summary.",
+      },
     ];
 
     for (const file of templateFiles) {
@@ -260,7 +313,11 @@ The project involves migrating legacy systems to modern infrastructure.`;
         outputLowerCase.includes("scope") ||
         output.length > 50;
 
-      assertEquals(hasProjectContent, true, "Output should contain project-related template content");
+      assertEquals(
+        hasProjectContent,
+        true,
+        "Output should contain project-related template content",
+      );
 
       logger.debug("--input option test successful", {
         resultStatus: "SUCCESS",
@@ -352,7 +409,11 @@ This is a critical task that must follow strict guidelines and protocols.`;
         outputLowerCase.includes("constraint") ||
         output.length > 50;
 
-      assertEquals(hasStrictContent, true, "Output should contain strict adaptation template content");
+      assertEquals(
+        hasStrictContent,
+        true,
+        "Output should contain strict adaptation template content",
+      );
 
       logger.debug("--adaptation option test successful", {
         resultStatus: "SUCCESS",
@@ -383,7 +444,8 @@ This is a critical task that must follow strict guidelines and protocols.`;
 Deno.test("E2E: Combined --input and --adaptation Options - Complete Flow Validation", async () => {
   logger.debug("E2E combined options test started", {
     scenario: "Complete flow validation for combined --input and --adaptation options",
-    expectedBehavior: "CLI --input=project --adaptation=strict should select f_project_strict.md template",
+    expectedBehavior:
+      "CLI --input=project --adaptation=strict should select f_project_strict.md template",
   });
 
   // Setup .agent directory with required template files
@@ -426,7 +488,13 @@ Converting high-level project requirements into strict, validated task specifica
 
     try {
       // Execute breakdown with both --input and --adaptation options
-      const args = ["--config=default-test", "to", "task", "--input=project", "--adaptation=strict"];
+      const args = [
+        "--config=default-test",
+        "to",
+        "task",
+        "--input=project",
+        "--adaptation=strict",
+      ];
       const result = await runBreakdown(args);
       const output = stdout.stop();
 
@@ -438,7 +506,11 @@ Converting high-level project requirements into strict, validated task specifica
       });
 
       // Verify successful execution
-      assertEquals(result.ok, true, "Combined --input and --adaptation options should work correctly");
+      assertEquals(
+        result.ok,
+        true,
+        "Combined --input and --adaptation options should work correctly",
+      );
       assertExists(output, "Output should be generated with combined options");
       assertEquals(output.length > 0, true, "Output should not be empty");
 
@@ -451,11 +523,16 @@ Converting high-level project requirements into strict, validated task specifica
         outputLowerCase.includes("constraint");
       const hasCombinedContent = (hasProjectContent || hasStrictContent) || output.length > 50;
 
-      assertEquals(hasCombinedContent, true, "Output should contain combined project + strict template content");
+      assertEquals(
+        hasCombinedContent,
+        true,
+        "Output should contain combined project + strict template content",
+      );
 
       logger.debug("Combined options test successful", {
         resultStatus: "SUCCESS",
-        validation: "--input=project --adaptation=strict correctly selected f_project_strict.md template",
+        validation:
+          "--input=project --adaptation=strict correctly selected f_project_strict.md template",
         outputCharacteristics: {
           length: output.length,
           hasProjectContent,
@@ -496,13 +573,15 @@ Deno.test("E2E: Real-World Scenarios - examples/15 and examples/16 Pattern Valid
       name: "Example 15 Pattern - Input Parameter",
       args: ["to", "issue", "--input=parameter"],
       expectedTemplate: "f_parameter.md (if exists) or f_project.md (fallback)",
-      inputContent: "# Parameter Analysis\n\nAnalyze parameter configurations and validation rules.",
+      inputContent:
+        "# Parameter Analysis\n\nAnalyze parameter configurations and validation rules.",
     },
     {
-      name: "Example 16 Pattern - Adaptation Parameter", 
+      name: "Example 16 Pattern - Adaptation Parameter",
       args: ["to", "issue", "--adaptation=parameter"],
       expectedTemplate: "f_issue_parameter.md (if exists) or f_issue.md (fallback)",
-      inputContent: "# Issue with Parameter Adaptation\n\nProcess issue with parameter-specific adaptations.",
+      inputContent:
+        "# Issue with Parameter Adaptation\n\nProcess issue with parameter-specific adaptations.",
     },
   ];
 
@@ -513,7 +592,7 @@ Deno.test("E2E: Real-World Scenarios - examples/15 and examples/16 Pattern Valid
     });
 
     const _inputFile = await testSetup.createTestInput(
-      `real-world-${scenario.name.toLowerCase().replace(/\s+/g, '-')}.md`,
+      `real-world-${scenario.name.toLowerCase().replace(/\s+/g, "-")}.md`,
       scenario.inputContent,
     );
     const stdout = new StdoutCapture();
@@ -661,7 +740,9 @@ params:
           logger.debug(`Error properly handled for ${testCase.name}`, { error: result.error });
         } else {
           // If it succeeds, it might have found a fallback template, which is also valid behavior
-          logger.debug(`${testCase.name} succeeded with fallback template`, { output: output.substring(0, 100) });
+          logger.debug(`${testCase.name} succeeded with fallback template`, {
+            output: output.substring(0, 100),
+          });
         }
       } finally {
         // Restore environment

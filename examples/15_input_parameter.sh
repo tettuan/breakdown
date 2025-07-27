@@ -2,11 +2,6 @@
 # Example 19: Input Parameter Template Selection
 # This example demonstrates how the -i/--input parameter affects template selection
 
-# === 実装状況 ===
-# --input パラメータは実装予定の機能要件です。
-# このスクリプトは、将来実装される機能の期待動作を示すための参考例です。
-# 現在は、DirectiveType と LayerType の組み合わせを使用してください。
-# ===
 
 set -euo pipefail
 
@@ -47,6 +42,20 @@ fi
 
 # Create required template files for CLI commands in this script
 echo "=== Creating Required Template Files ==="
+
+# Create f_default.md template
+cat > "$TEMPLATE_DIR/f_default.md" << 'EOF'
+# Task Breakdown (DEFAULT Template)
+
+## Input Type: UNSPECIFIED
+This is the default template used when no --input parameter is specified.
+
+## Input Content
+{{input}}
+
+## Generated Tasks
+Generic task breakdown without specific input context...
+EOF
 
 # This script runs multiple "breakdown to task" commands with different --input parameters
 # Required templates: f_project.md, f_issue.md, f_task.md
@@ -116,7 +125,7 @@ Break down tasks into smaller, actionable items:
 Detailed subtask breakdown with clear deliverables.
 EOF
 
-echo "✓ Created templates: f_project.md, f_issue.md, f_task.md"
+echo "✓ Created templates: f_default.md, f_project.md, f_issue.md, f_task.md"
 echo
 
 # Create test input files for different layer types
@@ -207,7 +216,8 @@ EOF
 echo "✅ Created template files:"
 echo "  - f_project.md (selected when --input=project)"
 echo "  - f_issue.md (selected when --input=issue)"
-echo "  - f_task.md (selected when --input=task or default)"
+echo "  - f_task.md (selected when --input=task)"
+echo "  - f_default.md (selected when no --input is specified)"
 echo
 
 # Demonstration
@@ -217,7 +227,7 @@ echo
 # Example 1: Without --input (default behavior)
 echo "【Example 1: Without --input parameter】"
 echo "Command: breakdown to task --from=project_overview.md"
-echo "Expected: Should use default template based on output type (f_task.md)"
+echo "Expected: Should use f_default.md template (no --input specified)"
 echo
 
 $BREAKDOWN to task --from="$OUTPUT_DIR/project_overview.md" -o="$OUTPUT_DIR/result_no_input.md" > "$OUTPUT_DIR/result_no_input.md" 2>&1
@@ -228,8 +238,10 @@ if [ -f "$OUTPUT_DIR/result_no_input.md" ]; then
     echo
     
     # Check which template was used
-    if grep -q "Input Type: TASK" "$OUTPUT_DIR/result_no_input.md"; then
-        echo "✅ Used f_task.md (default)"
+    if grep -q "Input Type: UNSPECIFIED" "$OUTPUT_DIR/result_no_input.md"; then
+        echo "✅ Used f_default.md as expected"
+    elif grep -q "Input Type: TASK" "$OUTPUT_DIR/result_no_input.md"; then
+        echo "❌ Unexpectedly used f_task.md instead of f_default.md"
     elif grep -q "Input Type: PROJECT" "$OUTPUT_DIR/result_no_input.md"; then
         echo "❌ Unexpectedly used f_project.md"
     elif grep -q "Input Type: ISSUE" "$OUTPUT_DIR/result_no_input.md"; then
@@ -243,7 +255,7 @@ echo
 # Example 2: With --input=project
 echo "【Example 2: With --input=project】"
 echo "Command: breakdown to task --from=project_overview.md --input=project"
-echo "Expected: Should use f_project.md template"
+echo "Expected: Should use f_project.md template (not f_task.md)"
 echo
 
 $BREAKDOWN to task --from="$OUTPUT_DIR/project_overview.md" --input=project -o="$OUTPUT_DIR/result_input_project.md" > "$OUTPUT_DIR/result_input_project.md" 2>&1
@@ -256,8 +268,10 @@ if [ -f "$OUTPUT_DIR/result_input_project.md" ]; then
     # Check which template was used
     if grep -q "Input Type: PROJECT" "$OUTPUT_DIR/result_input_project.md"; then
         echo "✅ Used f_project.md as expected"
+    elif grep -q "Input Type: TASK" "$OUTPUT_DIR/result_input_project.md"; then
+        echo "❌ Incorrectly used f_task.md instead of f_project.md"
     else
-        echo "❌ Did not use expected template"
+        echo "⚠️ Template content differs from expected"
     fi
 fi
 echo
@@ -265,7 +279,7 @@ echo
 # Example 3: With --input=issue
 echo "【Example 3: With --input=issue】"
 echo "Command: breakdown to task --from=issue_list.md --input=issue"
-echo "Expected: Should use f_issue.md template"
+echo "Expected: Should use f_issue.md template (not f_task.md)"
 echo
 
 $BREAKDOWN to task --from="$OUTPUT_DIR/issue_list.md" --input=issue -o="$OUTPUT_DIR/result_input_issue.md" > "$OUTPUT_DIR/result_input_issue.md" 2>&1
@@ -278,8 +292,10 @@ if [ -f "$OUTPUT_DIR/result_input_issue.md" ]; then
     # Check which template was used
     if grep -q "Input Type: ISSUE" "$OUTPUT_DIR/result_input_issue.md"; then
         echo "✅ Used f_issue.md as expected"
+    elif grep -q "Input Type: TASK" "$OUTPUT_DIR/result_input_issue.md"; then
+        echo "❌ Incorrectly used f_task.md instead of f_issue.md"
     else
-        echo "❌ Did not use expected template"
+        echo "⚠️ Template content differs from expected"
     fi
 fi
 echo
@@ -312,16 +328,15 @@ echo
 # Summary
 echo "=== Summary of --input Parameter Behavior ==="
 echo
-echo "Template Selection Logic:"
-echo "1. Template path pattern: {base_dir}/{directiveType}/{layerType}/f_{fromLayerType}.md"
-echo "2. The --input parameter sets the {fromLayerType} part"
-echo "3. Without --input, {fromLayerType} is inferred or defaults to the output layer type"
+echo "The --input parameter controls which template file is selected:"
+echo "- breakdown to task --input=project → uses f_project.md"
+echo "- breakdown to task --input=issue   → uses f_issue.md"
+echo "- breakdown to task --input=task    → uses f_task.md"
+echo "- breakdown to task                 → uses f_default.md (default)"
 echo
-echo "Examples:"
-echo "  breakdown to task --input=project → uses f_project.md"
-echo "  breakdown to task --input=issue   → uses f_issue.md"
-echo "  breakdown to task --input=task    → uses f_task.md"
-echo "  breakdown to task                 → uses f_task.md (default)"
+echo "Template path pattern:"
+echo "  {base_dir}/{directiveType}/{layerType}/f_{fromLayerType}.md"
+echo "  where fromLayerType is determined by --input parameter"
 echo
 
 # Check actual implementation
@@ -341,7 +356,8 @@ echo
 echo "=== Input Parameter Example Complete ==="
 echo
 echo "Key Takeaways:"
-echo "- The --input parameter explicitly sets the input layer type"
-echo "- This determines which template file (f_{type}.md) is selected"
-echo "- Useful when the input content type differs from the output type"
-echo "- Short form -i works the same as --input"
+echo "- The --input parameter controls template selection"
+echo "- Template path: {base_dir}/{directiveType}/{layerType}/f_{fromLayerType}.md"
+echo "- --input=X sets fromLayerType to X"
+echo "- Short form -i= works the same as --input (equal sign required)"
+echo "- Without --input, default fromLayerType is used (typically 'task')"

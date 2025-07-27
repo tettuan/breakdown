@@ -304,9 +304,7 @@ echo
 # Example 2: With --adaptation=strict
 echo "【Example 2: With --adaptation=strict】"
 echo "Command: breakdown to task --from=project_requirements.md --adaptation=strict"
-echo "🎯 動作: fromLayerType='task' (デフォルト) + adaptation='strict'"
-echo "📄 使用テンプレート: .agent/breakdown/prompts/to/task/f_task_strict.md"
-echo "📖 参照: glossary.ja.md 83行目 (adaptationType)"
+echo "Expected: Should use f_task_strict.md template"
 echo
 
 $BREAKDOWN to task --from="$OUTPUT_DIR/project_requirements.md" --adaptation=strict -o="$OUTPUT_DIR/result_strict.md" > "$OUTPUT_DIR/result_strict.md" 2>&1
@@ -318,14 +316,11 @@ if [ -f "$OUTPUT_DIR/result_strict.md" ]; then
     
     # Check which template was used
     if grep -q "Template: STRICT" "$OUTPUT_DIR/result_strict.md"; then
-        echo "✅ Used strict adaptation template (f_project_strict.md)"
-    elif grep -q "Task ID:" "$OUTPUT_DIR/result_strict.md"; then
-        echo "✅ Found strict format markers"
+        echo "✅ Used strict adaptation template (f_task_strict.md)"
+    elif grep -q "Template: DEFAULT" "$OUTPUT_DIR/result_strict.md"; then
+        echo "❌ Incorrectly used default template instead of strict adaptation"
     else
-        echo "⚠️  adaptation テンプレートが使用されていない可能性"
-        echo "💡 フォールバック動作: adaptation テンプレートが見つからない場合は基本テンプレートを使用"
-        echo "🔍 確認手順: 1) テンプレートファイル存在確認 2) fromLayerType推定結果確認"
-        echo "📖 仕様: glossary.ja.md template path resolution"
+        echo "⚠️ Template content differs from expected pattern"
     fi
 fi
 echo
@@ -333,7 +328,7 @@ echo
 # Example 3: With --adaptation=agile
 echo "【Example 3: With --adaptation=agile】"
 echo "Command: breakdown to task --from=project_requirements.md --adaptation=agile"
-echo "Expected: Should use f_project_agile.md template"
+echo "Expected: Should use f_task_agile.md template"
 echo
 
 $BREAKDOWN to task --from="$OUTPUT_DIR/project_requirements.md" --adaptation=agile -o="$OUTPUT_DIR/result_agile.md" > "$OUTPUT_DIR/result_agile.md" 2>&1
@@ -345,11 +340,11 @@ if [ -f "$OUTPUT_DIR/result_agile.md" ]; then
     
     # Check which template was used
     if grep -q "Template: AGILE" "$OUTPUT_DIR/result_agile.md"; then
-        echo "✅ Used agile adaptation template (f_project_agile.md)"
-    elif grep -q "User Stories" "$OUTPUT_DIR/result_agile.md"; then
-        echo "✅ Found agile format markers"
+        echo "✅ Used agile adaptation template (f_task_agile.md)"
+    elif grep -q "Template: DEFAULT" "$OUTPUT_DIR/result_agile.md"; then
+        echo "❌ Incorrectly used default template instead of agile adaptation"
     else
-        echo "⚠️  May have fallen back to default template"
+        echo "⚠️ Template content differs from expected pattern"
     fi
 fi
 echo
@@ -357,7 +352,8 @@ echo
 # Example 4: With short form -a
 echo "【Example 4: Using short form -a=】"
 echo "Command: breakdown to task --from=project_requirements.md -a=detailed"
-echo "Expected: Should use f_project_detailed.md template"
+echo "Expected: Should use f_task_detailed.md template"
+echo "Note: Short form -a= works the same as --adaptation (equal sign required)"
 echo
 
 $BREAKDOWN to task --from="$OUTPUT_DIR/project_requirements.md" -a=detailed -o="$OUTPUT_DIR/result_detailed.md" > "$OUTPUT_DIR/result_detailed.md" 2>&1
@@ -369,11 +365,11 @@ if [ -f "$OUTPUT_DIR/result_detailed.md" ]; then
     
     # Check which template was used
     if grep -q "Template: DETAILED" "$OUTPUT_DIR/result_detailed.md"; then
-        echo "✅ Used detailed adaptation template (f_project_detailed.md)"
-    elif grep -q "Comprehensive Task Analysis" "$OUTPUT_DIR/result_detailed.md"; then
-        echo "✅ Found detailed format markers"
+        echo "✅ Used detailed adaptation template (f_task_detailed.md)"
+    elif grep -q "Template: DEFAULT" "$OUTPUT_DIR/result_detailed.md"; then
+        echo "❌ Incorrectly used default template instead of detailed adaptation"
     else
-        echo "⚠️  May have fallen back to default template"
+        echo "⚠️ Template content differs from expected pattern"
     fi
 fi
 echo
@@ -446,38 +442,39 @@ echo "   - adaptation適用: --adaptation=strict → f_{fromLayerType}_strict.md
 echo
 
 # Count how many results contain template markers
-DEFAULT_COUNT=$(grep -l "Template: DEFAULT" "$OUTPUT_DIR"/result_*.md 2>/dev/null | wc -l | xargs echo | tr -d ' ' || echo "0")
-ADAPTATION_COUNT=$(grep -l "Template: \(STRICT\|AGILE\|DETAILED\)" "$OUTPUT_DIR"/result_*.md 2>/dev/null | wc -l | xargs echo | tr -d ' ' || echo "0")
+DEFAULT_COUNT=0
+ADAPTATION_COUNT=0
+
+if ls "$OUTPUT_DIR"/result_*.md >/dev/null 2>&1; then
+    for file in "$OUTPUT_DIR"/result_*.md; do
+        if grep -q "Template: DEFAULT" "$file" 2>/dev/null; then
+            DEFAULT_COUNT=$((DEFAULT_COUNT + 1))
+        fi
+        if grep -q "Template: STRICT\|Template: AGILE\|Template: DETAILED" "$file" 2>/dev/null; then
+            ADAPTATION_COUNT=$((ADAPTATION_COUNT + 1))
+        fi
+    done
+fi
 
 echo "結果分析:"
 echo "  デフォルトテンプレート使用: $DEFAULT_COUNT ファイル"
 echo "  adaptation テンプレート使用: $ADAPTATION_COUNT ファイル"
 
-if [ "$ADAPTATION_COUNT" -eq 0 ]; then
+if [ "$ADAPTATION_COUNT" -gt 0 ]; then
     echo
-    echo "⚠️  問題: adaptation テンプレートが使用されていない"
-    echo "🔍 考えられる原因:"
-    echo "   1. fromLayerTypeのデフォルト値が期待と異なる可能性"
-    echo "   2. テンプレートファイルのパスまたは命名が不正"
-    echo "   3. adaptation パラメータが正しく処理されていない"
-    echo
-    echo "💡 デバッグ手順:"
-    echo "   1. LOG_LEVEL=debug で実行してパス解決過程を確認"
-    echo "   2. 実際のテンプレートファイル存在確認: ls -la $TEMPLATE_DIR/"
-    echo "   3. --input=project で明示的にfromLayerTypeを指定してテスト"
-    echo
-    echo "📖 仕様参照:"
-    echo "   - docs/breakdown/generic_domain/system/overview/glossary.ja.md"
-    echo "   - docs/breakdown/domain_core/prompt_template_path.ja.md"
+    echo "✅ Adaptation templates are being used correctly"
 else
     echo
-    echo "✅ Adaptation parameter は期待通りに動作している"
+    echo "❌ Adaptation templates are NOT being used"
+    echo "   Expected behavior: --adaptation=X should use f_task_X.md template"
+    echo "   Actual behavior: All examples used default template"
 fi
 
 echo "=== Adaptation Parameter Example Complete ==="
 echo
 echo "Key Takeaways:"
-echo "- The --adaptation parameter adds a suffix to template filename"
-echo "- Allows maintaining multiple prompt variations for different use cases"
-echo "- Falls back gracefully when adaptation template doesn't exist"
-echo "- Short form -a= works the same as --adaptation (必ずイコール記号を使用)"
+echo "- The --adaptation parameter controls template variant selection"
+echo "- Template path pattern: f_{fromLayerType}[_{adaptation}].md"
+echo "- --adaptation=X adds '_X' suffix to template filename"
+echo "- If adaptation template doesn't exist, falls back to base template"
+echo "- Short form -a= works the same as --adaptation (equal sign required)"

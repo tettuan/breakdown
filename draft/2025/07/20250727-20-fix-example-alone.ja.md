@@ -1,6 +1,8 @@
 # プロジェクト: Breakdown全体のユースケース実行動作確認
 
-仕様理解の上で、動作確認を行う。
+仕様理解の上で、動作確認のexamples/*.sh修正を行う。
+全て `examples/` をCWDとして実行すること。
+
 `docs/breakdown/domain_core/prompt_template_path.ja.md` を理解する。
 仕様は、用語集から探すこと。
 `docs/breakdown/generic_domain/system/overview/glossary.ja.md`
@@ -11,16 +13,9 @@
 
 ## タスクとゴール
 
-```yml
-- 信じて良い前提: Breakdown本体はテストをpassして正常に動作する
-- タスク: |
-  1. examples/ 配下のスクリプトを順序よく1つずつ実行し、動作確認する |
-  2. 実行結果を tmp/example_results/ へ保存する |
-  3. 1実行1結果保存。`tmp/example_results/<example_name>.md` |
-  4. 実行時の出力も保存し、結果を評価した内容も保存する |
-  5. 警告やエラーが発見された場合は、LOG_LEVEL=debugを用いて実施し、エラー内容を`tmp/example_results/<example_name>.md`へ記録する |
-- ゴール: 全てのexamplesが警告なしで正常に実行完了し、結果を評価できている。または問題を記録できている。
-```
+1. `--input` オプションを実行するshが、正しく動作していない。
+2. `--adaptation` オプションを実行するshが、正しく動作していない。
+いずれも、実装のテスト(プロジェクトルートの tests/)では動作が確認できているため、shを正しく動作するよう修正する。テンプレートの期待値、shのコメント、shで事前に作成するテンプレートファイルが修正候補である。
 
 **注意書き**
 - 実行前に、 `examples/README.md` を読むこと
@@ -65,7 +60,7 @@
 以下の3点です。
 
 - 存在する examples/* を0から順番に実行した結果、最後までエラーなく完了する
-- `examples/*.sh` が警告なしに完了した
+- `examples/*.sh` が警告なし、エラーメッセージなしに完了した。警備な問題さえ許されない。
 - lib/, tests/ のテストが全て pass する
 - `deno task ci` が1つのエラーもなく成功する
 
