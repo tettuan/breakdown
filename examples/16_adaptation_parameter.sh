@@ -2,6 +2,12 @@
 # Example 20: Adaptation Parameter Template Selection
 # This example demonstrates how the -a/--adaptation parameter affects template selection
 
+# === 注意事項 ===
+# 現在の実装では --adaptation パラメータと fromLayerType の推定は
+# 期待通りに動作しません。このスクリプトは将来の実装のための
+# 参考例として残されています。
+# ===
+
 set -euo pipefail
 
 # Save original working directory

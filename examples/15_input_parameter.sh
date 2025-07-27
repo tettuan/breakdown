@@ -2,6 +2,12 @@
 # Example 19: Input Parameter Template Selection
 # This example demonstrates how the -i/--input parameter affects template selection
 
+# === 注意事項 ===
+# 現在の実装では --input パラメータは期待通りに動作しません。
+# このスクリプトは将来の実装のための参考例として残されています。
+# 実際の使用では、DirectiveType と LayerType の組み合わせを使用してください。
+# ===
+
 set -euo pipefail
 
 # Save original working directory

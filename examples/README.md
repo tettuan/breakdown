@@ -317,6 +317,15 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 - ✅ 正しい: `-i=task`, `-a=detailed`
 - ❌ 間違い: `-i task`, `-a detailed`
 
+### 既知の制限事項
+
+以下のパラメータは現在の実装では期待通りに動作しません：
+- `--input/-i`: fromLayerType の設定が反映されません
+- `--adaptation/-a`: adaptation テンプレートの選択が機能しません
+
+これらの機能は将来のバージョンで実装予定です。
+現在は、DirectiveType と LayerType の組み合わせ、およびカスタム変数（--uv-*）を使用してください。
+
 ### 自動ファイル名生成
 
 出力時にファイル名を指定しない場合：
