@@ -873,7 +873,7 @@ fi
 
 if [ ! -f ".agent/breakdown/config/stdin-user.yml" ]; then
   cat > .agent/breakdown/config/stdin-user.yml << 'EOF'
-working_dir: ".agent/breakdown/examples"
+working_dir: ".agent/breakdown"
 username: "stdin-user"
 project_name: "stdin-project"
 EOF
@@ -905,7 +905,7 @@ fi
 
 if [ ! -f ".agent/breakdown/config/timeout-user.yml" ]; then
   cat > .agent/breakdown/config/timeout-user.yml << 'EOF'
-working_dir: ".agent/breakdown/examples"
+working_dir: ".agent/breakdown"
 username: "timeout-user"
 project_name: "timeout-project"
 EOF
@@ -937,7 +937,7 @@ fi
 
 if [ ! -f ".agent/breakdown/config/basic-user.yml" ]; then
   cat > .agent/breakdown/config/basic-user.yml << 'EOF'
-working_dir: ".agent/breakdown/examples"
+working_dir: ".agent/breakdown"
 username: "basic-user"
 project_name: "basic-project"
 EOF
@@ -992,7 +992,7 @@ fi
 
 if [ ! -f ".agent/breakdown/config/team-user.yml" ]; then
   cat > .agent/breakdown/config/team-user.yml << 'EOF'
-working_dir: ".agent/breakdown/examples"
+working_dir: ".agent/breakdown"
 username: "team-user"
 project_name: "team-project"
 team_name: "development-team"
@@ -1026,7 +1026,7 @@ fi
 
 if [ ! -f ".agent/breakdown/config/production-bugs-user.yml" ]; then
   cat > .agent/breakdown/config/production-bugs-user.yml << 'EOF'
-working_dir: ".agent/breakdown/examples"
+working_dir: ".agent/breakdown"
 username: "production-bugs-user"
 project_name: "production-bugs-project"
 environment: "production"
@@ -1061,7 +1061,7 @@ fi
 
 if [ ! -f ".agent/breakdown/config/production-custom-user.yml" ]; then
   cat > .agent/breakdown/config/production-custom-user.yml << 'EOF'
-working_dir: ".agent/breakdown/examples"
+working_dir: ".agent/breakdown"
 username: "production-custom-user"
 project_name: "production-custom-project"
 environment: "production"
@@ -1120,7 +1120,7 @@ fi
 # Create missing production-user.yml (to complete production profile)
 if [ ! -f ".agent/breakdown/config/production-user.yml" ]; then
   cat > .agent/breakdown/config/production-user.yml << 'EOF'
-working_dir: ".agent/breakdown/examples"
+working_dir: ".agent/breakdown"
 username: "production-user"
 project_name: "production-project"
 environment: "production"
@@ -1160,7 +1160,7 @@ fi
 
 if [ ! -f ".agent/breakdown/config/dev-user.yml" ]; then
   cat > .agent/breakdown/config/dev-user.yml << 'EOF'
-working_dir: ".agent/breakdown/examples"
+working_dir: ".agent/breakdown"
 username: "dev-user"
 project_name: "dev-project"
 environment: "development"
@@ -1201,7 +1201,7 @@ fi
 
 if [ ! -f ".agent/breakdown/config/staging-user.yml" ]; then
   cat > .agent/breakdown/config/staging-user.yml << 'EOF'
-working_dir: ".agent/breakdown/examples"
+working_dir: ".agent/breakdown"
 username: "staging-user"
 project_name: "staging-project"
 environment: "staging"
@@ -1247,7 +1247,7 @@ fi
 
 if [ ! -f ".agent/breakdown/config/prod-user.yml" ]; then
   cat > .agent/breakdown/config/prod-user.yml << 'EOF'
-working_dir: ".agent/breakdown/examples"
+working_dir: ".agent/breakdown"
 username: "prod-user"
 project_name: "prod-project"
 environment: "production"
