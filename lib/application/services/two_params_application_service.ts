@@ -11,6 +11,7 @@
 import type { Result } from "$lib/types/result.ts";
 import { error, ok } from "$lib/types/result.ts";
 import type { ConfigProfile as _ConfigProfile } from "../../config/config_profile_name.ts";
+import { BreakdownConfig } from "../../deps.ts";
 import {
   TwoParams,
   type TwoParamsValidationError,
@@ -167,49 +168,63 @@ export class TwoParamsApplicationService {
       inputText: input.stdin,
     };
 
-    // Step 5: Create PromptVariablesFactory configuration
-    const config = {
-      app_prompt: { base_dir: "prompts" },
-      app_schema: { base_dir: DEFAULT_SCHEMA_BASE_DIR },
-    };
+    // Step 5: Create PromptVariablesFactory configuration with proper working_dir integration
+    const configProfile = input.profileOption || "default";
 
-    const cliParams = this.createCliParams(twoParams, input, processedVariables);
-    const factoryResult = PromptVariablesFactory.createWithConfig(config, cliParams);
+    try {
+      const config = await BreakdownConfig.create(configProfile);
 
-    if (!factoryResult.ok) {
+      // Use the proper BreakdownConfig for factory creation
+      // This ensures working_dir + base_dir integration
+      const cliParams = this.createCliParams(twoParams, input, processedVariables);
+      const factoryResult = PromptVariablesFactory.createWithConfig(config, cliParams);
+
+      if (!factoryResult.ok) {
+        return error({
+          kind: "VariableProcessingError",
+          errors: [factoryResult.error.message],
+          message: "Failed to create PromptVariablesFactory",
+        });
+      }
+
+      const factory = factoryResult.data;
+
+      // Step 6: Generate prompt using PromptManagerAdapter
+      const promptResult = await this.generatePromptWithAdapter(
+        factory.promptFilePath,
+        processedVariables,
+      );
+
+      if (!promptResult.ok) {
+        return promptResult;
+      }
+
+      // Step 7: Create output
+      const output: TwoParamsOutput = {
+        content: promptResult.data,
+        metadata: {
+          directive: twoParams.directive.value,
+          layer: twoParams.layer.value,
+          profile: twoParams.profile.value,
+          promptPath: factory.promptFilePath,
+          schemaPath: factory.schemaFilePath,
+          timestamp: new Date(),
+        },
+      };
+
+      return ok(output);
+    } catch (configError) {
       return error({
-        kind: "VariableProcessingError",
-        errors: [factoryResult.error.message],
-        message: "Failed to create PromptVariablesFactory",
+        kind: "ConfigurationError",
+        profile: configProfile,
+        message: `Failed to load configuration: ${
+          configError instanceof Error ? configError.message : String(configError)
+        }`,
+        cause: configError,
       });
     }
 
-    const factory = factoryResult.data;
-
-    // Step 6: Generate prompt using PromptManagerAdapter
-    const promptResult = await this.generatePromptWithAdapter(
-      factory.promptFilePath,
-      processedVariables,
-    );
-
-    if (!promptResult.ok) {
-      return promptResult;
-    }
-
-    // Step 7: Create output
-    const output: TwoParamsOutput = {
-      content: promptResult.data,
-      metadata: {
-        directive: twoParams.directive.value,
-        layer: twoParams.layer.value,
-        profile: twoParams.profile.value,
-        promptPath: factory.promptFilePath,
-        schemaPath: factory.schemaFilePath,
-        timestamp: new Date(),
-      },
-    };
-
-    return ok(output);
+    // Moved to Step 5 - this code was duplicated
   }
 
   /**
