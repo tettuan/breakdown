@@ -3,9 +3,9 @@
 # This example demonstrates how the -a/--adaptation parameter affects template selection
 
 # === 実装状況 ===
-# ✅ --adaptation パラメータは正常に動作します
-# ✅ fromLayerType推定もフォールバック機能として利用可能です
-# このスクリプトは実際の機能をテストするための例です。
+# --adaptation パラメータは実装予定の機能要件です。
+# このスクリプトは、将来実装される機能の期待動作を示すための参考例です。
+# 現在は、DirectiveType と LayerType の組み合わせを使用してください。
 # ===
 
 set -euo pipefail
