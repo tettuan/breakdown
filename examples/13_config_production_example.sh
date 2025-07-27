@@ -42,9 +42,9 @@ app_schema:
 params:
   two:
     directiveType:
-      pattern: "^(to|summary|defect)$"
+      pattern: "^[a-z]+$"
     layerType:
-      pattern: "^(project|issue|task|bugs)$"
+      pattern: "^[a-z]+$"
 workspace:
   working_dir: ".agent/breakdown"
   temp_dir: ".agent/breakdown/temp"
@@ -177,12 +177,11 @@ $(cat sample_code/user_auth.py)
 \`\`\`
 EOF
 
-# Run breakdown find bugs command (using defect issue as find bugs is not implemented)
+# Run breakdown find bugs command
 echo ""
-echo "Running breakdown defect analysis for bug detection..."
-echo "Note: 'find bugs' command is not implemented, using 'defect issue' instead"
-echo "Command: deno run --allow-all ../cli/breakdown.ts defect issue --config=production-bugs < code_files.md"
-deno run --allow-all ../cli/breakdown.ts defect issue --config=production-bugs < code_files.md > bugs_report.md
+echo "Running breakdown find bugs command..."
+echo "Command: deno run --allow-all ../cli/breakdown.ts find bugs --config=production-bugs < code_files.md"
+deno run --allow-all ../cli/breakdown.ts find bugs --config=production-bugs < code_files.md > bugs_report.md
 
 echo ""
 echo "=== Bugs Report ==="
