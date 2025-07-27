@@ -452,7 +452,7 @@ Deno.test("PromptTemplatePathResolverTotality - fromFile option with working_dir
   const testBaseDir = await Deno.makeTempDir();
   const workingDir = join(testBaseDir, "workspace");
   const promptsDir = join(workingDir, "prompts");
-  const promptFile = join(promptsDir, "to", "issue", "f_default.md"); // Using default fromLayerType
+  const promptFile = join(promptsDir, "to", "issue", "f_task.md"); // Inferred from task_notes.md
 
   try {
     await createTestFile(promptFile);
@@ -466,7 +466,7 @@ Deno.test("PromptTemplatePathResolverTotality - fromFile option with working_dir
       params: ["to", "issue"],
       directiveType: "to",
       layerType: "issue",
-      options: { fromFile: "task_notes.md" }, // fromFile option (uses default fromLayerType)
+      options: { fromFile: "task_notes.md" }, // fromFile option (infers "task" layerType)
     };
 
     const resolverResult = PromptTemplatePathResolverTotality.create(config, cliParams);
@@ -480,7 +480,7 @@ Deno.test("PromptTemplatePathResolverTotality - fromFile option with working_dir
 
       if (pathResult.ok) {
         assertEquals(pathResult.data.value, promptFile);
-        assertEquals(pathResult.data.metadata.fromLayerType, "default"); // Default fromLayerType
+        assertEquals(pathResult.data.metadata.fromLayerType, "task"); // Inferred from task_notes.md
       }
     }
   } finally {

@@ -642,8 +642,55 @@ export class PromptTemplatePathResolverTotality {
       return resultOk(options.fromLayerType);
     }
 
+    // Infer layerType from fromFile option
+    if (options.fromFile) {
+      const inferredResult = this.inferLayerTypeFromFileName(options.fromFile);
+      if (inferredResult.ok) {
+        if (isDebug) {
+          console.log(
+            "[PromptTemplatePathResolverTotality] Inferred layerType from fromFile:",
+            inferredResult.data,
+          );
+        }
+        return resultOk(inferredResult.data);
+      }
+
+      // If inference fails, log warning but continue with default
+      if (isDebug) {
+        console.log(
+          "[PromptTemplatePathResolverTotality] Failed to infer layerType from fromFile:",
+          inferredResult.error.message,
+        );
+      }
+    }
+
     // Fallback to default when no --input option is specified
     return resultOk(DEFAULT_FROM_LAYER_TYPE);
+  }
+
+  /**
+   * Infers layerType from file name following pattern: {layerType}_*.{ext}
+   * Examples: task_data.md → task, project_spec.txt → project
+   */
+  private inferLayerTypeFromFileName(fileName: string): Result<
+    string,
+    { kind: "InferenceFailure"; fileName: string; reason: string; message: string }
+  > {
+    const baseName = fileName.split(".")[0]; // Remove extension
+    const parts = baseName.split("_");
+
+    if (parts.length < 2) {
+      return resultError({
+        kind: "InferenceFailure",
+        fileName,
+        reason: "File name does not match pattern {layerType}_*",
+        message:
+          `Cannot infer layerType from "${fileName}": expected pattern {layerType}_* (e.g., task_data.md)`,
+      });
+    }
+
+    const layerType = parts[0];
+    return resultOk(layerType);
   }
 }
 
