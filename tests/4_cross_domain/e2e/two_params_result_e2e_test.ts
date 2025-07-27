@@ -52,10 +52,53 @@ class E2ETestSetup {
   }
 
   /**
+   * Copy static prompts from static-prompts to prompts directory
+   * This ensures that tests work with the expected tests/fixtures/prompts/ path
+   */
+  async copyStaticPromptsIfNeeded(): Promise<void> {
+    const staticPromptsDir = "tests/fixtures/static-prompts";
+    const promptsDir = "tests/fixtures/prompts";
+
+    try {
+      // Check if static-prompts exists
+      const staticExists = await Deno.stat(staticPromptsDir).then(() => true).catch(() => false);
+      if (staticExists) {
+        // Create prompts directory if it doesn't exist
+        await Deno.mkdir(promptsDir, { recursive: true });
+
+        // Copy all files from static-prompts to prompts
+        const copyDir = async (src: string, dest: string) => {
+          await Deno.mkdir(dest, { recursive: true });
+          for await (const entry of Deno.readDir(src)) {
+            const srcPath = `${src}/${entry.name}`;
+            const destPath = `${dest}/${entry.name}`;
+            if (entry.isDirectory) {
+              await copyDir(srcPath, destPath);
+            } else if (entry.isFile) {
+              try {
+                const content = await Deno.readTextFile(srcPath);
+                await Deno.writeTextFile(destPath, content);
+              } catch {
+                // Ignore copy errors
+              }
+            }
+          }
+        };
+
+        await copyDir(staticPromptsDir, promptsDir);
+      }
+    } catch {
+      // Ignore errors - static prompts might not exist
+    }
+  }
+
+  /**
    * Setup .agent directory with required prompt files and configuration for E2E testing
    * This ensures GitHub Actions environment has the same prompt files as local development
    */
   async setupAgentPrompts(): Promise<void> {
+    // First copy static prompts to working directory
+    await this.copyStaticPromptsIfNeeded();
     // Create .agent/breakdown directory structure
     const agentConfigDir = `./${DEFAULT_CONFIG_DIR}`;
     try {
@@ -90,27 +133,40 @@ class E2ETestSetup {
       }
     }
 
-    // Copy prompt files from fixtures to .agent directory
+    // Copy prompt files from static fixtures to .agent directory
     const promptFiles = [
-      { from: "tests/fixtures/prompts/to/project/f_project.md", to: "to/project/f_project.md" },
-      { from: "tests/fixtures/prompts/to/issue/f_project.md", to: "to/issue/f_issue.md" },
-      { from: "tests/fixtures/prompts/to/task/f_task.md", to: "to/task/f_task.md" },
       {
-        from: "tests/fixtures/prompts/summary/project/f_project.md",
+        from: "tests/fixtures/static-prompts/to/project/f_project.md",
+        to: "to/project/f_project.md",
+      },
+      { from: "tests/fixtures/static-prompts/to/issue/f_project.md", to: "to/issue/f_issue.md" },
+      { from: "tests/fixtures/static-prompts/to/task/f_task.md", to: "to/task/f_task.md" },
+      {
+        from: "tests/fixtures/static-prompts/summary/project/f_project.md",
         to: "summary/project/f_project.md",
       },
-      { from: "tests/fixtures/prompts/summary/issue/f_issue.md", to: "summary/issue/f_issue.md" },
-      { from: "tests/fixtures/prompts/summary/task/f_task.md", to: "summary/task/f_task.md" },
       {
-        from: "tests/fixtures/prompts/defect/project/f_project.md",
+        from: "tests/fixtures/static-prompts/summary/issue/f_issue.md",
+        to: "summary/issue/f_issue.md",
+      },
+      {
+        from: "tests/fixtures/static-prompts/summary/task/f_task.md",
+        to: "summary/task/f_task.md",
+      },
+      {
+        from: "tests/fixtures/static-prompts/defect/project/f_project.md",
         to: "defect/project/f_project.md",
       },
-      { from: "tests/fixtures/prompts/defect/issue/f_issue.md", to: "defect/issue/f_issue.md" },
-      { from: "tests/fixtures/prompts/defect/task/f_task.md", to: "defect/task/f_task.md" },
+      {
+        from: "tests/fixtures/static-prompts/defect/issue/f_issue.md",
+        to: "defect/issue/f_issue.md",
+      },
+      { from: "tests/fixtures/static-prompts/defect/task/f_task.md", to: "defect/task/f_task.md" },
     ];
 
     for (const file of promptFiles) {
       try {
+        // Try to read from static-prompts first
         const content = await Deno.readTextFile(file.from);
         const targetPath = join(this.agentPromptsDir, file.to);
         await Deno.writeTextFile(targetPath, content);

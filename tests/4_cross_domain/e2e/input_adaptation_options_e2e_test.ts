@@ -49,6 +49,47 @@ class InputAdaptationE2ESetup {
   }
 
   /**
+   * Copy static prompts from static-prompts to prompts directory
+   * This ensures that other tests that depend on tests/fixtures/prompts/ work correctly
+   */
+  async copyStaticPromptsIfNeeded(): Promise<void> {
+    const staticPromptsDir = "tests/fixtures/static-prompts";
+    const promptsDir = "tests/fixtures/prompts";
+
+    try {
+      // Check if static-prompts exists
+      const staticExists = await Deno.stat(staticPromptsDir).then(() => true).catch(() => false);
+      if (staticExists) {
+        // Create prompts directory if it doesn't exist
+        await Deno.mkdir(promptsDir, { recursive: true });
+
+        // Copy all files from static-prompts to prompts
+        const copyDir = async (src: string, dest: string) => {
+          await Deno.mkdir(dest, { recursive: true });
+          for await (const entry of Deno.readDir(src)) {
+            const srcPath = `${src}/${entry.name}`;
+            const destPath = `${dest}/${entry.name}`;
+            if (entry.isDirectory) {
+              await copyDir(srcPath, destPath);
+            } else if (entry.isFile) {
+              try {
+                const content = await Deno.readTextFile(srcPath);
+                await Deno.writeTextFile(destPath, content);
+              } catch {
+                // Ignore copy errors
+              }
+            }
+          }
+        };
+
+        await copyDir(staticPromptsDir, promptsDir);
+      }
+    } catch {
+      // Ignore errors - static prompts might not exist
+    }
+  }
+
+  /**
    * Setup .agent directory with template files for --input and --adaptation testing
    * Creates specific template files that match expected patterns:
    * - f_project.md (base template)
@@ -57,6 +98,8 @@ class InputAdaptationE2ESetup {
    * - f_task_strict.md (adaptation template)
    */
   async setupAgentPromptsForOptions(): Promise<void> {
+    // First copy static prompts if needed
+    await this.copyStaticPromptsIfNeeded();
     // Create .agent/breakdown directory structure
     const agentConfigDir = `./${DEFAULT_CONFIG_DIR}`;
     try {
@@ -229,6 +272,12 @@ params:
       await Deno.remove("./.agent", { recursive: true });
     } catch {
       // Ignore cleanup errors - .agent might be used by other processes
+    }
+    try {
+      // Clean up dynamically generated prompt files
+      await Deno.remove(this.agentPromptsDir, { recursive: true });
+    } catch {
+      // Ignore cleanup errors - directory might not exist or be used by other tests
     }
   }
 }

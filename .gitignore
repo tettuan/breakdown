@@ -97,4 +97,8 @@ instructions/project-worker.md
 # Claude specific
 .claude
 .claude/
+
+# Test fixtures
+# Static test fixtures are in tests/fixtures/static-prompts/ (git tracked)
+# Dynamic test fixtures are in tests/fixtures/prompts/ (git ignored)
 tests/fixtures/prompts/
