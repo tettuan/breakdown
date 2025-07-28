@@ -475,12 +475,11 @@ export class TwoParamsPromptGenerator {
       directiveType: params.directive.value,
       options: {
         fromFile: (options.from as string) || (options.fromFile as string),
-        destinationFile: (options.destination as string) || (options.output as string) ||
-          "output.md",
+        destinationFile: (options.destination as string) || (options.output as string),
         input: options.input as string, // Add input option for fromLayerType
         adaptation: configuration.adaptation,
         promptDir: configuration.promptDir,
-        input_text: variables.standardVariables.input_text || "",
+        input_text: variables.standardVariables.input_text,
         userVariables: variables.userVariables,
         extended: configuration.extended,
         customValidation: configuration.customValidation,

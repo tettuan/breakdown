@@ -358,7 +358,7 @@ export class VariablesBuilder {
    */
   private validateValueWithFallback(
     value: string,
-    defaultValue: string,
+    defaultValue: string | undefined,
     fieldName: string,
   ): string {
     const isTestEnv = Deno.env.get("NODE_ENV") === "test" ||
@@ -367,7 +367,7 @@ export class VariablesBuilder {
 
     // Check for empty/null/whitespace-only values
     if (!value || value.trim().length === 0) {
-      if (isTestEnv) {
+      if (isTestEnv && defaultValue !== undefined) {
         console.warn(`[TEST_ENV] Empty ${fieldName} detected, using fallback: ${defaultValue}`);
         return defaultValue;
       }
@@ -402,7 +402,7 @@ export class VariablesBuilder {
     if (factoryValues.outputFilePath) {
       const validatedPath = this.validateValueWithFallback(
         factoryValues.outputFilePath,
-        "default-output.md",
+        undefined,
         "outputFilePath",
       );
       if (validatedPath) {
