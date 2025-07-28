@@ -604,7 +604,7 @@ export class TwoParamsPromptGenerator {
           directiveType: context.params.directive?.value || "",
           options: context.options || {},
         };
-        
+
         // Use PromptTemplatePathResolverTotality for consistent path resolution
         const resolverResult = PromptTemplatePathResolverTotality.create(config, cliParams);
         if (!resolverResult.ok) {
@@ -614,16 +614,19 @@ export class TwoParamsPromptGenerator {
             error: `Path resolver creation failed: ${resolverResult.error.kind}`,
           });
         }
-        
+
         const resolver = resolverResult.data;
         const pathResult = resolver.getPath();
         if (!pathResult.ok) {
           // Extract attempted paths from TemplateNotFound error for better error message
           let errorMessage = `Template path resolution failed: ${pathResult.error.kind}`;
           let attemptedPath = "Unknown path";
-          
+
           if (pathResult.error.kind === "TemplateNotFound" && "attempted" in pathResult.error) {
-            const templateNotFoundError = pathResult.error as { attempted: string[]; fallback?: string };
+            const templateNotFoundError = pathResult.error as {
+              attempted: string[];
+              fallback?: string;
+            };
             if (templateNotFoundError.attempted && templateNotFoundError.attempted.length > 0) {
               attemptedPath = templateNotFoundError.attempted[0];
               errorMessage = `Template not found: ${attemptedPath}`;
@@ -635,14 +638,14 @@ export class TwoParamsPromptGenerator {
               }
             }
           }
-          
+
           return error({
-            kind: "PromptPathError", 
+            kind: "PromptPathError",
             path: attemptedPath,
             error: errorMessage,
           });
         }
-        
+
         const templatePath = pathResult.data;
         const promptFilePath = templatePath.value;
 
