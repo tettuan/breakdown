@@ -1,6 +1,6 @@
 # Test Configuration for Breakdown
 test_env:
-  working_dir: .agent/breakdown/test
+  working_dir: .agent/climpt/test
   debug: true # Enable debug mode by default for tests
 
 directories:

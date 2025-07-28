@@ -412,7 +412,7 @@ profile_metadata:
   version: "perf-1.0"
 
 # カスタム変数
-custom_variables:
+user_variables:
   test_type: "performance"
   pattern_size: "large"
   directive_count: 150

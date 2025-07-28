@@ -1,5 +1,5 @@
-# Flexible pattern test configuration
-# ConfigurationTestHelper用の設定ファイル
+# STDIN flexible test configuration
+# ConfigurationTestHelper用のSTDIN処理テスト設定ファイル（柔軟なパターン対応）
 
 # パターンベースの設定
 params:
@@ -67,7 +67,7 @@ app_prompt:
   schema_dir: "schemas"
 
 userVariables:
-  author: "Flexible Pattern Test Suite"
+  author: "STDIN Flexible Test Suite"
   version: "2.0.0"
 
 # BreakdownParams設定

@@ -62,7 +62,7 @@ export interface PromptCliOptions {
   readonly adaptation?: string;
   readonly promptDir?: string;
   readonly input_text?: string;
-  readonly customVariables?: Record<string, string>;
+  readonly userVariables?: Record<string, string>;
   readonly extended?: boolean;
   readonly customValidation?: boolean;
   readonly errorFormat?: "simple" | "detailed" | "json";
@@ -559,7 +559,7 @@ export class PromptVariablesFactory {
     schemaFilePath: string;
     directive: DirectiveType;
     layer: LayerType;
-    customVariables?: Record<string, string>;
+    userVariables?: Record<string, string>;
   } {
     // Safe type conversion instead of type assertion
     const totalityParams = this.convertToTotalityParams(this.cliParams);
@@ -572,7 +572,7 @@ export class PromptVariablesFactory {
       directive: totalityParams.directive ||
         this.createDirectiveFromString(this.cliParams.directiveType),
       layer: totalityParams.layer || this.createLayerFromString(this.cliParams.layerType),
-      customVariables: this.cliParams.options.customVariables,
+      userVariables: this.cliParams.options.userVariables,
     };
   }
 
@@ -788,8 +788,8 @@ export class PromptVariablesFactory {
   /**
    * Get custom variables from CLI options
    */
-  public get customVariables(): Record<string, string> {
-    return this.cliParams.options.customVariables || {};
+  public get userVariables(): Record<string, string> {
+    return this.cliParams.options.userVariables || {};
   }
 
   /**
@@ -899,7 +899,7 @@ export class PromptVariablesFactory {
         output_file: this.outputFilePath,
         prompt_path: templatePathResult.data,
         schema_path: this.schemaFilePath,
-        ...this.customVariables,
+        ...this.userVariables,
       },
     };
 
@@ -918,7 +918,7 @@ export class PromptVariablesFactory {
       layer: this.cliParams.layerType,
       fromFile: this.cliParams.options.fromFile,
       destinationFile: this.cliParams.options.destinationFile,
-      userVariables: this.cliParams.options.customVariables,
+      userVariables: this.cliParams.options.userVariables,
     });
 
     const stdinSource = this.cliParams.options.input_text

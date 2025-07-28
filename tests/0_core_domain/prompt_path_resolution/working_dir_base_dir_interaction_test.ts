@@ -24,7 +24,7 @@ Deno.test("3_core - Working directory '.' with relative base_dir paths", async (
 
   try {
     // Create test structure
-    const agentDir = join(testDir, ".agent", "breakdown");
+    const agentDir = join(testDir, ".agent", "climpt");
     const promptsDir = join(agentDir, "prompts", "to", "issue");
     await Deno.mkdir(promptsDir, { recursive: true });
 
@@ -44,10 +44,10 @@ Deno.test("3_core - Working directory '.' with relative base_dir paths", async (
     const config = {
       working_dir: ".",
       app_prompt: {
-        base_dir: "./.agent/breakdown/prompts",
+        base_dir: ".agent/climpt/prompts",
       },
       app_schema: {
-        base_dir: "./.agent/breakdown/schema",
+        base_dir: ".agent/climpt/schema",
       },
     };
 
@@ -83,7 +83,7 @@ Deno.test("3_core - Working directory '.' with relative base_dir paths", async (
         assertEquals(pathResult.data.status, "Found");
 
         // Verify the base directory is correctly resolved
-        const expectedBaseDir = Deno.realPathSync(join(testDir, ".agent", "breakdown", "prompts"));
+        const expectedBaseDir = Deno.realPathSync(join(testDir, ".agent", "climpt", "prompts"));
         const actualBaseDir = Deno.realPathSync(pathResult.data.metadata.baseDir);
         assertEquals(actualBaseDir, expectedBaseDir);
       }
@@ -99,7 +99,7 @@ Deno.test("3_core - Working directory as absolute path with relative base_dir", 
 
   try {
     // Create test structure
-    const agentDir = join(testDir, ".agent", "breakdown");
+    const agentDir = join(testDir, ".agent", "climpt");
     const promptsDir = join(agentDir, "prompts", "summary", "project");
     await Deno.mkdir(promptsDir, { recursive: true });
 
@@ -115,7 +115,7 @@ Deno.test("3_core - Working directory as absolute path with relative base_dir", 
     const config = {
       working_dir: testDir, // Absolute path
       app_prompt: {
-        base_dir: ".agent/breakdown/prompts", // Relative path (no leading ./)
+        base_dir: ".agent/climpt/prompts", // Relative path (no leading ./)
       },
     };
 
@@ -159,7 +159,7 @@ Deno.test("3_core - Verify path resolution does not duplicate working_dir compon
   try {
     // Create a structure that could cause duplication
     const workspaceDir = join(testDir, "workspace");
-    const agentDir = join(workspaceDir, ".agent", "breakdown");
+    const agentDir = join(workspaceDir, ".agent", "climpt");
     const promptsDir = join(agentDir, "prompts", "defect", "task");
     await Deno.mkdir(promptsDir, { recursive: true });
 
@@ -176,7 +176,7 @@ Deno.test("3_core - Verify path resolution does not duplicate working_dir compon
     const config = {
       working_dir: workspaceDir,
       app_prompt: {
-        base_dir: ".agent/breakdown/prompts",
+        base_dir: ".agent/climpt/prompts",
       },
     };
 
@@ -211,10 +211,10 @@ Deno.test("3_core - Verify path resolution does not duplicate working_dir compon
         // Verify the path doesn't contain duplicated segments
         const pathSegments = pathResult.data.value.split("/");
         const agentCount = pathSegments.filter((seg) => seg === ".agent").length;
-        const breakdownCount = pathSegments.filter((seg) => seg === "breakdown").length;
+        const climptCount = pathSegments.filter((seg) => seg === "climpt").length;
 
         assertEquals(agentCount, 1, "Should have exactly one '.agent' in path");
-        assertEquals(breakdownCount, 1, "Should have exactly one 'breakdown' in path");
+        assertEquals(climptCount, 1, "Should have exactly one 'climpt' in path");
       }
     }
   } finally {

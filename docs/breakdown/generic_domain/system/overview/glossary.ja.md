@@ -22,7 +22,7 @@ Breakdownドメインにおけるビジネス用語とその実装における�
 | **設定管理** | | | |
 | アプリ設定 | Application Config | *-app.yml | アプリケーション基本設定ファイル |
 | ユーザー設定 | User Config | *-user.yml | ユーザー固有の設定ファイル |
-| カスタム変数 | User Variables | customVariables | --uv-*で指定するユーザー定義変数 |
+| ユーザー変数 | User Variables | userVariables | --uv-*で指定するユーザー定義変数 |
 | **ワークスペース** | | | |
 | 実行基準ディレクトリ | Current Working Directory | CWD | Breakdownコマンド実行時のカレントディレクトリ |
 | 作業ディレクトリ | Working Directory | working_dir | 入出力ファイル解決用ディレクトリ（CWDとは別） |
@@ -87,7 +87,7 @@ Breakdownドメインにおけるビジネス用語とその実装における�
 | 用語 | 使用箇所 | 説明 | 関連ワード |
 |------|----------|------|------------|
 | CWD | path.ja.md, app_config.ja.md | Current Working Directory。Breakdownコマンドを実行した時点でのカレントディレクトリ。プロンプトやスキーマのbase_dirはCWD起点で解決される。`Deno.cwd()`で取得される。 | working_dir, app_prompt.base_dir, app_schema.base_dir |
-| working_dir | app_config.ja.md, init.ja.md | アプリケーションの作業ディレクトリ（SINGLE SOURCE OF TRUTH）。デフォルトは `.agent/breakdown/` に設定される。入力ファイル（-i）や出力ファイル（-o）のパス解決、およびプロンプトやスキーマのディレクトリ解決に使用される基準ディレクトリ。すべてのbase_dirはworking_dir相対パスとして設定される。設定は `.agent/breakdown/config/default-app.yml` で管理される。 | base_dir, app_prompt.base_dir, app_schema.base_dir |
+| working_dir | app_config.ja.md, init.ja.md | アプリケーションの作業ディレクトリ（SINGLE SOURCE OF TRUTH）。デフォルトは `.agent/climpt/` に設定される。入力ファイル（-i）や出力ファイル（-o）のパス解決、およびプロンプトやスキーマのディレクトリ解決に使用される基準ディレクトリ。すべてのbase_dirはworking_dir相対パスとして設定される。設定は `.agent/climpt/config/default-app.yml` で管理される。 | base_dir, app_prompt.base_dir, app_schema.base_dir |
 | base_dir | app_prompt.ja.md, app_schema.ja.md | プロンプトやスキーマの基本ディレクトリ（working_dir相対パス）。プロンプトの場合は `prompts/` がデフォルト。スキーマの場合は `schemas/` がデフォルト。実際のパスは `resolve(working_dir, base_dir)` で計算される。これらのディレクトリは `lib` 配下の雛形ファイルからコピーされる。 | working_dir, prompts/, schemas/ |
 | prompts/ | init.ja.md, app_prompt.ja.md | プロンプトファイルを格納するディレクトリ。デフォルトでは `prompts/` が使用されるが、`app_prompt.base_dir` で変更可能。プロンプトファイルの配置場所として柔軟な運用が可能。 | base_dir, app_prompt.base_dir |
 | schemas/ | app_schema.ja.md | スキーマファイルを格納するディレクトリ。デフォルトでは `schemas/` が使用されるが、`app_schema.base_dir` で変更可能。スキーマファイルの配置場所として柔軟な運用が可能。 | base_dir, app_schema.base_dir |
@@ -96,9 +96,9 @@ Breakdownドメインにおけるビジネス用語とその実装における�
 
 | 用語 | 使用箇所 | 説明 | 関連ワード |
 |------|----------|------|------------|
-| *-app.yml | init.ja.md, app_config.ja.md | アプリケーションの設定ファイル。`.agent/breakdown/config/default-app.yml` に配置される。Plan1統一設定形式では、working_dir（SINGLE SOURCE OF TRUTH）とbase_dir（working_dir相対パス）の関係を管理する。既存のファイルは上書きされない。設定は階層的に管理され、アプリケーション設定とユーザー設定の2層構造を持つ。 | working_dir, config/, base_dir |
+| *-app.yml | init.ja.md, app_config.ja.md | アプリケーションの設定ファイル。`.agent/climpt/config/default-app.yml` に配置される。Plan1統一設定形式では、working_dir（SINGLE SOURCE OF TRUTH）とbase_dir（working_dir相対パス）の関係を管理する。既存のファイルは上書きされない。設定は階層的に管理され、アプリケーション設定とユーザー設定の2層構造を持つ。 | working_dir, config/, base_dir |
 | *-user.yml | app_config.ja.md | ユーザー固有の設定ファイル。アプリケーション設定の階層化に存在し、アプリケーション設定を上書きする。DirectiveType（処理方向型）とLayerType（階層型）の取りうる値をユーザーが自由に定義可能。 | *-app.yml, config/, DirectiveType, LayerType |
-| config/ | init.ja.md, app_config.ja.md | 設定ファイルを格納するディレクトリ。`.agent/breakdown/config/` に配置され、Plan1統一設定形式に基づくアプリケーションの各種設定を管理する。working_dir（SINGLE SOURCE OF TRUTH）を基準とした相対パス設定により、プロジェクト移動時の柔軟性を提供する。 | *-app.yml, working_dir, base_dir |
+| config/ | init.ja.md, app_config.ja.md | 設定ファイルを格納するディレクトリ。`.agent/climpt/config/` に配置され、Plan1統一設定形式に基づくアプリケーションの各種設定を管理する。working_dir（SINGLE SOURCE OF TRUTH）を基準とした相対パス設定により、プロジェクト移動時の柔軟性を提供する。 | *-app.yml, working_dir, base_dir |
 | プロファイルプレフィクス | app_config.ja.md | 用途別設定の切り替えに使用されるプレフィクス（例：`breakdown-`, `search-`）。BreakdownConfigによってプロファイルプレフィクスが付与された設定ファイル（例：`breakdown-app.yml`, `search-user.yml`）を自動的に読み込み、DirectiveTypeとLayerTypeの組み合わせを用途に応じて切り替えることができる。例えばデフォルトの`breakdown`プロファイルでは`to,summary,defect`のDirectiveTypeを使用し、`search`プロファイルでは`web,rag,db`のDirectiveTypeを使用するといった、異なる処理体系を適用可能。 | BreakdownConfig, DirectiveType, LayerType, breakdown-, search- |
 
 #### 1.4 入出力処理

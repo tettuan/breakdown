@@ -1,3 +1,7 @@
+> **Notice**
+>
+> EndPointとなるプロジェクトは、[Climpt](https://github.com/tettuan/climpt) へ移行しています。実体は同じです。インストールにはClimptを使ってください。
+
 # Breakdown
 
 TypeScriptとJSON Schemaを使用したAI支援開発のための開発指示書作成ツール。

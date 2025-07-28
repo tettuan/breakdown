@@ -54,7 +54,7 @@ export interface TwoParamsInput {
  */
 export interface ProcessedVariables {
   readonly standardVariables: Record<string, string>;
-  readonly customVariables: Record<string, string>;
+  readonly userVariables: Record<string, string>;
   readonly inputText?: string;
   readonly inputFile?: string;
   readonly outputFile?: string;
@@ -175,7 +175,7 @@ export class TwoParamsApplicationService {
         input_text: input.stdin || "",
         timestamp: new Date().toISOString(),
       },
-      customVariables: this.extractUserVariables(input.options || {}),
+      userVariables: this.extractUserVariables(input.options || {}),
       inputText: input.stdin,
     };
 
@@ -299,7 +299,7 @@ export class TwoParamsApplicationService {
           timestamp: new Date().toISOString(),
           input_text: stdinContent,
         },
-        customVariables: this.extractUserVariables(options),
+        userVariables: this.extractUserVariables(options),
         inputText: stdinContent,
       };
 
@@ -336,7 +336,7 @@ export class TwoParamsApplicationService {
         inputFilePath: variables.inputFile || "-",
         outputFilePath: variables.outputFile || "output.json",
         schemaFilePath: schemaPath,
-        customVariables: variables.customVariables,
+        userVariables: variables.userVariables,
         inputText: variables.inputText,
       };
 
@@ -451,7 +451,7 @@ export class TwoParamsApplicationService {
         adaptation: input.options?.adaptation as string | undefined,
         promptDir: input.options?.promptDir as string | undefined,
         input_text: variables.inputText || "",
-        customVariables: variables.customVariables,
+        userVariables: variables.userVariables,
         extended: input.options?.extended as boolean | undefined,
         customValidation: input.options?.customValidation as boolean | undefined,
         errorFormat: input.options?.errorFormat as "simple" | "detailed" | "json" | undefined,

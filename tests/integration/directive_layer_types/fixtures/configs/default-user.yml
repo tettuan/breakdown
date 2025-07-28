@@ -2,7 +2,7 @@
 directive_patterns: "to|summary|defect|find|analyze|extract"
 layer_patterns: "project|issue|task|component|module"
 
-custom_variables:
+user_variables:
   author: "Integration Test Suite"
   version: "1.0.0"
   organization: "Breakdown Testing"

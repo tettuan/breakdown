@@ -26,8 +26,8 @@ export interface PromptGenerationContext {
   outputFilePath: string;
   /** Path to the schema file for validation */
   schemaFilePath: string;
-  /** Optional custom variables for template substitution */
-  customVariables?: Record<string, string>;
+  /** Optional user variables for template substitution */
+  userVariables?: Record<string, string>;
   /** Input text content (from stdin or file) */
   inputText?: string;
 }

@@ -111,7 +111,7 @@ interface PromptVariableSource {
   stdinContent?: string;          // PromptVariableOption
   adaptation?: string;            // ProcessingDirectiveOption
   useSchema?: boolean;            // ProcessingDirectiveOption
-  customVariables?: Record<string, string>; // DynamicVariableOption
+  userVariables?: Record<string, string>; // DynamicVariableOption
 }
 ```
 - **統合性**: 3つのオプション型を統合
@@ -146,7 +146,7 @@ interface ProcessingDirectiveOption {
 #### DynamicVariableOption: 動的な拡張
 ```typescript
 interface DynamicVariableOption {
-  customVariables?: Record<string, string>; // ユーザー定義変数
+  userVariables?: Record<string, string>; // ユーザー定義変数
 }
 ```
 - **役割**: プロンプト生成の**カスタマイズ**
@@ -215,8 +215,8 @@ function handlePromptGeneration(source: PromptVariableSource): PromptVariables {
   }
   
   // Stage 3: 動的拡張
-  if (source.customVariables) {
-    variables.uv = source.customVariables;
+  if (source.userVariables) {
+    variables.uv = source.userVariables;
   }
   
   return variables;

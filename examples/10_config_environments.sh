@@ -29,7 +29,7 @@ echo "   4. プロファイル別DirectiveType/LayerTypeの動作確認"
 echo
 
 # Run from examples directory
-CONFIG_DIR="./.agent/breakdown/config"
+CONFIG_DIR="./.agent/climpt/config"
 
 # Check if initialized
 if [ ! -d "${CONFIG_DIR}" ]; then

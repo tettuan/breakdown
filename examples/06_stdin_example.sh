@@ -38,7 +38,7 @@ fi
 echo "=== STDIN Input Example ==="
 
 # Define the config directory path
-CONFIG_DIR="./.agent/breakdown/config"
+CONFIG_DIR="./.agent/climpt/config"
 
 # Check if initialized
 if [ ! -d "${CONFIG_DIR}" ]; then
@@ -58,7 +58,7 @@ fi
 
 # Check if template directories and files exist
 echo "Checking required template files for STDIN examples..."
-TEMPLATE_BASE_DIR=".agent/breakdown/prompts"
+TEMPLATE_BASE_DIR=".agent/climpt/prompts"
 
 # Define required templates (only those used in this script)
 # This script uses: summary project --config=stdin
@@ -90,7 +90,7 @@ echo "✓ All required template files exist"
 echo "Creating f_default.md templates..."
 for directive in summary; do
     for layer in project; do
-        template_dir=".agent/breakdown/prompts/$directive/$layer"
+        template_dir=".agent/climpt/prompts/$directive/$layer"
         if [ -d "$template_dir" ]; then
             if [ ! -f "$template_dir/f_default.md" ]; then
                 if [ -f "$template_dir/f_$layer.md" ]; then
@@ -103,7 +103,7 @@ done
 
 # Ensure local template directories exist following DirectiveType x LayerType structure
 # (This creates local prompts directories that may be used for custom templates)
-if ! mkdir -p .agent/breakdown/prompts/to/project .agent/breakdown/prompts/to/issue .agent/breakdown/prompts/to/task .agent/breakdown/prompts/summary/project .agent/breakdown/prompts/summary/issue .agent/breakdown/prompts/defect/project .agent/breakdown/prompts/defect/issue; then
+if ! mkdir -p .agent/climpt/prompts/to/project .agent/climpt/prompts/to/issue .agent/climpt/prompts/to/task .agent/climpt/prompts/summary/project .agent/climpt/prompts/summary/issue .agent/climpt/prompts/defect/project .agent/climpt/prompts/defect/issue; then
     echo "Error: Failed to create local template directories"
     exit 1
 fi
@@ -113,7 +113,7 @@ echo "Creating required template files for CLI commands used in this script..."
 
 # This script executes: breakdown summary project --config=stdin
 # Required template: prompts/summary/project/f_project.md
-cat > ".agent/breakdown/prompts/summary/project/f_project.md" << 'EOF'
+cat > ".agent/climpt/prompts/summary/project/f_project.md" << 'EOF'
 # STDIN Project Summary Template
 
 ## Input Content

@@ -73,7 +73,7 @@ function formatVariableError(fieldName: string, error: ValidationError): string 
  * - options.fromFile -> StandardVariable("input_text_file")
  * - options.destinationFile -> StandardVariable("destination_path")
  * - options.input_text -> StdinVariable("input_text")
- * - options.customVariables -> UserVariable instances
+ * - options.userVariables -> UserVariable instances
  *
  * @param params - Legacy PromptCliParams to convert
  * @returns Result containing PromptVariables or MigrationError
@@ -141,9 +141,9 @@ export function migrateCliParamsToVariables(
       }
     }
 
-    // Convert customVariables
-    if (params.options.customVariables) {
-      for (const [key, value] of Object.entries(params.options.customVariables)) {
+    // Convert userVariables
+    if (params.options.userVariables) {
+      for (const [key, value] of Object.entries(params.options.userVariables)) {
         const result = UserVariable.create(key, value as string);
         if (result.ok) {
           variables.push(result.data);
@@ -332,7 +332,7 @@ export function convertPromptCliParamsToPromptPath(
  * - options.fromFile -> StandardVariable("input_text_file")
  * - options.destinationFile -> StandardVariable("destination_path")
  * - options.input_text -> StdinVariable("input_text")
- * - options.customVariables -> UserVariable instances
+ * - options.userVariables -> UserVariable instances
  *
  * @param params - Legacy PromptCliParams to convert
  * @returns Result containing PromptVariables or MigrationError

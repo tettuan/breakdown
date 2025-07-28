@@ -37,7 +37,7 @@ echo "Checking template availability..."
 echo "Ensuring f_default.md templates exist..."
 for directive in to summary defect find; do
     for layer in project issue task bugs; do
-        template_dir=".agent/breakdown/prompts/$directive/$layer"
+        template_dir=".agent/climpt/prompts/$directive/$layer"
         if [ -d "$template_dir" ]; then
             if [ ! -f "$template_dir/f_default.md" ]; then
                 # Find the most appropriate template to copy

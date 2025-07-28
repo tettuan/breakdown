@@ -41,7 +41,7 @@ debugMode: false
 directive_patterns: "to|summary"
 layer_patterns: "project|issue"
 
-custom_variables:
+user_variables:
   author: "Production Test Suite"
   version: "1.0.0"
   environment: "production"

@@ -278,13 +278,13 @@ export const PathValueObjectConfigs = {
     return {
       template: {
         ...DEFAULT_TEMPLATE_PATH_CONFIG,
-        allowCustomDirectives: true,
-        allowCustomLayers: true,
+        allowUserDirectives: true,
+        allowUserLayers: true,
       },
       schema: {
         ...DEFAULT_SCHEMA_PATH_CONFIG,
-        allowCustomDirectives: true,
-        allowCustomLayers: true,
+        allowUserDirectives: true,
+        allowUserLayers: true,
       },
       workingDirectory: {
         ...DEFAULT_WORKING_DIRECTORY_CONFIG,
@@ -324,8 +324,8 @@ export const PathValueObjectConfigs = {
     return {
       template: {
         ...DEFAULT_TEMPLATE_PATH_CONFIG,
-        allowCustomDirectives: true,
-        allowCustomLayers: true,
+        allowUserDirectives: true,
+        allowUserLayers: true,
         basePathConfig: {
           ...DEFAULT_TEMPLATE_PATH_CONFIG.basePathConfig,
           maxLength: 50, // Shorter paths for tests
@@ -333,8 +333,8 @@ export const PathValueObjectConfigs = {
       },
       schema: {
         ...DEFAULT_SCHEMA_PATH_CONFIG,
-        allowCustomDirectives: true,
-        allowCustomLayers: true,
+        allowUserDirectives: true,
+        allowUserLayers: true,
         basePathConfig: {
           ...DEFAULT_SCHEMA_PATH_CONFIG.basePathConfig,
           maxLength: 50, // Shorter paths for tests

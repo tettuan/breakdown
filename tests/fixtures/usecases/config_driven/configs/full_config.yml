@@ -7,7 +7,7 @@ profile: "development"
 prompts:
   default_template_dir: "prompts"
   default_schema_dir: "schema"
-  custom_variables:
+  user_variables:
     - name: "project_name"
       default: "MyProject"
     - name: "team_name"

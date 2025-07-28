@@ -6,7 +6,7 @@
  *
  * These types support:
  * - Team-specific configuration management
- * - Custom variable resolution and substitution
+ * - User variable resolution and substitution
  * - Team-specific path resolution
  * - Contextual variables for team workflows
  *
@@ -39,7 +39,7 @@ export interface TeamInfo {
 export interface TeamPromptConfig {
   default_template_dir: string;
   default_schema_dir: string;
-  custom_variables: CustomVariable[];
+  user_variables: UserVariable[];
 }
 
 /**
@@ -88,10 +88,10 @@ export interface TeamConfig {
 }
 
 /**
- * Custom variable definition
- * Represents a single custom variable with name, value, and optional metadata
+ * User variable definition
+ * Represents a single user variable with name, value, and optional metadata
  */
-export interface CustomVariable {
+export interface UserVariable {
   name: string;
   value?: string;
   default?: string;
@@ -177,7 +177,7 @@ export function isTeamPromptConfig(value: unknown): value is TeamPromptConfig {
   return (
     typeof config.default_template_dir === "string" &&
     typeof config.default_schema_dir === "string" &&
-    Array.isArray(config.custom_variables)
+    Array.isArray(config.user_variables)
   );
 }
 
@@ -197,9 +197,9 @@ export function isTeamOutputConfig(value: unknown): value is TeamOutputConfig {
 }
 
 /**
- * Type guard for CustomVariable
+ * Type guard for UserVariable
  */
-export function isCustomVariable(value: unknown): value is CustomVariable {
+export function isUserVariable(value: unknown): value is UserVariable {
   if (!value || typeof value !== "object") {
     return false;
   }

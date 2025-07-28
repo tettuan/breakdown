@@ -168,7 +168,7 @@ profile_metadata:
   unicode_version: "15.0"
 
 # カスタム変数（Unicode含む）
-custom_variables:
+user_variables:
   test_type: "unicode_edge_cases"
   author: "Unicode テスト スイート"
   author_chinese: "Unicode 测试套件"

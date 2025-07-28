@@ -26,7 +26,7 @@ echo "This example demonstrates using custom directive and layer types"
 echo
 
 # Set configuration paths
-CONFIG_DIR="./.agent/breakdown/config"
+CONFIG_DIR="./.agent/climpt/config"
 CONFIG_FILE="$CONFIG_DIR/production-user.yml"
 TEST_DIR="tmp/production-custom-test"
 OUTPUT_DIR="tmp/production-bug-reports"
@@ -42,14 +42,14 @@ mkdir -p "$CONFIG_DIR" || handle_error "Failed to create config directory"
 
 # Create custom template directories
 echo "Setting up custom template directories..."
-mkdir -p .agent/breakdown/prompts/find/bugs
+mkdir -p .agent/climpt/prompts/find/bugs
 
 # Create custom configuration file specifically for this example
 CUSTOM_CONFIG_FILE="$CONFIG_DIR/production-custom-app.yml"
 echo "=== Creating Custom Configuration ==="
 cat > "$CUSTOM_CONFIG_FILE" << 'EOF'
 # Breakdown Configuration for Production Custom Profile
-working_dir: ".agent/breakdown"
+working_dir: ".agent/climpt"
 app_prompt:
   base_dir: "prompts"
 app_schema:
@@ -92,7 +92,7 @@ echo "Test file created."
 echo
 
 # Create a custom template for 'find bugs'
-cat > ".agent/breakdown/prompts/find/bugs/f_bugs.md" << 'EOF'
+cat > ".agent/climpt/prompts/find/bugs/f_bugs.md" << 'EOF'
 # Find Bugs Template
 
 Input: {{input}}

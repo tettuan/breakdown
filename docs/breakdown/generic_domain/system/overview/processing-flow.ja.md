@@ -16,7 +16,7 @@ Breakdown CLIは以下のフェーズで処理を実行します：
 ### 1. 入力パラメータの処理
 
 #### 1.1 コマンドライン引数の解析
-- `BreakdownParams`による引数解析
+- `BreakdownParams`による引数解析（JSRパッケージ初期化）
 - パラメータの型判定（Zero/One/Two Parameters）
 - 設定ファイル接頭詞（`--config`/`-c`）の検出
 
@@ -24,6 +24,8 @@ Breakdown CLIは以下のフェーズで処理を実行します：
 - `BreakdownConfig`による設定管理
 - `*-app.yml`（アプリケーション設定）の読み込み
 - `*-user.yml`（ユーザー設定）の読み込み
+- ParamsCustomConfig生成：directivePatterns/layerPatterns抽出
+- `lib/application/breakdown_params_integration.ts`経由でBreakdownParamsへ渡す
 - CLI引数と設定の統合・優先順位適用
 
 #### 1.3 オプションの検証
@@ -82,21 +84,23 @@ Breakdown CLIは以下のフェーズで処理を実行します：
 
 ```
 CLI引数 → BreakdownParams → 設定統合 → BreakdownConfig
-                                    ↓
-                              パス解決器群
-                            (Prompt/Schema/Input/Output)
-                                    ↓
-                            PromptVariablesFactory
-                                    ↓
-                             BreakdownPrompt
-                                    ↓
-                               結果出力
+     ↓                             ↓
+TwoParamsResult ← ParamsCustomConfig抽出
+     ↓
+DirectiveType/LayerType生成（検証済み）
+     ↓
+パス解決器群(Prompt/Schema/Input/Output)
+     ↓
+PromptVariablesFactory
+     ↓
+BreakdownPrompt → 結果出力
 ```
 
 ## 主要コンポーネント
 
 ### パラメータ解析
-- **BreakdownParams**: CLI引数解析・バリデーションの中核
+- **BreakdownParams**: CLI引数解析・バリデーションの中核（JSRパッケージ）
+- **breakdown_params_integration.ts**: ParamsCustomConfig経由での設定値連携
 - **ConfigPrefixDetector**: `--config`/`-c`オプションの検出
 
 ### 設定管理

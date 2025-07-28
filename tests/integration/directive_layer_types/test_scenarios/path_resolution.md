@@ -14,8 +14,8 @@
 
 ### 期待されるパス解決順序
 ```
-1. .agent/breakdown/prompts/to/project/f_issue.md (最優先)
-2. .agent/breakdown/prompts/to/project.md
+1. .agent/climpt/prompts/to/project/f_issue.md (最優先)
+2. .agent/climpt/prompts/to/project.md
 3. prompts/to/project/f_issue.md (フォールバック)
 4. prompts/to/project.md
 ```
@@ -29,7 +29,7 @@ assert(await exists(resolvedPath.data));
 
 // 優先順位の検証
 const candidates = await resolver.getCandidatePaths(directiveType, layerType);
-assertEquals(candidates[0], ".agent/breakdown/prompts/to/project/f_issue.md");
+assertEquals(candidates[0], ".agent/climpt/prompts/to/project/f_issue.md");
 ```
 
 ## シナリオ2: スキーマファイルパス解決
@@ -46,8 +46,8 @@ assertEquals(candidates[0], ".agent/breakdown/prompts/to/project/f_issue.md");
 
 ### スキーマ探索パターン
 ```
-1. .agent/breakdown/schema/summary/issue.json
-2. .agent/breakdown/schema/summary/issue/base.schema.md
+1. .agent/climpt/schema/summary/issue.json
+2. .agent/climpt/schema/summary/issue/base.schema.md
 3. schema/summary/issue.json
 4. schema/summary/issue/base.schema.md
 ```

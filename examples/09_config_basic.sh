@@ -47,7 +47,7 @@ echo "Script directory: $SCRIPT_DIR"
 echo "Original CWD: $ORIGINAL_CWD"
 
 # Run from examples directory
-CONFIG_DIR="./.agent/breakdown/config"
+CONFIG_DIR="./.agent/climpt/config"
 echo "Config directory: $CONFIG_DIR"
 
 # Check if initialized
@@ -68,7 +68,7 @@ fi
 
 # Ensure local template directories exist following DirectiveType x LayerType structure
 echo "Setting up local template directories..."
-if ! mkdir -p .agent/breakdown/prompts/to/project .agent/breakdown/prompts/to/issue .agent/breakdown/prompts/to/task .agent/breakdown/prompts/summary/project .agent/breakdown/prompts/summary/issue .agent/breakdown/prompts/defect/project .agent/breakdown/prompts/defect/issue; then
+if ! mkdir -p .agent/climpt/prompts/to/project .agent/climpt/prompts/to/issue .agent/climpt/prompts/to/task .agent/climpt/prompts/summary/project .agent/climpt/prompts/summary/issue .agent/climpt/prompts/defect/project .agent/climpt/prompts/defect/issue; then
     echo "Error: Failed to create template directories"
     exit 1
 fi
@@ -130,11 +130,11 @@ echo "Searching for template files in project root..."
 find .. -name "f_issue.md" -type f 2>/dev/null | head -5 || echo "No f_issue.md files found"
 find .. -name "f_project.md" -type f 2>/dev/null | head -5 || echo "No f_project.md files found"
 
-# Templates are already created by 02_init_deno_run.sh in .agent/breakdown/prompts/
+# Templates are already created by 02_init_deno_run.sh in .agent/climpt/prompts/
 echo ""
 echo "🔍 DEBUG: Checking existing templates"
-if [ -f ".agent/breakdown/prompts/summary/issue/f_issue.md" ]; then
-    echo "✓ Templates already exist in .agent/breakdown/prompts/"
+if [ -f ".agent/climpt/prompts/summary/issue/f_issue.md" ]; then
+    echo "✓ Templates already exist in .agent/climpt/prompts/"
 else
     echo "⚠️ Templates not found. Please run 02_init_deno_run.sh first"
 fi
@@ -143,11 +143,11 @@ fi
 if [ ! -f "${CONFIG_DIR}/basic-app.yml" ]; then
   cat > "${CONFIG_DIR}/basic-app.yml" << 'EOF'
 # Breakdown Configuration for Basic Profile
-working_dir: ".agent/breakdown"
+working_dir: ".agent/climpt"
 app_prompt:
-  base_dir: ".agent/breakdown/prompts"
+  base_dir: ".agent/climpt/prompts"
 app_schema:
-  base_dir: ".agent/breakdown/schema"
+  base_dir: ".agent/climpt/schema"
 params:
   two:
     directiveType:
@@ -211,10 +211,10 @@ echo "🔍 VERIFICATION: All breakdown commands are fully implemented and functi
 
 # Create required template file for CLI command in this script
 echo "Creating required template for: breakdown summary project"
-mkdir -p .agent/breakdown/prompts/summary/project
+mkdir -p .agent/climpt/prompts/summary/project
 
 # This command needs: prompts/summary/project/f_project.md (default fromLayerType)
-cat > ".agent/breakdown/prompts/summary/project/f_project.md" << 'EOF'
+cat > ".agent/climpt/prompts/summary/project/f_project.md" << 'EOF'
 # Project Summary Template
 
 ## Input Content
@@ -253,7 +253,7 @@ mkdir -p "$TEMP_TEST_DIR"
 cd "$TEMP_TEST_DIR"
 
 # Copy our basic config to test directory
-cp "../.agent/breakdown/config/basic-app.yml" "./basic-app-test.yml" 2>/dev/null || true
+cp "../.agent/climpt/config/basic-app.yml" "./basic-app-test.yml" 2>/dev/null || true
 
 echo "Running: deno run --allow-all ../../cli/breakdown.ts init"
 if deno run --allow-all ../../cli/breakdown.ts init > init_output.log 2>&1; then

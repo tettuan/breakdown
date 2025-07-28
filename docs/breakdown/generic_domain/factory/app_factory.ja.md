@@ -76,7 +76,7 @@ class PromptVariablesFactory {
     inputFilePath: string;
     outputFilePath: string;
     schemaFilePath: string;
-    customVariables?: Record<string, string>; // v1.0.1: カスタム変数サポート
+    userVariables?: Record<string, string>; // v1.0.1: ユーザー変数サポート
     // ...他の必要なパラメータ
   };
   // 個別getter（readonlyプロパティとしても可）
@@ -84,7 +84,7 @@ class PromptVariablesFactory {
   readonly inputFilePath: string;
   readonly outputFilePath: string;
   readonly schemaFilePath: string;
-  readonly customVariables: Record<string, string>; // v1.0.1: カスタム変数
+  readonly userVariables: Record<string, string>; // v1.0.1: ユーザー変数
 }
 ```
 
@@ -93,12 +93,12 @@ class PromptVariablesFactory {
 ```ts
 const factory = new PromptVariablesFactory({ config, cliParams });
 // 一括取得
-const { promptFilePath, inputFilePath, outputFilePath, schemaFilePath, customVariables } = factory.getAllParams();
+const { promptFilePath, inputFilePath, outputFilePath, schemaFilePath, userVariables } = factory.getAllParams();
 // 個別アクセス
 console.log(factory.promptFilePath);
 console.log(factory.inputFilePath);
-// v1.0.1: カスタム変数へのアクセス
-console.log(factory.customVariables['projectName']); // --projectName=value で指定した値
+// v1.0.1: ユーザー変数へのアクセス
+console.log(factory.userVariables['projectName']); // --uv-projectName=value で指定した値
 ```
 
 ## 参照
@@ -114,8 +114,8 @@ console.log(factory.customVariables['projectName']); // --projectName=value で�
 ## 実装方法
 
 ```ts
-// TwoParamsResult型のcliParamsからカスタム変数を抽出
-const customVariables = tpr.options.customVariables || {};
+// TwoParamsResult型のcliParamsからユーザー変数を抽出
+const userVariables = tpr.options.userVariables || {};
 ```
 
 ### 使用例
@@ -139,7 +139,7 @@ breakdown to issue --from=project.md \
 
 ## 対応表
 
-| 入力オプション         | inputFilePath         | outputFilePath        | promptFilePath        | schemaFilePath        | fromLayerType        | adaptationType      | customVariables |
+| 入力オプション         | inputFilePath         | outputFilePath        | promptFilePath        | schemaFilePath        | fromLayerType        | adaptationType      | userVariables |
 |------------------------|-----------------------|-----------------------|-----------------------|-----------------------|----------------------|---------------------|--------------------------|
 | --from, -f             | 入力ファイルパスとして利用 |                       |                       |                       |                      |                     |                          |
 | --destination, -o      |                       | 出力ファイルパスとして利用 |                       |                       |                      |                     |                          |
@@ -154,7 +154,7 @@ breakdown to issue --from=project.md \
 - fromLayerType は --input で明示指定されない場合、"default" を使用する。
 - adaptationType は --adaptation で指定された場合、プロンプトファイル名のsuffixとして利用される。
 - directiveType, layerType はコマンドの主要引数であり、各種パス解決のディレクトリ名等に利用される。
-- カスタム変数（--*）は customVariables オブジェクトに格納され、テンプレート内で `{変数名}` として参照可能。
+- ユーザー変数（--uv-*）は userVariables オブジェクトに格納され、テンプレート内で `{uv-変数名}` として参照可能。
 ---
 
 - 入力オプション（CLIオプション）の詳細な説明は [breakdownparams リポジトリ](https://github.com/tettuan/breakdownparams) を参照してください。

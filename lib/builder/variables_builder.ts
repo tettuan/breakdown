@@ -32,7 +32,7 @@ export interface FactoryResolvedValues {
   inputFilePath: string;
   outputFilePath: string;
   schemaFilePath: string;
-  customVariables?: Record<string, string>;
+  userVariables?: Record<string, string>;
   inputText?: string; // For stdin content
 }
 
@@ -230,23 +230,27 @@ export class VariablesBuilder {
   }
 
   /**
-   * Add multiple user-defined variables at once
+   * Add multiple user-defined variables at once (with uv- prefix requirement)
    */
-  addUserVariables(customVariables: Record<string, string>): this {
-    for (const [name, value] of Object.entries(customVariables)) {
+  addUserVariables(userVariables: Record<string, string>): this {
+    for (const [name, value] of Object.entries(userVariables)) {
+      // Skip empty values - they are optional for user variables
+      if (!value || value.trim().length === 0) {
+        continue;
+      }
       this.addUserVariable(name, value);
     }
     return this;
   }
 
   /**
-   * Add custom variables for prompt templates (without uv- prefix requirement)
+   * Add user variables for prompt templates (without uv- prefix requirement)
    * Used for template variables that don't follow CLI uv- convention
    * Allows empty values for template flexibility
    */
-  addCustomVariables(customVariables: Record<string, string>): this {
-    for (const [name, value] of Object.entries(customVariables)) {
-      // Skip empty values for custom variables - they are optional in templates
+  addUserVariablesForTemplate(userVariables: Record<string, string>): this {
+    for (const [name, value] of Object.entries(userVariables)) {
+      // Skip empty values for user variables - they are optional in templates
       if (!name || name.trim().length === 0) {
         this._errors.push({
           kind: "invalid",
@@ -431,13 +435,13 @@ export class VariablesBuilder {
     }
 
     // Add custom variables with uv- prefix validation and empty value filtering
-    if (factoryValues.customVariables) {
+    if (factoryValues.userVariables) {
       const validatedCustomVars: Record<string, string> = {};
-      for (const [key, value] of Object.entries(factoryValues.customVariables)) {
+      for (const [key, value] of Object.entries(factoryValues.userVariables)) {
         const validatedValue = this.validateValueWithFallback(
           value,
           `default-${key.replace("uv-", "")}`,
-          `customVariable.${key}`,
+          `userVariable.${key}`,
         );
         if (validatedValue) {
           validatedCustomVars[key] = validatedValue;
@@ -483,8 +487,8 @@ export class VariablesBuilder {
       this.addStdinVariable(partialValues.inputText);
     }
 
-    if (partialValues.customVariables) {
-      this.addUserVariables(partialValues.customVariables);
+    if (partialValues.userVariables) {
+      this.addUserVariables(partialValues.userVariables);
     }
 
     return this;
@@ -509,8 +513,8 @@ export class VariablesBuilder {
     }
 
     // Validate custom variables have uv- prefix
-    if (factoryValues.customVariables) {
-      for (const [name] of Object.entries(factoryValues.customVariables)) {
+    if (factoryValues.userVariables) {
+      for (const [name] of Object.entries(factoryValues.userVariables)) {
         if (!name.startsWith("uv-")) {
           errors.push({
             kind: "prefix",

@@ -127,7 +127,7 @@ export interface UnifiedConfig {
 
   // User customizations
   user: {
-    customVariables: Record<string, string> | null;
+    userVariables: Record<string, string> | null;
     aliases: Record<string, string> | null;
     templates: Record<string, string> | null;
   };
@@ -447,9 +447,9 @@ export class UnifiedConfigInterface {
       },
 
       user: {
-        customVariables: extractNestedProperty<Record<string, string> | null>(baseConfig, [
+        userVariables: extractNestedProperty<Record<string, string> | null>(baseConfig, [
           "user",
-          "customVariables",
+          "userVariables",
         ], null),
         aliases: extractNestedProperty<Record<string, string> | null>(baseConfig, [
           "user",

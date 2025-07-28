@@ -402,11 +402,11 @@ export class TwoParamsPromptGenerator {
     }
 
     // Validate variables
-    if (!variables || !variables.standardVariables || !variables.customVariables) {
+    if (!variables || !variables.standardVariables || !variables.userVariables) {
       return error({
         kind: "InvalidContext",
         message:
-          "Invalid variables: ProcessedVariables must contain standardVariables and customVariables",
+          "Invalid variables: ProcessedVariables must contain standardVariables and userVariables",
         details: variables,
       });
     }
@@ -481,7 +481,7 @@ export class TwoParamsPromptGenerator {
         adaptation: configuration.adaptation,
         promptDir: configuration.promptDir,
         input_text: variables.standardVariables.input_text || "",
-        customVariables: variables.customVariables,
+        userVariables: variables.userVariables,
         extended: configuration.extended,
         customValidation: configuration.customValidation,
         errorFormat: configuration.errorFormat,
@@ -530,7 +530,7 @@ export class TwoParamsPromptGenerator {
         inputFilePath: allParams.inputFilePath || "",
         outputFilePath: allParams.outputFilePath || "output.md",
         schemaFilePath: allParams.schemaFilePath || "",
-        customVariables: context.variables.customVariables,
+        userVariables: context.variables.userVariables,
         // Fallback: Use inputText if available, otherwise use standardVariables.input_text
         inputText: (context.variables as { inputText?: string }).inputText ||
           context.variables.standardVariables.input_text,

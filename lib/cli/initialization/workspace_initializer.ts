@@ -66,7 +66,7 @@ export async function initializeBreakdownConfiguration(): Promise<void> {
 
   // Build configuration content dynamically
   const configContent = `# Breakdown Configuration
-base_dir: ".agent/breakdown"
+base_dir: ".agent/climpt"
 app_prompt:
   base_dir: "prompts"
 app_schema:

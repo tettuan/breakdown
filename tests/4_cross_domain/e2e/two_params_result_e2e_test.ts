@@ -31,7 +31,7 @@ const logger = new BreakdownLogger("e2e-two-params");
 class E2ETestSetup {
   private readonly tempDir = "./tmp";
   private readonly fixturesDir = "./tests/fixtures";
-  private readonly agentPromptsDir = "./.agent/breakdown/prompts";
+  private readonly agentPromptsDir = ".agent/climpt/prompts";
 
   async setupTempDirectory(): Promise<string> {
     try {
@@ -99,7 +99,7 @@ class E2ETestSetup {
   async setupAgentPrompts(): Promise<void> {
     // First copy static prompts to working directory
     await this.copyStaticPromptsIfNeeded();
-    // Create .agent/breakdown directory structure
+    // Create .agent/climpt directory structure
     const agentConfigDir = `./${DEFAULT_CONFIG_DIR}`;
     try {
       await Deno.mkdir(agentConfigDir, { recursive: true });
@@ -109,7 +109,7 @@ class E2ETestSetup {
       }
     }
 
-    // Create .agent/breakdown/prompts directory structure
+    // Create .agent/climpt/prompts directory structure
     const promptDirs = [
       "to/project",
       "to/issue",
@@ -183,9 +183,9 @@ class E2ETestSetup {
     const configContent = `# E2E Test Configuration
 working_dir: "."
 app_prompt:
-  base_dir: "./.agent/breakdown/prompts"
+  base_dir: ".agent/climpt/prompts"
 app_schema:
-  base_dir: "./.agent/breakdown/schema"
+  base_dir: ".agent/climpt/schema"
 params:
   two:
     directiveType:
@@ -213,7 +213,8 @@ params:
     }
     // Clean up .agent directory created for testing
     try {
-      await Deno.remove("./.agent", { recursive: true });
+      // Don't remove .agent directory as it's shared by multiple tests
+      // await Deno.remove("./.agent", { recursive: true });
     } catch {
       // Ignore cleanup errors - .agent might be used by other processes
     }

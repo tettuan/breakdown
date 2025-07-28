@@ -17,7 +17,7 @@ cd "$SCRIPT_DIR" || exit 1
 echo "=== Production Find Bugs Example ==="
 
 # Run from examples directory
-CONFIG_DIR="./.agent/breakdown/config"
+CONFIG_DIR="./.agent/climpt/config"
 
 # Check if initialized
 if [ ! -d "${CONFIG_DIR}" ]; then
@@ -27,18 +27,18 @@ fi
 
 # Ensure local template directories exist
 echo "Setting up local production template directories..."
-mkdir -p .agent/breakdown/prompts/production/defect/issue
+mkdir -p .agent/climpt/prompts/production/defect/issue
 
 # Create production configuration with find bugs settings
 # Create production configuration with find bugs settings (only if it doesn't exist)
 if [ ! -f "${CONFIG_DIR}/production-bugs-app.yml" ]; then
   cat > "${CONFIG_DIR}/production-bugs-app.yml" << 'EOF'
 # Breakdown Configuration for Production Bugs Profile
-working_dir: ".agent/breakdown"
+working_dir: ".agent/climpt"
 app_prompt:
-  base_dir: ".agent/breakdown/prompts"
+  base_dir: ".agent/climpt/prompts"
 app_schema:
-  base_dir: ".agent/breakdown/schema"
+  base_dir: ".agent/climpt/schema"
 params:
   two:
     directiveType:
@@ -176,10 +176,10 @@ EOF
 
 # Create required template file for CLI command in this script
 echo "Creating required template for: breakdown find bugs --config=production-bugs"
-mkdir -p .agent/breakdown/prompts/find/bugs
+mkdir -p .agent/climpt/prompts/find/bugs
 
 # This command needs: prompts/find/bugs/f_bugs.md (default fromLayerType)
-cat > ".agent/breakdown/prompts/find/bugs/f_bugs.md" << 'EOF'
+cat > ".agent/climpt/prompts/find/bugs/f_bugs.md" << 'EOF'
 # Production Bug Detection Template
 
 ## Input Content
@@ -200,8 +200,8 @@ EOF
 echo "✓ Created template: prompts/find/bugs/f_bugs.md"
 
 # Also create f_default.md if it doesn't exist
-if [ ! -f ".agent/breakdown/prompts/find/bugs/f_default.md" ]; then
-    cp ".agent/breakdown/prompts/find/bugs/f_bugs.md" ".agent/breakdown/prompts/find/bugs/f_default.md"
+if [ ! -f ".agent/climpt/prompts/find/bugs/f_default.md" ]; then
+    cp ".agent/climpt/prompts/find/bugs/f_bugs.md" ".agent/climpt/prompts/find/bugs/f_default.md"
     echo "✓ Created template: prompts/find/bugs/f_default.md"
 fi
 

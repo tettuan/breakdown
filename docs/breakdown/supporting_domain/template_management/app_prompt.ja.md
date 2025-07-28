@@ -22,7 +22,7 @@ app_configファイルで baseDir や debug オプションを指定すること
 
 ```yaml
 # Plan1統一設定形式
-working_dir: ".agent/breakdown"
+working_dir: ".agent/climpt"
 app_prompt:
   base_dir: "prompts"  # working_dir相対パス
   debug: false

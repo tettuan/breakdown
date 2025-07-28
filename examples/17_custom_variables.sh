@@ -40,7 +40,7 @@ OUTPUT_DIR="./output/custom_variables"
 mkdir -p "$OUTPUT_DIR"
 
 # Create test template to check variable substitution
-TEMPLATE_DIR="./.agent/breakdown/prompts/to/project"
+TEMPLATE_DIR="./.agent/climpt/prompts/to/project"
 mkdir -p "$TEMPLATE_DIR"
 
 cat > "$TEMPLATE_DIR/f_project.md" << 'EOF'
@@ -168,7 +168,7 @@ cat > "$OUTPUT_DIR/feature_request.md" << 'EOF'
 EOF
 
 # Create template for summary task
-TEMPLATE_DIR2="./.agent/breakdown/prompts/summary/task"
+TEMPLATE_DIR2="./.agent/climpt/prompts/summary/task"
 mkdir -p "$TEMPLATE_DIR2"
 
 cat > "$TEMPLATE_DIR2/f_task.md" << 'EOF'

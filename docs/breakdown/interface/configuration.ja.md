@@ -9,7 +9,7 @@ Breakdown CLIの設定管理は、**ドメイン駆動設計**の**設定管理�
 ### 基本構成
 
 ```
-.agent/breakdown/config/
+.agent/climpt/config/
 ├── default-app.yml          # アプリケーション設定
 ├── default-user.yml         # ユーザー設定
 ├── search-app.yml   # 検索プロファイル用アプリケーション設定
@@ -30,7 +30,7 @@ Breakdown CLIの設定管理は、**ドメイン駆動設計**の**設定管理�
 
 ```yaml
 # アプリケーション設定の基本構造
-working_dir: ".agent/breakdown"
+working_dir: ".agent/climpt"
 
 app_prompt:
   base_dir: "prompts"
@@ -48,7 +48,7 @@ app_schema:
 
 | 設定項目 | 説明 | デフォルト値 | 用途 |
 |----------|------|--------------|------|
-| `working_dir` | 作業ディレクトリ | `.agent/breakdown` | 出力・入力ファイルの解決（-o, -i オプション） |
+| `working_dir` | 作業ディレクトリ | `.agent/climpt` | 出力・入力ファイルの解決（-o, -i オプション） |
 | `app_prompt.base_dir` | プロンプトベースディレクトリ | `prompts` | プロンプトテンプレートファイルの配置 |
 | `app_schema.base_dir` | スキーマベースディレクトリ | `schemas` | JSONスキーマファイルの配置 |
 
@@ -123,7 +123,7 @@ breakdown -c custom analyze document
 
 ```yaml
 # search-app.yml
-working_dir: ".agent/search"
+working_dir: "./.agent/search"
 app_prompt:
   base_dir: "prompts"
 
@@ -180,13 +180,13 @@ const schemaBaseDir = settings.app_schema.base_dir;
 ```yaml
 # 開発環境用設定
 development:
-  working_dir: ".agent/dev"
+  working_dir: "./.agent/dev"
   app_prompt:
     base_dir: "prompts"
 
 # 本番環境用設定
 production:
-  working_dir: ".agent/prod"
+  working_dir: "./.agent/prod"
   app_prompt:
     base_dir: "prompts"
 ```
@@ -195,7 +195,7 @@ production:
 
 ```yaml
 # team-app.yml（チーム共有）
-working_dir: ".agent/team"
+working_dir: "./.agent/team"
 app_prompt:
   base_dir: "prompts"
 app_schema:

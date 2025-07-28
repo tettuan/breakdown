@@ -324,7 +324,7 @@ Deno.test("3_core: VariablesBuilder.addFromFactoryValues() - comprehensive test"
     inputFilePath: "/input/sample.txt",
     outputFilePath: "/output/result.md",
     schemaFilePath: "/schemas/schema.json",
-    customVariables: {
+    userVariables: {
       "uv-project": "MyProject",
       "uv-author": "Developer",
     },
@@ -457,13 +457,13 @@ Deno.test("edge_cases: VariablesBuilder clear() method", () => {
 Deno.test("edge_cases: VariablesBuilder addUserVariables() batch processing", () => {
   const builder = new VariablesBuilder();
 
-  const customVars = {
+  const userVars = {
     "uv-project": "TestProject",
     "uv-version": "1.0.0",
     "uv-author": "Developer",
   };
 
-  builder.addUserVariables(customVars);
+  builder.addUserVariables(userVars);
 
   assertEquals(builder.getVariableCount(), 3);
   assertEquals(builder.getErrorCount(), 0);
@@ -474,24 +474,24 @@ Deno.test("edge_cases: VariablesBuilder addUserVariables() batch processing", ()
   assertEquals(record["uv-author"], "Developer");
 });
 
-Deno.test("edge_cases: VariablesBuilder addCustomVariables() with empty values", () => {
+Deno.test("edge_cases: VariablesBuilder addUserVariables() with empty values", () => {
   const builder = new VariablesBuilder();
 
-  const customVars = {
-    "custom1": "value1",
-    "custom2": "", // 空値 - スキップされる
-    "custom3": "value3",
+  const userVars = {
+    "uv-custom1": "value1",
+    "uv-custom2": "", // 空値 - スキップされる
+    "uv-custom3": "value3",
   };
 
-  builder.addCustomVariables(customVars);
+  builder.addUserVariables(userVars);
 
-  assertEquals(builder.getVariableCount(), 2); // custom2はスキップ
+  assertEquals(builder.getVariableCount(), 2); // uv-custom2はスキップ
   assertEquals(builder.getErrorCount(), 0);
 
   const record = builder.toRecord();
-  assertEquals("custom1" in record, true);
-  assertEquals("custom2" in record, false); // 空値はスキップ
-  assertEquals("custom3" in record, true);
+  assertEquals("uv-custom1" in record, true);
+  assertEquals("uv-custom2" in record, false); // 空値はスキップ
+  assertEquals("uv-custom3" in record, true);
 });
 
 Deno.test("edge_cases: VariablesBuilder validateFactoryValues() validation", () => {
@@ -503,7 +503,7 @@ Deno.test("edge_cases: VariablesBuilder validateFactoryValues() validation", () 
     inputFilePath: "/input/test.txt",
     outputFilePath: "", // 必須項目が空
     schemaFilePath: "/schema/test.json",
-    customVariables: {
+    userVariables: {
       "invalid-prefix": "value", // uv-プレфィックスなし
     },
   };
@@ -513,7 +513,7 @@ Deno.test("edge_cases: VariablesBuilder validateFactoryValues() validation", () 
 
   if (!result.ok) {
     assertEquals(result.error.length > 0, true);
-    // promptFilePath, outputFilePath, customVariables prefixのエラー
+    // promptFilePath, outputFilePath, userVariables prefixのエラー
     assertEquals(result.error.some((e) => e.kind === "missing"), true);
     assertEquals(result.error.some((e) => e.kind === "prefix"), true);
   }
@@ -527,13 +527,13 @@ Deno.test("performance: VariablesBuilder large dataset handling", () => {
   const builder = new VariablesBuilder();
 
   // 大量のユーザー変数追加
-  const customVars: Record<string, string> = {};
+  const userVars: Record<string, string> = {};
   for (let i = 0; i < 100; i++) {
-    customVars[`uv-test${i}`] = `value${i}`;
+    userVars[`uv-test${i}`] = `value${i}`;
   }
 
   const startTime = performance.now();
-  builder.addUserVariables(customVars);
+  builder.addUserVariables(userVars);
   const endTime = performance.now();
 
   assertEquals(builder.getVariableCount(), 100);

@@ -58,10 +58,10 @@ echo
 
 # Create required template file for this CLI command
 echo "Creating required template for: breakdown summary issue --input=task"
-mkdir -p .agent/breakdown/prompts/summary/issue
+mkdir -p .agent/climpt/prompts/summary/issue
 
 # This command needs: prompts/summary/issue/f_task.md (because --input=task)
-cat > ".agent/breakdown/prompts/summary/issue/f_task.md" << 'EOF'
+cat > ".agent/climpt/prompts/summary/issue/f_task.md" << 'EOF'
 # Issue Summary from Task Input
 
 ## Input Tasks
@@ -82,8 +82,8 @@ EOF
 echo "✓ Created template: prompts/summary/issue/f_task.md"
 
 # Also create f_default.md if it doesn't exist
-if [ ! -f ".agent/breakdown/prompts/summary/issue/f_default.md" ]; then
-    cp ".agent/breakdown/prompts/summary/issue/f_task.md" ".agent/breakdown/prompts/summary/issue/f_default.md"
+if [ ! -f ".agent/climpt/prompts/summary/issue/f_default.md" ]; then
+    cp ".agent/climpt/prompts/summary/issue/f_task.md" ".agent/climpt/prompts/summary/issue/f_default.md"
     echo "✓ Created template: prompts/summary/issue/f_default.md"
 fi
 echo

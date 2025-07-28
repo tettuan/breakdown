@@ -38,6 +38,6 @@ testData:
 directive_patterns: "to|summary|defect|init"
 layer_patterns: "project|issue|task"
 
-custom_variables:
+user_variables:
   author: "Default Init Test Suite"
   version: "1.0.0"

@@ -36,7 +36,7 @@ echo "=== Creating User Configuration (deno run) ==="
 echo "Working in examples directory: ${SCRIPT_DIR}"
 
 # Define the config directory path (in examples)
-CONFIG_DIR="./.agent/breakdown/config"
+CONFIG_DIR="./.agent/climpt/config"
 
 # Create config directory structure
 echo "Creating config directory structure..."
@@ -53,7 +53,7 @@ echo "Creating user configuration..."
 # Create default-user.yml with simple configuration structure
 cat > "${CONFIG_DIR}/default-user.yml" << EOF
 # Default user configuration for breakdown CLI
-working_dir: ".agent/breakdown"
+working_dir: ".agent/climpt"
 username: "default-user"
 EOF
 
@@ -72,7 +72,7 @@ echo "✅ Created user configuration at: ${CONFIG_DIR}/default-user.yml"
 # Create findbugs-user.yml for find bugs functionality
 cat > "${CONFIG_DIR}/findbugs-user.yml" << EOF
 # User configuration for find bugs functionality
-working_dir: ".agent/breakdown"
+working_dir: ".agent/climpt"
 username: "findbugs-user"
 EOF
 
@@ -84,8 +84,8 @@ fi
 echo "✅ Created findbugs user configuration at: ${CONFIG_DIR}/findbugs-user.yml"
 
 # Create user directories following UnifiedConfig structure
-USER_PROMPTS_DIR="./.agent/breakdown/prompts"
-USER_SCHEMA_DIR="./.agent/breakdown/schema"
+USER_PROMPTS_DIR="./.agent/climpt/prompts"
+USER_SCHEMA_DIR="./.agent/climpt/schema"
 
 # Create prompt directory structure for DirectiveType x LayerType combinations
 mkdir -p "${USER_PROMPTS_DIR}/to/project" || error_exit "Failed to create to/project prompts directory"
@@ -118,14 +118,14 @@ MISSING_USER_CONFIGS=()
 
 # Check required user configuration files based on script matrix
 REQUIRED_USER_CONFIGS=(
-  ".agent/breakdown/config/default-user.yml"
-  ".agent/breakdown/config/stdin-user.yml"
-  ".agent/breakdown/config/timeout-user.yml"
-  ".agent/breakdown/config/basic-user.yml"
-  ".agent/breakdown/config/production-user.yml"
-  ".agent/breakdown/config/team-user.yml"
-  ".agent/breakdown/config/production-bugs-user.yml"
-  ".agent/breakdown/config/production-custom-user.yml"
+  ".agent/climpt/config/default-user.yml"
+  ".agent/climpt/config/stdin-user.yml"
+  ".agent/climpt/config/timeout-user.yml"
+  ".agent/climpt/config/basic-user.yml"
+  ".agent/climpt/config/production-user.yml"
+  ".agent/climpt/config/team-user.yml"
+  ".agent/climpt/config/production-bugs-user.yml"
+  ".agent/climpt/config/production-custom-user.yml"
 )
 
 for config in "${REQUIRED_USER_CONFIGS[@]}"; do

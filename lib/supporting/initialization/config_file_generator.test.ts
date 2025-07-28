@@ -15,7 +15,7 @@ Deno.test("ConfigFileGenerator - default directory should use DEFAULT_CONFIG_DIR
     await t.step("constructor without arguments should use DEFAULT_CONFIG_DIR", () => {
       const _generator = new ConfigFileGenerator();
       // Private fieldなので直接アクセスできないが、生成されるファイルパスで確認
-      assertEquals(DEFAULT_CONFIG_DIR, ".agent/breakdown/config");
+      assertEquals(DEFAULT_CONFIG_DIR, ".agent/climpt/config");
     });
 
     await t.step("generateAppConfig should create file in default directory", async () => {
@@ -59,7 +59,7 @@ Deno.test("ConfigFileGenerator - default directory should use DEFAULT_CONFIG_DIR
 
       // デフォルトコンストラクタはDEFAULT_CONFIG_DIRを使用するため、
       // プロジェクトルートの"config"ディレクトリは使用されない
-      assertEquals(DEFAULT_CONFIG_DIR.startsWith(".agent/breakdown"), true);
+      assertEquals(DEFAULT_CONFIG_DIR.startsWith(".agent/climpt"), true);
     });
   } finally {
     // クリーンアップ

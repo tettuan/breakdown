@@ -28,7 +28,7 @@ mkdir -p "$OUTPUT_DIR"
 # Create f_default.md templates if they don't exist
 echo "Ensuring f_default.md templates exist..."
 for layer in issue task; do
-    template_dir=".agent/breakdown/prompts/defect/$layer"
+    template_dir=".agent/climpt/prompts/defect/$layer"
     if [ -d "$template_dir" ]; then
         if [ ! -f "$template_dir/f_default.md" ]; then
             if [ -f "$template_dir/f_$layer.md" ]; then

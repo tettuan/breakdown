@@ -28,7 +28,7 @@ interface PromptVariableSource {
   useSchema?: boolean;            // スキーマ使用フラグ
   
   // 拡張系: ユーザー定義の情報
-  customVariables?: Record<string, string>; // 動的変数
+  userVariables?: Record<string, string>; // 動的変数
 }
 ```
 
@@ -44,7 +44,7 @@ interface PromptVariableSource {
 const source: PromptVariableSource = {
   fromFile: "input.md",           // -f, --from
   adaptation: "strict",           // -a, --adaptation  
-  customVariables: {              // --uv-*
+  userVariables: {              // --uv-*
     userName: "太郎",
     priority: "高"
   }
@@ -94,7 +94,7 @@ function createPromptVariables(source: PromptVariableSource): PromptVariables {
     schemaContent: source.useSchema ? readSchemaFile() : "",
     
     // 動的変数の構造化
-    uv: source.customVariables || {}
+    uv: source.userVariables || {}
   };
 }
 ```
@@ -184,7 +184,7 @@ PromptParams {
 
 // 変容1: 辞書として保管
 PromptVariableSource { 
-  customVariables: { userName: "太郎", priority: "高" } 
+  userVariables: { userName: "太郎", priority: "高" } 
 }
 
 // 変容2: 構造化して完成

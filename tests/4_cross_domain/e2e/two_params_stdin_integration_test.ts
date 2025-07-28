@@ -68,16 +68,192 @@ class StdoutCapture {
 }
 
 /**
+ * Test Helper: Setup Agent Prompts Directory for STDIN Tests
+ * Based on input_adaptation_options_e2e_test.ts pattern
+ */
+class StdinTestSetup {
+  private agentPromptsDir = `./${DEFAULT_CONFIG_DIR}/climpt/prompts`;
+
+  /**
+   * Copy static prompts from static-prompts to the .agent/climpt/prompts directory
+   * This ensures that the E2E tests have access to all required template files
+   */
+  async copyStaticPromptsIfNeeded(): Promise<void> {
+    const staticPromptsDir = "tests/fixtures/static-prompts";
+    const promptsDir = this.agentPromptsDir; // Use .agent/climpt/prompts
+
+    try {
+      // Check if static-prompts exists
+      const staticExists = await Deno.stat(staticPromptsDir).then(() => true).catch(() => false);
+      if (staticExists) {
+        // Create prompts directory if it doesn't exist
+        await Deno.mkdir(promptsDir, { recursive: true });
+
+        // Copy all files from static-prompts to prompts
+        const copyDir = async (src: string, dest: string) => {
+          await Deno.mkdir(dest, { recursive: true });
+          for await (const entry of Deno.readDir(src)) {
+            const srcPath = `${src}/${entry.name}`;
+            const destPath = `${dest}/${entry.name}`;
+            if (entry.isDirectory) {
+              await copyDir(srcPath, destPath);
+            } else if (entry.isFile) {
+              try {
+                const content = await Deno.readTextFile(srcPath);
+                await Deno.writeTextFile(destPath, content);
+                logger.debug("Template file copied", { from: srcPath, to: destPath });
+              } catch (error) {
+                logger.debug("Failed to copy template file", {
+                  from: srcPath,
+                  to: destPath,
+                  error,
+                });
+              }
+            }
+          }
+        };
+
+        await copyDir(staticPromptsDir, promptsDir);
+        logger.debug("Static prompts copied to agent directory", {
+          from: staticPromptsDir,
+          to: promptsDir,
+        });
+      }
+    } catch (error) {
+      logger.debug("Error copying static prompts", { error });
+    }
+  }
+
+  /**
+   * Setup .agent directory with prompts for STDIN tests
+   * This creates the necessary directory structure and copies templates
+   * Uses temporary configuration files to avoid overwriting real ones
+   */
+  async setupAgentPromptsForStdin(): Promise<void> {
+    // First copy static prompts if needed
+    await this.copyStaticPromptsIfNeeded();
+
+    // Create .agent/climpt/config directory structure
+    const agentConfigDir = `./${DEFAULT_CONFIG_DIR}`;
+    try {
+      await Deno.mkdir(agentConfigDir, { recursive: true });
+    } catch (error) {
+      if (!(error instanceof Deno.errors.AlreadyExists)) {
+        throw error;
+      }
+    }
+
+    // Create prompt directories that will be used in tests
+    const promptDirs = [
+      "to/project",
+      "to/issue",
+      "to/task",
+      "summary/project",
+      "summary/issue",
+      "summary/task",
+      "defect/project",
+      "defect/issue",
+      "defect/task",
+    ];
+
+    for (const dir of promptDirs) {
+      const dirPath = join(this.agentPromptsDir, dir);
+      try {
+        await Deno.mkdir(dirPath, { recursive: true });
+      } catch (error) {
+        if (!(error instanceof Deno.errors.AlreadyExists)) {
+          throw error;
+        }
+      }
+    }
+
+    // All template files are now managed in tests/fixtures/static-prompts/
+    // The copyStaticPromptsIfNeeded() method above handles copying them to the working directory
+
+    // Create temporary configuration files to avoid overwriting real ones
+    await this.createTempConfigFiles(agentConfigDir);
+  }
+
+  /**
+   * Create temporary configuration files for STDIN tests
+   */
+  private async createTempConfigFiles(agentConfigDir: string): Promise<void> {
+    const configContent = `# E2E Test Configuration for STDIN Processing
+working_dir: "."
+app_prompt:
+  base_dir: ".agent/climpt/prompts"
+app_schema:
+  base_dir: ".agent/climpt/schema"
+params:
+  two:
+    directiveType:
+      pattern: "^(to|summary|defect)$"
+    layerType:
+      pattern: "^(project|issue|task)$"
+`;
+
+    const tempConfigFiles = [
+      `${agentConfigDir}/stdin-test-app.yml`,
+      `${agentConfigDir}/stdin-flexible-test-app.yml`,
+    ];
+
+    for (const configFile of tempConfigFiles) {
+      // Ensure parent directory exists
+      const configDir = configFile.substring(0, configFile.lastIndexOf("/"));
+      await Deno.mkdir(configDir, { recursive: true });
+
+      await Deno.writeTextFile(configFile, configContent);
+      logger.debug("Temporary configuration file created", {
+        file: configFile,
+        contentLength: configContent.length,
+      });
+    }
+  }
+
+  /**
+   * Clean up temporary configuration files
+   */
+  async cleanup(): Promise<void> {
+    const agentConfigDir = `./${DEFAULT_CONFIG_DIR}`;
+    const tempConfigFiles = [
+      `${agentConfigDir}/stdin-test-app.yml`,
+      `${agentConfigDir}/stdin-flexible-test-app.yml`,
+    ];
+
+    for (const configFile of tempConfigFiles) {
+      try {
+        await Deno.remove(configFile);
+        logger.debug("Temporary configuration file removed", { file: configFile });
+      } catch {
+        // Ignore cleanup errors - file might not exist
+      }
+    }
+
+    // Clean up prompts directory if needed
+    try {
+      await Deno.remove(this.agentPromptsDir, { recursive: true });
+    } catch {
+      // Ignore cleanup errors - directory might not exist or be used by other tests
+    }
+  }
+}
+
+// Initialize setup helper
+const stdinTestSetup = new StdinTestSetup();
+
+/**
  * Test Suite: STDIN Processing Integration
  * STDIN processing integration test
  */
 Deno.test("E2E-STDIN: Basic STDIN Processing Integration", async () => {
+  // Setup prompts directory before running test
+  await stdinTestSetup.setupAgentPromptsForStdin();
   logger.debug("E2E STDIN basic integration test started", {
     scenario: "STDIN content variable replacement and prompt generation",
   });
 
   // Setup test configuration
-  const configResult = await ConfigurationTestHelper.loadTestConfiguration("default-test");
+  const configResult = await ConfigurationTestHelper.loadTestConfiguration("stdin-test");
   const validDirective = configResult.userConfig.testData.validDirectives[0];
   const validLayer = configResult.userConfig.testData.validLayers[0];
 
@@ -162,6 +338,9 @@ The system processes large datasets and needs to maintain performance under load
   }
 
   logger.debug("E2E STDIN basic integration test completed", { resultStatus: "SUCCESS" });
+
+  // Cleanup
+  await stdinTestSetup.cleanup();
 });
 
 /**
@@ -169,12 +348,14 @@ The system processes large datasets and needs to maintain performance under load
  * Complex STDIN content processing test
  */
 Deno.test("E2E-STDIN: Complex Content Processing", async () => {
+  // Setup prompts directory before running test
+  await stdinTestSetup.setupAgentPromptsForStdin();
   const _workingDir = Deno.cwd(); // Use current working directory
   logger.debug("E2E STDIN complex content processing test started", {
     scenario: "Complex structured STDIN content processing",
   });
 
-  const configResult = await ConfigurationTestHelper.loadTestConfiguration("flexible-test");
+  const configResult = await ConfigurationTestHelper.loadTestConfiguration("stdin-flexible-test");
   const validDirective = configResult.userConfig.testData.validDirectives[1] || "summary";
   const validLayer = configResult.userConfig.testData.validLayers[1] || "issue";
 
@@ -309,6 +490,9 @@ This document provides a comprehensive analysis of our enterprise system's curre
   }
 
   logger.debug("E2E STDIN complex content processing test completed", { resultStatus: "SUCCESS" });
+
+  // Cleanup
+  await stdinTestSetup.cleanup();
 });
 
 /**
@@ -316,12 +500,14 @@ This document provides a comprehensive analysis of our enterprise system's curre
  * STDIN error scenario test
  */
 Deno.test("E2E-STDIN: Error Scenarios", async () => {
+  // Setup prompts directory before running test
+  await stdinTestSetup.setupAgentPromptsForStdin();
   const _workingDir = Deno.cwd(); // Use current working directory
   logger.debug("E2E STDIN error scenario test started", {
     scenario: "STDIN-related error case processing verification",
   });
 
-  const configResult = await ConfigurationTestHelper.loadTestConfiguration("default-test");
+  const configResult = await ConfigurationTestHelper.loadTestConfiguration("stdin-test");
   const validDirective = configResult.userConfig.testData.validDirectives[0];
   const validLayer = configResult.userConfig.testData.validLayers[0];
 
@@ -405,6 +591,9 @@ Deno.test("E2E-STDIN: Error Scenarios", async () => {
     scenarios: errorScenarios.length,
     resultStatus: "SUCCESS",
   });
+
+  // Cleanup
+  await stdinTestSetup.cleanup();
 });
 
 /**
@@ -412,6 +601,8 @@ Deno.test("E2E-STDIN: Error Scenarios", async () => {
  * Real-world Integration Scenario Test
  */
 Deno.test("E2E-STDIN: Real-world Integration Scenarios", async () => {
+  // Setup prompts directory before running test
+  await stdinTestSetup.setupAgentPromptsForStdin();
   const _workingDir = Deno.cwd(); // Use current working directory
   logger.debug("E2E STDIN real-world integration scenario test started", {
     scenario: "Integration test based on actual usage patterns",
@@ -534,7 +725,9 @@ Additional Information:
 
     try {
       // Load appropriate configuration
-      const configResult = await ConfigurationTestHelper.loadTestConfiguration("flexible-test");
+      const configResult = await ConfigurationTestHelper.loadTestConfiguration(
+        "stdin-flexible-test",
+      );
 
       // The test configuration already includes app configuration
 
@@ -601,4 +794,7 @@ Additional Information:
     scenarios: realWorldScenarios.length,
     resultStatus: "SUCCESS",
   });
+
+  // Cleanup
+  await stdinTestSetup.cleanup();
 });

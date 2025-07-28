@@ -74,7 +74,7 @@ async function example3_factoryIntegration() {
     options: {
       fromFile: "input.md",
       destinationFile: "output.md",
-      customVariables: {
+      userVariables: {
         title: "My Project",
         author: "Test User",
       },

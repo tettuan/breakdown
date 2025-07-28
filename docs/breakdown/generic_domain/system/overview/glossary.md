@@ -4,7 +4,7 @@
 
 | Term | Used in | Description | Related Words |
 |------|----------|------|------------|
-| working_dir | app_config.ja.md, init.ja.md | Application working directory. Default is set to `.agent/breakdown/`. Used for path resolution of input files (-i) and output files (-o). Not used for prompt or schema directory resolution. Settings are managed in `.agent/breakdown/config/app.yml`. | base_dir, app_prompt.base_dir, app_schema.base_dir |
+| working_dir | app_config.ja.md, init.ja.md | Application working directory. Default is set to `.agent/climpt/`. Used for path resolution of input files (-i) and output files (-o). Not used for prompt or schema directory resolution. Settings are managed in `.agent/climpt/config/app.yml`. | base_dir, app_prompt.base_dir, app_schema.base_dir |
 | base_dir | app_prompt.ja.md, app_schema.ja.md | Base directory for prompts and schemas. For prompts, default is `prompts/`. For schemas, default is `schemas/`. These directories are copied from template files under `lib`. | working_dir, prompts/, schemas/ |
 | prompts/ | init.ja.md, app_prompt.ja.md | Directory for storing prompt files. Default is `prompts/`, but can be changed with `app_prompt.base_dir`. Allows flexible placement of prompt files. | base_dir, app_prompt.base_dir |
 | schemas/ | app_schema.ja.md | Directory for storing schema files. Default is `schemas/`, but can be changed with `app_schema.base_dir`. Allows flexible placement of schema files. | base_dir, app_schema.base_dir |
@@ -14,8 +14,8 @@
 
 | Term | Used in | Description | Related Words |
 |------|----------|------|------------|
-| app.yml | init.ja.md, app_config.ja.md | Application configuration file. Located at `.agent/breakdown/config/app.yml`. Manages working directory and other basic settings. Existing files are not overwritten. Settings are hierarchically managed with two-layer structure of application settings and user settings. | working_dir, config/ |
-| config/ | init.ja.md, app_config.ja.md | Directory for storing configuration files. Located at `.agent/breakdown/config/`, manages various application settings. | app.yml, working_dir |
+| app.yml | init.ja.md, app_config.ja.md | Application configuration file. Located at `.agent/climpt/config/app.yml`. Manages working directory and other basic settings. Existing files are not overwritten. Settings are hierarchically managed with two-layer structure of application settings and user settings. | working_dir, config/ |
+| config/ | init.ja.md, app_config.ja.md | Directory for storing configuration files. Located at `.agent/climpt/config/`, manages various application settings. | app.yml, working_dir |
 | user.yml | app_config.ja.md | User-specific configuration file. Exists in the application configuration hierarchy and overrides application settings. | app.yml, config/ |
 
 ## 3. Testing and Debugging

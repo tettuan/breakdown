@@ -139,10 +139,10 @@ export interface TemplatePathConfig {
   readonly allowedExtensions: readonly string[];
   /** Maximum filename length */
   readonly maxFilenameLength: number;
-  /** Whether to allow custom directive types */
-  readonly allowCustomDirectives: boolean;
-  /** Whether to allow custom layer types */
-  readonly allowCustomLayers: boolean;
+  /** Whether to allow user directive types */
+  readonly allowUserDirectives: boolean;
+  /** Whether to allow user layer types */
+  readonly allowUserLayers: boolean;
   /** Base path validation configuration */
   readonly basePathConfig: PathValidationConfig;
 }
@@ -153,8 +153,8 @@ export interface TemplatePathConfig {
 export const DEFAULT_TEMPLATE_PATH_CONFIG: TemplatePathConfig = {
   allowedExtensions: [".md"],
   maxFilenameLength: 100,
-  allowCustomDirectives: false,
-  allowCustomLayers: false,
+  allowUserDirectives: false,
+  allowUserLayers: false,
   basePathConfig: {
     ...DEFAULT_PATH_CONFIG,
     allowAbsolute: false, // Template paths are always relative
@@ -194,7 +194,7 @@ export const DEFAULT_TEMPLATE_PATH_CONFIG: TemplatePathConfig = {
  * const config: TemplatePathConfig = {
  *   ...DEFAULT_TEMPLATE_PATH_CONFIG,
  *   allowedExtensions: ['.md', '.txt'],
- *   allowCustomDirectives: true,
+ *   allowUserDirectives: true,
  * };
  *
  * const pathResult = TemplatePath.createWithConfig(directive, layer, "custom.txt", config);
@@ -446,7 +446,7 @@ export class TemplatePath extends BasePathValueObject {
       }
 
       // Additional directive-specific validation could go here
-      // For example, checking against a whitelist if allowCustomDirectives is false
+      // For example, checking against a whitelist if allowUserDirectives is false
 
       return ok(undefined);
     } catch (dirError) {

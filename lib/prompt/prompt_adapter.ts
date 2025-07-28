@@ -33,14 +33,14 @@ export type PromptParams =
     inputFilePath: string;
     outputFilePath: string;
     schemaFilePath: string;
-    customVariables: Record<string, string>;
+    userVariables: Record<string, string>;
   }
   | {
     promptFilePath: string;
     inputFilePath: string;
     outputFilePath: string;
     schemaFilePath: string;
-    customVariables?: never;
+    userVariables?: never;
   };
 
 export interface PromptVariablesProvider {
@@ -48,7 +48,7 @@ export interface PromptVariablesProvider {
   getOptions(): PromptCliOptions;
   hasValidBaseDir(): boolean;
   getBaseDirError(): Result<void, string>;
-  get customVariables(): Record<string, string>;
+  get userVariables(): Record<string, string>;
 }
 
 /**
@@ -141,8 +141,8 @@ export class PromptAdapterImpl {
     }
 
     // Add custom variables for template usage (without uv- prefix requirement)
-    const customVariables = this.factory.customVariables;
-    builder.addCustomVariables(customVariables);
+    const userVariables = this.factory.userVariables;
+    builder.addUserVariables(userVariables);
 
     // Debug information in development
     if (Deno.env.get("DEBUG")) {

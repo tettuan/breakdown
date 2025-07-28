@@ -146,3 +146,70 @@ breakdown summary issue --from=<aggregated_tasks.md> --input=task -o=<issue_mark
 ```bash
 breakdown summary task --from=<unorganized_tasks.md> -o=<task_markdown_dir>
 ```
+
+## テンプレート変数の記述方法
+
+Breakdownでは、プロンプトテンプレート内で `{variable_name}` 形式の変数を使用できます。これらの変数はCLIオプションや入力内容から自動的に値が設定されます。
+
+### 利用可能なテンプレート変数一覧
+
+| 変数名 | 対応するCLIオプション | 説明 | 使用例 |
+|--------|---------------------|------|--------|
+| `{input_text}` | 標準入力（パイプ） | パイプで渡された内容 | `echo "内容" \| breakdown ...` |
+| `{input_text_file}` | `--from`, `-f` | 入力ファイルの絶対パス | `breakdown to task -f input.md` |
+| `{destination_path}` | `--output`, `-o` | 出力ファイルの絶対パス | `breakdown to task -o output.md` |
+| `{schema_file}` | `--use-schema` | JSONスキーマファイルのパス | `breakdown to task --use-schema` |
+| `{directive}` | 第1引数 | 処理方向（to, summary, defect等） | `breakdown to task` |
+| `{layer}` | 第2引数 | 処理階層（project, issue, task等） | `breakdown to task` |
+
+### カスタム変数（ユーザー定義変数）
+
+`--uv-` プレフィックスを使用して、独自の変数を定義できます：
+
+| CLIオプション形式 | テンプレート内での使用 | ユーザー定義の意味（例） |
+|------------------|---------------------|----------------------|
+| `--uv-priority=高` | `{uv-priority}` | タスクの優先度 |
+| `--uv-assignee=田中` | `{uv-assignee}` | 作業担当者名 |
+| `--uv-deadline=2024-12-31` | `{uv-deadline}` | 完了予定日 |
+| `--uv-version=2.0` | `{uv-version}` | 対象バージョン |
+
+**注意**: 
+- テンプレート内でも `uv-` プレフィックスを含めて記述します
+- 変数名と値は自由に定義できます（例：`--uv-team=backend`、`--uv-env=production` など）
+
+### 使用例
+
+#### 基本的な変数の使用
+```bash
+# ファイルからタスクへ変換（input_text_file, destination_pathが設定される）
+breakdown to task -f requirements.md -o tasks.md
+
+# カスタム変数を含む変換
+breakdown to task -f requirements.md --uv-priority=緊急 --uv-assignee=山田
+```
+
+#### テンプレート内での記述例
+```markdown
+# タスク: {directive}処理
+
+入力ファイル: {input_text_file}
+出力先: {destination_path}
+
+## 内容
+{input_text}
+
+## メタ情報
+- 優先度: {uv-priority}
+- 担当者: {uv-assignee}
+- 期限: {uv-deadline}
+```
+
+### 内部変数（参考）
+
+以下の変数は自動的に設定される内部変数です：
+
+| 変数名 | 説明 |
+|--------|------|
+| `{prompt_path}` | 使用されるプロンプトテンプレートのパス |
+| `{schema_path}` | 解決されたスキーマファイルのパス |
+| `{input_source}` | 入力元の種別（'file', 'stdin', 'both'） |

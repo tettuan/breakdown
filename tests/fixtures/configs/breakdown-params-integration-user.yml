@@ -42,7 +42,7 @@ testData:
     - "a"
 
 # カスタム設定
-custom_variables:
+user_variables:
   author: "BreakdownParams Integration"
   version: "2.0.0"
   integration_mode: true

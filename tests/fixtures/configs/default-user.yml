@@ -40,7 +40,7 @@ testData:
   patternBased: true
 
 # カスタム変数
-custom_variables:
+user_variables:
   author: "Integration Test Suite"
   version: "1.0.0"
   organization: "Breakdown Testing"

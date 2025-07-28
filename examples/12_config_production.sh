@@ -17,7 +17,7 @@ cd "$SCRIPT_DIR" || exit 1
 echo "=== Production Configuration Example ==="
 
 # Run from examples directory
-CONFIG_DIR="./.agent/breakdown/config"
+CONFIG_DIR="./.agent/climpt/config"
 
 # Check if initialized
 if [ ! -d "${CONFIG_DIR}" ]; then
@@ -27,17 +27,17 @@ fi
 
 # Ensure local template directories exist
 echo "Setting up local production template directories..."
-mkdir -p .agent/breakdown/prompts/production/defect/issue
+mkdir -p .agent/climpt/prompts/production/defect/issue
 
 # Create production configuration (only if it doesn't exist)
 if [ ! -f "${CONFIG_DIR}/production-app.yml" ]; then
   cat > "${CONFIG_DIR}/production-app.yml" << 'EOF'
 # Breakdown Configuration for Production Profile
-working_dir: ".agent/breakdown"
+working_dir: ".agent/climpt"
 app_prompt:
-  base_dir: ".agent/breakdown/prompts"
+  base_dir: ".agent/climpt/prompts"
 app_schema:
-  base_dir: ".agent/breakdown/schema"
+  base_dir: ".agent/climpt/schema"
 params:
   two:
     directiveType:
@@ -100,10 +100,10 @@ echo "Created sample production report"
 
 # Create required template file for CLI command in this script
 echo "Creating required template for: breakdown summary issue --config=production"
-mkdir -p .agent/breakdown/prompts/summary/issue
+mkdir -p .agent/climpt/prompts/summary/issue
 
 # This command needs: prompts/summary/issue/f_issue.md (default fromLayerType)
-cat > ".agent/breakdown/prompts/summary/issue/f_issue.md" << 'EOF'
+cat > ".agent/climpt/prompts/summary/issue/f_issue.md" << 'EOF'
 # Production Issue Summary Template
 
 ## Input Content
@@ -124,8 +124,8 @@ EOF
 echo "✓ Created template: prompts/summary/issue/f_issue.md"
 
 # Also create f_default.md if it doesn't exist
-if [ ! -f ".agent/breakdown/prompts/summary/issue/f_default.md" ]; then
-    cp ".agent/breakdown/prompts/summary/issue/f_issue.md" ".agent/breakdown/prompts/summary/issue/f_default.md"
+if [ ! -f ".agent/climpt/prompts/summary/issue/f_default.md" ]; then
+    cp ".agent/climpt/prompts/summary/issue/f_issue.md" ".agent/climpt/prompts/summary/issue/f_default.md"
     echo "✓ Created template: prompts/summary/issue/f_default.md"
 fi
 

@@ -27,7 +27,7 @@ profile_metadata:
   # versionが欠如
 
 # カスタム変数
-custom_variables:
+user_variables:
   error_type: "missing_fields"
   test_purpose: "validation_testing"
   expected_failure: true

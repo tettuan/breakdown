@@ -1,0 +1,14 @@
+# STDIN Test Application Configuration for E2E Testing
+# Test configuration for STDIN processing integration tests
+
+working_dir: "tests/fixtures"
+app_prompt:
+  base_dir: "prompts"
+app_schema:
+  base_dir: ".agent/climpt/schema"
+params:
+  two:
+    directiveType:
+      pattern: "^(to|summary|defect)$"
+    layerType:
+      pattern: "^(project|issue|task)$"

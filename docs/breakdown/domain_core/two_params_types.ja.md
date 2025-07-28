@@ -176,14 +176,16 @@ TwoParams → new DirectiveType() + new LayerType() (pre-validated)
 
 検証フロー詳細:
 1. BreakdownConfigから directivePatterns, layerPatterns を抽出
-2. ParamsCustomConfigとしてBreakdownParamsに渡す
-3. BreakdownParamsが設定パターンに基づいて検証実行
-4. 検証済みTwoParamsResultから DirectiveType, LayerType を生成
+2. ParamsCustomConfig{directivePatterns,layerPatterns,helpTextGenerators}としてBreakdownParamsに渡す
+3. BreakdownParamsが設定パターンに基づいて検証実行（lib/application/breakdown_params_integration.ts経由）
+4. 検証済みTwoParamsResultから DirectiveType, LayerType を生成（追加検証不要）
 
-注意: 
-- ConfigProfileは設定ファイル読み込み後すぐに寿命終了
-- DirectiveType/LayerTypeは BreakdownParams検証済みのため追加検証不要
-- 冗長なパターンマッチング処理を削除
+ParamsCustomConfig構造:
+- directivePatterns: Record<string,RegExp> - DirectiveType検証パターン
+- layerPatterns: Record<string,RegExp> - LayerType検証パターン  
+- helpTextGenerators: エラー時のヘルプテキスト生成関数
+
+注意: ConfigProfileは設定読み込み後即座に寿命終了、TwoParamsResultは型安全な変換保証
 ```
 ### なぜBreakdownParams統合が必要なのか
 

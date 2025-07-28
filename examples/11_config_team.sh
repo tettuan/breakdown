@@ -17,7 +17,7 @@ cd "$SCRIPT_DIR" || exit 1
 echo "=== Team Development Configuration Example ==="
 
 # Run from examples directory
-CONFIG_DIR="./.agent/breakdown/config"
+CONFIG_DIR="./.agent/climpt/config"
 
 # Check if initialized
 if [ ! -d "${CONFIG_DIR}" ]; then
@@ -27,18 +27,18 @@ fi
 
 # Ensure local template directories exist
 echo "Setting up local team template directories..."
-mkdir -p .agent/breakdown/prompts/team/to/task
+mkdir -p .agent/climpt/prompts/team/to/task
 
 # Create team configuration (only if it doesn't exist or if different)
 if [ ! -f "${CONFIG_DIR}/team-app.yml" ]; then
   cat > "${CONFIG_DIR}/team-app.yml" << 'EOF'
 # Team development configuration
-working_dir: ".agent/breakdown"
+working_dir: ".agent/climpt"
 app_prompt:
-  base_dir: ".agent/breakdown/prompts"
+  base_dir: ".agent/climpt/prompts"
   template_prefix: "team_"
 app_schema:
-  base_dir: ".agent/breakdown/schema"
+  base_dir: ".agent/climpt/schema"
   validation_enabled: true
   strict_mode: false
 params:
@@ -126,10 +126,10 @@ echo "Created team planning document"
 
 # Create required template file for CLI command in this script
 echo "Creating required template for: breakdown to task --config=team"
-mkdir -p .agent/breakdown/prompts/to/task
+mkdir -p .agent/climpt/prompts/to/task
 
 # This command needs: prompts/to/task/f_task.md (default fromLayerType)
-cat > ".agent/breakdown/prompts/to/task/f_task.md" << 'EOF'
+cat > ".agent/climpt/prompts/to/task/f_task.md" << 'EOF'
 # Team Task Breakdown Template
 
 ## Input Content
@@ -150,8 +150,8 @@ EOF
 echo "✓ Created template: prompts/to/task/f_task.md"
 
 # Also create f_default.md if it doesn't exist
-if [ ! -f ".agent/breakdown/prompts/to/task/f_default.md" ]; then
-    cp ".agent/breakdown/prompts/to/task/f_task.md" ".agent/breakdown/prompts/to/task/f_default.md"
+if [ ! -f ".agent/climpt/prompts/to/task/f_default.md" ]; then
+    cp ".agent/climpt/prompts/to/task/f_task.md" ".agent/climpt/prompts/to/task/f_default.md"
     echo "✓ Created template: prompts/to/task/f_default.md"
 fi
 

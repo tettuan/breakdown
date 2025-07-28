@@ -50,7 +50,7 @@ complianceLevel: "high"
 directive_patterns: "transform|aggregate|validate|migrate|archive|audit"
 layer_patterns: "enterprise|department|team|service|component|resource"
 
-custom_variables:
+user_variables:
   organization: "Test Enterprise Corp"
   department: "IT Division"
   compliance: "SOC2"

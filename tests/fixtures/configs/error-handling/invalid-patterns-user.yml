@@ -35,7 +35,7 @@ profile_metadata:
   version: "test-1.0"
 
 # カスタム変数
-custom_variables:
+user_variables:
   error_type: "invalid_regex"
   test_purpose: "pattern_validation"
   expected_failure: true

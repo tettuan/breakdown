@@ -148,11 +148,7 @@ function validateConfigData(
 
   // 1. 基本構造の存在確認（テスト環境では警告のみ）
   if (!workingConfig.params) {
-    if (isTestEnv) {
-      console.warn(
-        `[TEST_ENV] Configuration file '${profileName}-user.yml' is missing 'params' section, using fallback`,
-      );
-    } else {
+    if (!isTestEnv) {
       return error({
         kind: "ConfigValidationError" as const,
         profileName,
@@ -164,11 +160,7 @@ function validateConfigData(
   }
 
   if (!workingConfig.params?.two) {
-    if (isTestEnv) {
-      console.warn(
-        `[TEST_ENV] Configuration file '${profileName}-user.yml' is missing 'params.two' section, using fallback`,
-      );
-    } else {
+    if (!isTestEnv) {
       return error({
         kind: "ConfigValidationError" as const,
         profileName,
@@ -182,11 +174,7 @@ function validateConfigData(
   // 2. directiveType の厳密検証（テスト環境では警告のみ）
   const directiveTypeConfig = workingConfig.params?.two?.directiveType;
   if (!directiveTypeConfig) {
-    if (isTestEnv) {
-      console.warn(
-        `[TEST_ENV] Configuration file '${profileName}-user.yml' is missing 'params.two.directiveType' section, using fallback`,
-      );
-    } else {
+    if (!isTestEnv) {
       return error({
         kind: "ConfigValidationError" as const,
         profileName,
@@ -199,11 +187,7 @@ function validateConfigData(
   }
 
   if (!directiveTypeConfig?.pattern) {
-    if (isTestEnv) {
-      console.warn(
-        `[TEST_ENV] Configuration file '${profileName}-user.yml' has empty or missing 'params.two.directiveType.pattern' field, using fallback`,
-      );
-    } else {
+    if (!isTestEnv) {
       return error({
         kind: "EmptyValueError" as const,
         profileName,
@@ -220,11 +204,7 @@ function validateConfigData(
     try {
       new RegExp(directiveTypeConfig.pattern);
     } catch (regexError) {
-      if (isTestEnv) {
-        console.warn(
-          `[TEST_ENV] Invalid regex pattern in directiveType, should not happen with fallback: ${directiveTypeConfig.pattern}`,
-        );
-      } else {
+      if (!isTestEnv) {
         return error({
           kind: "ConfigValidationError" as const,
           profileName,
@@ -240,11 +220,7 @@ function validateConfigData(
   // 3. layerType の厳密検証（テスト環境では警告のみ）
   const layerTypeConfig = workingConfig.params?.two?.layerType;
   if (!layerTypeConfig) {
-    if (isTestEnv) {
-      console.warn(
-        `[TEST_ENV] Configuration file '${profileName}-user.yml' is missing 'params.two.layerType' section, using fallback`,
-      );
-    } else {
+    if (!isTestEnv) {
       return error({
         kind: "ConfigValidationError" as const,
         profileName,
@@ -257,11 +233,7 @@ function validateConfigData(
   }
 
   if (!layerTypeConfig?.pattern) {
-    if (isTestEnv) {
-      console.warn(
-        `[TEST_ENV] Configuration file '${profileName}-user.yml' has empty or missing 'params.two.layerType.pattern' field, using fallback`,
-      );
-    } else {
+    if (!isTestEnv) {
       return error({
         kind: "EmptyValueError" as const,
         profileName,
@@ -278,11 +250,7 @@ function validateConfigData(
     try {
       new RegExp(layerTypeConfig.pattern);
     } catch (regexError) {
-      if (isTestEnv) {
-        console.warn(
-          `[TEST_ENV] Invalid regex pattern in layerType, should not happen with fallback: ${layerTypeConfig.pattern}`,
-        );
-      } else {
+      if (!isTestEnv) {
         return error({
           kind: "ConfigValidationError" as const,
           profileName,
@@ -297,11 +265,7 @@ function validateConfigData(
 
   // 4. パターンの空文字列検証（追加の安全性チェック）
   if (directiveTypeConfig?.pattern && directiveTypeConfig.pattern.trim() === "") {
-    if (isTestEnv) {
-      console.warn(
-        `[TEST_ENV] Empty string pattern in directiveType, should not happen with fallback`,
-      );
-    } else {
+    if (!isTestEnv) {
       return error({
         kind: "EmptyValueError" as const,
         profileName,
@@ -314,9 +278,7 @@ function validateConfigData(
   }
 
   if (layerTypeConfig?.pattern && layerTypeConfig.pattern.trim() === "") {
-    if (isTestEnv) {
-      console.warn(`[TEST_ENV] Empty string pattern in layerType, should not happen with fallback`);
-    } else {
+    if (!isTestEnv) {
       return error({
         kind: "EmptyValueError" as const,
         profileName,

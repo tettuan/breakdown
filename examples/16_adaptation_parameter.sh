@@ -44,7 +44,7 @@ echo
 
 # Set up
 OUTPUT_DIR="./output/adaptation_parameter_test"
-TEMPLATE_DIR="./.agent/breakdown/prompts/to/task"
+TEMPLATE_DIR="./.agent/climpt/prompts/to/task"
 mkdir -p "$OUTPUT_DIR"
 mkdir -p "$TEMPLATE_DIR"
 
@@ -279,7 +279,7 @@ echo
 echo "【Example 1: Without --adaptation parameter】"
 echo "Command: breakdown to task --from=project_requirements.md"
 echo "🎯 動作: fromLayerType='task' (デフォルト値) または --input で明示指定"
-echo "📄 使用テンプレート: .agent/breakdown/prompts/to/task/f_task.md (デフォルト)"
+echo "📄 使用テンプレート: .agent/climpt/prompts/to/task/f_task.md (デフォルト)"
 echo "📖 参照: glossary.ja.md 118-119行目 (--input オプションによる明示指定)"
 echo
 

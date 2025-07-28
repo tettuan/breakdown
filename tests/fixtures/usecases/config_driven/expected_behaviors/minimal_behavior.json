@@ -4,7 +4,7 @@
     "prompts": {
       "template_dir": "prompts",
       "schema_dir": "schema",
-      "custom_variables_count": 0,
+      "user_variables_count": 0,
       "variable_substitution": "basic"
     },
     "output": {

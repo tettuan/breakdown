@@ -15,23 +15,23 @@ cd "$(dirname "$0")"
 
 echo "=== Initializing Breakdown Project Structure (deno run) ==="
 
-# Check if .agent/breakdown already exists in examples directory
-if [ -d ".agent/breakdown" ]; then
-  echo "Warning: .agent/breakdown directory already exists in examples"
+# Check if .agent/climpt already exists in examples directory
+if [ -d ".agent/climpt" ]; then
+  echo "Warning: .agent/climpt directory already exists in examples"
   echo "Continuing with profile configuration files creation..."
 fi
 
 # Initialize project structure if not exists
-if [ ! -d ".agent/breakdown" ]; then
+if [ ! -d ".agent/climpt" ]; then
   # Initialize project structure manually due to version.ts export issues
-  echo "Creating .agent/breakdown directory structure manually..."
-  mkdir -p .agent/breakdown/{config,prompts,schema,temp,output}
-  mkdir -p .agent/breakdown/prompts/{to,summary,defect}/{project,issue,task}
+  echo "Creating .agent/climpt directory structure manually..."
+  mkdir -p .agent/climpt/{config,prompts,schema,temp,output}
+  mkdir -p .agent/climpt/prompts/{to,summary,defect}/{project,issue,task}
   
   # Create default-app.yml manually
-  cat > .agent/breakdown/config/default-app.yml << 'EOF'
+  cat > .agent/climpt/config/default-app.yml << 'EOF'
 # Breakdown Default Configuration
-working_dir: ".agent/breakdown"
+working_dir: ".agent/climpt"
 app_prompt:
   base_dir: "prompts"
 app_schema:
@@ -48,7 +48,7 @@ EOF
   # Copy prompt templates from test fixtures to make examples functional
   echo "Copying prompt templates..."
   if [ -d "../tests/fixtures/prompts" ]; then
-    cp -r ../tests/fixtures/prompts/* .agent/breakdown/prompts/ 2>/dev/null || echo "Warning: Some prompt templates could not be copied"
+    cp -r ../tests/fixtures/prompts/* .agent/climpt/prompts/ 2>/dev/null || echo "Warning: Some prompt templates could not be copied"
     echo "✅ Prompt templates copied from test fixtures"
   else
     echo "⚠️ Warning: Test fixtures not found, prompts directory will be empty"
@@ -56,7 +56,7 @@ EOF
 
   # Clean up incorrectly copied templates - remove files that don't match required pattern
   echo "Cleaning up incorrectly named templates..."
-  find .agent/breakdown/prompts -name "*.md" -type f | while read -r file; do
+  find .agent/climpt/prompts -name "*.md" -type f | while read -r file; do
     # Extract path components using dirname and basename
     directive=$(basename "$(dirname "$(dirname "$file")")")
     layer=$(basename "$(dirname "$file")")
@@ -71,12 +71,12 @@ EOF
 
   # Create missing defect prompts that are expected by examples
   echo "Creating missing defect prompts..."
-  mkdir -p .agent/breakdown/prompts/defect/project
-  mkdir -p .agent/breakdown/prompts/defect/issue
+  mkdir -p .agent/climpt/prompts/defect/project
+  mkdir -p .agent/climpt/prompts/defect/issue
   
   # Create basic defect/project template
-  if [ ! -f ".agent/breakdown/prompts/defect/project/f_project.md" ]; then
-    cat > .agent/breakdown/prompts/defect/project/f_project.md << 'EOF'
+  if [ ! -f ".agent/climpt/prompts/defect/project/f_project.md" ]; then
+    cat > .agent/climpt/prompts/defect/project/f_project.md << 'EOF'
 # Defect Analysis Template
 
 ## Input
@@ -115,8 +115,8 @@ EOF
   fi
 
   # Create basic defect/issue template
-  if [ ! -f ".agent/breakdown/prompts/defect/issue/f_issue.md" ]; then
-    cat > .agent/breakdown/prompts/defect/issue/f_issue.md << 'EOF'
+  if [ ! -f ".agent/climpt/prompts/defect/issue/f_issue.md" ]; then
+    cat > .agent/climpt/prompts/defect/issue/f_issue.md << 'EOF'
 # Issue Defect Analysis Template
 
 ## Input
@@ -152,12 +152,12 @@ EOF
 
   # Create missing summary prompts that are expected by examples
   echo "Creating missing summary prompts..."
-  mkdir -p .agent/breakdown/prompts/summary/project
-  mkdir -p .agent/breakdown/prompts/summary/issue
+  mkdir -p .agent/climpt/prompts/summary/project
+  mkdir -p .agent/climpt/prompts/summary/issue
   
   # Create summary/project/f_project.md template
-  if [ ! -f ".agent/breakdown/prompts/summary/project/f_project.md" ]; then
-    cat > .agent/breakdown/prompts/summary/project/f_project.md << 'EOF'
+  if [ ! -f ".agent/climpt/prompts/summary/project/f_project.md" ]; then
+    cat > .agent/climpt/prompts/summary/project/f_project.md << 'EOF'
 # Project Summary Prompt
 
 This prompt helps create comprehensive project summaries.
@@ -198,8 +198,8 @@ EOF
   fi
 
   # Create summary/issue/f_issue.md template
-  if [ ! -f ".agent/breakdown/prompts/summary/issue/f_issue.md" ]; then
-    cat > .agent/breakdown/prompts/summary/issue/f_issue.md << 'EOF'
+  if [ ! -f ".agent/climpt/prompts/summary/issue/f_issue.md" ]; then
+    cat > .agent/climpt/prompts/summary/issue/f_issue.md << 'EOF'
 # Issue Summary Template
 
 ## Input
@@ -237,11 +237,11 @@ EOF
 
   # Create missing summary/task template
   echo "Creating missing summary/task prompts..."
-  mkdir -p .agent/breakdown/prompts/summary/task
+  mkdir -p .agent/climpt/prompts/summary/task
   
   # Create summary/task/f_task.md template
-  if [ ! -f ".agent/breakdown/prompts/summary/task/f_task.md" ]; then
-    cat > .agent/breakdown/prompts/summary/task/f_task.md << 'EOF'
+  if [ ! -f ".agent/climpt/prompts/summary/task/f_task.md" ]; then
+    cat > .agent/climpt/prompts/summary/task/f_task.md << 'EOF'
 # Task Summary Template
 
 ## Input
@@ -275,11 +275,11 @@ EOF
 
   # Create missing defect/task template
   echo "Creating missing defect/task prompts..."
-  mkdir -p .agent/breakdown/prompts/defect/task
+  mkdir -p .agent/climpt/prompts/defect/task
   
   # Create defect/task/f_task.md template
-  if [ ! -f ".agent/breakdown/prompts/defect/task/f_task.md" ]; then
-    cat > .agent/breakdown/prompts/defect/task/f_task.md << 'EOF'
+  if [ ! -f ".agent/climpt/prompts/defect/task/f_task.md" ]; then
+    cat > .agent/climpt/prompts/defect/task/f_task.md << 'EOF'
 # Task Defect Analysis Template
 
 ## Input
@@ -316,11 +316,11 @@ EOF
 
   # Create missing to/task template
   echo "Creating missing to/task prompts..."
-  mkdir -p .agent/breakdown/prompts/to/task
+  mkdir -p .agent/climpt/prompts/to/task
   
   # Create to/task/f_task.md template
-  if [ ! -f ".agent/breakdown/prompts/to/task/f_task.md" ]; then
-    cat > .agent/breakdown/prompts/to/task/f_task.md << 'EOF'
+  if [ ! -f ".agent/climpt/prompts/to/task/f_task.md" ]; then
+    cat > .agent/climpt/prompts/to/task/f_task.md << 'EOF'
 # Task Breakdown Template
 
 ## Input
@@ -362,11 +362,11 @@ EOF
 
   # Create missing to/issue/f_issue.md template
   echo "Creating missing to/issue prompts..."
-  mkdir -p .agent/breakdown/prompts/to/issue
+  mkdir -p .agent/climpt/prompts/to/issue
   
   # Create to/issue/f_issue.md template
-  if [ ! -f ".agent/breakdown/prompts/to/issue/f_issue.md" ]; then
-    cat > .agent/breakdown/prompts/to/issue/f_issue.md << 'EOF'
+  if [ ! -f ".agent/climpt/prompts/to/issue/f_issue.md" ]; then
+    cat > .agent/climpt/prompts/to/issue/f_issue.md << 'EOF'
 # Issue Breakdown Detailed Template
 
 ## Input
@@ -403,9 +403,9 @@ EOF
   fi
 
   # Create missing to/project/f_project.md template if needed
-  mkdir -p .agent/breakdown/prompts/to/project
-  if [ ! -f ".agent/breakdown/prompts/to/project/f_project.md" ]; then
-    cat > .agent/breakdown/prompts/to/project/f_project.md << 'EOF'
+  mkdir -p .agent/climpt/prompts/to/project
+  if [ ! -f ".agent/climpt/prompts/to/project/f_project.md" ]; then
+    cat > .agent/climpt/prompts/to/project/f_project.md << 'EOF'
 # Project Breakdown Template
 
 ## Input
@@ -447,11 +447,11 @@ EOF
 
   # Create missing find/* templates
   echo "Creating find directive prompts..."
-  mkdir -p .agent/breakdown/prompts/find/{project,issue,task,bugs}
+  mkdir -p .agent/climpt/prompts/find/{project,issue,task,bugs}
   
   # Create find/bugs/f_bugs.md template
-  if [ ! -f ".agent/breakdown/prompts/find/bugs/f_bugs.md" ]; then
-    cat > .agent/breakdown/prompts/find/bugs/f_bugs.md << 'EOF'
+  if [ ! -f ".agent/climpt/prompts/find/bugs/f_bugs.md" ]; then
+    cat > .agent/climpt/prompts/find/bugs/f_bugs.md << 'EOF'
 # Find Bugs Template
 
 ## Input
@@ -490,8 +490,8 @@ EOF
   fi
 
   # Create find/project/f_project.md template
-  if [ ! -f ".agent/breakdown/prompts/find/project/f_project.md" ]; then
-    cat > .agent/breakdown/prompts/find/project/f_project.md << 'EOF'
+  if [ ! -f ".agent/climpt/prompts/find/project/f_project.md" ]; then
+    cat > .agent/climpt/prompts/find/project/f_project.md << 'EOF'
 # Find Project Issues Template
 
 ## Input
@@ -530,8 +530,8 @@ EOF
   fi
 
   # Create find/issue/f_issue.md template
-  if [ ! -f ".agent/breakdown/prompts/find/issue/f_issue.md" ]; then
-    cat > .agent/breakdown/prompts/find/issue/f_issue.md << 'EOF'
+  if [ ! -f ".agent/climpt/prompts/find/issue/f_issue.md" ]; then
+    cat > .agent/climpt/prompts/find/issue/f_issue.md << 'EOF'
 # Find Issue Problems Template
 
 ## Input
@@ -569,8 +569,8 @@ EOF
   fi
 
   # Create find/task/f_task.md template
-  if [ ! -f ".agent/breakdown/prompts/find/task/f_task.md" ]; then
-    cat > .agent/breakdown/prompts/find/task/f_task.md << 'EOF'
+  if [ ! -f ".agent/climpt/prompts/find/task/f_task.md" ]; then
+    cat > .agent/climpt/prompts/find/task/f_task.md << 'EOF'
 # Find Task Issues Template
 
 ## Input
@@ -611,8 +611,8 @@ EOF
   echo "Creating missing default templates..."
   
   # Create default template for to/task
-  if [ ! -f ".agent/breakdown/prompts/to/task/f_default.md" ]; then
-    cat > .agent/breakdown/prompts/to/task/f_default.md << 'EOF'
+  if [ ! -f ".agent/climpt/prompts/to/task/f_default.md" ]; then
+    cat > .agent/climpt/prompts/to/task/f_default.md << 'EOF'
 # DEFAULT Template - should be used when no --input specified
 
 ## Input
@@ -652,8 +652,8 @@ EOF
   fi
 
   # Create default strict adaptation template
-  if [ ! -f ".agent/breakdown/prompts/to/task/f_default_strict.md" ]; then
-    cat > .agent/breakdown/prompts/to/task/f_default_strict.md << 'EOF'
+  if [ ! -f ".agent/climpt/prompts/to/task/f_default_strict.md" ]; then
+    cat > .agent/climpt/prompts/to/task/f_default_strict.md << 'EOF'
 # DEFAULT STRICT Template - should be used with --adaptation=strict when no --input specified
 
 ## Template: DEFAULT STRICT ADAPTATION
@@ -696,8 +696,8 @@ EOF
   fi
 
   # Create default agile adaptation template
-  if [ ! -f ".agent/breakdown/prompts/to/task/f_default_agile.md" ]; then
-    cat > .agent/breakdown/prompts/to/task/f_default_agile.md << 'EOF'
+  if [ ! -f ".agent/climpt/prompts/to/task/f_default_agile.md" ]; then
+    cat > .agent/climpt/prompts/to/task/f_default_agile.md << 'EOF'
 # DEFAULT AGILE Template - should be used with --adaptation=agile when no --input specified
 
 ## Template: DEFAULT AGILE ADAPTATION
@@ -740,8 +740,8 @@ EOF
   fi
 
   # Create default detailed adaptation template
-  if [ ! -f ".agent/breakdown/prompts/to/task/f_default_detailed.md" ]; then
-    cat > .agent/breakdown/prompts/to/task/f_default_detailed.md << 'EOF'
+  if [ ! -f ".agent/climpt/prompts/to/task/f_default_detailed.md" ]; then
+    cat > .agent/climpt/prompts/to/task/f_default_detailed.md << 'EOF'
 # DEFAULT DETAILED Template - should be used with --adaptation=detailed when no --input specified
 
 ## Template: DEFAULT DETAILED ADAPTATION
@@ -786,14 +786,14 @@ EOF
   fi
 
   # Verify the created structure
-  if [ -d ".agent/breakdown" ]; then
+  if [ -d ".agent/climpt" ]; then
     echo "✅ Successfully initialized project structure"
     echo
     echo "Created directories:"
-    find .agent/breakdown -type d | head -10
+    find .agent/climpt -type d | head -10
     echo
     echo "Created prompt files:"
-    find .agent/breakdown/prompts -type f | head -15
+    find .agent/climpt/prompts -type f | head -15
   else
     echo "❌ Failed to initialize project structure"
     exit 1
@@ -805,9 +805,9 @@ echo "=== Creating Missing Profile Configuration Files ==="
 # Create default profile configuration with find directive enabled
 # Override the default configuration created by init command
 echo "Updating default configuration to include find directive..."
-cat > .agent/breakdown/config/default-app.yml << 'EOF'
+cat > .agent/climpt/config/default-app.yml << 'EOF'
 # Breakdown Default Configuration (with find bugs support)
-working_dir: ".agent/breakdown"
+working_dir: ".agent/climpt"
 app_prompt:
   base_dir: "prompts"
 app_schema:
@@ -822,10 +822,10 @@ EOF
 echo "✅ Created default-app.yml with find bugs support"
 
 # Create findbugs profile configuration
-if [ ! -f ".agent/breakdown/config/findbugs-app.yml" ]; then
-  cat > .agent/breakdown/config/findbugs-app.yml << 'EOF'
+if [ ! -f ".agent/climpt/config/findbugs-app.yml" ]; then
+  cat > .agent/climpt/config/findbugs-app.yml << 'EOF'
 # Breakdown Configuration with Find Bugs Support
-working_dir: ".agent/breakdown"
+working_dir: ".agent/climpt"
 app_prompt:
   base_dir: "prompts"
 app_schema:
@@ -841,10 +841,10 @@ EOF
 fi
 
 # Create stdin profile configuration
-if [ ! -f ".agent/breakdown/config/stdin-app.yml" ]; then
-  cat > .agent/breakdown/config/stdin-app.yml << 'EOF'
+if [ ! -f ".agent/climpt/config/stdin-app.yml" ]; then
+  cat > .agent/climpt/config/stdin-app.yml << 'EOF'
 # Breakdown Configuration for STDIN Profile
-working_dir: ".agent/breakdown"
+working_dir: ".agent/climpt"
 app_prompt:
   base_dir: "prompts"
 app_schema:
@@ -859,8 +859,8 @@ EOF
   echo "✅ Created stdin-app.yml"
 fi
 
-if [ ! -f ".agent/breakdown/config/stdin-user.yml" ]; then
-  cat > .agent/breakdown/config/stdin-user.yml << 'EOF'
+if [ ! -f ".agent/climpt/config/stdin-user.yml" ]; then
+  cat > .agent/climpt/config/stdin-user.yml << 'EOF'
 working_dir: "."
 username: "stdin-user"
 project_name: "stdin-project"
@@ -869,10 +869,10 @@ EOF
 fi
 
 # Create timeout profile configuration
-if [ ! -f ".agent/breakdown/config/timeout-app.yml" ]; then
-  cat > .agent/breakdown/config/timeout-app.yml << 'EOF'
+if [ ! -f ".agent/climpt/config/timeout-app.yml" ]; then
+  cat > .agent/climpt/config/timeout-app.yml << 'EOF'
 # Breakdown Configuration for Timeout Profile
-working_dir: ".agent/breakdown"
+working_dir: ".agent/climpt"
 app_prompt:
   base_dir: "prompts"
 app_schema:
@@ -888,8 +888,8 @@ EOF
   echo "✅ Created timeout-app.yml"
 fi
 
-if [ ! -f ".agent/breakdown/config/timeout-user.yml" ]; then
-  cat > .agent/breakdown/config/timeout-user.yml << 'EOF'
+if [ ! -f ".agent/climpt/config/timeout-user.yml" ]; then
+  cat > .agent/climpt/config/timeout-user.yml << 'EOF'
 working_dir: "."
 username: "timeout-user"
 project_name: "timeout-project"
@@ -898,10 +898,10 @@ EOF
 fi
 
 # Create basic profile configuration
-if [ ! -f ".agent/breakdown/config/basic-app.yml" ]; then
-  cat > .agent/breakdown/config/basic-app.yml << 'EOF'
+if [ ! -f ".agent/climpt/config/basic-app.yml" ]; then
+  cat > .agent/climpt/config/basic-app.yml << 'EOF'
 # Breakdown Configuration for Basic Profile
-working_dir: ".agent/breakdown"
+working_dir: ".agent/climpt"
 app_prompt:
   base_dir: "prompts"
 app_schema:
@@ -917,8 +917,8 @@ EOF
   echo "✅ Created basic-app.yml"
 fi
 
-if [ ! -f ".agent/breakdown/config/basic-user.yml" ]; then
-  cat > .agent/breakdown/config/basic-user.yml << 'EOF'
+if [ ! -f ".agent/climpt/config/basic-user.yml" ]; then
+  cat > .agent/climpt/config/basic-user.yml << 'EOF'
 working_dir: "."
 username: "basic-user"
 project_name: "basic-project"
@@ -927,10 +927,10 @@ EOF
 fi
 
 # Create team profile configuration
-if [ ! -f ".agent/breakdown/config/team-app.yml" ]; then
-  cat > .agent/breakdown/config/team-app.yml << 'EOF'
+if [ ! -f ".agent/climpt/config/team-app.yml" ]; then
+  cat > .agent/climpt/config/team-app.yml << 'EOF'
 # Team development configuration
-working_dir: ".agent/breakdown"
+working_dir: ".agent/climpt"
 app_prompt:
   base_dir: "prompts"
   template_prefix: "team_"
@@ -969,8 +969,8 @@ EOF
   echo "✅ Created team-app.yml"
 fi
 
-if [ ! -f ".agent/breakdown/config/team-user.yml" ]; then
-  cat > .agent/breakdown/config/team-user.yml << 'EOF'
+if [ ! -f ".agent/climpt/config/team-user.yml" ]; then
+  cat > .agent/climpt/config/team-user.yml << 'EOF'
 working_dir: "."
 username: "team-user"
 project_name: "team-project"
@@ -980,10 +980,10 @@ EOF
 fi
 
 # Create production-bugs profile configuration
-if [ ! -f ".agent/breakdown/config/production-bugs-app.yml" ]; then
-  cat > .agent/breakdown/config/production-bugs-app.yml << 'EOF'
+if [ ! -f ".agent/climpt/config/production-bugs-app.yml" ]; then
+  cat > .agent/climpt/config/production-bugs-app.yml << 'EOF'
 # Breakdown Configuration for Production Bugs Profile
-working_dir: ".agent/breakdown"
+working_dir: ".agent/climpt"
 app_prompt:
   base_dir: "prompts"
 app_schema:
@@ -1000,8 +1000,8 @@ EOF
   echo "✅ Created production-bugs-app.yml"
 fi
 
-if [ ! -f ".agent/breakdown/config/production-bugs-user.yml" ]; then
-  cat > .agent/breakdown/config/production-bugs-user.yml << 'EOF'
+if [ ! -f ".agent/climpt/config/production-bugs-user.yml" ]; then
+  cat > .agent/climpt/config/production-bugs-user.yml << 'EOF'
 working_dir: "."
 username: "production-bugs-user"
 project_name: "production-bugs-project"
@@ -1011,10 +1011,10 @@ EOF
 fi
 
 # Create production-custom profile configuration
-if [ ! -f ".agent/breakdown/config/production-custom-app.yml" ]; then
-  cat > .agent/breakdown/config/production-custom-app.yml << 'EOF'
+if [ ! -f ".agent/climpt/config/production-custom-app.yml" ]; then
+  cat > .agent/climpt/config/production-custom-app.yml << 'EOF'
 # Breakdown Configuration for Production Custom Profile
-working_dir: ".agent/breakdown"
+working_dir: ".agent/climpt"
 app_prompt:
   base_dir: "prompts"
 app_schema:
@@ -1032,8 +1032,8 @@ EOF
   echo "✅ Created production-custom-app.yml"
 fi
 
-if [ ! -f ".agent/breakdown/config/production-custom-user.yml" ]; then
-  cat > .agent/breakdown/config/production-custom-user.yml << 'EOF'
+if [ ! -f ".agent/climpt/config/production-custom-user.yml" ]; then
+  cat > .agent/climpt/config/production-custom-user.yml << 'EOF'
 working_dir: "."
 username: "production-custom-user"
 project_name: "production-custom-project"
@@ -1046,10 +1046,10 @@ EOF
 fi
 
 # Create production profile configuration
-if [ ! -f ".agent/breakdown/config/production-app.yml" ]; then
-  cat > .agent/breakdown/config/production-app.yml << 'EOF'
+if [ ! -f ".agent/climpt/config/production-app.yml" ]; then
+  cat > .agent/climpt/config/production-app.yml << 'EOF'
 # Breakdown Configuration for Production Profile
-working_dir: ".agent/breakdown"
+working_dir: ".agent/climpt"
 app_prompt:
   base_dir: "prompts"
 app_schema:
@@ -1088,8 +1088,8 @@ EOF
 fi
 
 # Create missing production-user.yml (to complete production profile)
-if [ ! -f ".agent/breakdown/config/production-user.yml" ]; then
-  cat > .agent/breakdown/config/production-user.yml << 'EOF'
+if [ ! -f ".agent/climpt/config/production-user.yml" ]; then
+  cat > .agent/climpt/config/production-user.yml << 'EOF'
 working_dir: "."
 username: "production-user"
 project_name: "production-project"
@@ -1099,10 +1099,10 @@ EOF
 fi
 
 # Create environment-specific profile configurations (dev, staging, prod)
-if [ ! -f ".agent/breakdown/config/dev-app.yml" ]; then
-  cat > .agent/breakdown/config/dev-app.yml << 'EOF'
+if [ ! -f ".agent/climpt/config/dev-app.yml" ]; then
+  cat > .agent/climpt/config/dev-app.yml << 'EOF'
 # Development environment configuration
-working_dir: ".agent/breakdown"
+working_dir: ".agent/climpt"
 app_prompt:
   base_dir: "prompts"
 app_schema:
@@ -1125,8 +1125,8 @@ EOF
   echo "✅ Created dev-app.yml"
 fi
 
-if [ ! -f ".agent/breakdown/config/dev-user.yml" ]; then
-  cat > .agent/breakdown/config/dev-user.yml << 'EOF'
+if [ ! -f ".agent/climpt/config/dev-user.yml" ]; then
+  cat > .agent/climpt/config/dev-user.yml << 'EOF'
 working_dir: "."
 username: "dev-user"
 project_name: "dev-project"
@@ -1135,10 +1135,10 @@ EOF
   echo "✅ Created dev-user.yml"
 fi
 
-if [ ! -f ".agent/breakdown/config/staging-app.yml" ]; then
-  cat > .agent/breakdown/config/staging-app.yml << 'EOF'
+if [ ! -f ".agent/climpt/config/staging-app.yml" ]; then
+  cat > .agent/climpt/config/staging-app.yml << 'EOF'
 # Staging environment configuration
-working_dir: ".agent/breakdown"
+working_dir: ".agent/climpt"
 app_prompt:
   base_dir: "prompts"
 app_schema:
@@ -1163,8 +1163,8 @@ EOF
   echo "✅ Created staging-app.yml"
 fi
 
-if [ ! -f ".agent/breakdown/config/staging-user.yml" ]; then
-  cat > .agent/breakdown/config/staging-user.yml << 'EOF'
+if [ ! -f ".agent/climpt/config/staging-user.yml" ]; then
+  cat > .agent/climpt/config/staging-user.yml << 'EOF'
 working_dir: "."
 username: "staging-user"
 project_name: "staging-project"
@@ -1173,10 +1173,10 @@ EOF
   echo "✅ Created staging-user.yml"
 fi
 
-if [ ! -f ".agent/breakdown/config/prod-app.yml" ]; then
-  cat > .agent/breakdown/config/prod-app.yml << 'EOF'
+if [ ! -f ".agent/climpt/config/prod-app.yml" ]; then
+  cat > .agent/climpt/config/prod-app.yml << 'EOF'
 # Production environment configuration
-working_dir: ".agent/breakdown"
+working_dir: ".agent/climpt"
 app_prompt:
   base_dir: "prompts"
 app_schema:
@@ -1206,8 +1206,8 @@ EOF
   echo "✅ Created prod-app.yml"
 fi
 
-if [ ! -f ".agent/breakdown/config/prod-user.yml" ]; then
-  cat > .agent/breakdown/config/prod-user.yml << 'EOF'
+if [ ! -f ".agent/climpt/config/prod-user.yml" ]; then
+  cat > .agent/climpt/config/prod-user.yml << 'EOF'
 working_dir: "."
 username: "prod-user"
 project_name: "prod-project"
@@ -1220,7 +1220,7 @@ echo "=== Creating f_default.md templates for all directories ==="
 # Create f_default.md for each directive/layer combination
 for directive in to summary defect find; do
     for layer in project issue task bugs; do
-        template_dir=".agent/breakdown/prompts/$directive/$layer"
+        template_dir=".agent/climpt/prompts/$directive/$layer"
         if [ -d "$template_dir" ]; then
             if [ ! -f "$template_dir/f_default.md" ]; then
                 # Find the most appropriate template to copy
@@ -1248,16 +1248,16 @@ MISSING_TEMPLATES=()
 
 # Check required templates based on TwoParams system
 REQUIRED_TEMPLATES=(
-  ".agent/breakdown/prompts/to/project/f_project.md"
-  ".agent/breakdown/prompts/to/issue/f_issue.md"  
-  ".agent/breakdown/prompts/to/task/f_task.md"
-  ".agent/breakdown/prompts/to/task/f_default.md"
-  ".agent/breakdown/prompts/summary/project/f_project.md"
-  ".agent/breakdown/prompts/summary/issue/f_issue.md"
-  ".agent/breakdown/prompts/summary/task/f_task.md"
-  ".agent/breakdown/prompts/defect/project/f_project.md"
-  ".agent/breakdown/prompts/defect/issue/f_issue.md"
-  ".agent/breakdown/prompts/defect/task/f_task.md"
+  ".agent/climpt/prompts/to/project/f_project.md"
+  ".agent/climpt/prompts/to/issue/f_issue.md"  
+  ".agent/climpt/prompts/to/task/f_task.md"
+  ".agent/climpt/prompts/to/task/f_default.md"
+  ".agent/climpt/prompts/summary/project/f_project.md"
+  ".agent/climpt/prompts/summary/issue/f_issue.md"
+  ".agent/climpt/prompts/summary/task/f_task.md"
+  ".agent/climpt/prompts/defect/project/f_project.md"
+  ".agent/climpt/prompts/defect/issue/f_issue.md"
+  ".agent/climpt/prompts/defect/task/f_task.md"
 )
 
 for template in "${REQUIRED_TEMPLATES[@]}"; do
@@ -1281,17 +1281,17 @@ MISSING_CONFIGS=()
 
 # Check required configuration files based on script matrix (app files only - user files created by 03)
 REQUIRED_CONFIGS=(
-  ".agent/breakdown/config/default-app.yml"
-  ".agent/breakdown/config/stdin-app.yml"
-  ".agent/breakdown/config/timeout-app.yml"
-  ".agent/breakdown/config/basic-app.yml"
-  ".agent/breakdown/config/production-app.yml"
-  ".agent/breakdown/config/team-app.yml"
-  ".agent/breakdown/config/production-bugs-app.yml"
-  ".agent/breakdown/config/production-custom-app.yml"
-  ".agent/breakdown/config/dev-app.yml"
-  ".agent/breakdown/config/staging-app.yml"
-  ".agent/breakdown/config/prod-app.yml"
+  ".agent/climpt/config/default-app.yml"
+  ".agent/climpt/config/stdin-app.yml"
+  ".agent/climpt/config/timeout-app.yml"
+  ".agent/climpt/config/basic-app.yml"
+  ".agent/climpt/config/production-app.yml"
+  ".agent/climpt/config/team-app.yml"
+  ".agent/climpt/config/production-bugs-app.yml"
+  ".agent/climpt/config/production-custom-app.yml"
+  ".agent/climpt/config/dev-app.yml"
+  ".agent/climpt/config/staging-app.yml"
+  ".agent/climpt/config/prod-app.yml"
 )
 
 for config in "${REQUIRED_CONFIGS[@]}"; do

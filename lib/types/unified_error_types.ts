@@ -155,7 +155,7 @@ export type ValidationError =
     context?: Record<string, unknown>;
   }
   | {
-    kind: "CustomVariableInvalid";
+    kind: "UserVariableInvalid";
     key: string;
     reason: string;
     context?: Record<string, unknown>;
@@ -339,7 +339,7 @@ export const ErrorGuards = {
         "InvalidDirectiveType",
         "InvalidLayerType",
         "PathValidationFailed",
-        "CustomVariableInvalid",
+        "UserVariableInvalid",
         "ConfigValidationFailed",
         "UnsupportedParamsType",
       ].includes((error as Record<string, unknown>).kind as string)
@@ -482,7 +482,7 @@ export const ErrorFactory = {
         ? { value: string; validPattern: string; context?: Record<string, unknown> }
       : K extends "PathValidationFailed"
         ? { path: string; reason: string; context?: Record<string, unknown> }
-      : K extends "CustomVariableInvalid"
+      : K extends "UserVariableInvalid"
         ? { key: string; reason: string; context?: Record<string, unknown> }
       : K extends "ConfigValidationFailed" ? { errors: string[]; context?: Record<string, unknown> }
       : K extends "UnsupportedParamsType" ? { type: string; context?: Record<string, unknown> }
@@ -592,10 +592,10 @@ export const ErrorFactory = {
           context: d.context,
         } as Extract<ValidationError, { kind: K }>;
       }
-      case "CustomVariableInvalid": {
+      case "UserVariableInvalid": {
         const d = details as { key: string; reason: string; context?: Record<string, unknown> };
         return {
-          kind: "CustomVariableInvalid",
+          kind: "UserVariableInvalid",
           key: d.key,
           reason: d.reason,
           context: d.context,
@@ -924,7 +924,7 @@ export function extractUnifiedErrorMessage(error: UnifiedError): string {
       return `${error.kind}: ${error.value} does not match pattern ${error.validPattern}`;
     case "InvalidLayerType":
       return `${error.kind}: ${error.value} does not match pattern ${error.validPattern}`;
-    case "CustomVariableInvalid":
+    case "UserVariableInvalid":
       return `${error.kind}: ${error.key} - ${error.reason}`;
     case "ConfigValidationFailed":
       return `${error.kind}: ${error.errors.join(", ")}`;

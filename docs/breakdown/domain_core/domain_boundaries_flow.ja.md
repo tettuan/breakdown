@@ -119,6 +119,8 @@ abstract class ValidatedValue<T> {
 
 ```typescript
 // JSR @tettuan/breakdownparams から受け取る検証済み値（検証ロジック不要）
+// BreakdownParams統合: lib/application/breakdown_params_integration.ts経由で
+// ParamsCustomConfig{directivePatterns,layerPatterns}による設定ベース検証実行
 class DirectiveType {
   readonly source = "JSR_VALIDATED" as const;
   
@@ -373,45 +375,37 @@ const config = await loadConfig(profile);      // BreakdownConfig取得
 ### 2. 設定管理ドメイン → パラメータバリデーションドメイン
 
 ```typescript
-// 境界インターフェース
+// 境界インターフェース（BreakdownParams統合）
 interface ConfigToParamsBoundary {
   // 入力
   rawArgs: string[];
   paramsCustomConfig: ParamsCustomConfig;
   
-  // 出力
+  // 出力（JSR @tettuan/breakdownparams検証済み）
   twoParamsResult: TwoParamsResult;
   
-  // 契約
+  // 契約（lib/application/breakdown_params_integration.ts経由）
   validateParams(
     args: string[],
     config: ParamsCustomConfig
   ): Result<TwoParamsResult, ParameterParsingError>;
 }
 
-// データ変換（BreakdownConfigの分割）
+// データ変換（BreakdownConfigからParamsCustomConfig生成）
 const transformConfigToParams = (
   config: BreakdownConfig
 ): ParamsCustomConfig => {
   return {
-    breakdown: {
-      params: {
-        two: {
-          directiveType: {
-            pattern: config.directivePatterns,
-            errorMessage: "Invalid directive type"
-          },
-          layerType: {
-            pattern: config.layerPatterns,
-            errorMessage: "Invalid layer type"
-          }
-        }
-      }
+    directivePatterns: config.directivePatterns, // Record<string,RegExp>
+    layerPatterns: config.layerPatterns,         // Record<string,RegExp>
+    helpTextGenerators: {                         // エラー時ヘルプ生成
+      directive: (value) => `"${value}" is not a valid directive type`,
+      layer: (value) => `"${value}" is not a valid layer type`
     }
   };
 };
 
-// この時点でBreakdownConfigの役割1（パラメータバリデーション）は完了
+// この時点でBreakdownConfigの検証設定抽出完了→BreakdownParamsへ委譲
 ```
 
 ### 3. パラメータバリデーションドメイン → プロンプトパス決定ドメイン
@@ -494,7 +488,7 @@ const transformPathToVariables = (
     schemaContent: source.useSchema ? readSchemaFile(templatePath) : "",
     promptFilePath: templatePath.fullPath,
     inputSource: determineInputSource(source),
-    uv: source.customVariables ?? {}
+    uv: source.userVariables ?? {}
   };
 };
 ```

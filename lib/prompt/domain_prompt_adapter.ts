@@ -108,12 +108,12 @@ export interface LegacyPromptVariablesProvider {
     inputFilePath: string;
     outputFilePath: string;
     schemaFilePath: string;
-    customVariables?: Record<string, string>;
+    userVariables?: Record<string, string>;
   };
   getOptions(): { input_text?: string };
   hasValidBaseDir(): boolean;
   getBaseDirError(): Result<void, string>;
-  get customVariables(): Record<string, string>;
+  get userVariables(): Record<string, string>;
 }
 
 /**
@@ -133,7 +133,7 @@ export function convertLegacyProvider(
     inputFilePath: params.inputFilePath,
     outputFilePath: params.outputFilePath,
     schemaFilePath: params.schemaFilePath,
-    customVariables: provider.customVariables,
+    userVariables: provider.userVariables,
     inputText: options.input_text,
   };
 

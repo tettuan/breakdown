@@ -10,7 +10,7 @@ Breakdown CLIの**パス解決**は、**プロンプトパス決定ドメイン*
 
 ```
 プロジェクトルート/
-└── .agent/breakdown/           # working_dir (SINGLE SOURCE OF TRUTH)
+└── .agent/climpt/             # working_dir (SINGLE SOURCE OF TRUTH)
     ├── prompts/                # app_prompt.base_dir (working_dir相対)
     │   ├── to/                 # DirectiveType
     │   │   ├── project/        # LayerType
@@ -57,19 +57,19 @@ Breakdown CLIの**パス解決**は、**プロンプトパス決定ドメイン*
 ```bash
 # 基本的なパス解決
 breakdown to task
-# → .agent/breakdown/prompts/to/task/f_task.md
+# → .agent/climpt/prompts/to/task/f_task.md
 
 # 適応タイプ付きパス解決
 breakdown to task --adaptation strict
-# → .agent/breakdown/prompts/to/task/f_task_strict.md
+# → .agent/climpt/prompts/to/task/f_task_strict.md
 
 # fromLayer指定パス解決
 breakdown to task --input issue
-# → .agent/breakdown/prompts/to/task/f_issue.md
+# → .agent/climpt/prompts/to/task/f_issue.md
 
 # 複合指定パス解決
 breakdown to task --input issue --adaptation detailed
-# → .agent/breakdown/prompts/to/task/f_issue_detailed.md
+# → .agent/climpt/prompts/to/task/f_issue_detailed.md
 ```
 
 ### ファイル名の構成ルール
@@ -98,15 +98,15 @@ f_{fromLayer}[_{adaptation}].md
 ```bash
 # 基本的なスキーマパス解決
 breakdown to task
-# → .agent/breakdown/schemas/to/task/base.schema.json
+# → .agent/climpt/schemas/to/task/base.schema.json
 
 # 異なるDirectiveTypeでのスキーマパス解決
 breakdown summary project
-# → .agent/breakdown/schemas/summary/project/base.schema.json
+# → .agent/climpt/schemas/summary/project/base.schema.json
 
 # 欠陥検出のスキーマパス解決
 breakdown defect issue
-# → .agent/breakdown/schemas/defect/issue/base.schema.json
+# → .agent/climpt/schemas/defect/issue/base.schema.json
 ```
 
 ## 入力・出力ファイルパス解決
@@ -161,15 +161,15 @@ breakdown to task -f input.md -o result/output.txt
 ```bash
 # 1. 理想的なケース（全て存在）
 breakdown to task --input issue --adaptation detailed
-# → .agent/breakdown/prompts/to/task/f_issue_detailed.md
+# → .agent/climpt/prompts/to/task/f_issue_detailed.md
 
 # 2. 適応タイプなしのフォールバック
 breakdown to task --input issue --adaptation nonexistent
-# → .agent/breakdown/prompts/to/task/f_issue.md
+# → .agent/climpt/prompts/to/task/f_issue.md
 
 # 3. 基本ファイルへのフォールバック
 breakdown to task --input nonexistent
-# → .agent/breakdown/prompts/to/task/f_task.md
+# → .agent/climpt/prompts/to/task/f_task.md
 ```
 
 ## ハッシュ値生成とファイル名規則
@@ -204,20 +204,20 @@ breakdown to task -f input.md -o output.txt
 
 1. **プロンプトファイルが見つからない**
    ```
-   エラー: パスは正確に生成されました: .agent/breakdown/prompts/to/task/f_task_strict.md
+   エラー: パスは正確に生成されました: .agent/climpt/prompts/to/task/f_task_strict.md
    しかし、このファイルは存在しません。
    プロンプトテンプレートファイルの準備が必要です。
    ```
 
 2. **設定ディレクトリが見つからない**
    ```
-   エラー: ベースディレクトリが存在しません: .agent/breakdown/prompts
+   エラー: ベースディレクトリが存在しません: .agent/climpt/prompts
    working_dir と app_prompt.base_dir の設定を確認してください。
    ```
 
 3. **権限エラー**
    ```
-   エラー: ファイルの読み込み権限がありません: .agent/breakdown/prompts/to/task/f_task.md
+   エラー: ファイルの読み込み権限がありません: .agent/climpt/prompts/to/task/f_task.md
    ファイルの権限を確認してください。
    ```
 
@@ -227,14 +227,14 @@ breakdown to task -f input.md -o output.txt
 
 ```yaml
 # Plan1統一設定形式 - breakdown プロファイル
-working_dir: ".agent/breakdown"
+working_dir: ".agent/climpt"
 app_prompt:
   base_dir: "prompts"  # working_dir相対
 app_schema:
   base_dir: "schemas"  # working_dir相対
 
 # Plan1統一設定形式 - search プロファイル 
-working_dir: ".agent/search"
+working_dir: "./.agent/search"
 app_prompt:
   base_dir: "prompts"  # working_dir相対
 app_schema:
@@ -246,11 +246,11 @@ app_schema:
 ```bash
 # breakdown プロファイル
 breakdown to task
-# → .agent/breakdown/prompts/to/task/f_task.md
+# → .agent/climpt/prompts/to/task/f_task.md
 
 # search プロファイル
 breakdown -c search web query
-# → .agent/search/prompts/web/query/f_query.md
+# → ./.agent/search/prompts/web/query/f_query.md
 ```
 
 ## Plan1パス解決の統一方針
@@ -267,10 +267,10 @@ breakdown -c search web query
 
 ```yaml
 # 統一後のパス解決方法
-working_dir: ".agent/breakdown"     # ベースディレクトリ  
+working_dir: ".agent/climpt"       # ベースディレクトリ  
 app_prompt:
   base_dir: "prompts"               # 相対パス
-# 実際のパス: .agent/breakdown/prompts/
+# 実際のパス: .agent/climpt/prompts/
 ```
 
 ## パス解決のベストプラクティス
@@ -316,7 +316,7 @@ f_task_minimal.md      # 最小限の適応
 
 ```yaml
 # Plan1統一設定形式 - default-app.yml
-working_dir: ".agent/breakdown"  # SINGLE SOURCE OF TRUTH
+working_dir: ".agent/climpt"    # SINGLE SOURCE OF TRUTH
 app_prompt:
   base_dir: "prompts"             # working_dir相対パス
 app_schema:

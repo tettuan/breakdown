@@ -237,20 +237,44 @@ export class PromptTemplatePathResolverTotality {
    * Convert raw config to simplified structure with defaults
    */
   private static normalizeConfig(config: Record<string, unknown>): PromptResolverConfig {
+    const isDebug = Deno.env.get("LOG_LEVEL") === "debug";
     const appPrompt = config.app_prompt as { base_dir?: string } | undefined;
     const appSchema = config.app_schema as { base_dir?: string } | undefined;
+
+    // CRITICAL FIX: Use working_dir from config as primary source
     const workingDir = (config.working_dir as string | undefined) || Deno.cwd();
 
     // base_dir のデフォルト値を取得
     const promptBaseDir = appPrompt?.base_dir || DEFAULT_PROMPT_BASE_DIR;
     const schemaBaseDir = appSchema?.base_dir || DEFAULT_SCHEMA_BASE_DIR;
 
-    // working_dir と結合して正規化
-    return {
+    if (isDebug) {
+      console.log("[PromptTemplatePathResolverTotality] normalizeConfig details:", {
+        configKeys: Object.keys(config),
+        configWorkingDir: config.working_dir,
+        resolvedWorkingDir: workingDir,
+        currentDir: Deno.cwd(),
+        appPrompt,
+        appSchema,
+        promptBaseDir,
+        schemaBaseDir,
+        DEFAULT_PROMPT_BASE_DIR,
+        DEFAULT_SCHEMA_BASE_DIR,
+      });
+    }
+
+    // working_dir と結合して正規化 - 設定のworking_dirを確実に使用する
+    const result = {
       promptBaseDir: isAbsolute(promptBaseDir) ? promptBaseDir : resolve(workingDir, promptBaseDir),
       schemaBaseDir: isAbsolute(schemaBaseDir) ? schemaBaseDir : resolve(workingDir, schemaBaseDir),
       workingDir: workingDir,
     };
+
+    if (isDebug) {
+      console.log("[PromptTemplatePathResolverTotality] normalizeConfig result:", result);
+    }
+
+    return result;
   }
 
   /**
@@ -438,31 +462,28 @@ export class PromptTemplatePathResolverTotality {
     const isDebug = Deno.env.get("LOG_LEVEL") === "debug";
     const useSchema = this.getUseSchemaFlag();
 
-    // Simple selection: use schema or prompt base directory
+    // CRITICAL FIX: Base directories are already resolved in normalizeConfig()
+    // No need to resolve again since they're already absolute paths
     const baseDir = useSchema ? this.config.schemaBaseDir : this.config.promptBaseDir;
-
-    // Resolve relative paths
-    const resolvedBaseDir = isAbsolute(baseDir)
-      ? baseDir
-      : resolve(this.config.workingDir, baseDir);
 
     if (isDebug) {
       console.log("[PromptTemplatePathResolverTotality] Resolved base directory:", {
         useSchema,
-        originalBaseDir: baseDir,
-        resolvedBaseDir,
+        selectedBaseDir: baseDir,
+        workingDir: this.config.workingDir,
+        isAlreadyAbsolute: isAbsolute(baseDir),
       });
     }
 
     // Verify directory exists
-    if (!existsSync(resolvedBaseDir)) {
+    if (!existsSync(baseDir)) {
       return resultError({
         kind: "BaseDirectoryNotFound",
-        path: resolvedBaseDir,
+        path: baseDir,
       });
     }
 
-    return resultOk(resolvedBaseDir);
+    return resultOk(baseDir);
   }
 
   /**

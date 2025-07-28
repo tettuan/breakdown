@@ -4,7 +4,7 @@
     "prompts": {
       "template_dir": "prompts",
       "schema_dir": "schema",
-      "custom_variables_count": 3,
+      "user_variables_count": 3,
       "variable_substitution": "advanced",
       "custom_delimiters": ["${", "}"],
       "template_patterns": {

@@ -16,7 +16,7 @@ import type { OneParamsResult, TwoParams_Result, ZeroParamsResult } from "../dep
 import { PathValidator } from "./path_validator.ts";
 import { OptionsNormalizer } from "./options_normalizer.ts";
 import { ParamsTypeValidator } from "./params_type_validator.ts";
-import { CustomVariableExtractor } from "../processor/custom_variable_extractor.ts";
+import { UserVariableExtractor } from "../processor/user_variable_extractor.ts";
 import type { BreakdownConfig } from "@tettuan/breakdownconfig";
 // ConfigProfile removed for BreakdownParams integration
 
@@ -27,7 +27,7 @@ export type ValidatedParams = {
   directive: DirectiveType;
   layer: LayerType;
   options: ValidatedOptions;
-  customVariables: Record<string, string>;
+  userVariables: Record<string, string>;
   metadata: ValidationMetadata;
 };
 
@@ -64,7 +64,7 @@ export type ValidationError =
   | { kind: "ParamsTypeError"; error: unknown }
   | { kind: "PathValidationError"; error: unknown }
   | { kind: "OptionsNormalizationError"; error: unknown }
-  | { kind: "CustomVariableError"; error: unknown }
+  | { kind: "UserVariableError"; error: unknown }
   | { kind: "TypeCreationError"; type: "directive" | "layer"; value: string }
   | { kind: "ConfigValidationFailed"; errors: string[]; context?: Record<string, unknown> }
   | {
@@ -92,7 +92,7 @@ export type ValidationError =
     context?: Record<string, unknown>;
   }
   | {
-    kind: "CustomVariableInvalid";
+    kind: "UserVariableInvalid";
     key: string;
     reason: string;
     context?: Record<string, unknown>;
@@ -112,13 +112,13 @@ export interface ConfigValidator {
  * - ParamsTypeValidator: Validates parameter type and structure
  * - PathValidator: Validates file system paths
  * - OptionsNormalizer: Normalizes option formats
- * - CustomVariableExtractor: Extracts custom variables
+ * - UserVariableExtractor: Extracts user variables
  */
 export class ParameterValidator {
   private readonly paramsValidator: ParamsTypeValidator;
   private readonly pathValidator: PathValidator;
   private readonly optionsNormalizer: OptionsNormalizer;
-  private readonly customVariableExtractor: CustomVariableExtractor;
+  private readonly userVariableExtractor: UserVariableExtractor;
 
   constructor(
     private readonly configValidator: ConfigValidator,
@@ -127,7 +127,7 @@ export class ParameterValidator {
     this.paramsValidator = new ParamsTypeValidator(config);
     this.pathValidator = new PathValidator();
     this.optionsNormalizer = new OptionsNormalizer();
-    this.customVariableExtractor = new CustomVariableExtractor();
+    this.userVariableExtractor = new UserVariableExtractor();
   }
 
   /**
@@ -277,23 +277,23 @@ export class ParameterValidator {
     }
 
     // 4. Extract custom variables
-    const customVarsResult = this.customVariableExtractor.extract(options);
-    if (!customVarsResult.ok) {
-      // Map specific CustomVariableError to ValidationError
-      const customError = customVarsResult.error;
+    const userVarsResult = this.userVariableExtractor.extract(options);
+    if (!userVarsResult.ok) {
+      // Map specific UserVariableError to ValidationError
+      const userError = userVarsResult.error;
 
-      if (customError.kind === "InvalidVariableValue") {
+      if (userError.kind === "InvalidVariableValue") {
         return error({
-          kind: "CustomVariableInvalid",
-          key: customError.key,
-          reason: customError.reason,
+          kind: "UserVariableInvalid",
+          key: userError.key,
+          reason: userError.reason,
           context: undefined,
         });
       }
 
       return error({
-        kind: "CustomVariableError",
-        error: customVarsResult.error,
+        kind: "UserVariableError",
+        error: userVarsResult.error,
       });
     }
 
@@ -347,7 +347,7 @@ export class ParameterValidator {
       directive,
       layer,
       options: validatedOptions,
-      customVariables: customVarsResult.data,
+      userVariables: userVarsResult.data,
       metadata,
     });
   }

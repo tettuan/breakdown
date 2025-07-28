@@ -1,5 +1,5 @@
-# Default test configuration
-# ConfigurationTestHelper用の基本設定ファイル
+# STDIN test configuration
+# ConfigurationTestHelper用のSTDIN処理テスト設定ファイル
 
 # パターンベースの設定
 params:
@@ -43,7 +43,7 @@ app_prompt:
   schema_dir: "schemas"
 
 userVariables:
-  author: "Default Test Suite"
+  author: "STDIN Test Suite"
   version: "1.0.0"
 
 # BreakdownParams設定

@@ -45,7 +45,7 @@ debugMode: true
 directive_patterns: "to|summary|defect|debug|trace|analyze"
 layer_patterns: "project|issue|task|function|test|module"
 
-custom_variables:
+user_variables:
   author: "Development Test Suite"
   version: "1.0.0"
   environment: "development"

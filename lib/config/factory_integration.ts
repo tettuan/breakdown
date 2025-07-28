@@ -51,7 +51,7 @@ export interface FactoryConfig {
     locale: string | null;
   };
   user: {
-    customVariables: Record<string, string> | null;
+    userVariables: Record<string, string> | null;
     aliases: Record<string, string> | null;
     templates: Record<string, string> | null;
   };

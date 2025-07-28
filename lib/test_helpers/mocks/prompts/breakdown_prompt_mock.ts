@@ -24,7 +24,7 @@ export interface MockPromptResult {
 export interface MockPromptGenerationOptions {
   workingDir?: string;
   resourceDir?: string;
-  customVariables?: Record<string, string>;
+  userVariables?: Record<string, string>;
   includeSchema?: boolean;
 }
 
@@ -108,7 +108,7 @@ export class BreakdownPromptMock {
 
     // 変数の置換処理
     let content = template.content;
-    const variables = { ...template.variables, ...options?.customVariables };
+    const variables = { ...template.variables, ...options?.userVariables };
 
     if (inputContent) {
       content = content.replace("{{input_content}}", inputContent);

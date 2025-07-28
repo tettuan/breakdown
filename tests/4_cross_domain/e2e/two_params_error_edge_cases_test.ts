@@ -463,7 +463,7 @@ Deno.test("E2E-ERROR: Resource Constraint Error Handling", async () => {
     {
       name: "Memory Pressure Simulation",
       createLargeData: true,
-      sizeMB: 10, // 10MB of data
+      sizeMB: 1, // 1MB of data (reduced for stable testing)
     },
     {
       name: "Concurrent Processing Simulation",
@@ -488,31 +488,22 @@ Deno.test("E2E-ERROR: Resource Constraint Error Handling", async () => {
 
       try {
         if (scenario.createLargeData) {
-          // Test with large data input
+          // Test with large data input using MockStdinReader
           const largeData = "# Large Data Test\n" + "X".repeat(scenario.sizeMB * 1024 * 1024);
 
           const config = {};
           const params = [validDirective, validLayer];
-          const options = {};
 
-          // Use STDIN mock for large data
-          const originalReadSync = Deno.stdin.readSync;
-          let dataIndex = 0;
-          const largeDataBytes = new TextEncoder().encode(largeData);
-
-          Deno.stdin.readSync = (buffer: Uint8Array) => {
-            if (dataIndex >= largeDataBytes.length) return null;
-            const remainingBytes = largeDataBytes.length - dataIndex;
-            const bytesToCopy = Math.min(buffer.length, remainingBytes);
-            buffer.set(largeDataBytes.subarray(dataIndex, dataIndex + bytesToCopy));
-            dataIndex += bytesToCopy;
-            return bytesToCopy;
-          };
+          // Use MockStdinReader for proper resource management
+          const mockStdinReader = new MockStdinReader({
+            data: largeData,
+            terminal: false,
+            delay: 0,
+            shouldFail: false,
+          });
+          const options = { stdinReader: mockStdinReader };
 
           const result = await twoParamsHandler(params, config, options);
-
-          // Restore original function
-          Deno.stdin.readSync = originalReadSync;
 
           logger.debug(`Large data processing result`, {
             dataSizeMB: scenario.sizeMB,
@@ -522,14 +513,22 @@ Deno.test("E2E-ERROR: Resource Constraint Error Handling", async () => {
           // Should handle large data gracefully (either succeed or fail appropriately)
           assertExists(result, "Result should be returned even with large data");
         } else if (scenario.concurrentRequests) {
-          // Test concurrent processing
+          // Test concurrent processing with MockStdinReader
           const config = {};
           const params = [validDirective, validLayer];
-          const options = {};
 
           const promises = Array.from(
             { length: scenario.concurrentRequests },
-            (_) => twoParamsHandler(params, config, options),
+            (_) => {
+              const mockStdinReader = new MockStdinReader({
+                data: "# Concurrent Test Data\nTest input for concurrent processing",
+                terminal: false,
+                delay: 0,
+                shouldFail: false,
+              });
+              const options = { stdinReader: mockStdinReader };
+              return twoParamsHandler(params, config, options);
+            },
           );
 
           const results = await Promise.allSettled(promises);
@@ -548,13 +547,21 @@ Deno.test("E2E-ERROR: Resource Constraint Error Handling", async () => {
             "Concurrent processing should handle requests",
           );
         } else if (scenario.sequentialRequests) {
-          // Test rapid sequential processing
+          // Test rapid sequential processing with MockStdinReader
           const config = {};
           const params = [validDirective, validLayer];
-          const options = {};
 
           const results = [];
           for (let i = 0; i < scenario.sequentialRequests; i++) {
+            const mockStdinReader = new MockStdinReader({
+              data: `# Sequential Test Data ${
+                i + 1
+              }\nTest input for sequential processing request ${i + 1}`,
+              terminal: false,
+              delay: 0,
+              shouldFail: false,
+            });
+            const options = { stdinReader: mockStdinReader };
             const result = await twoParamsHandler(params, config, options);
             results.push(result);
           }

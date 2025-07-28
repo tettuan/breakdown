@@ -8,7 +8,7 @@ prompts:
   default_template_dir: "custom_prompts"
   default_schema_dir: "custom_schema"
 
-  custom_variables:
+  user_variables:
     - name: "company_name"
       default: "ACME Corp"
     - name: "product_version"

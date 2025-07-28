@@ -3,7 +3,7 @@
  * Defines the root and subdirectories used by the CLI.
  */
 export const _DEFAULT_WORKSPACE_STRUCTURE = Object.freeze({
-  root: ".agent/breakdown" as const,
+  root: ".agent/climpt" as const,
   config: "config" as const,
   directories: Object.freeze({
     issues: "issues" as const,

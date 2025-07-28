@@ -281,7 +281,7 @@ export class TwoParamsProcessor {
     const promptFilePath = this.extractPromptFilePath(options);
 
     // Extract custom variables (uv- prefixed options)
-    const customVariables = this.extractCustomVariables(options);
+    const userVariables = this.extractUserVariables(options);
 
     // Extract input text if available
     const inputText = this.extractInputText(options);
@@ -291,7 +291,7 @@ export class TwoParamsProcessor {
       inputFilePath,
       outputFilePath,
       schemaFilePath,
-      customVariables,
+      userVariables,
       inputText,
     };
 
@@ -356,12 +356,12 @@ export class TwoParamsProcessor {
   /**
    * Extract custom variables with uv- prefix
    */
-  private extractCustomVariables(options: Record<string, unknown>): Record<string, string> {
+  private extractUserVariables(options: Record<string, unknown>): Record<string, string> {
     if (!options) {
       return {};
     }
 
-    const customVariables: Record<string, string> = {};
+    const userVariables: Record<string, string> = {};
 
     for (const [key, value] of Object.entries(options)) {
       if (key.startsWith("uv-")) {
@@ -369,17 +369,17 @@ export class TwoParamsProcessor {
         // Convert values to string more intelligently
         if (typeof value === "object" && value !== null) {
           try {
-            customVariables[key] = JSON.stringify(value);
+            userVariables[key] = JSON.stringify(value);
           } catch {
-            customVariables[key] = String(value);
+            userVariables[key] = String(value);
           }
         } else {
-          customVariables[key] = String(value);
+          userVariables[key] = String(value);
         }
       }
     }
 
-    return customVariables;
+    return userVariables;
   }
 
   /**

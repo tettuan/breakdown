@@ -11,7 +11,7 @@ import type { Result } from "../types/result.ts";
 import { error, ok } from "../types/result.ts";
 import { type FactoryResolvedValues, VariablesBuilder } from "../builder/variables_builder.ts";
 import { StdinVariableFactory } from "../factory/stdin_variable_factory.ts";
-import { CustomVariableExtractor } from "./custom_variable_extractor.ts";
+import { UserVariableExtractor } from "./user_variable_extractor.ts";
 import { StandardVariableResolver, type StandardVariables } from "./standard_variable_resolver.ts";
 import type { PromptVariable } from "../types/prompt_variables_vo.ts";
 // Removed unused imports for StdinState and isStdinState
@@ -22,7 +22,7 @@ import type { PromptVariable } from "../types/prompt_variables_vo.ts";
  */
 export type VariableProcessorError =
   | {
-    kind: "CustomVariableError";
+    kind: "UserVariableError";
     message: string;
     error: unknown;
     context?: Record<string, unknown>;
@@ -70,8 +70,8 @@ export interface ProcessorOptions {
 export interface ProcessorResult {
   /** All processed variables as a record */
   variables: Record<string, string>;
-  /** Custom variables (uv- prefixed) */
-  customVariables: Record<string, string>;
+  /** User variables (uv- prefixed) */
+  userVariables: Record<string, string>;
   /** Standard variables */
   standardVariables: StandardVariables;
   /** Builder instance for further manipulation */
@@ -82,8 +82,8 @@ export interface ProcessorResult {
  * Backward compatibility interface for ProcessedVariables
  */
 export interface ProcessedVariables {
-  /** Custom variables with uv- prefix */
-  customVariables: Record<string, string>;
+  /** User variables with uv- prefix */
+  userVariables: Record<string, string>;
   /** Standard variables for prompt processing */
   standardVariables: Record<string, string>;
   /** All variables combined */
@@ -128,12 +128,12 @@ export type TwoParamsVariableProcessorError =
  * components following Domain-Driven Design principles.
  */
 export class TwoParamsVariableProcessor {
-  private readonly customExtractor: CustomVariableExtractor;
+  private readonly userExtractor: UserVariableExtractor;
   private readonly standardResolver: StandardVariableResolver;
   private readonly stdinFactory: StdinVariableFactory;
 
   constructor() {
-    this.customExtractor = new CustomVariableExtractor();
+    this.userExtractor = new UserVariableExtractor();
     this.standardResolver = new StandardVariableResolver();
     this.stdinFactory = new StdinVariableFactory();
   }
@@ -143,12 +143,12 @@ export class TwoParamsVariableProcessor {
    * Main entry point for variable processing
    */
   process(params: ProcessorOptions): Result<ProcessorResult, VariableProcessorError> {
-    // 1. Extract custom variables
-    const customVarsResult = this.customExtractor.extract(params.options);
+    // 1. Extract user variables
+    const customVarsResult = this.userExtractor.extract(params.options);
     if (!customVarsResult.ok) {
       return error({
-        kind: "CustomVariableError",
-        message: "Failed to extract custom variables",
+        kind: "UserVariableError",
+        message: "Failed to extract user variables",
         error: customVarsResult.error,
       });
     }
@@ -188,7 +188,7 @@ export class TwoParamsVariableProcessor {
     // 5. Create result
     const result: ProcessorResult = {
       variables: buildResult.data.toRecord(),
-      customVariables: customVarsResult.data,
+      userVariables: customVarsResult.data,
       standardVariables: standardVarsResult.data,
       builder: buildResult.data,
     };
@@ -214,7 +214,7 @@ export class TwoParamsVariableProcessor {
     }
 
     // Extract and validate custom variables with backward compatible error handling
-    const customVarsResult = this.extractCustomVariablesCompatible(options);
+    const customVarsResult = this.extractUserVariablesCompatible(options);
     if (!customVarsResult.ok) {
       return error(customVarsResult.error);
     }
@@ -230,7 +230,7 @@ export class TwoParamsVariableProcessor {
     };
 
     const processedVariables: ProcessedVariables = {
-      customVariables: customVarsResult.data,
+      userVariables: customVarsResult.data,
       standardVariables,
       allVariables,
     };
@@ -241,10 +241,10 @@ export class TwoParamsVariableProcessor {
   /**
    * Extract custom variables with backward compatible error handling
    */
-  private extractCustomVariablesCompatible(
+  private extractUserVariablesCompatible(
     options: Record<string, unknown>,
   ): Result<Record<string, string>, TwoParamsVariableProcessorError[]> {
-    const customVariables: Record<string, string> = {};
+    const userVariables: Record<string, string> = {};
     const errors: TwoParamsVariableProcessorError[] = [];
     const reservedNames = new Set([
       "input_text",
@@ -287,7 +287,7 @@ export class TwoParamsVariableProcessor {
           continue;
         }
 
-        customVariables[key] = stringValue;
+        userVariables[key] = stringValue;
       }
     }
 
@@ -295,7 +295,7 @@ export class TwoParamsVariableProcessor {
       return error(errors);
     }
 
-    return ok(customVariables);
+    return ok(userVariables);
   }
 
   /**
@@ -345,15 +345,15 @@ export class TwoParamsVariableProcessor {
    * Extract custom variables (public method for architecture test)
    * Returns Result type as expected by tests
    */
-  extractCustomVariables(
+  extractUserVariables(
     options: Record<string, unknown>,
   ): Result<Record<string, string>, VariableProcessorError> {
-    const result = this.extractCustomVariablesCompatible(options);
+    const result = this.extractUserVariablesCompatible(options);
     if (!result.ok) {
       // Convert array of errors to single error for architecture test
       return error({
-        kind: "CustomVariableError",
-        message: "Failed to extract custom variables",
+        kind: "UserVariableError",
+        message: "Failed to extract user variables",
         error: result.error,
       });
     }
@@ -361,13 +361,13 @@ export class TwoParamsVariableProcessor {
   }
 
   /**
-   * Extract variables (alias for extractCustomVariables)
+   * Extract variables (alias for extractUserVariables)
    * Returns simplified format for architecture test
    */
   extractVariables(
     options: Record<string, unknown>,
   ): Result<Record<string, string>, TwoParamsVariableProcessorError[]> {
-    const result = this.extractCustomVariablesCompatible(options);
+    const result = this.extractUserVariablesCompatible(options);
     if (!result.ok) {
       return result;
     }
@@ -390,25 +390,25 @@ export class TwoParamsVariableProcessor {
    * Static method to extract custom variables
    * Returns simple object format as expected by tests
    */
-  static extractCustomVariables(
+  static extractUserVariables(
     options: Record<string, unknown>,
   ): Record<string, string> {
-    const customVariables: Record<string, string> = {};
+    const userVariables: Record<string, string> = {};
     for (const [key, value] of Object.entries(options)) {
       if (key.startsWith("uv-")) {
         // Convert values to string more intelligently
         if (typeof value === "object" && value !== null) {
           try {
-            customVariables[key] = JSON.stringify(value);
+            userVariables[key] = JSON.stringify(value);
           } catch {
-            customVariables[key] = String(value);
+            userVariables[key] = String(value);
           }
         } else {
-          customVariables[key] = String(value);
+          userVariables[key] = String(value);
         }
       }
     }
-    return customVariables;
+    return userVariables;
   }
 
   /**
@@ -438,7 +438,7 @@ export class TwoParamsVariableProcessor {
    */
   private buildVariables(
     params: ProcessorOptions,
-    customVariables: Record<string, string>,
+    userVariables: Record<string, string>,
     standardVariables: StandardVariables,
     stdinVariable?: PromptVariable,
   ): Result<VariablesBuilder, VariableProcessorError> {
@@ -450,7 +450,7 @@ export class TwoParamsVariableProcessor {
       inputFilePath: standardVariables.input_text_file,
       outputFilePath: standardVariables.destination_path,
       schemaFilePath: params.schemaFile || "",
-      customVariables: customVariables,
+      userVariables: userVariables,
       inputText: params.stdinContent,
     };
 

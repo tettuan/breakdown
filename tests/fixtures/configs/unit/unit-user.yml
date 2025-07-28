@@ -152,7 +152,7 @@ aliases:
   b: bugs
 
 # Custom variables for testing
-custom_variables:
+user_variables:
   author: "Unit Test Suite"
   version: "1.0.0"
   organization: "Breakdown Unit Testing"

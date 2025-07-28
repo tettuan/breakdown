@@ -22,7 +22,7 @@ prompts:
   default_template_dir: "prompts"
   default_schema_dir: "schema"
 
-  custom_variables:
+  user_variables:
     - name: "team_name"
       default: "Alpha Development Team"
     - name: "team_lead"

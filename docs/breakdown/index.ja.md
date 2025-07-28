@@ -80,9 +80,9 @@ Breakdown は以下のJSRパッケージを使用して実装されています�
    - 作業ディレクトリとリソースディレクトリの設定
 
 2. **[@tettuan/breakdownparams](https://jsr.io/@tettuan/breakdownparams)** - パラメータ解析ドメイン
-   - コマンドライン引数の型安全な解析
-   - オプションのバリデーション
-   - パラメータの構造化
+   - コマンドライン引数の型安全な解析（ParamsCustomConfig統合）
+   - 設定ベースのdirectivePatterns/layerPatternsによる検証
+   - lib/application/breakdown_params_integration.ts経由でのTwoParamsResult生成
 
 3. **[@tettuan/breakdownprompt](https://jsr.io/@tettuan/breakdownprompt)** - プロンプト生成ドメイン
    - プロンプトファイルの読み込み

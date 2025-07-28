@@ -153,10 +153,10 @@ export interface SchemaPathConfig {
   readonly allowedExtensions: readonly string[];
   /** Maximum filename length */
   readonly maxFilenameLength: number;
-  /** Whether to allow custom directive types */
-  readonly allowCustomDirectives: boolean;
-  /** Whether to allow custom layer types */
-  readonly allowCustomLayers: boolean;
+  /** Whether to allow user directive types */
+  readonly allowUserDirectives: boolean;
+  /** Whether to allow user layer types */
+  readonly allowUserLayers: boolean;
   /** Whether to validate JSON schema syntax */
   readonly validateJsonSyntax: boolean;
   /** Base path validation configuration */
@@ -169,8 +169,8 @@ export interface SchemaPathConfig {
 export const DEFAULT_SCHEMA_PATH_CONFIG: SchemaPathConfig = {
   allowedExtensions: [".schema.md", ".json"],
   maxFilenameLength: 120,
-  allowCustomDirectives: false,
-  allowCustomLayers: false,
+  allowUserDirectives: false,
+  allowUserLayers: false,
   validateJsonSyntax: false, // Can be enabled when actual file content is available
   basePathConfig: {
     ...DEFAULT_PATH_CONFIG,

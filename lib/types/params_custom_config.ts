@@ -217,11 +217,11 @@ export class ParamsCustomConfig {
       const options = breakdown.options as Record<string, unknown>;
       const optionsOverride: Partial<CustomConfig["options"]> = {};
 
-      if (options.customVariables && typeof options.customVariables === "object") {
-        const customVars = options.customVariables as Record<string, unknown>;
+      if (options.userVariables && typeof options.userVariables === "object") {
+        const customVars = options.userVariables as Record<string, unknown>;
         if (typeof customVars.pattern === "string" || typeof customVars.description === "string") {
-          optionsOverride.customVariables = {
-            ...DEFAULT_CUSTOM_CONFIG.options.customVariables,
+          optionsOverride.userVariables = {
+            ...DEFAULT_CUSTOM_CONFIG.options.userVariables,
             ...(typeof customVars.pattern === "string" && { pattern: customVars.pattern }),
             ...(typeof customVars.description === "string" &&
               { description: customVars.description }),
@@ -255,10 +255,10 @@ export class ParamsCustomConfig {
               ? sectionObj.allowedValueOptions as string[]
               : DEFAULT_CUSTOM_CONFIG.validation[key as keyof CustomConfig["validation"]]
                 .allowedValueOptions,
-            allowCustomVariables: typeof sectionObj.allowCustomVariables === "boolean"
-              ? sectionObj.allowCustomVariables
+            allowUserVariables: typeof sectionObj.allowUserVariables === "boolean"
+              ? sectionObj.allowUserVariables
               : DEFAULT_CUSTOM_CONFIG.validation[key as keyof CustomConfig["validation"]]
-                .allowCustomVariables,
+                .allowUserVariables,
           };
         }
       });

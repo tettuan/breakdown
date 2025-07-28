@@ -178,7 +178,7 @@ Deno.test("Working directory '.' behavior comparison", async () => {
   try {
     // Create two different prompt structures
     const structure1 = join(originalCwd, "tests", "tmp", "prompts", "to", "task");
-    const structure2 = join(originalCwd, ".agent", "breakdown", "prompts", "to", "task");
+    const structure2 = join(originalCwd, ".agent", "climpt", "prompts", "to", "task");
 
     await Deno.mkdir(structure1, { recursive: true });
     await Deno.mkdir(structure2, { recursive: true });
@@ -203,11 +203,11 @@ Deno.test("Working directory '.' behavior comparison", async () => {
       },
     };
 
-    // Test configuration 2: .agent/breakdown/prompts
+    // Test configuration 2: .agent/climpt/prompts
     const config2 = {
       working_dir: ".",
       app_prompt: {
-        base_dir: ".agent/breakdown/prompts",
+        base_dir: ".agent/climpt/prompts",
       },
     };
 
@@ -264,7 +264,7 @@ Deno.test("Working directory '.' behavior comparison", async () => {
         assertEquals(path2Result.data.value, template2);
         assertEquals(
           path2Result.data.metadata.baseDir,
-          join(originalCwd, ".agent", "breakdown", "prompts"),
+          join(originalCwd, ".agent", "climpt", "prompts"),
         );
       }
     }
@@ -274,8 +274,8 @@ Deno.test("Working directory '.' behavior comparison", async () => {
       resolvedWorkingDir: originalCwd,
       config1BaseDir: "tests/tmp/prompts",
       config1ResolvedPath: join(originalCwd, "tests", "tmp", "prompts"),
-      config2BaseDir: ".agent/breakdown/prompts",
-      config2ResolvedPath: join(originalCwd, ".agent", "breakdown", "prompts"),
+      config2BaseDir: ".agent/climpt/prompts",
+      config2ResolvedPath: join(originalCwd, ".agent", "climpt", "prompts"),
     });
   } finally {
     // Cleanup
@@ -284,15 +284,16 @@ Deno.test("Working directory '.' behavior comparison", async () => {
     } catch {
       // Ignore
     }
-    try {
-      await Deno.remove(join(originalCwd, ".agent"), { recursive: true });
-    } catch {
-      // Ignore
-    }
+    // Don't remove .agent directory as it's shared by multiple tests
+    // try {
+    //   await Deno.remove(join(originalCwd, ".agent"), { recursive: true });
+    // } catch {
+    //   // Ignore
+    // }
   }
 });
 
-Deno.test("Working directory 'tmp' with base_dir '.agent/breakdown' - path resolution", async () => {
+Deno.test("Working directory 'tmp' with base_dir '.agent/climpt' - path resolution", async () => {
   const originalCwd = Deno.cwd();
 
   try {
@@ -301,14 +302,14 @@ Deno.test("Working directory 'tmp' with base_dir '.agent/breakdown' - path resol
     const tmpDir = join(originalCwd, "tmp");
     await Deno.mkdir(tmpDir, { recursive: true });
 
-    // .agent/breakdown structure inside tmp
-    const agentPromptsDir = join(tmpDir, ".agent", "breakdown", "prompts", "defect", "issue");
+    // .agent/climpt structure inside tmp
+    const agentPromptsDir = join(tmpDir, ".agent", "climpt", "prompts", "defect", "issue");
     await Deno.mkdir(agentPromptsDir, { recursive: true });
 
     const templateFile = join(agentPromptsDir, "f_default.md");
     await Deno.writeTextFile(templateFile, "# Defect Template in tmp/.agent\n{{input_text}}");
 
-    logger.debug("Test setup for tmp + .agent/breakdown", {
+    logger.debug("Test setup for tmp + .agent/climpt", {
       originalCwd,
       tmpDir,
       agentPromptsDir,
@@ -319,7 +320,7 @@ Deno.test("Working directory 'tmp' with base_dir '.agent/breakdown' - path resol
     const config = {
       working_dir: "tmp",
       app_prompt: {
-        base_dir: ".agent/breakdown/prompts",
+        base_dir: ".agent/climpt/prompts",
       },
     };
 
@@ -334,7 +335,7 @@ Deno.test("Working directory 'tmp' with base_dir '.agent/breakdown' - path resol
     logger.debug("Configuration with tmp working_dir", {
       config,
       expectedWorkingDir: tmpDir,
-      expectedBaseDir: join(tmpDir, ".agent", "breakdown", "prompts"),
+      expectedBaseDir: join(tmpDir, ".agent", "climpt", "prompts"),
       expectedTemplatePath: templateFile,
     });
 
@@ -359,7 +360,7 @@ Deno.test("Working directory 'tmp' with base_dir '.agent/breakdown' - path resol
         assertEquals(pathResult.data.status, "Found");
 
         // Verify the base directory is correctly resolved
-        const expectedBaseDir = join(tmpDir, ".agent", "breakdown", "prompts");
+        const expectedBaseDir = join(tmpDir, ".agent", "climpt", "prompts");
         assertEquals(pathResult.data.metadata.baseDir, expectedBaseDir);
       }
     }
@@ -382,8 +383,8 @@ Deno.test("Working directory relative paths - comprehensive test", async () => {
       {
         name: "Relative working_dir with relative base_dir",
         workingDir: "examples",
-        baseDir: ".agent/breakdown/prompts",
-        expectedBasePath: join(originalCwd, "examples", ".agent", "breakdown", "prompts"),
+        baseDir: ".agent/climpt/prompts",
+        expectedBasePath: join(originalCwd, "examples", ".agent", "climpt", "prompts"),
       },
       {
         name: "Nested relative working_dir",
