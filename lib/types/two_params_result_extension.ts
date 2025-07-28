@@ -7,7 +7,7 @@
  * @module types/two_params_result_extension
  */
 
-import type { TwoParamsResult as BaseTwoParamsResult } from "jsr:@tettuan/breakdownparams@^1.1.0";
+import type { TwoParamsResult as BaseTwoParamsResult } from "jsr:@tettuan/breakdownparams@^1.1.1";
 
 /**
  * Extended TwoParams_Result interface with params property

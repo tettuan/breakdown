@@ -42,7 +42,7 @@ export { parse as parseFlags } from "@std/flags";
  * Types and configuration utilities for Breakdown. Re-exported from @tettuan/breakdownconfig.
  * Version: 1.1.4 (managed in versions.ts)
  */
-export { BreakdownConfig, type MergedConfig } from "jsr:@tettuan/breakdownconfig@^1.1.5";
+export { BreakdownConfig, type MergedConfig } from "@tettuan/breakdownconfig";
 
 /**
  * CLI parameter parsing utilities for Breakdown. Re-exported from @tettuan/breakdownparams.
@@ -56,9 +56,9 @@ export {
   type ParamsResult,
   type TwoParamsResult as BaseTwoParamsResult,
   type ZeroParamsResult,
-} from "jsr:@tettuan/breakdownparams@^1.1.0";
+} from "jsr:@tettuan/breakdownparams@^1.1.1";
 
-export { ParamsParser as BreakdownParams } from "jsr:@tettuan/breakdownparams@^1.1.0";
+export { ParamsParser as BreakdownParams } from "jsr:@tettuan/breakdownparams@^1.1.1";
 
 // Re-export extended TwoParams_Result with params property
 export type { TwoParams_Result } from "./types/two_params_result_extension.ts";

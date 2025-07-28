@@ -6,10 +6,10 @@
  */
 
 export const _JSR_VERSIONS = {
-  BREAKDOWN_CONFIG: "^1.1.4",
-  BREAKDOWN_PARAMS: "^1.0.3",
+  BREAKDOWN_CONFIG: "^1.2.0",
+  BREAKDOWN_PARAMS: "^1.1.1",
   BREAKDOWN_PROMPT: "1.2.3",
-  BREAKDOWN_LOGGER: "^1.0.5",
+  BREAKDOWN_LOGGER: "^1.0.8",
   STD_ASSERT: "^0.224.0",
   STD_FS: "^0.224.0",
   STD_FLAGS: "^0.224.0",
@@ -21,8 +21,8 @@ export const _JSR_VERSIONS = {
  * Complete import paths for JSR packages
  */
 export const JSR_IMPORT_PATHS = {
-  BREAKDOWN_CONFIG: "jsr:@tettuan/breakdownconfig@^1.1.4",
-  BREAKDOWN_PARAMS: "jsr:@tettuan/breakdownparams@^1.0.3",
+  BREAKDOWN_CONFIG: "jsr:@tettuan/breakdownconfig@^1.2.0",
+  BREAKDOWN_PARAMS: "jsr:@tettuan/breakdownparams@^1.1.1",
   BREAKDOWN_PROMPT: "jsr:@tettuan/breakdownprompt@^1.2.4",
-  BREAKDOWN_LOGGER: "jsr:@tettuan/breakdownlogger@^1.0.5",
+  BREAKDOWN_LOGGER: "jsr:@tettuan/breakdownlogger@^1.0.8",
 } as const;

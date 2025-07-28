@@ -12,16 +12,16 @@
  */
 export const DEPENDENCY_VERSIONS = {
   /** BreakdownConfig package version */
-  BREAKDOWN_CONFIG: "^1.1.4",
+  BREAKDOWN_CONFIG: "^1.2.0",
 
   /** BreakdownParams package version */
-  BREAKDOWN_PARAMS: "^1.0.1",
+  BREAKDOWN_PARAMS: "^1.1.1",
 
   /** BreakdownPrompt package version */
-  BREAKDOWN_PROMPT: "^1.0.0",
+  BREAKDOWN_PROMPT: "^1.2.4",
 
   /** BreakdownLogger package version */
-  BREAKDOWN_LOGGER: "^1.0.0",
+  BREAKDOWN_LOGGER: "^1.0.8",
 
   /** Standard library versions */
   STD: {
@@ -77,20 +77,20 @@ export interface VersionRequirement {
  */
 export const VERSION_REQUIREMENTS: Record<string, VersionRequirement> = {
   BREAKDOWN_CONFIG: {
-    minimum: "1.1.0",
-    recommended: "1.1.4",
+    minimum: "1.2.0",
+    recommended: "1.2.0",
   },
   BREAKDOWN_PARAMS: {
-    minimum: "1.0.0",
-    recommended: "1.0.1",
+    minimum: "1.1.0",
+    recommended: "1.1.1",
   },
   BREAKDOWN_PROMPT: {
-    minimum: "1.0.0",
-    recommended: "1.0.0",
+    minimum: "1.2.0",
+    recommended: "1.2.4",
   },
   BREAKDOWN_LOGGER: {
-    minimum: "1.0.0",
-    recommended: "1.0.0",
+    minimum: "1.0.8",
+    recommended: "1.0.8",
   },
 };
 

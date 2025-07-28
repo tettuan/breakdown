@@ -14,6 +14,7 @@
  */
 
 import { parse } from "jsr:@std/yaml@^1.0.6";
+import { BreakdownConfig } from "@tettuan/breakdownconfig";
 import type { Result } from "../types/result.ts";
 import { error, ok } from "../types/result.ts";
 
@@ -427,26 +428,14 @@ export class ConfigLoader {
       const prefix = prefixResult.data;
       const workDir = workingDirResult.data;
 
-      // Phase 2: BreakdownConfig Package Import
-      let BreakdownConfig: { create: (profile: string) => Promise<unknown> };
-      try {
-        const importResult = await import("jsr:@tettuan/breakdownconfig@^1.1.4");
-        BreakdownConfig = importResult.BreakdownConfig;
-
-        if (!BreakdownConfig || typeof BreakdownConfig.create !== "function") {
-          return error({
-            kind: "ImportError",
-            message: "BreakdownConfig class or create method not found in imported module",
-            cause: "Invalid BreakdownConfig API structure",
-            importPath: "jsr:@tettuan/breakdownconfig@^1.1.4",
-          });
-        }
-      } catch (importError) {
+      // Phase 2: BreakdownConfig is now statically imported at the top
+      // Validate that BreakdownConfig is available and has the expected API
+      if (!BreakdownConfig || typeof BreakdownConfig.create !== "function") {
         return error({
           kind: "ImportError",
-          message: "Failed to import BreakdownConfig package",
-          cause: importError instanceof Error ? importError.message : String(importError),
-          importPath: "jsr:@tettuan/breakdownconfig@^1.1.4",
+          message: "BreakdownConfig class or create method not found",
+          cause: "Invalid BreakdownConfig API structure",
+          importPath: "@tettuan/breakdownconfig",
         });
       }
 
@@ -455,7 +444,7 @@ export class ConfigLoader {
       try {
         // Use BreakdownConfig static factory method - only pass prefix
         // BreakdownConfig should detect working directory automatically
-        configResult = await BreakdownConfig.create(
+        configResult = BreakdownConfig.create(
           prefix.value || "default",
         );
       } catch (createCallError) {
@@ -469,7 +458,7 @@ export class ConfigLoader {
         });
       }
 
-      // Validate creation result
+      // Validate creation result - v1.2.0 uses 'success' instead of 'ok'
       if (
         !configResult ||
         typeof configResult !== "object" ||
