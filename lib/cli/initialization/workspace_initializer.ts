@@ -3,7 +3,7 @@
  *
  * This module handles the initialization of the breakdown workspace,
  * creating directory structures and configuration files.
- * 
+ *
  * **用途**: このモジュールは `breakdown init` コマンドでのみ使用されます。
  * ドメイン境界を超えた設定の橋渡しは行いません。
  * 単に初期化時のディレクトリ構造と設定ファイルの作成のみを担当します。
@@ -17,7 +17,7 @@ import { DEFAULT_WORKSPACE_ROOT } from "../../config/constants.ts";
 
 /**
  * Initialize breakdown configuration and directory structure
- * 
+ *
  * `breakdown init` コマンドで呼び出される唯一の関数です。
  * プロジェクトの初期セットアップ時に1回だけ実行されます。
  */
@@ -66,6 +66,7 @@ export async function initializeBreakdownConfiguration(): Promise<void> {
 
   // Build configuration content dynamically
   const configContent = `# Breakdown Configuration
+base_dir: ".agent/breakdown"
 app_prompt:
   base_dir: "prompts"
 app_schema:

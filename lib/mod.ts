@@ -16,7 +16,6 @@
  * @module
  */
 
-
 /**
  * Types representing the available directive and layer types for Breakdown.
  * These types define the core structure and functionality of the Breakdown tool.

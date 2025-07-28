@@ -10,7 +10,8 @@
 import { VERSION } from "../version.ts";
 import { PromptFileGenerator } from "./prompt_file_generator.ts";
 // CustomConfig type is now handled by BreakdownConfig package
-import { DEFAULT_PROMPT_BASE_DIR, DEFAULT_SCHEMA_BASE_DIR } from "../config/constants.ts";
+// These constants are imported but not directly used in this module
+// They might be used indirectly by dependencies
 
 /**
  * The result of a command execution in the Breakdown CLI.

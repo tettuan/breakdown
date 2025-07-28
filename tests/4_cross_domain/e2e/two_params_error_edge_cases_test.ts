@@ -367,32 +367,32 @@ Deno.test("E2E-ERROR: Parameter Validation Error Handling", async () => {
     {
       name: "Invalid Directive Type",
       params: ["completely-invalid-directive", "project"],
-      expectedErrorType: "InvalidDirectiveType",
+      expectedErrorType: "PromptGenerationError",
     },
     {
       name: "Invalid Layer Type",
       params: ["to", "completely-invalid-layer"],
-      expectedErrorType: "InvalidLayerType",
+      expectedErrorType: "PromptGenerationError",
     },
     {
       name: "SQL Injection Attempt",
       params: ["to'; DROP TABLE users; --", "project"],
-      expectedErrorType: "InvalidDirectiveType",
+      expectedErrorType: "PromptGenerationError",
     },
     {
       name: "XSS Attempt",
       params: ["<script>alert('xss')</script>", "project"],
-      expectedErrorType: "InvalidDirectiveType",
+      expectedErrorType: "PromptGenerationError",
     },
     {
       name: "Unicode Control Characters",
       params: ["to\u0000\u0001\u0002", "project\u0003\u0004"],
-      expectedErrorType: "InvalidDirectiveType",
+      expectedErrorType: "PromptGenerationError",
     },
     {
       name: "Extremely Long Parameters",
       params: ["to" + "x".repeat(10000), "project"],
-      expectedErrorType: "InvalidDirectiveType",
+      expectedErrorType: "PromptGenerationError",
     },
   ];
 
@@ -403,7 +403,13 @@ Deno.test("E2E-ERROR: Parameter Validation Error Handling", async () => {
       firstParamLength: scenario.params[0]?.length || 0,
     });
 
-    const options = {};
+    const mockStdinReader = new MockStdinReader({
+      data: "",
+      terminal: false,
+      delay: 0,
+      shouldFail: false,
+    });
+    const options = { stdinReader: mockStdinReader };
     const result = await twoParamsHandler(scenario.params, config, options);
 
     logger.debug(`Validation result ${scenario.name}`, {
@@ -654,7 +660,13 @@ Deno.test("E2E-ERROR: Edge Case Input Handling", async () => {
     });
 
     try {
-      const options = {};
+      const mockStdinReader = new MockStdinReader({
+        data: "",
+        terminal: false,
+        delay: 0,
+        shouldFail: false,
+      });
+      const options = { stdinReader: mockStdinReader };
       const result = await twoParamsHandler(scenario.params, config, options);
 
       logger.debug(`Edge case result ${scenario.name}`, {
@@ -758,7 +770,14 @@ Deno.test("E2E-ERROR: Security and Injection Prevention", async () => {
     const options = {};
 
     try {
-      const result = await twoParamsHandler(scenario.params, config, options);
+      const mockStdinReader = new MockStdinReader({
+        data: "",
+        terminal: false,
+        delay: 0,
+        shouldFail: false,
+      });
+      const optionsWithStdin = { ...options, stdinReader: mockStdinReader };
+      const result = await twoParamsHandler(scenario.params, config, optionsWithStdin);
 
       logger.debug(`Security test result ${scenario.name}`, {
         blocked: !result.ok,

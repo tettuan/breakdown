@@ -56,7 +56,7 @@ class TwoParamsOrchestrator {
   private readonly promptGenerator: TwoParamsPromptGenerator;
   private readonly outputProcessor: TwoParamsOutputProcessor;
 
-  constructor(config?: Record<string, unknown>, outputProcessor?: TwoParamsOutputProcessor) {
+  constructor(_config?: Record<string, unknown>, outputProcessor?: TwoParamsOutputProcessor) {
     // Initialize all components using composition pattern
     this.stdinProcessor = new TwoParamsStdinProcessor();
     this.variableProcessor = new TwoParamsVariableProcessor();
@@ -82,14 +82,14 @@ class TwoParamsOrchestrator {
     }
     // 1. Basic parameter count validation only
     // ParamsParser already validated the directive and layer types
-    if (!params || params.length < 2) {
+    if (!params || params.length !== 2) {
       return error({
         kind: "InvalidParameterCount",
         received: params?.length ?? 0,
         expected: 2,
       });
     }
-    
+
     // Extract directive and layer from params
     const [directiveStr, layerStr] = params;
     const validatedParams = {
@@ -206,7 +206,6 @@ class TwoParamsOrchestrator {
     }
     return ok(undefined);
   }
-
 
   /**
    * Type guard for FactoryValidationError

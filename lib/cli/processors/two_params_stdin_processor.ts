@@ -84,7 +84,7 @@ export class TwoParamsStdinProcessor {
    * NOTE: This method is no longer used as --from doesn't read files
    * @deprecated
    */
-  private getFilePath(options: Record<string, unknown>): string | null {
+  private getFilePath(_options: Record<string, unknown>): string | null {
     return null;
   }
 

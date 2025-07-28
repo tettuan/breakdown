@@ -14,7 +14,7 @@ import { StdinVariableFactory } from "../factory/stdin_variable_factory.ts";
 import { CustomVariableExtractor } from "./custom_variable_extractor.ts";
 import { StandardVariableResolver, type StandardVariables } from "./standard_variable_resolver.ts";
 import type { PromptVariable } from "../types/prompt_variables_vo.ts";
-import { type StdinState, isStdinState } from "../types/stdin_types.ts";
+// Removed unused imports for StdinState and isStdinState
 
 /**
  * Error types for Variable Processor

@@ -215,11 +215,13 @@ export async function runBreakdown(
   if (isDebug) {
     console.log("[breakdown.ts → ParamsParser] Input:", {
       args: args,
-      customConfig: customConfig ? {
-        params: customConfig.params,
-        validation: customConfig.validation,
-        errorHandling: customConfig.errorHandling,
-      } : "undefined (using defaults)",
+      customConfig: customConfig
+        ? {
+          params: customConfig.params,
+          validation: customConfig.validation,
+          errorHandling: customConfig.errorHandling,
+        }
+        : "undefined (using defaults)",
     });
   }
 

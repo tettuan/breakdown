@@ -285,7 +285,7 @@ export async function readStdinEnhanced(options: EnhancedStdinOptions = {}): Pro
       }
 
       // Check if stdin has data available before attempting to read
-      const hasData = await hasStdinDataAvailable({ stdinReader: reader });
+      const hasData = hasStdinDataAvailable({ stdinReader: reader });
       if (!hasData) {
         // No stdin data available, return empty string instead of error
         // This is valid since stdin is optional
@@ -369,7 +369,7 @@ export function isStdinAvailableEnhanced(options?: {
 
   // Check if stdin is piped/redirected (has data available)
   const isPiped = !reader.isTerminal();
-  
+
   // In CI environments, only consider stdin available if piped
   if (envInfo.isCI) {
     return isPiped;
@@ -388,13 +388,12 @@ export function isStdinAvailableEnhanced(options?: {
  * Check if stdin has data available without blocking
  * This performs a non-blocking check to see if data is ready to be read
  */
-export async function hasStdinDataAvailable(options?: {
+export function hasStdinDataAvailable(options?: {
   stdinReader?: StdinReader;
   timeout?: number;
-}): Promise<boolean> {
+}): boolean {
   const reader = options?.stdinReader || new DenoStdinReader();
-  const timeout = options?.timeout ?? 0; // No wait by default
-  
+
   // If stdin is a terminal, no data is available
   if (reader.isTerminal()) {
     return false;
@@ -415,8 +414,6 @@ export async function safeReadStdin(options: EnhancedStdinOptions = {}): Promise
   reason?: string;
   envInfo: EnvironmentInfo;
 }> {
-  const { debug = false } = options;
-
   // Get environment detection config from TimeoutManager if available
   let envDetectionConfig: EnvironmentDetectionConfig | undefined;
   if (options.timeoutManager && "getEnvironmentDetectionConfig" in options.timeoutManager) {
@@ -442,13 +439,13 @@ export async function safeReadStdin(options: EnhancedStdinOptions = {}): Promise
     }
 
     // Check if stdin has data available
-    const hasData = await hasStdinDataAvailable({ stdinReader: options.stdinReader });
+    const hasData = hasStdinDataAvailable({ stdinReader: options.stdinReader });
     if (!hasData) {
       if (envInfo.isTest) {
         const reason = "Test environment without available stdin";
         return { success: true, content: "", skipped: true, reason, envInfo };
       }
-      
+
       const reason = "No stdin data available";
       return { success: true, content: "", skipped: true, reason, envInfo };
     }
