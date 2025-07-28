@@ -154,8 +154,6 @@ params:
       pattern: "^(to|summary|defect)$"
     layerType:
       pattern: "^(project|issue|task|bugs)$"
-workspace:
-  temp_dir: ".agent/breakdown/temp"
 basic_mode: true
 EOF
   echo "Created basic configuration: ${CONFIG_DIR}/basic-app.yml"

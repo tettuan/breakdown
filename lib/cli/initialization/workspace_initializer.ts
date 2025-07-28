@@ -69,9 +69,6 @@ params:
       pattern: "^(${directiveTypes.join("|")})$"
     layerType:
       pattern: "^(${layerTypes.join("|")})$"
-workspace:
-  working_dir: "${cwd}"
-  temp_dir: "${cwd}/${DEFAULT_WORKSPACE_ROOT}/temp"
 `;
 
   // Use BreakdownConfig for configuration management

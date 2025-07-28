@@ -16,15 +16,6 @@
  * @module
  */
 
-/**
- * Initializes a new workspace for Breakdown projects.
- * Creates the necessary directory structure and configuration files.
- *
- * @returns {Promise<void>} A promise that resolves when the workspace is initialized
- * @throws {Error} If workspace initialization fails
- * @see {@link ./workspace/workspace.ts}
- */
-export { initWorkspace } from "./workspace/workspace.ts";
 
 /**
  * Types representing the available directive and layer types for Breakdown.

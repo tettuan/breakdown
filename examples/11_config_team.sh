@@ -47,8 +47,6 @@ params:
       pattern: "^(to|summary|defect)$"
     layerType:
       pattern: "^(project|issue|task|bugs)$"
-workspace:
-  temp_dir: ".agent/breakdown/temp"
 logger:
   level: "debug"
   format: "text"
@@ -150,6 +148,12 @@ Team-focused task breakdown with clear ownership and coordination points.
 EOF
 
 echo "✓ Created template: prompts/to/task/f_task.md"
+
+# Also create f_default.md if it doesn't exist
+if [ ! -f ".agent/breakdown/prompts/to/task/f_default.md" ]; then
+    cp ".agent/breakdown/prompts/to/task/f_task.md" ".agent/breakdown/prompts/to/task/f_default.md"
+    echo "✓ Created template: prompts/to/task/f_default.md"
+fi
 
 # Run breakdown with team configuration
 echo ""

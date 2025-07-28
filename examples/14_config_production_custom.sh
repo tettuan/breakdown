@@ -60,9 +60,6 @@ params:
       pattern: "^(to|summary|defect|find)$"
     layerType:
       pattern: "^(project|issue|task|bugs)$"
-workspace:
-  working_dir: ".agent/breakdown"
-  temp_dir: ".agent/breakdown/temp"
 production_mode: true
 custom_config: true
 advanced_features: true

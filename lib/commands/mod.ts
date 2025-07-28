@@ -9,7 +9,6 @@
 
 import { VERSION } from "../version.ts";
 import { PromptFileGenerator } from "./prompt_file_generator.ts";
-import { Workspace } from "../workspace/workspace.ts";
 // CustomConfig type is now handled by BreakdownConfig package
 import { DEFAULT_PROMPT_BASE_DIR, DEFAULT_SCHEMA_BASE_DIR } from "../config/constants.ts";
 
@@ -47,37 +46,6 @@ interface AppConfig {
  *
  * All config access must use BreakdownConfig, not direct file reads.
  */
-export async function initWorkspace(
-  _workingDir?: string,
-  config?: { app_prompt?: { base_dir?: string }; app_schema?: { base_dir?: string } },
-): Promise<CommandResult> {
-  try {
-    const workingDir = _workingDir ?? Deno.cwd();
-    // In production, use BreakdownConfig to load these values
-    const workspace = new Workspace({
-      working_dir: workingDir,
-      app_prompt: {
-        base_dir: config?.app_prompt?.base_dir || DEFAULT_PROMPT_BASE_DIR,
-      },
-      app_schema: {
-        base_dir: config?.app_schema?.base_dir || DEFAULT_SCHEMA_BASE_DIR,
-      },
-    });
-    await workspace.initialize();
-    return {
-      success: true,
-      output: "Workspace initialized successfully",
-      error: "",
-    };
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    return {
-      success: false,
-      output: "",
-      error: `Failed to initialize workspace: ${errorMessage}`,
-    };
-  }
-}
 
 // 5. プロンプト変換処理
 async function runPromptProcessing(

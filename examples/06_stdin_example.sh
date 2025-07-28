@@ -86,6 +86,21 @@ fi
 
 echo "✓ All required template files exist"
 
+# Create f_default.md templates if they don't exist
+echo "Creating f_default.md templates..."
+for directive in summary; do
+    for layer in project; do
+        template_dir=".agent/breakdown/prompts/$directive/$layer"
+        if [ -d "$template_dir" ]; then
+            if [ ! -f "$template_dir/f_default.md" ]; then
+                if [ -f "$template_dir/f_$layer.md" ]; then
+                    cp "$template_dir/f_$layer.md" "$template_dir/f_default.md"
+                fi
+            fi
+        fi
+    done
+done
+
 # Ensure local template directories exist following DirectiveType x LayerType structure
 # (This creates local prompts directories that may be used for custom templates)
 if ! mkdir -p .agent/breakdown/prompts/to/project .agent/breakdown/prompts/to/issue .agent/breakdown/prompts/to/task .agent/breakdown/prompts/summary/project .agent/breakdown/prompts/summary/issue .agent/breakdown/prompts/defect/project .agent/breakdown/prompts/defect/issue; then

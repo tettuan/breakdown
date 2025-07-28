@@ -45,9 +45,6 @@ params:
       pattern: "^[a-z]+$"
     layerType:
       pattern: "^[a-z]+$"
-workspace:
-  working_dir: ".agent/breakdown"
-  temp_dir: ".agent/breakdown/temp"
 production_mode: true
 bug_detection: true
 EOF
@@ -201,6 +198,12 @@ Structured bug report with severity, location, description, and recommended fixe
 EOF
 
 echo "✓ Created template: prompts/find/bugs/f_bugs.md"
+
+# Also create f_default.md if it doesn't exist
+if [ ! -f ".agent/breakdown/prompts/find/bugs/f_default.md" ]; then
+    cp ".agent/breakdown/prompts/find/bugs/f_bugs.md" ".agent/breakdown/prompts/find/bugs/f_default.md"
+    echo "✓ Created template: prompts/find/bugs/f_default.md"
+fi
 
 # Run breakdown find bugs command
 echo ""

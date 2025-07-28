@@ -20,8 +20,8 @@ import type { BreakdownConfigCompatible } from "$lib/config/timeout_manager.ts";
 import { TwoParamsVariableProcessor } from "../processors/two_params_variable_processor.ts";
 import { TwoParamsPromptGenerator } from "../generators/two_params_prompt_generator_ddd.ts";
 import { TwoParamsStdinProcessor } from "../processors/two_params_stdin_processor.ts";
-import { TwoParamsValidator } from "../validators/two_params_validator_ddd.ts";
 import { TwoParamsOutputProcessor } from "../processors/two_params_output_processor.ts";
+import { StdinState } from "$lib/types/stdin_types.ts";
 
 /**
  * Complete Discriminated Union Error Types for TwoParamsHandler
@@ -52,7 +52,6 @@ export type TwoParamsHandlerError =
  * This class encapsulates the orchestration logic while keeping it internal
  */
 class TwoParamsOrchestrator {
-  private readonly validator: TwoParamsValidator;
   private readonly stdinProcessor: TwoParamsStdinProcessor;
   private readonly variableProcessor: TwoParamsVariableProcessor;
   private readonly promptGenerator: TwoParamsPromptGenerator;
@@ -60,7 +59,6 @@ class TwoParamsOrchestrator {
 
   constructor(config?: Record<string, unknown>, outputProcessor?: TwoParamsOutputProcessor) {
     // Initialize all components using composition pattern
-    this.validator = new TwoParamsValidator(config);
     this.stdinProcessor = new TwoParamsStdinProcessor();
     this.variableProcessor = new TwoParamsVariableProcessor();
     this.promptGenerator = new TwoParamsPromptGenerator();
@@ -83,18 +81,29 @@ class TwoParamsOrchestrator {
         options: Object.keys(options),
       });
     }
-    // 1. Validate parameters with type safety
-    const validationResult = await this.validator.validate(params);
-    if (isDebug) {
-      console.log("[TwoParamsValidator] Returning:", JSON.stringify(validationResult, null, 2));
+    // 1. Basic parameter count validation only
+    // ParamsParser already validated the directive and layer types
+    if (!params || params.length < 2) {
+      return error({
+        kind: "InvalidParameterCount",
+        received: params?.length ?? 0,
+        expected: 2,
+      });
     }
-    if (!validationResult.ok) {
-      return error(this.mapValidationError(validationResult.error));
-    }
+    
+    // Extract directive and layer from params
+    const [directiveStr, layerStr] = params;
+    const validatedParams = {
+      directive: { value: directiveStr },
+      layer: { value: layerStr },
+      directiveType: { value: directiveStr },
+      layerType: { value: layerStr },
+      params: [directiveStr, layerStr],
+    };
 
     // 2. Read STDIN
     if (isDebug) {
-      console.log("[TwoParamsValidator → TwoParamsStdinProcessor] Passing:", {
+      console.log("[TwoParamsOrchestrator → TwoParamsStdinProcessor] Passing:", {
         config: Object.keys(config),
         options: Object.keys(options),
       });
@@ -114,16 +123,20 @@ class TwoParamsOrchestrator {
       });
     }
 
+    // Extract stdin content from StdinState for legacy compatibility
+    const stdinContent = StdinState.toLegacyString(stdinResult.data) ?? "";
+
     // 3. Process variables
     if (isDebug) {
       console.log("[TwoParamsStdinProcessor → TwoParamsVariableProcessor] Passing:", {
         options: Object.keys(options),
-        stdinData: stdinResult.data ? "(has content)" : "(empty)",
+        stdinState: stdinResult.data,
+        stdinContent: stdinContent ? "(has content)" : "(empty/not provided)",
       });
     }
     const variablesResult = this.variableProcessor.processVariables(
       options,
-      stdinResult.data,
+      stdinContent,
     );
     if (isDebug) {
       console.log(
@@ -153,14 +166,14 @@ class TwoParamsOrchestrator {
     if (isDebug) {
       console.log("[TwoParamsVariableProcessor → TwoParamsPromptGenerator] Passing:", {
         config: Object.keys(config),
-        validatedParams: validationResult.data,
+        validatedParams: validatedParams,
         options: Object.keys(options),
         processedVariables: Object.keys(variablesResult.data),
       });
     }
     const promptResult = await this.promptGenerator.generatePrompt(
       config,
-      validationResult.data,
+      validatedParams,
       options,
       variablesResult.data,
     );
@@ -195,95 +208,6 @@ class TwoParamsOrchestrator {
     return ok(undefined);
   }
 
-  /**
-   * Type guard for InvalidParameterCount error
-   */
-  private isInvalidParameterCountError(
-    error: unknown,
-  ): error is Extract<TwoParamsHandlerError, { kind: "InvalidParameterCount" }> {
-    return (
-      typeof error === "object" &&
-      error !== null &&
-      "kind" in error &&
-      error.kind === "InvalidParameterCount" &&
-      "received" in error &&
-      "expected" in error &&
-      typeof (error as { received: unknown }).received === "number" &&
-      typeof (error as { expected: unknown }).expected === "number"
-    );
-  }
-
-  /**
-   * Type guard for InvalidDirectiveType error
-   */
-  private isInvalidDirectiveTypeError(
-    error: unknown,
-  ): error is Extract<TwoParamsHandlerError, { kind: "InvalidDirectiveType" }> {
-    return (
-      typeof error === "object" &&
-      error !== null &&
-      "kind" in error &&
-      error.kind === "InvalidDirectiveType" &&
-      "value" in error &&
-      "validTypes" in error &&
-      typeof (error as { value: unknown }).value === "string" &&
-      Array.isArray((error as { validTypes: unknown }).validTypes)
-    );
-  }
-
-  /**
-   * Type guard for InvalidLayerType error
-   */
-  private isInvalidLayerTypeError(
-    error: unknown,
-  ): error is Extract<TwoParamsHandlerError, { kind: "InvalidLayerType" }> {
-    return (
-      typeof error === "object" &&
-      error !== null &&
-      "kind" in error &&
-      error.kind === "InvalidLayerType" &&
-      "value" in error &&
-      "validTypes" in error &&
-      typeof (error as { value: unknown }).value === "string" &&
-      Array.isArray((error as { validTypes: unknown }).validTypes)
-    );
-  }
-
-  /**
-   * Map validation errors to handler errors using type guards
-   */
-  private mapValidationError(error: unknown): TwoParamsHandlerError {
-    // Check for specific error types using type guards
-    if (this.isInvalidParameterCountError(error)) {
-      return {
-        kind: "InvalidParameterCount",
-        received: error.received,
-        expected: error.expected,
-      };
-    }
-
-    if (this.isInvalidDirectiveTypeError(error)) {
-      return {
-        kind: "InvalidDirectiveType",
-        value: error.value,
-        validTypes: error.validTypes,
-      };
-    }
-
-    if (this.isInvalidLayerTypeError(error)) {
-      return {
-        kind: "InvalidLayerType",
-        value: error.value,
-        validTypes: error.validTypes,
-      };
-    }
-
-    // Default case - unknown validation error
-    return {
-      kind: "FactoryValidationError",
-      errors: [String(error)],
-    };
-  }
 
   /**
    * Type guard for FactoryValidationError

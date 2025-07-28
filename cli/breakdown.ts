@@ -212,10 +212,21 @@ export async function runBreakdown(
 
   const paramsParser = new ParamsParser(undefined, customConfig);
 
+  if (isDebug) {
+    console.log("[breakdown.ts → ParamsParser] Input:", {
+      args: args,
+      customConfig: customConfig ? {
+        params: customConfig.params,
+        validation: customConfig.validation,
+        errorHandling: customConfig.errorHandling,
+      } : "undefined (using defaults)",
+    });
+  }
+
   const result = paramsParser.parse(args);
 
   if (isDebug) {
-    console.log("[breakdown.ts] ParamsParser result:", JSON.stringify(result, null, 2));
+    console.log("[ParamsParser → breakdown.ts] Output:", JSON.stringify(result, null, 2));
   }
 
   // 4. Determine zero/one/two params and branch

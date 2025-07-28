@@ -44,8 +44,6 @@ params:
       pattern: "^(to|summary|defect)$"
     layerType:
       pattern: "^(project|issue|task|bugs)$"
-workspace:
-  temp_dir: ".agent/breakdown/temp"
 production_mode: true
 logger:
   level: "warn"
@@ -124,6 +122,12 @@ Production-ready issue summary with clear action items and escalation paths.
 EOF
 
 echo "✓ Created template: prompts/summary/issue/f_issue.md"
+
+# Also create f_default.md if it doesn't exist
+if [ ! -f ".agent/breakdown/prompts/summary/issue/f_default.md" ]; then
+    cp ".agent/breakdown/prompts/summary/issue/f_issue.md" ".agent/breakdown/prompts/summary/issue/f_default.md"
+    echo "✓ Created template: prompts/summary/issue/f_default.md"
+fi
 
 # Run breakdown with production configuration
 echo ""

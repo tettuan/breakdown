@@ -14,6 +14,7 @@ import { StdinVariableFactory } from "../factory/stdin_variable_factory.ts";
 import { CustomVariableExtractor } from "./custom_variable_extractor.ts";
 import { StandardVariableResolver, type StandardVariables } from "./standard_variable_resolver.ts";
 import type { PromptVariable } from "../types/prompt_variables_vo.ts";
+import { type StdinState, isStdinState } from "../types/stdin_types.ts";
 
 /**
  * Error types for Variable Processor
@@ -197,10 +198,12 @@ export class TwoParamsVariableProcessor {
 
   /**
    * Process variables with backward compatible interface
+   * @param options - Command line options
+   * @param stdinContent - Content from stdin (use null to indicate stdin was not provided)
    */
   processVariables(
     options: Record<string, unknown>,
-    stdinContent: string,
+    stdinContent: string | null,
   ): Result<ProcessedVariables, TwoParamsVariableProcessorError[]> {
     // Validate options first
     if (!options || typeof options !== "object") {
@@ -217,7 +220,8 @@ export class TwoParamsVariableProcessor {
     }
 
     // Build standard variables
-    const standardVariables = this.buildStandardVariablesCompatible(options, stdinContent);
+    // Pass null if stdin was not provided to distinguish from empty stdin
+    const standardVariables = this.buildStandardVariablesCompatible(options, stdinContent ?? null);
 
     // Combine all variables
     const allVariables = {
@@ -296,28 +300,34 @@ export class TwoParamsVariableProcessor {
 
   /**
    * Build standard variables with backward compatible interface
+   * @param stdinContent - null means stdin was not provided, empty string means stdin was empty
    */
   private buildStandardVariablesCompatible(
     options: Record<string, unknown>,
-    stdinContent: string,
+    stdinContent: string | null,
   ): Record<string, string> {
     const standardVariables: Record<string, string> = {};
 
-    // Add stdin content - always set input_text (even if empty string)
-    // This ensures input_text is always available in standardVariables
-    standardVariables.input_text = stdinContent || "";
+    // Add stdin content - only set if stdin was actually provided
+    // Empty string means stdin was provided but empty
+    // null means stdin was not provided at all (no key in output)
+    if (stdinContent !== null) {
+      standardVariables.input_text = stdinContent;
+    }
 
     // Add input file name (from -f/--from option)
     const inputFile = options.from ?? options.fromFile;
-    standardVariables.input_text_file = inputFile !== undefined ? String(inputFile) : "stdin";
+    if (inputFile !== undefined) {
+      standardVariables.input_text_file = String(inputFile);
+    }
 
     // Add destination path (from -o/--destination option)
     const destinationPath = options.destination ??
       options.destinationFile ??
       options.output;
-    standardVariables.destination_path = destinationPath !== undefined
-      ? String(destinationPath)
-      : "stdout";
+    if (destinationPath !== undefined) {
+      standardVariables.destination_path = String(destinationPath);
+    }
 
     return standardVariables;
   }

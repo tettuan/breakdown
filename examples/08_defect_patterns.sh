@@ -25,6 +25,19 @@ BREAKDOWN="deno run --allow-read --allow-write --allow-env --allow-net ../cli/br
 OUTPUT_DIR="./output/defect_analysis"
 mkdir -p "$OUTPUT_DIR"
 
+# Create f_default.md templates if they don't exist
+echo "Ensuring f_default.md templates exist..."
+for layer in issue task; do
+    template_dir=".agent/breakdown/prompts/defect/$layer"
+    if [ -d "$template_dir" ]; then
+        if [ ! -f "$template_dir/f_default.md" ]; then
+            if [ -f "$template_dir/f_$layer.md" ]; then
+                cp "$template_dir/f_$layer.md" "$template_dir/f_default.md"
+            fi
+        fi
+    fi
+done
+
 # Example 1: Defect Issue from bug report
 echo "=== Example 1: Defect Issue Analysis ==="
 cat > "$OUTPUT_DIR/bug_report.md" << 'EOF'

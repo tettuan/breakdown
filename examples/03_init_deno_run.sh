@@ -42,9 +42,6 @@ params:
       pattern: "^(to|summary|defect|find)$"
     layerType:
       pattern: "^(project|issue|task|bugs)$"
-workspace:
-  working_dir: "."
-  temp_dir: "temp"
 EOF
   echo "✅ Successfully created directory structure and default-app.yml"
 
@@ -821,9 +818,6 @@ params:
       pattern: "^(to|summary|defect|find)$"
     layerType:
       pattern: "^(project|issue|task|bugs)$"
-workspace:
-  working_dir: "."
-  temp_dir: "temp"
 EOF
 echo "✅ Created default-app.yml with find bugs support"
 
@@ -842,9 +836,6 @@ params:
       pattern: "^(to|summary|defect|find)$"
     layerType:
       pattern: "^(project|issue|task|bugs)$"
-workspace:
-  working_dir: "."
-  temp_dir: "temp"
 EOF
   echo "✅ Created findbugs-app.yml"
 fi
@@ -864,9 +855,6 @@ params:
       pattern: "^(to|summary|defect|find)$"
     layerType:
       pattern: "^(project|issue|task|bugs)$"
-workspace:
-  working_dir: "."
-  temp_dir: "temp"
 EOF
   echo "✅ Created stdin-app.yml"
 fi
@@ -895,9 +883,6 @@ params:
       pattern: "^(to|summary|defect|find)$"
     layerType:
       pattern: "^(project|issue|task|bugs)$"
-workspace:
-  working_dir: "."
-  temp_dir: "temp"
 timeout_seconds: 30
 EOF
   echo "✅ Created timeout-app.yml"
@@ -927,9 +912,6 @@ params:
       pattern: "^(to|summary|defect|find)$"
     layerType:
       pattern: "^(project|issue|task|bugs)$"
-workspace:
-  working_dir: "."
-  temp_dir: "temp"
 basic_mode: true
 EOF
   echo "✅ Created basic-app.yml"
@@ -962,9 +944,6 @@ params:
       pattern: "^(to|summary|defect|find)$"
     layerType:
       pattern: "^(project|issue|task|bugs)$"
-workspace:
-  working_dir: "."
-  temp_dir: "temp"
 logger:
   level: "debug"
   format: "text"
@@ -1015,9 +994,6 @@ params:
       pattern: "^(to|summary|defect|find)$"
     layerType:
       pattern: "^(project|issue|task|bugs)$"
-workspace:
-  working_dir: "."
-  temp_dir: "temp"
 production_mode: true
 bug_detection: true
 EOF
@@ -1049,9 +1025,6 @@ params:
       pattern: "^(to|summary|defect|find)$"
     layerType:
       pattern: "^(project|issue|task|bugs)$"
-workspace:
-  working_dir: "."
-  temp_dir: "temp"
 production_mode: true
 custom_config: true
 advanced_features: true
@@ -1087,9 +1060,6 @@ params:
       pattern: "^(to|summary|defect|find)$"
     layerType:
       pattern: "^(project|issue|task|bugs)$"
-workspace:
-  working_dir: "."
-  temp_dir: "temp"
 production_mode: true
 logger:
   level: "warn"
@@ -1143,9 +1113,6 @@ params:
       pattern: "^(to|summary|defect|find)$"
     layerType:
       pattern: "^(project|issue|task|bugs)$"
-workspace:
-  working_dir: "."
-  temp_dir: "temp"
 logger:
   level: "debug"
   format: "text"
@@ -1182,9 +1149,6 @@ params:
       pattern: "^(to|summary|defect|find)$"
     layerType:
       pattern: "^(project|issue|task|bugs)$"
-workspace:
-  working_dir: "."
-  temp_dir: "temp"
 logger:
   level: "info"
   format: "json"
@@ -1223,9 +1187,6 @@ params:
       pattern: "^(to|summary|defect|find)$"
     layerType:
       pattern: "^(project|issue|task|bugs)$"
-workspace:
-  working_dir: "."
-  temp_dir: "temp"
 logger:
   level: "error"
   format: "json"
@@ -1254,6 +1215,32 @@ environment: "production"
 EOF
   echo "✅ Created prod-user.yml"
 fi
+
+echo "=== Creating f_default.md templates for all directories ==="
+# Create f_default.md for each directive/layer combination
+for directive in to summary defect find; do
+    for layer in project issue task bugs; do
+        template_dir=".agent/breakdown/prompts/$directive/$layer"
+        if [ -d "$template_dir" ]; then
+            if [ ! -f "$template_dir/f_default.md" ]; then
+                # Find the most appropriate template to copy
+                if [ -f "$template_dir/f_$layer.md" ]; then
+                    cp "$template_dir/f_$layer.md" "$template_dir/f_default.md"
+                    echo "✅ Created $template_dir/f_default.md from f_$layer.md"
+                elif [ -f "$template_dir/f_project.md" ]; then
+                    cp "$template_dir/f_project.md" "$template_dir/f_default.md"
+                    echo "✅ Created $template_dir/f_default.md from f_project.md"
+                elif [ -f "$template_dir/f_issue.md" ]; then
+                    cp "$template_dir/f_issue.md" "$template_dir/f_default.md"
+                    echo "✅ Created $template_dir/f_default.md from f_issue.md"
+                elif [ -f "$template_dir/f_task.md" ]; then
+                    cp "$template_dir/f_task.md" "$template_dir/f_default.md"
+                    echo "✅ Created $template_dir/f_default.md from f_task.md"
+                fi
+            fi
+        fi
+    done
+done
 
 echo "=== Post-initialization Template Validation ==="
 # Validate that all required templates exist

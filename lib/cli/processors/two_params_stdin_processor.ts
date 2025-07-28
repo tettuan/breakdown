@@ -19,6 +19,12 @@ import {
 import { resolve } from "@std/path";
 
 /**
+ * Sentinel value to indicate stdin was not provided
+ * This follows the totality principle by making the absence explicit
+ */
+export const NO_STDIN_PROVIDED = Symbol("NO_STDIN_PROVIDED");
+
+/**
  * Input processing error types
  * Following Worker7's Discriminated Union pattern
  */
@@ -69,33 +75,16 @@ export class TwoParamsStdinProcessor {
       return false;
     }
 
-    // Check explicit stdin flags
-    if (options.from === "-" || options.fromFile === "-") {
-      return true;
-    }
-
-    // If from/fromFile is explicitly set to something other than "-", don't read stdin
-    if (options.from !== undefined && options.from !== "-") {
-      return false;
-    }
-    if (options.fromFile !== undefined && options.fromFile !== "-") {
-      return false;
-    }
-
-    // Default behavior: read stdin if no file input is specified
+    // Default behavior: always read stdin (--from is only for path reference)
     return true;
   }
 
   /**
    * Get file path from options if specified
+   * NOTE: This method is no longer used as --from doesn't read files
+   * @deprecated
    */
   private getFilePath(options: Record<string, unknown>): string | null {
-    if (options.from && options.from !== "-" && typeof options.from === "string") {
-      return options.from;
-    }
-    if (options.fromFile && options.fromFile !== "-" && typeof options.fromFile === "string") {
-      return options.fromFile;
-    }
     return null;
   }
 
@@ -127,7 +116,8 @@ export class TwoParamsStdinProcessor {
   }
 
   /**
-   * Process input (STDIN or file) using enhanced stdin implementation
+   * Process input (STDIN only) using enhanced stdin implementation
+   * Note: --from option doesn't read file content, it only sets input_text_file path
    *
    * @param config - Configuration for timeout management
    * @param options - Command line options
@@ -138,14 +128,7 @@ export class TwoParamsStdinProcessor {
     options: Record<string, unknown>,
   ): Promise<Result<string, InputProcessorError>> {
     try {
-      // First, check if a file path is specified
-      const filePath = this.getFilePath(options);
-
-      if (filePath) {
-        return await this.readFile(filePath);
-      }
-
-      // If no file path, check if we should read stdin
+      // Always check if we should read stdin
       if (!this.shouldReadStdin(options)) {
         return ok(""); // No input to read
       }
@@ -154,8 +137,7 @@ export class TwoParamsStdinProcessor {
       const timeoutManager = createTimeoutManagerFromConfig(config);
 
       // Use enhanced stdin with environment-aware configuration
-      // Force read when --from - is explicitly specified
-      const forceRead = options.from === "-" || options.fromFile === "-";
+      const forceRead = false;
 
       // Extract StdinReader from options if provided
       const stdinReader = (options.stdinReader && typeof options.stdinReader === "object" &&
@@ -198,10 +180,22 @@ export class TwoParamsStdinProcessor {
         errorMessage.includes("test environment") ||
         errorMessage.includes("BREAKDOWN_SKIP_STDIN") ||
         errorMessage.includes("CI terminal environment") ||
-        errorMessage.includes("Stdin not available")
+        errorMessage.includes("Stdin not available") ||
+        errorMessage.includes("No stdin data available")
       ) {
-        // Return empty string for environment-based skip scenarios
-        return ok("");
+        // Return appropriate StdinState based on the error reason
+        if (errorMessage.includes("test environment")) {
+          return ok(StdinState.skipped("test_environment", errorMessage));
+        } else if (errorMessage.includes("CI terminal environment")) {
+          return ok(StdinState.skipped("ci_environment", errorMessage));
+        } else if (errorMessage.includes("BREAKDOWN_SKIP_STDIN")) {
+          return ok(StdinState.skipped("env_variable", errorMessage));
+        } else if (errorMessage.includes("No stdin data available")) {
+          return ok(StdinState.notProvided("terminal_input"));
+        } else {
+          // For other skip scenarios, return not_provided
+          return ok(StdinState.notProvided("no_pipe"));
+        }
       }
 
       return error({

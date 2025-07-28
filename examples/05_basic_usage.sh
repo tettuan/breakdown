@@ -33,6 +33,28 @@ export BREAKDOWN_TIMEOUT=60000
 echo "Checking template availability..."
 # Templates were already set up by 03_init_deno_run.sh
 
+# Create f_default.md templates if they don't exist
+echo "Ensuring f_default.md templates exist..."
+for directive in to summary defect find; do
+    for layer in project issue task bugs; do
+        template_dir=".agent/breakdown/prompts/$directive/$layer"
+        if [ -d "$template_dir" ]; then
+            if [ ! -f "$template_dir/f_default.md" ]; then
+                # Find the most appropriate template to copy
+                if [ -f "$template_dir/f_$layer.md" ]; then
+                    cp "$template_dir/f_$layer.md" "$template_dir/f_default.md"
+                elif [ -f "$template_dir/f_project.md" ]; then
+                    cp "$template_dir/f_project.md" "$template_dir/f_default.md"
+                elif [ -f "$template_dir/f_issue.md" ]; then
+                    cp "$template_dir/f_issue.md" "$template_dir/f_default.md"
+                elif [ -f "$template_dir/f_task.md" ]; then
+                    cp "$template_dir/f_task.md" "$template_dir/f_default.md"
+                fi
+            fi
+        fi
+    done
+done
+
 # Use deno run for breakdown command
 # Define as function to avoid quote issues
 BREAKDOWN() {

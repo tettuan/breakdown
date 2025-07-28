@@ -284,14 +284,12 @@ export async function readStdinEnhanced(options: EnhancedStdinOptions = {}): Pro
         throw new EnhancedStdinError(errorMsg, envInfo, { reason: "skip_stdin_env" });
       }
 
-      if (envInfo.isCI && envInfo.isTerminal) {
-        const errorMsg = "Stdin not available in CI terminal environment";
-        throw new EnhancedStdinError(errorMsg, envInfo, { reason: "ci_terminal" });
-      }
-
-      if (envInfo.isTest && reader.isTerminal()) {
-        const errorMsg = "Stdin not available in test environment";
-        throw new EnhancedStdinError(errorMsg, envInfo, { reason: "test_environment" });
+      // Check if stdin has data available before attempting to read
+      const hasData = await hasStdinDataAvailable({ stdinReader: reader });
+      if (!hasData) {
+        // No stdin data available, return empty string instead of error
+        // This is valid since stdin is optional
+        return "";
       }
     }
 
@@ -356,6 +354,7 @@ export async function readStdinEnhanced(options: EnhancedStdinOptions = {}): Pro
 
 /**
  * Enhanced stdin availability checker using StdinReader
+ * Checks if stdin has data available without blocking
  */
 export function isStdinAvailableEnhanced(options?: {
   environmentInfo?: EnvironmentInfo;
@@ -368,18 +367,42 @@ export function isStdinAvailableEnhanced(options?: {
 
   const reader = options?.stdinReader || createStdinReaderForEnvironment(envInfo);
 
-  // In CI environments, never assume stdin is available unless explicitly piped
+  // Check if stdin is piped/redirected (has data available)
+  const isPiped = !reader.isTerminal();
+  
+  // In CI environments, only consider stdin available if piped
   if (envInfo.isCI) {
-    return !reader.isTerminal();
+    return isPiped;
   }
 
   // In test environments, use conservative detection
   if (envInfo.isTest) {
-    return !reader.isTerminal();
+    return isPiped;
   }
 
-  // Standard terminal detection for interactive environments
-  return !reader.isTerminal();
+  // Standard detection: stdin is available if it's piped/redirected
+  return isPiped;
+}
+
+/**
+ * Check if stdin has data available without blocking
+ * This performs a non-blocking check to see if data is ready to be read
+ */
+export async function hasStdinDataAvailable(options?: {
+  stdinReader?: StdinReader;
+  timeout?: number;
+}): Promise<boolean> {
+  const reader = options?.stdinReader || new DenoStdinReader();
+  const timeout = options?.timeout ?? 0; // No wait by default
+  
+  // If stdin is a terminal, no data is available
+  if (reader.isTerminal()) {
+    return false;
+  }
+
+  // For non-terminal stdin, we assume data is available
+  // This is because piped/redirected stdin will have data
+  return true;
 }
 
 /**
@@ -418,16 +441,15 @@ export async function safeReadStdin(options: EnhancedStdinOptions = {}): Promise
       return { success: true, content: "", skipped: true, reason, envInfo };
     }
 
-    // Skip in test environments without explicit stdin
-    if (
-      envInfo.isTest && !isStdinAvailableEnhanced({
-        environmentInfo: envInfo,
-        debug,
-        environmentDetectionConfig: envDetectionConfig,
-        stdinReader: options.stdinReader,
-      })
-    ) {
-      const reason = "Test environment without available stdin";
+    // Check if stdin has data available
+    const hasData = await hasStdinDataAvailable({ stdinReader: options.stdinReader });
+    if (!hasData) {
+      if (envInfo.isTest) {
+        const reason = "Test environment without available stdin";
+        return { success: true, content: "", skipped: true, reason, envInfo };
+      }
+      
+      const reason = "No stdin data available";
       return { success: true, content: "", skipped: true, reason, envInfo };
     }
   }

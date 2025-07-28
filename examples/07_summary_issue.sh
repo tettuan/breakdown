@@ -80,6 +80,12 @@ Create organized issues with clear titles, descriptions, and acceptance criteria
 EOF
 
 echo "✓ Created template: prompts/summary/issue/f_task.md"
+
+# Also create f_default.md if it doesn't exist
+if [ ! -f ".agent/breakdown/prompts/summary/issue/f_default.md" ]; then
+    cp ".agent/breakdown/prompts/summary/issue/f_task.md" ".agent/breakdown/prompts/summary/issue/f_default.md"
+    echo "✓ Created template: prompts/summary/issue/f_default.md"
+fi
 echo
 
 # Run summary issue command
