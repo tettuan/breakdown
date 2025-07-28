@@ -83,6 +83,7 @@ done
 echo
 echo "【2. 渡すパラメータ】"
 echo "コマンドライン引数:"
+echo "  --input=project (テンプレート選択用)"
 echo "  --uv-company_name='テックコーポレーション'"
 echo "  --uv-project_name='ECサイトリニューアル'"
 echo "  --uv-tech_stack='Next.js, TypeScript, Prisma'"
@@ -95,6 +96,7 @@ echo "【3. 実行コマンド】"
 
 $BREAKDOWN to project \
   --from="$OUTPUT_DIR/project_brief.md" \
+  --input=project \
   --uv-company_name="テックコーポレーション" \
   --uv-project_name="ECサイトリニューアル" \
   --uv-tech_stack="Next.js, TypeScript, Prisma" \
@@ -194,6 +196,7 @@ done
 
 echo
 echo "【2. 渡すパラメータ】"
+echo "  --input=task (テンプレート選択用)"
 echo "  --adaptation='agile'"
 echo "  --uv-sprint_length='2週間'"
 echo "  --uv-story_point_scale='フィボナッチ数列'"
@@ -203,6 +206,7 @@ echo "【3. 実行コマンド】"
 
 $BREAKDOWN summary task \
   --from="$OUTPUT_DIR/feature_request.md" \
+  --input=task \
   --adaptation="agile" \
   --uv-sprint_length="2週間" \
   --uv-story_point_scale="フィボナッチ数列" \

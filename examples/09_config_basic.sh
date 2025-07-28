@@ -60,7 +60,7 @@ fi
 # Check if default-user.yml exists
 if [ ! -f "${CONFIG_DIR}/default-user.yml" ]; then
     echo "Creating user configuration..."
-    if ! bash 03_create_user_config.sh; then
+    if ! bash 03_init_deno_run.sh; then
         echo "Error: Failed to create user configuration"
         exit 1
     fi
@@ -130,13 +130,13 @@ echo "Searching for template files in project root..."
 find .. -name "f_issue.md" -type f 2>/dev/null | head -5 || echo "No f_issue.md files found"
 find .. -name "f_project.md" -type f 2>/dev/null | head -5 || echo "No f_project.md files found"
 
-# Templates are already created by 02_init_deno_run.sh in .agent/climpt/prompts/
+# Templates are already created by 03_init_deno_run.sh in .agent/climpt/prompts/
 echo ""
 echo "🔍 DEBUG: Checking existing templates"
 if [ -f ".agent/climpt/prompts/summary/issue/f_issue.md" ]; then
     echo "✓ Templates already exist in .agent/climpt/prompts/"
 else
-    echo "⚠️ Templates not found. Please run 02_init_deno_run.sh first"
+    echo "⚠️ Templates not found. Please run 03_init_deno_run.sh first"
 fi
 
 # Create a basic configuration file (only if it doesn't exist)

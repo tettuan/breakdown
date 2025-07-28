@@ -50,7 +50,7 @@ fi
 # Check if default-user.yml exists
 if [ ! -f "${CONFIG_DIR}/default-user.yml" ]; then
     echo "Creating user configuration..."
-    if ! bash 03_create_user_config.sh; then
+    if ! bash 03_init_deno_run.sh; then
         echo "Error: Failed to create user configuration"
         exit 1
     fi
@@ -80,7 +80,7 @@ if [ ${#MISSING_TEMPLATES[@]} -gt 0 ]; then
         echo "  - $missing"
     done
     echo ""
-    echo "Please run './02_init_deno_run.sh' first to create template files."
+    echo "Please run './03_init_deno_run.sh' first to create template files."
     exit 1
 fi
 
@@ -136,7 +136,7 @@ echo "✓ Created template: prompts/summary/project/f_project.md"
 # Check if stdin configuration files exist, if not create them
 if [ ! -f "${CONFIG_DIR}/stdin-app.yml" ] || [ ! -f "${CONFIG_DIR}/stdin-user.yml" ]; then
     echo "Error: STDIN configuration files not found."
-    echo "Please run './02_init_deno_run.sh' first to create all required configuration files."
+    echo "Please run './03_init_deno_run.sh' first to create all required configuration files."
     exit 1
 fi
 
