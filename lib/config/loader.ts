@@ -430,8 +430,7 @@ export class ConfigLoader {
       // Phase 2: BreakdownConfig Package Import
       let BreakdownConfig: { create: (profile: string) => Promise<unknown> };
       try {
-        const importPath = "jsr:@tettuan/breakdownconfig@^1.1.4";
-        const importResult = await import(importPath);
+        const importResult = await import("jsr:@tettuan/breakdownconfig@^1.1.4");
         BreakdownConfig = importResult.BreakdownConfig;
 
         if (!BreakdownConfig || typeof BreakdownConfig.create !== "function") {
@@ -439,7 +438,7 @@ export class ConfigLoader {
             kind: "ImportError",
             message: "BreakdownConfig class or create method not found in imported module",
             cause: "Invalid BreakdownConfig API structure",
-            importPath,
+            importPath: "jsr:@tettuan/breakdownconfig@^1.1.4",
           });
         }
       } catch (importError) {
