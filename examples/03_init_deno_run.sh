@@ -861,7 +861,7 @@ fi
 
 if [ ! -f ".agent/climpt/config/stdin-user.yml" ]; then
   cat > .agent/climpt/config/stdin-user.yml << 'EOF'
-working_dir: "."
+working_dir: ".agent/climpt"
 username: "stdin-user"
 project_name: "stdin-project"
 EOF
@@ -890,7 +890,7 @@ fi
 
 if [ ! -f ".agent/climpt/config/timeout-user.yml" ]; then
   cat > .agent/climpt/config/timeout-user.yml << 'EOF'
-working_dir: "."
+working_dir: ".agent/climpt"
 username: "timeout-user"
 project_name: "timeout-project"
 EOF
@@ -919,7 +919,7 @@ fi
 
 if [ ! -f ".agent/climpt/config/basic-user.yml" ]; then
   cat > .agent/climpt/config/basic-user.yml << 'EOF'
-working_dir: "."
+working_dir: ".agent/climpt"
 username: "basic-user"
 project_name: "basic-project"
 EOF
@@ -971,7 +971,7 @@ fi
 
 if [ ! -f ".agent/climpt/config/team-user.yml" ]; then
   cat > .agent/climpt/config/team-user.yml << 'EOF'
-working_dir: "."
+working_dir: ".agent/climpt"
 username: "team-user"
 project_name: "team-project"
 team_name: "development-team"
@@ -1002,7 +1002,7 @@ fi
 
 if [ ! -f ".agent/climpt/config/production-bugs-user.yml" ]; then
   cat > .agent/climpt/config/production-bugs-user.yml << 'EOF'
-working_dir: "."
+working_dir: ".agent/climpt"
 username: "production-bugs-user"
 project_name: "production-bugs-project"
 environment: "production"
@@ -1034,7 +1034,7 @@ fi
 
 if [ ! -f ".agent/climpt/config/production-custom-user.yml" ]; then
   cat > .agent/climpt/config/production-custom-user.yml << 'EOF'
-working_dir: "."
+working_dir: ".agent/climpt"
 username: "production-custom-user"
 project_name: "production-custom-project"
 environment: "production"
@@ -1090,7 +1090,7 @@ fi
 # Create missing production-user.yml (to complete production profile)
 if [ ! -f ".agent/climpt/config/production-user.yml" ]; then
   cat > .agent/climpt/config/production-user.yml << 'EOF'
-working_dir: "."
+working_dir: ".agent/climpt"
 username: "production-user"
 project_name: "production-project"
 environment: "production"
@@ -1127,7 +1127,7 @@ fi
 
 if [ ! -f ".agent/climpt/config/dev-user.yml" ]; then
   cat > .agent/climpt/config/dev-user.yml << 'EOF'
-working_dir: "."
+working_dir: ".agent/climpt"
 username: "dev-user"
 project_name: "dev-project"
 environment: "development"
@@ -1165,7 +1165,7 @@ fi
 
 if [ ! -f ".agent/climpt/config/staging-user.yml" ]; then
   cat > .agent/climpt/config/staging-user.yml << 'EOF'
-working_dir: "."
+working_dir: ".agent/climpt"
 username: "staging-user"
 project_name: "staging-project"
 environment: "staging"
@@ -1208,7 +1208,7 @@ fi
 
 if [ ! -f ".agent/climpt/config/prod-user.yml" ]; then
   cat > .agent/climpt/config/prod-user.yml << 'EOF'
-working_dir: "."
+working_dir: ".agent/climpt"
 username: "prod-user"
 project_name: "prod-project"
 environment: "production"
