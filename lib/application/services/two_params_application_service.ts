@@ -385,8 +385,16 @@ export class TwoParamsApplicationService {
    */
   private formatPromptError(promptError: PromptError): string {
     switch (promptError.kind) {
-      case "TemplateNotFound":
-        return `Template not found: ${promptError.path}`;
+      case "TemplateNotFound": {
+        let message = `Template not found: ${promptError.path}`;
+        if (promptError.workingDir) {
+          message += ` (working_dir: ${promptError.workingDir})`;
+        }
+        if (promptError.attemptedPaths && promptError.attemptedPaths.length > 0) {
+          message += `\nAttempted paths: ${promptError.attemptedPaths.join(", ")}`;
+        }
+        return message;
+      }
       case "InvalidVariables":
         return `Invalid variables: ${promptError.details.join(", ")}`;
       case "SchemaError":

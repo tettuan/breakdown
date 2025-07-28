@@ -92,8 +92,16 @@ export class PromptAdapterImpl {
    */
   private formatPromptError(error: PromptError): string {
     switch (error.kind) {
-      case "TemplateNotFound":
-        return `[TemplateNotFound] Template not found: ${error.path}`;
+      case "TemplateNotFound": {
+        let message = `[TemplateNotFound] Template not found: ${error.path}`;
+        if (error.workingDir) {
+          message += ` (working_dir: ${error.workingDir})`;
+        }
+        if (error.attemptedPaths && error.attemptedPaths.length > 0) {
+          message += `\nAttempted paths: ${error.attemptedPaths.join(", ")}`;
+        }
+        return message;
+      }
       case "InvalidPath":
         return `[InvalidPath] ${error.message}`;
       case "ConfigurationError":

@@ -18,6 +18,7 @@
 import type { Result } from "$lib/types/result.ts";
 import { error, ok } from "$lib/types/result.ts";
 import { PromptVariablesFactory } from "$lib/factory/prompt_variables_factory.ts";
+import { PromptTemplatePathResolverTotality } from "$lib/factory/prompt_template_path_resolver_totality.ts";
 // ValidatedParams type is now defined inline since validator was removed
 type ValidatedParams = {
   directive: { value: string };
@@ -243,6 +244,8 @@ export class TwoParamsPromptGenerator {
     const promptResult = await this.generatePromptContent(
       factoryResult.data,
       variablesResult.data,
+      contextResult.data,
+      config,
     );
     if (isDebug) {
       console.log(
@@ -584,53 +587,145 @@ export class TwoParamsPromptGenerator {
 
   /**
    * Generate prompt content with complete error handling
+   * Uses PromptTemplatePathResolverTotality for consistent path resolution
    */
   private async generatePromptContent(
     factory: PromptVariablesFactory,
     variables: Record<string, string>,
+    context?: GenerationContext,
+    config?: Record<string, unknown>,
   ): Promise<Result<PromptResult, PromptGeneratorError>> {
     try {
-      const allParams = factory.getAllParams();
-      const promptFilePath = allParams.promptFilePath;
+      // Use PromptTemplatePathResolverTotality if context and config are available
+      if (context && config) {
+        // Create CLI params from context
+        const cliParams = {
+          layerType: context.params.layer?.value || "",
+          directiveType: context.params.directive?.value || "",
+          options: context.options || {},
+        };
+        
+        // Use PromptTemplatePathResolverTotality for consistent path resolution
+        const resolverResult = PromptTemplatePathResolverTotality.create(config, cliParams);
+        if (!resolverResult.ok) {
+          return error({
+            kind: "PromptPathError",
+            path: "Failed to create path resolver",
+            error: `Path resolver creation failed: ${resolverResult.error.kind}`,
+          });
+        }
+        
+        const resolver = resolverResult.data;
+        const pathResult = resolver.getPath();
+        if (!pathResult.ok) {
+          // Extract attempted paths from TemplateNotFound error for better error message
+          let errorMessage = `Template path resolution failed: ${pathResult.error.kind}`;
+          let attemptedPath = "Unknown path";
+          
+          if (pathResult.error.kind === "TemplateNotFound" && "attempted" in pathResult.error) {
+            const templateNotFoundError = pathResult.error as { attempted: string[]; fallback?: string };
+            if (templateNotFoundError.attempted && templateNotFoundError.attempted.length > 0) {
+              attemptedPath = templateNotFoundError.attempted[0];
+              errorMessage = `Template not found: ${attemptedPath}`;
+              if (templateNotFoundError.attempted.length > 1) {
+                errorMessage += `\nAttempted paths: ${templateNotFoundError.attempted.join(", ")}`;
+              }
+              if (templateNotFoundError.fallback) {
+                errorMessage += `\nFallback: ${templateNotFoundError.fallback}`;
+              }
+            }
+          }
+          
+          return error({
+            kind: "PromptPathError", 
+            path: attemptedPath,
+            error: errorMessage,
+          });
+        }
+        
+        const templatePath = pathResult.data;
+        const promptFilePath = templatePath.value;
 
-      // Create PromptPath
-      const pathResult = PromptPath.create(promptFilePath);
-      if (!pathResult.ok) {
-        return error({
-          kind: "PromptPathError",
-          path: promptFilePath,
-          error: pathResult.error.message,
-        });
+        // Create PromptPath
+        const promptPathResult = PromptPath.create(promptFilePath);
+        if (!promptPathResult.ok) {
+          return error({
+            kind: "PromptPathError",
+            path: promptFilePath,
+            error: promptPathResult.error.message,
+          });
+        }
+
+        // Generate prompt using PromptTemplatePathResolverTotality result
+        const promptVariables = this.createPromptVariables(variables);
+        const result = await this.adapter.generatePrompt(
+          promptPathResult.data,
+          promptVariables,
+        );
+
+        if (!result.ok) {
+          return error({
+            kind: "PromptGenerationError",
+            error: this.formatPromptError(result.error),
+            details: result.error,
+          });
+        }
+
+        // Create result with metadata
+        const promptResult: PromptResult = {
+          content: result.data.content,
+          metadata: {
+            path: promptFilePath,
+            variables,
+            timestamp: new Date().toISOString(),
+          },
+        };
+
+        return ok(promptResult);
+      } else {
+        // Fallback to original factory-based logic
+        const allParams = factory.getAllParams();
+        const promptFilePath = allParams.promptFilePath;
+
+        // Create PromptPath
+        const pathResult = PromptPath.create(promptFilePath);
+        if (!pathResult.ok) {
+          return error({
+            kind: "PromptPathError",
+            path: promptFilePath,
+            error: pathResult.error.message,
+          });
+        }
+
+        // Create PromptVariables
+        const promptVariables = this.createPromptVariables(variables);
+
+        // Generate prompt using adapter
+        const result = await this.adapter.generatePrompt(
+          pathResult.data,
+          promptVariables,
+        );
+
+        if (!result.ok) {
+          return error({
+            kind: "PromptGenerationError",
+            error: this.formatPromptError(result.error),
+            details: result.error,
+          });
+        }
+
+        // Create result with metadata
+        const promptResult: PromptResult = {
+          content: result.data.content,
+          metadata: {
+            path: promptFilePath,
+            variables,
+            timestamp: new Date().toISOString(),
+          },
+        };
+
+        return ok(promptResult);
       }
-
-      // Create PromptVariables
-      const promptVariables = this.createPromptVariables(variables);
-
-      // Generate prompt using adapter
-      const result = await this.adapter.generatePrompt(
-        pathResult.data,
-        promptVariables,
-      );
-
-      if (!result.ok) {
-        return error({
-          kind: "PromptGenerationError",
-          error: this.formatPromptError(result.error),
-          details: result.error,
-        });
-      }
-
-      // Create result with metadata
-      const promptResult: PromptResult = {
-        content: result.data.content,
-        metadata: {
-          path: promptFilePath,
-          variables,
-          timestamp: new Date().toISOString(),
-        },
-      };
-
-      return ok(promptResult);
     } catch (err) {
       return error({
         kind: "PromptGenerationError",
@@ -656,8 +751,16 @@ export class TwoParamsPromptGenerator {
    */
   private formatPromptError(error: PromptError): string {
     switch (error.kind) {
-      case "TemplateNotFound":
-        return `Template not found: ${error.path}`;
+      case "TemplateNotFound": {
+        let message = `Template not found: ${error.path}`;
+        if (error.workingDir) {
+          message += ` (working_dir: ${error.workingDir})`;
+        }
+        if (error.attemptedPaths && error.attemptedPaths.length > 0) {
+          message += `\nAttempted paths: ${error.attemptedPaths.join(", ")}`;
+        }
+        return message;
+      }
       case "InvalidVariables":
         return `Invalid variables: ${error.details.join(", ")}`;
       case "SchemaError":

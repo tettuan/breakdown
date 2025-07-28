@@ -128,6 +128,8 @@ export type PromptError =
   | {
     kind: "TemplateNotFound";
     path: string;
+    workingDir?: string;
+    attemptedPaths?: string[];
   }
   | {
     kind: "InvalidVariables";
@@ -175,8 +177,16 @@ export function isInvalidVariablesError(
  */
 export function formatPromptError(error: PromptError): string {
   switch (error.kind) {
-    case "TemplateNotFound":
-      return `${error.kind}: Template not found: ${error.path}`;
+    case "TemplateNotFound": {
+      let message = `${error.kind}: Template not found: ${error.path}`;
+      if (error.workingDir) {
+        message += ` (working_dir: ${error.workingDir})`;
+      }
+      if (error.attemptedPaths && error.attemptedPaths.length > 0) {
+        message += `\nAttempted paths: ${error.attemptedPaths.join(", ")}`;
+      }
+      return message;
+    }
     case "InvalidVariables":
       return `${error.kind}: Invalid variables: ${error.details.join(", ")}`;
     case "SchemaError":

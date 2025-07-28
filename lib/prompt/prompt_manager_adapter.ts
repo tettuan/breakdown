@@ -133,6 +133,7 @@ export class PromptManagerAdapter {
             return resultError({
               kind: "TemplateNotFound",
               path: responseObj.templatePath || templatePath,
+              workingDir: Deno.cwd(),
             });
           }
 
@@ -258,6 +259,7 @@ export class PromptManagerAdapter {
         return resultError({
           kind: "TemplateNotFound",
           path: templatePath,
+          workingDir: Deno.cwd(),
         });
       }
     } catch (error) {
@@ -452,6 +454,7 @@ export class PromptManagerAdapter {
         return resultError({
           kind: "TemplateNotFound",
           path: templatePath,
+          workingDir: Deno.cwd(),
         });
       }
 

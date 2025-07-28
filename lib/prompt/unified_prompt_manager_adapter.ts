@@ -141,6 +141,7 @@ export class PromptManagerAdapter {
         return resultError({
           kind: "TemplateNotFound",
           path: templatePath,
+          workingDir: Deno.cwd(),
         });
       }
 

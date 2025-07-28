@@ -39,6 +39,19 @@ export class PromptGenerationServiceImpl implements PromptGenerationService {
     context: PromptGenerationContext,
     validationContext: PromptValidationContext,
   ): Result<void, PromptError> {
+    // Debug logging to understand what we're receiving
+    const isDebug = Deno.env.get("LOG_LEVEL") === "debug";
+    if (isDebug) {
+      console.log("[PromptGenerationServiceImpl] validateContext received:", {
+        promptFilePath: context.promptFilePath,
+        promptFilePathType: typeof context.promptFilePath,
+        promptFilePathLength: context.promptFilePath?.length,
+        cwdForComparison: Deno.cwd(),
+        hasValidBaseDir: validationContext.hasValidBaseDir,
+        baseDirError: validationContext.baseDirError,
+      });
+    }
+
     // Check base directory
     if (!validationContext.hasValidBaseDir) {
       return resultError({
@@ -49,9 +62,17 @@ export class PromptGenerationServiceImpl implements PromptGenerationService {
 
     // Validate prompt file exists
     if (!existsSync(context.promptFilePath)) {
+      if (isDebug) {
+        console.log("[PromptGenerationServiceImpl] File not found:", {
+          promptFilePath: context.promptFilePath,
+          cwd: Deno.cwd(),
+          fileExists: false,
+        });
+      }
       return resultError({
         kind: "TemplateNotFound",
         path: context.promptFilePath,
+        workingDir: Deno.cwd(),
       });
     }
 
@@ -83,6 +104,7 @@ export class PromptGenerationServiceImpl implements PromptGenerationService {
         return resultError({
           kind: "TemplateNotFound",
           path: context.promptFilePath,
+          workingDir: Deno.cwd(),
         });
       }
 
