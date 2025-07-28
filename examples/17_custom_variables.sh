@@ -23,7 +23,7 @@ echo "   - 109行目: fromFile パラメータの説明"
 echo
 echo "🎯 期待される動作:"
 echo "   1. --uv-* オプションでカスタム変数を定義"
-echo "   2. テンプレート内で {{uv-variable_name}} 形式で参照"
+echo "   2. テンプレート内で {uv-variable_name} 形式で参照"
 echo "   3. プロンプト生成時に実際の値に置換"
 echo "   4. 標準変数 (input_text, destination_path等) と組み合わせ可能"
 echo
@@ -47,15 +47,15 @@ cat > "$TEMPLATE_DIR/f_project.md" << 'EOF'
 # Project Template
 
 ## Project Information
-- Company: {{uv-company_name}}
-- Project Name: {{uv-project_name}}
-- Tech Stack: {{uv-tech_stack}}
-- Team Size: {{uv-team_size}}
-- Deadline: {{uv-deadline}}
-- Budget: {{uv-budget}}
+- Company: {uv-company_name}
+- Project Name: {uv-project_name}
+- Tech Stack: {uv-tech_stack}
+- Team Size: {uv-team_size}
+- Deadline: {uv-deadline}
+- Budget: {uv-budget}
 
 ## Input Content
-{{input_text}}
+{input_text}
 
 ## Generated Project Plan
 Based on the above information, here is the project breakdown...
@@ -76,7 +76,7 @@ EOF
 echo
 echo "【1. テンプレート変数】"
 echo "テンプレート内の変数:"
-grep -o '{{[^}]*}}' "$TEMPLATE_DIR/f_project.md" | sort -u | while read var; do
+grep -o '{[^}]*}' "$TEMPLATE_DIR/f_project.md" | sort -u | while read var; do
     echo "  - $var"
 done
 
@@ -110,13 +110,13 @@ if [ -f "$OUTPUT_DIR/custom_project.md" ]; then
     
     echo
     echo "🔍 カスタム変数の置換状況検証:"
-    echo "📖 仕様: カスタム変数は {{uv-variable_name}} 形式でテンプレート内に記述"
+    echo "📖 仕様: カスタム変数は {uv-variable_name} 形式でテンプレート内に記述"
     
     # Check if custom variables were replaced
     UNREPLACED_COUNT=0
     for var in uv-company_name uv-project_name uv-tech_stack uv-team_size uv-deadline uv-budget; do
-        if grep -q "{{$var}}" "$OUTPUT_DIR/custom_project.md"; then
-            echo "  ❌ $var: 未置換 ({{$var}} が残っている)"
+        if grep -q "{$var}" "$OUTPUT_DIR/custom_project.md"; then
+            echo "  ❌ $var: 未置換 ({$var} が残っている)"
             UNREPLACED_COUNT=$((UNREPLACED_COUNT + 1))
         else
             echo "  ✅ $var: テンプレート変数は正常に処理された"
@@ -128,7 +128,7 @@ if [ -f "$OUTPUT_DIR/custom_project.md" ]; then
         echo "  ✅ カスタム変数の値が出力に含まれている"
     else
         echo "  ❌ カスタム変数の値が出力に見つからない"
-        echo "💡 確認ポイント: テンプレートでの変数名が {{uv-variable_name}} 形式になっているか"
+        echo "💡 確認ポイント: テンプレートでの変数名が {uv-variable_name} 形式になっているか"
     fi
     
     if [ "$UNREPLACED_COUNT" -gt 0 ]; then
@@ -175,11 +175,11 @@ cat > "$TEMPLATE_DIR2/f_task.md" << 'EOF'
 # Task Summary Template
 
 ## Sprint Information
-- Sprint Length: {{uv-sprint_length}}
-- Story Point Scale: {{uv-story_point_scale}}
+- Sprint Length: {uv-sprint_length}
+- Story Point Scale: {uv-story_point_scale}
 
 ## Input Content
-{{input_text}}
+{input_text}
 
 ## Task Breakdown
 Based on the input, here are the tasks...
@@ -188,7 +188,7 @@ EOF
 echo
 echo "【1. テンプレート変数】"
 echo "テンプレート内の変数:"
-grep -o '{{[^}]*}}' "$TEMPLATE_DIR2/f_task.md" | sort -u | while read var; do
+grep -o '{[^}]*}' "$TEMPLATE_DIR2/f_task.md" | sort -u | while read var; do
     echo "  - $var"
 done
 
@@ -215,7 +215,7 @@ if [ -f "$OUTPUT_DIR/agile_tasks.md" ]; then
     
     echo
     echo "カスタム変数の置換状況:"
-    if grep -q "{{uv-sprint_length}}\|{{uv-story_point_scale}}" "$OUTPUT_DIR/agile_tasks.md"; then
+    if grep -q "{uv-sprint_length}\|{uv-story_point_scale}" "$OUTPUT_DIR/agile_tasks.md"; then
         echo "  ❌ 変数が未置換 (テンプレート変数が残っている)"
     else
         echo "  ✅ テンプレート変数は残っていない"
@@ -268,7 +268,7 @@ if [ -f "$OUTPUT_DIR/custom_project.md" ]; then
     fi
     
     # Check if any custom variables appear in output
-    if grep -q "{{uv-" "$OUTPUT_DIR/custom_project.md"; then
+    if grep -q "{uv-" "$OUTPUT_DIR/custom_project.md"; then
         echo "  2. カスタム変数は置換されず、テンプレート変数がそのまま出力された"
         VAR_REPLACED=false
     else
@@ -285,19 +285,19 @@ VAR_REPLACED=false
 echo
 echo "使用方法:"
 echo "1. --uv-* でカスタム変数を定義"
-echo "2. テンプレート内で {{uv-variable}} の形式で参照（--uv-company_name → {{uv-company_name}}）"
+echo "2. テンプレート内で {uv-variable} の形式で参照（--uv-company_name → {uv-company_name}）"
 echo "3. --adaptation でプロンプトの適応スタイルを指定"
 
 echo
 echo "🔍 実装状況分析:"
 if [ -f "$OUTPUT_DIR/custom_project.md" ] && grep -q "テックコーポレーション" "$OUTPUT_DIR/custom_project.md"; then
     echo "  ✅ カスタム変数機能: 正常に動作している"
-    echo "  ✅ 変数置換処理: {{uv-*}} → 実際の値 への置換が機能"
+    echo "  ✅ 変数置換処理: {uv-*} → 実際の値 への置換が機能"
     echo "  ✅ テンプレート使用: カスタムテンプレートが正しく使用されている"
 else
     echo "  ⚠️  カスタム変数機能に問題がある可能性"
     echo "  💡 確認手順:"
-    echo "     1. テンプレート内の変数名が {{uv-variable_name}} 形式であることを確認"
+    echo "     1. テンプレート内の変数名が {uv-variable_name} 形式であることを確認"
     echo "     2. プロンプトテンプレートファイルが正しい場所に配置されていることを確認"
     echo "     3. LOG_LEVEL=debug でカスタム変数処理の詳細ログを確認"
     echo "  📖 参照: docs/breakdown/domain_core/prompt_variables.ja.md"
