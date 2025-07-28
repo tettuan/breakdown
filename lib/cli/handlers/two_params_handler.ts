@@ -21,7 +21,6 @@ import { TwoParamsVariableProcessor } from "../processors/two_params_variable_pr
 import { TwoParamsPromptGenerator } from "../generators/two_params_prompt_generator_ddd.ts";
 import { TwoParamsStdinProcessor } from "../processors/two_params_stdin_processor.ts";
 import { TwoParamsOutputProcessor } from "../processors/two_params_output_processor.ts";
-import { StdinState } from "$lib/types/stdin_types.ts";
 
 /**
  * Complete Discriminated Union Error Types for TwoParamsHandler
@@ -123,8 +122,8 @@ class TwoParamsOrchestrator {
       });
     }
 
-    // Extract stdin content from StdinState for legacy compatibility
-    const stdinContent = StdinState.toLegacyString(stdinResult.data) ?? "";
+    // Extract stdin content (TwoParamsStdinProcessor returns string directly)
+    const stdinContent = stdinResult.data;
 
     // 3. Process variables
     if (isDebug) {

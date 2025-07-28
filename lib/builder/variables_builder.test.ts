@@ -337,7 +337,7 @@ Deno.test("3_core: VariablesBuilder.addFromFactoryValues() - comprehensive test"
   assertEquals(builder.getVariableCount(), 6); // input_text_file, destination_path, schema_file, input_text, 2 custom vars
 
   const record = builder.toRecord();
-  assertEquals(record["input_text_file"], "sample.txt"); // basename
+  assertEquals(record["input_text_file"], "/input/sample.txt"); // full path
   assertEquals(record["destination_path"], "/output/result.md");
   assertEquals(record["schema_file"], "/schemas/schema.json");
   assertEquals(record["input_text"], "Sample stdin input");

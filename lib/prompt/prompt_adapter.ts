@@ -9,7 +9,6 @@
  * - Maintain backward compatibility while enabling migration to DDD patterns
  * - Delegate actual prompt generation to domain services
  */
-import { basename } from "@std/path/basename";
 import { PromptAdapterValidator, ValidationResult } from "./prompt_adapter_validator.ts";
 import { VariablesBuilder } from "../builder/variables_builder.ts";
 import type { PromptCliOptions } from "../factory/prompt_variables_factory.ts";
@@ -117,7 +116,7 @@ export class PromptAdapterImpl {
 
     // Add standard variables
     if (inputFilePath) {
-      builder.addStandardVariable("input_text_file", basename(inputFilePath));
+      builder.addStandardVariable("input_text_file", inputFilePath);
     }
     if (outputFilePath) {
       builder.addStandardVariable("destination_path", outputFilePath);

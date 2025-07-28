@@ -15,7 +15,6 @@ import type { PromptVariable, PromptVariables } from "../types/prompt_variables_
 import { PromptVariablesVO } from "../types/prompt_variables_vo.ts";
 // Import ErrorInfo from @tettuan/breakdownparams for unified error handling
 import type { ErrorInfo as _ErrorInfo } from "@tettuan/breakdownparams";
-import { basename } from "jsr:@std/path@1";
 
 // Import concrete variable types
 import {
@@ -391,7 +390,7 @@ export class VariablesBuilder {
         "inputFilePath",
       );
       if (validatedPath) {
-        this.addStandardVariable("input_text_file", basename(validatedPath));
+        this.addStandardVariable("input_text_file", validatedPath);
       }
     }
 
@@ -468,7 +467,7 @@ export class VariablesBuilder {
         partialValues.inputFilePath && partialValues.inputFilePath !== "-" &&
         partialValues.inputFilePath !== ""
       ) {
-        this.addStandardVariable("input_text_file", basename(partialValues.inputFilePath));
+        this.addStandardVariable("input_text_file", partialValues.inputFilePath);
       }
     }
 

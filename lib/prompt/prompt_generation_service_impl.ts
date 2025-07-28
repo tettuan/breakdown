@@ -8,7 +8,6 @@
  */
 
 import { PromptManager } from "@tettuan/breakdownprompt";
-import { basename } from "@std/path/basename";
 import { existsSync } from "@std/fs/exists";
 import type { Result } from "../types/result.ts";
 import { error as resultError, ok } from "../types/result.ts";
@@ -149,7 +148,7 @@ export class PromptGenerationServiceImpl implements PromptGenerationService {
 
     // Add standard variables
     if (context.inputFilePath) {
-      builder.addStandardVariable("input_text_file", basename(context.inputFilePath));
+      builder.addStandardVariable("input_text_file", context.inputFilePath);
     }
     if (context.outputFilePath) {
       builder.addStandardVariable("destination_path", context.outputFilePath);

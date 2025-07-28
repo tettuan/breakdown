@@ -183,19 +183,8 @@ export class TwoParamsStdinProcessor {
         errorMessage.includes("Stdin not available") ||
         errorMessage.includes("No stdin data available")
       ) {
-        // Return appropriate StdinState based on the error reason
-        if (errorMessage.includes("test environment")) {
-          return ok(StdinState.skipped("test_environment", errorMessage));
-        } else if (errorMessage.includes("CI terminal environment")) {
-          return ok(StdinState.skipped("ci_environment", errorMessage));
-        } else if (errorMessage.includes("BREAKDOWN_SKIP_STDIN")) {
-          return ok(StdinState.skipped("env_variable", errorMessage));
-        } else if (errorMessage.includes("No stdin data available")) {
-          return ok(StdinState.notProvided("terminal_input"));
-        } else {
-          // For other skip scenarios, return not_provided
-          return ok(StdinState.notProvided("no_pipe"));
-        }
+        // Return empty string for skip scenarios
+        return ok("");
       }
 
       return error({
