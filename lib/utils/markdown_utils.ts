@@ -9,5 +9,5 @@
  */
 export function removeYamlFrontmatter(content: string): string {
   const regex = /^---\s*$[\s\S]*?^---\s*$/m;
-  return content.replace(regex, '').trimStart();
+  return content.replace(regex, "").trimStart();
 }

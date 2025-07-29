@@ -119,9 +119,7 @@ export class TwoParamsOutputProcessor {
     const cleanedOutput = removeYamlFrontmatter(stringificationResult.data);
 
     // Step 3: Add newline if not present
-    const finalOutput = cleanedOutput.endsWith("\n")
-      ? cleanedOutput
-      : cleanedOutput + "\n";
+    const finalOutput = cleanedOutput.endsWith("\n") ? cleanedOutput : cleanedOutput + "\n";
 
     // Step 4: Safe encoding
     const encodingResult = this.safeEncode(finalOutput);
