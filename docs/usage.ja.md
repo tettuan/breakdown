@@ -150,6 +150,7 @@ breakdown summary task --from=<unorganized_tasks.md> -o=<task_markdown_dir>
 ## テンプレート変数の記述方法
 
 Breakdownでは、プロンプトテンプレート内で `{variable_name}` 形式の変数を使用できます。これらの変数はCLIオプションや入力内容から自動的に値が設定されます。
+出力時にはYAMLフロントマターが自動的に除去されます。
 
 ### 利用可能なテンプレート変数一覧
 

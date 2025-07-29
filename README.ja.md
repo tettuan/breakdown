@@ -238,28 +238,6 @@ echo $PATH
 
 ---
 
-### JSR経由でのCLIのコンパイルとインストール（ローカルバイナリ）
-
-JSRを使用してBreakdown CLIをスタンドアロンバイナリとしてコンパイルし、プロジェクトディレクトリ（例：./.deno/bin/breakdown）に配置することもできます：
-
-```bash
-mkdir -p .deno/bin
-# JSRからCLIをコンパイルして.deno/bin/breakdownに出力
-
-deno compile --allow-read --allow-write --allow-run --allow-env --allow-net -o .deno/bin/breakdown jsr:@tettuan/breakdown
-```
-- 生成されたバイナリは`./.deno/bin/breakdown`で利用可能です。
-- 以下のコマンドで実行できます：
-  ```bash
-  ./.deno/bin/breakdown --help
-  ```
-- このバイナリは対象環境にDenoがインストールされている必要はありません。
-
-> **注意:**
-> ローカルソースから常にバイナリを生成したい場合は、JSR URLの代わりにローカルパス（例：`cli/breakdown.ts`）を使用してください。
-
----
-
 # ドキュメント
 
 https://tettuan.github.io/breakdown/
