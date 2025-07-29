@@ -9,6 +9,7 @@
 
 import type { Result } from "$lib/types/result.ts";
 import { error, ok } from "$lib/types/result.ts";
+import { removeYamlFrontmatter } from "$lib/utils/markdown_utils.ts";
 
 /**
  * Output error types for Two Params Output Processor
@@ -114,18 +115,21 @@ export class TwoParamsOutputProcessor {
       return error(stringificationResult.error);
     }
 
-    // Step 2: Add newline if not present
-    const finalOutput = stringificationResult.data.endsWith("\n")
-      ? stringificationResult.data
-      : stringificationResult.data + "\n";
+    // Step 2: Remove YAML frontmatter from the output
+    const cleanedOutput = removeYamlFrontmatter(stringificationResult.data);
 
-    // Step 3: Safe encoding
+    // Step 3: Add newline if not present
+    const finalOutput = cleanedOutput.endsWith("\n")
+      ? cleanedOutput
+      : cleanedOutput + "\n";
+
+    // Step 4: Safe encoding
     const encodingResult = this.safeEncode(finalOutput);
     if (!encodingResult.ok) {
       return error(encodingResult.error);
     }
 
-    // Step 4: Safe write to stdout
+    // Step 5: Safe write to stdout
     const writeResult = await this.safeWrite(encodingResult.data);
     if (!writeResult.ok) {
       return error(writeResult.error);
