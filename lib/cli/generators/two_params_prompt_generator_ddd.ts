@@ -474,10 +474,12 @@ export class TwoParamsPromptGenerator {
       layerType: params.layer.value,
       directiveType: params.directive.value,
       options: {
-        fromFile: (options.from as string) || (options.fromFile as string),
-        destinationFile: (options.destination as string) || (options.output as string),
-        input: options.input as string, // Add input option for fromLayerType
-        adaptation: configuration.adaptation,
+        fromFile: (options.f as string) || (options.from as string) || (options.fromFile as string),
+        destinationFile: (options.o as string) || (options.destination as string) ||
+          (options.output as string),
+        input: (options.i as string) || (options.input as string), // Add input option for fromLayerType
+        adaptation: (options.a as string) || (options.adaptation as string) ||
+          configuration.adaptation,
         promptDir: configuration.promptDir,
         input_text: variables.standardVariables.input_text,
         userVariables: variables.userVariables,
@@ -523,12 +525,29 @@ export class TwoParamsPromptGenerator {
     try {
       const allParams = factory.getAllParams();
 
+      const isDebug = Deno.env.get("LOG_LEVEL") === "debug";
+      if (isDebug) {
+        console.log(
+          "[TwoParamsPromptGenerator] allParams from factory:",
+          JSON.stringify(
+            {
+              promptFilePath: allParams.promptFilePath,
+              inputFilePath: allParams.inputFilePath,
+              outputFilePath: allParams.outputFilePath,
+              schemaFilePath: allParams.schemaFilePath,
+            },
+            null,
+            2,
+          ),
+        );
+      }
+
       // Create factory values
       const factoryValues: FactoryResolvedValues = {
         promptFilePath: allParams.promptFilePath,
-        inputFilePath: allParams.inputFilePath || "",
-        outputFilePath: allParams.outputFilePath || "output.md",
-        schemaFilePath: allParams.schemaFilePath || "",
+        inputFilePath: allParams.inputFilePath,
+        outputFilePath: allParams.outputFilePath,
+        schemaFilePath: allParams.schemaFilePath,
         userVariables: context.variables.userVariables,
         // Fallback: Use inputText if available, otherwise use standardVariables.input_text
         inputText: (context.variables as { inputText?: string }).inputText ||

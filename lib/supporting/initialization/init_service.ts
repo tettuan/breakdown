@@ -228,6 +228,26 @@ export class InitService {
 # Version information
 version: "1.0.0"
 
+# Roots configuration
+roots:
+  - base_dir: "working_dir"
+    name: "primary"
+  - base_dir: "prompts"
+    name: "app_prompt"
+  - base_dir: "schema"
+    name: "app_schema"
+
+# Working directory
+working_dir: ".agent/climpt"
+
+# Application prompt settings
+app_prompt:
+  base_dir: "prompts"
+
+# Application schema settings
+app_schema:
+  base_dir: "schema"
+
 # Application settings
 app:
   name: "breakdown"

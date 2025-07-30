@@ -101,6 +101,20 @@ export interface SchemaPathResolutionError extends PromptVariablesFactoryError {
 }
 
 /**
+ * Error when required input option is missing
+ */
+export interface MissingInputError extends PromptVariablesFactoryError {
+  readonly kind: "MissingInput";
+}
+
+/**
+ * Error when required output option is missing
+ */
+export interface MissingOutputError extends PromptVariablesFactoryError {
+  readonly kind: "MissingOutput";
+}
+
+/**
  * Union type for all PromptVariablesFactory errors
  */
 export type PromptVariablesFactoryErrors =
@@ -114,7 +128,9 @@ export type PromptVariablesFactoryErrors =
   | PromptPathResolutionError
   | InputPathResolutionError
   | OutputPathResolutionError
-  | SchemaPathResolutionError;
+  | SchemaPathResolutionError
+  | MissingInputError
+  | MissingOutputError;
 
 /**
  * Factory functions for creating specific errors
@@ -180,5 +196,15 @@ export const PromptVariablesFactoryErrorFactory = {
     kind: "SchemaPathResolutionFailed",
     message: `Failed to resolve schema path: ${details}`,
     details,
+  }),
+
+  missingInput: (): MissingInputError => ({
+    kind: "MissingInput",
+    message: "fromFile option is required but not provided",
+  }),
+
+  missingOutput: (): MissingOutputError => ({
+    kind: "MissingOutput",
+    message: "destinationFile option is required but not provided",
   }),
 } as const;

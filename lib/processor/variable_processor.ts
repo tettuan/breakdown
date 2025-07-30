@@ -316,13 +316,14 @@ export class TwoParamsVariableProcessor {
     }
 
     // Add input file name (from -f/--from option)
-    const inputFile = options.from ?? options.fromFile;
+    const inputFile = options.f ?? options.from ?? options.fromFile;
     if (inputFile !== undefined) {
       standardVariables.input_text_file = String(inputFile);
     }
 
     // Add destination path (from -o/--destination option)
-    const destinationPath = options.destination ??
+    const destinationPath = options.o ??
+      options.destination ??
       options.destinationFile ??
       options.output;
     if (destinationPath !== undefined) {

@@ -31,15 +31,13 @@ import {
   PromptTemplatePathResolverTotality,
 } from "./prompt_template_path_resolver_totality.ts";
 import { SchemaFilePathResolverTotality } from "./schema_file_path_resolver_totality.ts";
-// Note: InputFilePathResolver and OutputFilePathResolver have been consolidated
-// into input_file_path_resolver_totality.ts as part of DDD refactoring
+// Note: InputFilePathResolver and OutputFilePathResolver are separate implementations
 import {
   InputFilePathResolverTotality as InputFilePathResolver,
 } from "./input_file_path_resolver_totality.ts";
-
-// OutputFilePathResolver functionality is now consolidated within InputFilePathResolverTotality
-const OutputFilePathResolver = InputFilePathResolver;
-type OutputFilePathResolver = InputFilePathResolver;
+import {
+  OutputFilePathResolverTotality as OutputFilePathResolver,
+} from "./output_file_path_resolver_totality.ts";
 import {
   formatSchemaError as _formatSchemaError,
   SchemaFilePathResolverTotality as _SchemaFilePathResolver,
@@ -668,7 +666,10 @@ export class PromptVariablesFactory {
    */
   public get inputFilePath(): string {
     if (!this._inputFilePath) {
-      return this.cliParams.options.fromFile || "input.md";
+      if (!this.cliParams.options.fromFile) {
+        throw new Error("fromFile option is required but not provided");
+      }
+      return this.cliParams.options.fromFile;
     }
     return this._inputFilePath;
   }
@@ -678,7 +679,10 @@ export class PromptVariablesFactory {
    */
   public getInputFilePath(): Result<string, PromptVariablesFactoryErrors> {
     if (!this._inputFilePath) {
-      return ok(this.cliParams.options.fromFile || "input.md");
+      if (!this.cliParams.options.fromFile) {
+        return resultError(PromptVariablesFactoryErrorFactory.missingInput());
+      }
+      return ok(this.cliParams.options.fromFile);
     }
     return ok(this._inputFilePath);
   }
@@ -688,7 +692,10 @@ export class PromptVariablesFactory {
    */
   public get outputFilePath(): string {
     if (!this._outputFilePath) {
-      return this.cliParams.options.destinationFile || "output.md";
+      if (!this.cliParams.options.destinationFile) {
+        throw new Error("destinationFile option is required but not provided");
+      }
+      return this.cliParams.options.destinationFile;
     }
     return this._outputFilePath;
   }
@@ -698,7 +705,10 @@ export class PromptVariablesFactory {
    */
   public getOutputFilePath(): Result<string, PromptVariablesFactoryErrors> {
     if (!this._outputFilePath) {
-      return ok(this.cliParams.options.destinationFile || "output.md");
+      if (!this.cliParams.options.destinationFile) {
+        return resultError(PromptVariablesFactoryErrorFactory.missingOutput());
+      }
+      return ok(this.cliParams.options.destinationFile);
     }
     return ok(this._outputFilePath);
   }
@@ -979,11 +989,17 @@ export class PromptVariablesFactory {
         this._inputFilePath = inputResult.data.value;
       } else {
         // Input path resolution failed - use fallback
-        this._inputFilePath = this.cliParams.options.fromFile || "input.md";
+        if (!this.cliParams.options.fromFile) {
+          throw new Error("fromFile option is required but not provided");
+        }
+        this._inputFilePath = this.cliParams.options.fromFile;
       }
     } else {
       // No input resolver - use fallback path
-      this._inputFilePath = this.cliParams.options.fromFile || "input.md";
+      if (!this.cliParams.options.fromFile) {
+        throw new Error("fromFile option is required but not provided");
+      }
+      this._inputFilePath = this.cliParams.options.fromFile;
     }
 
     // Resolve output path using new Result-based API (if resolver exists)
@@ -993,11 +1009,17 @@ export class PromptVariablesFactory {
         this._outputFilePath = outputResult.data.value;
       } else {
         // Output path resolution failed - use fallback
-        this._outputFilePath = this.cliParams.options.destinationFile || "output.md";
+        if (!this.cliParams.options.destinationFile) {
+          throw new Error("destinationFile option is required but not provided");
+        }
+        this._outputFilePath = this.cliParams.options.destinationFile;
       }
     } else {
       // No output resolver - use fallback path
-      this._outputFilePath = this.cliParams.options.destinationFile || "output.md";
+      if (!this.cliParams.options.destinationFile) {
+        throw new Error("destinationFile option is required but not provided");
+      }
+      this._outputFilePath = this.cliParams.options.destinationFile;
     }
 
     // Resolve schema path using new Smart Constructor API (if resolver exists)
