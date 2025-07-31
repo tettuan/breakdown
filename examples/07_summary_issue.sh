@@ -90,22 +90,27 @@ echo
 
 # Run summary issue command
 echo "実行コマンド:"
-echo "breakdown summary issue --config=default --from=$OUTPUT_DIR/messy_tasks.md --input=task -o=$OUTPUT_DIR/issue_summary.md > $OUTPUT_DIR/issue_summary.md"
+echo "breakdown summary issue --config=default --from=$OUTPUT_DIR/messy_tasks.md --input=task -o=$OUTPUT_DIR/issue_summary.md"
 echo
 
-if $BREAKDOWN summary issue --config=default --from="$OUTPUT_DIR/messy_tasks.md" --input=task -o="$OUTPUT_DIR/issue_summary.md" > "$OUTPUT_DIR/issue_summary.md"; then
-    echo "✅ Issue summary created successfully!"
+# Capture prompt to stdout and save to file
+if $BREAKDOWN summary issue --config=default --from="$OUTPUT_DIR/messy_tasks.md" --input=task -o="$OUTPUT_DIR/issue_summary.md" > "$OUTPUT_DIR/summary_issue_prompt.txt" 2>/dev/null; then
+    echo "✅ Generated 'summary issue' prompt successfully!"
     echo
-    echo "生成されたファイル:"
+    echo "プロンプトファイル:"
+    echo "  $OUTPUT_DIR/summary_issue_prompt.txt"
+    echo "参照出力パス (プロンプト内):"
     echo "  $OUTPUT_DIR/issue_summary.md"
     echo
-    if [ -f "$OUTPUT_DIR/issue_summary.md" ]; then
-        echo "=== 生成されたイシューサマリー（先頭20行）==="
-        head -20 "$OUTPUT_DIR/issue_summary.md"
+    if [ -f "$OUTPUT_DIR/summary_issue_prompt.txt" ]; then
+        echo "=== 生成されたプロンプト（先頭20行）==="
+        head -20 "$OUTPUT_DIR/summary_issue_prompt.txt"
         echo "..."
+        echo
+        echo "Note: プロンプト内の{input_text}などの変数はAIが処理時に置換されます"
     fi
 else
-    echo "❌ Failed to create issue summary"
+    echo "❌ Failed to generate summary issue prompt"
     exit 1
 fi
 

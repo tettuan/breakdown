@@ -83,7 +83,8 @@ Build a modern e-commerce platform with user management, product catalog, and pa
 EOF
 
 echo "Running: breakdown to issue..."
-if cat "$OUTPUT_DIR/project_spec.md" | BREAKDOWN to issue --config=timeout > "$OUTPUT_DIR/issues.md" 2>/dev/null; then
+# Try using --from option instead of STDIN
+if BREAKDOWN to issue --config=timeout --from="$OUTPUT_DIR/project_spec.md" -o="$OUTPUT_DIR/issues.md" 2>/dev/null; then
     # Validate output was created
     if [ -f "$OUTPUT_DIR/issues.md" ] && [ -s "$OUTPUT_DIR/issues.md" ]; then
         echo "✅ Created issue breakdown at $OUTPUT_DIR/issues.md"
@@ -110,7 +111,8 @@ mobile responsive design issues on tablets
 EOF
 
 echo "Processing messy notes into organized summary..."
-if cat "$OUTPUT_DIR/messy_notes.md" | BREAKDOWN summary task --config=default > "$OUTPUT_DIR/task_summary.md" 2>/dev/null; then
+# Try using --from option instead of STDIN
+if BREAKDOWN summary task --config=default --from="$OUTPUT_DIR/messy_notes.md" -o="$OUTPUT_DIR/task_summary.md" 2>/dev/null; then
     # Validate output file was created and has content
     if [ -f "$OUTPUT_DIR/task_summary.md" ] && [ -s "$OUTPUT_DIR/task_summary.md" ]; then
         echo "✅ Created task summary at $OUTPUT_DIR/task_summary.md"
@@ -136,7 +138,8 @@ cat > "$OUTPUT_DIR/error_log.txt" << EOF
 EOF
 
 echo "Analyzing error logs..."
-if tail -20 "$OUTPUT_DIR/error_log.txt" | BREAKDOWN defect project --config=default > "$OUTPUT_DIR/defect_analysis.md" 2>/dev/null; then
+# Try using --from option instead of STDIN pipe
+if BREAKDOWN defect project --config=default --from="$OUTPUT_DIR/error_log.txt" -o="$OUTPUT_DIR/defect_analysis.md" 2>/dev/null; then
     # Validate output file was created and has content
     if [ -f "$OUTPUT_DIR/defect_analysis.md" ] && [ -s "$OUTPUT_DIR/defect_analysis.md" ]; then
         echo "✅ Created defect analysis at $OUTPUT_DIR/defect_analysis.md"
@@ -216,13 +219,10 @@ function calculateTotal(items) {
 \`\`\`
 EOF
     
-    if BREAKDOWN defect task --config=default --from="$OUTPUT_DIR/bug_report.md" > "$OUTPUT_DIR/bugs_report.md" 2>/dev/null; then
-        if [ -f "$OUTPUT_DIR/bugs_report.md" ] && [ -s "$OUTPUT_DIR/bugs_report.md" ]; then
-            echo "✅ Created fallback defect analysis at $OUTPUT_DIR/bugs_report.md"
-            echo "   File size: $(wc -c < "$OUTPUT_DIR/bugs_report.md" | tr -d ' ') bytes"
-        else
-            echo "⚠️  Fallback command succeeded but output file is empty"
-        fi
+    if BREAKDOWN defect task --config=default --from="$OUTPUT_DIR/bug_report.md" -o="$OUTPUT_DIR/bugs_report.md" > "$OUTPUT_DIR/defect_task_prompt.txt" 2>/dev/null; then
+        echo "✅ Generated fallback 'defect task' prompt"
+        echo "   Prompt saved to: $OUTPUT_DIR/defect_task_prompt.txt"
+        echo "   Reference output path in prompt: $OUTPUT_DIR/bugs_report.md"
     else
         echo "⚠️  Both 'find bugs' and fallback 'defect task' failed"
     fi
@@ -243,17 +243,24 @@ if [ -d "$OUTPUT_DIR" ]; then
         fi
     done
     
-    # Count total files created
-    total_files=$(find "$OUTPUT_DIR" -type f \( -name "*.md" -o -name "*.txt" \) | wc -l | tr -d ' ')
+    # Count prompt files generated
+    total_prompts=$(find "$OUTPUT_DIR" -name "*_prompt.txt" -type f | wc -l | tr -d ' ')
     echo
-    echo "Total files created: $total_files"
+    echo "Total prompts generated: $total_prompts"
+    
+    # Show that prompts contain variables and reference paths
+    if [ $total_prompts -gt 0 ]; then
+        echo
+        echo "Note: Prompts contain {input_text} variables and -o paths for AI processing"
+    fi
 else
     echo "❌ Output directory not found!"
 fi
 
 # Final success check
-if [ "${total_files:-0}" -gt 0 ]; then
-    echo "✅ Examples completed successfully"
+if [ "${total_prompts:-0}" -gt 0 ]; then
+    echo "✅ Examples completed successfully - generated $total_prompts prompts"
+    echo "Each prompt is ready to be passed to an AI system for processing"
 else
-    echo "⚠️  Examples completed but no output files were generated"
+    echo "❌ Examples failed - no prompts were generated"
 fi
