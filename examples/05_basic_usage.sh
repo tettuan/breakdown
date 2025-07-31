@@ -84,13 +84,14 @@ EOF
 
 echo "Running: breakdown to issue..."
 # Try using --from option instead of STDIN
-if BREAKDOWN to issue --config=timeout --from="$OUTPUT_DIR/project_spec.md" -o="$OUTPUT_DIR/issues.md" 2>/dev/null; then
-    # Validate output was created
-    if [ -f "$OUTPUT_DIR/issues.md" ] && [ -s "$OUTPUT_DIR/issues.md" ]; then
-        echo "✅ Created issue breakdown at $OUTPUT_DIR/issues.md"
-        echo "   File size: $(wc -c < "$OUTPUT_DIR/issues.md" | tr -d ' ') bytes"
+if BREAKDOWN to issue --config=default --from="$OUTPUT_DIR/project_spec.md" -o="$OUTPUT_DIR/issues.md" > "$OUTPUT_DIR/to_issue_prompt.txt" 2>/dev/null; then
+    # Validate prompt was generated
+    if [ -f "$OUTPUT_DIR/to_issue_prompt.txt" ] && [ -s "$OUTPUT_DIR/to_issue_prompt.txt" ]; then
+        echo "✅ Generated 'to issue' prompt successfully"
+        echo "   Prompt saved to: $OUTPUT_DIR/to_issue_prompt.txt"
+        echo "   Reference output path in prompt: $OUTPUT_DIR/issues.md"
     else
-        echo "⚠️  Command succeeded but no output files were created"
+        echo "⚠️  Command succeeded but prompt was not generated"
     fi
 else
     echo "⚠️  'to issue' command failed or is not supported"
