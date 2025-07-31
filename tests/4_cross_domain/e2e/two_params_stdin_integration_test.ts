@@ -293,6 +293,7 @@ The system processes large datasets and needs to maintain performance under load
     const options = {
       skipStdin: false,
       from: "-",
+      destination: "output.md", // Add required destination option
       stdinReader: mockStdinReader, // Pass the mock reader
     }; // Explicitly enable STDIN reading
 
@@ -447,6 +448,7 @@ This document provides a comprehensive analysis of our enterprise system's curre
     const options = {
       skipStdin: false,
       from: "-",
+      destination: "output.md", // Add required destination option
       stdinReader: mockStdinReader, // Pass the mock reader
     };
 
@@ -560,6 +562,7 @@ Deno.test("E2E-STDIN: Error Scenarios", async () => {
       const options = {
         skipStdin: false,
         from: "-",
+        destination: "output.md", // Add required destination option
         stdinReader: mockStdinReader, // Pass the mock reader
       };
 
@@ -758,6 +761,7 @@ Additional Information:
       const options = {
         skipStdin: false,
         from: "-",
+        destination: "output.md", // Add required destination option
         stdinReader: mockStdinReader, // Pass the mock reader
       };
 

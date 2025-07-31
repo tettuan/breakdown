@@ -312,7 +312,12 @@ Deno.test("E2E: Tier1 - Basic Two Params Command Execution", async () => {
 
     try {
       // Add config profile to use test configuration
-      const argsWithConfig = ["--config=default-test", ...args];
+      const argsWithConfig = [
+        "--config=default-test",
+        ...args,
+        `--from=${inputFile}`,
+        "--destination=output.md",
+      ];
       const result = await runBreakdown(argsWithConfig);
       const output = stdout.stop();
 
@@ -375,7 +380,7 @@ Deno.test("E2E: Tier1 - Multiple Directive-Layer Combinations", async () => {
     const [directive, layer] = testCombinations[i];
     logger.debug(`Combination test ${i + 1}/${testCombinations.length}`, { directive, layer });
 
-    const _inputFile = await testSetup.createTestInput(`combo-test-${i}.md`, testInputContent);
+    const inputFile = await testSetup.createTestInput(`combo-test-${i}.md`, testInputContent);
     const stdout = new StdoutCapture();
     stdout.start();
 
@@ -385,7 +390,13 @@ Deno.test("E2E: Tier1 - Multiple Directive-Layer Combinations", async () => {
       Deno.env.set("BREAKDOWN_SKIP_STDIN", "true");
 
       try {
-        const argsWithConfig = ["--config=default-test", directive, layer];
+        const argsWithConfig = [
+          "--config=default-test",
+          directive,
+          layer,
+          `--from=${inputFile}`,
+          "--destination=output.md",
+        ];
         const result = await runBreakdown(argsWithConfig);
         const output = stdout.stop();
 
@@ -437,7 +448,7 @@ Deno.test("E2E: Tier2 - Configuration Profile Switching", async () => {
     const validDirective = configResult.userConfig.testData.validDirectives[0];
     const validLayer = configResult.userConfig.testData.validLayers[0];
 
-    const _inputFile = await testSetup.createTestInput(
+    const inputFile = await testSetup.createTestInput(
       `profile-test-${profile}.md`,
       testInputContent,
     );
@@ -451,7 +462,7 @@ Deno.test("E2E: Tier2 - Configuration Profile Switching", async () => {
       Deno.env.set("BREAKDOWN_PROFILE", profile);
       Deno.env.set("BREAKDOWN_SKIP_STDIN", "true");
 
-      const args = [validDirective, validLayer];
+      const args = [validDirective, validLayer, `--from=${inputFile}`, "--destination=output.md"];
       const result = await runBreakdown(args);
       const output = stdout.stop();
 
@@ -530,7 +541,12 @@ Deno.test("E2E: Tier3 - Invalid Arguments Error Handling", async () => {
       Deno.env.set("BREAKDOWN_SKIP_STDIN", "true");
 
       try {
-        const argsWithConfig = ["--config=default-test", ...testCase.args];
+        const argsWithConfig = [
+          "--config=default-test",
+          ...testCase.args,
+          "--from=test.md",
+          "--destination=output.md",
+        ];
         const result = await runBreakdown(argsWithConfig);
         const output = stdout.stop();
 
@@ -587,7 +603,7 @@ Deno.test("E2E: Tier3 - Configuration Error Handling", async () => {
     Deno.env.set("BREAKDOWN_PROFILE", "non-existent-profile");
     Deno.env.set("BREAKDOWN_SKIP_STDIN", "true");
 
-    const args = ["to", "project"];
+    const args = ["to", "project", "--from=test.md", "--destination=output.md"];
     const result = await runBreakdown(args);
     const output = stdout.stop();
 
@@ -663,7 +679,7 @@ This is a comprehensive project that requires detailed breakdown and analysis.
 ## Business Context
 The project serves critical business functions and requires careful analysis to ensure stability while implementing improvements.`;
 
-  const _inputFile = await testSetup.createTestInput("real-world-input.md", realWorldContent);
+  const inputFile = await testSetup.createTestInput("real-world-input.md", realWorldContent);
   const stdout = new StdoutCapture();
   stdout.start();
 
@@ -681,7 +697,13 @@ The project serves critical business functions and requires careful analysis to 
 
     try {
       // Add config profile to use test configuration
-      const argsWithConfig = ["--config=default-test", validDirective, validLayer];
+      const argsWithConfig = [
+        "--config=default-test",
+        validDirective,
+        validLayer,
+        `--from=${inputFile}`,
+        "--destination=output.md",
+      ];
       const result = await runBreakdown(argsWithConfig);
       const output = stdout.stop();
 

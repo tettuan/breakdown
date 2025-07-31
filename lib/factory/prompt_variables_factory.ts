@@ -553,7 +553,7 @@ export class PromptVariablesFactory {
   public getAllParams(): {
     promptFilePath: string;
     inputFilePath: string;
-    outputFilePath: string;
+    outputFilePath: string; // Keep as required for backward compatibility, but may be empty
     schemaFilePath: string;
     directive: DirectiveType;
     layer: LayerType;
@@ -691,13 +691,8 @@ export class PromptVariablesFactory {
    * Get resolved output file path
    */
   public get outputFilePath(): string {
-    if (!this._outputFilePath) {
-      if (!this.cliParams.options.destinationFile) {
-        throw new Error("destinationFile option is required but not provided");
-      }
-      return this.cliParams.options.destinationFile;
-    }
-    return this._outputFilePath;
+    // Return empty string when not provided - builder will skip adding the variable
+    return this._outputFilePath || this.cliParams.options.destinationFile || "";
   }
 
   /**
@@ -1008,17 +1003,11 @@ export class PromptVariablesFactory {
       if (outputResult.ok) {
         this._outputFilePath = outputResult.data.value;
       } else {
-        // Output path resolution failed - use fallback
-        if (!this.cliParams.options.destinationFile) {
-          throw new Error("destinationFile option is required but not provided");
-        }
+        // Output path resolution failed - keep as undefined if not provided
         this._outputFilePath = this.cliParams.options.destinationFile;
       }
     } else {
-      // No output resolver - use fallback path
-      if (!this.cliParams.options.destinationFile) {
-        throw new Error("destinationFile option is required but not provided");
-      }
+      // No output resolver - keep as undefined if not provided
       this._outputFilePath = this.cliParams.options.destinationFile;
     }
 

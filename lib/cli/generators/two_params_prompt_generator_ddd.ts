@@ -546,7 +546,8 @@ export class TwoParamsPromptGenerator {
       const factoryValues: FactoryResolvedValues = {
         promptFilePath: allParams.promptFilePath,
         inputFilePath: allParams.inputFilePath,
-        outputFilePath: allParams.outputFilePath,
+        // Only include outputFilePath if it's not empty
+        ...(allParams.outputFilePath ? { outputFilePath: allParams.outputFilePath } : {}),
         schemaFilePath: allParams.schemaFilePath,
         userVariables: context.variables.userVariables,
         // Fallback: Use inputText if available, otherwise use standardVariables.input_text

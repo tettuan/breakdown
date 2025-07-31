@@ -30,7 +30,7 @@ import {
 export interface FactoryResolvedValues {
   promptFilePath: string;
   inputFilePath: string;
-  outputFilePath: string;
+  outputFilePath?: string; // Optional - if not provided, destination_path variable won't exist
   schemaFilePath: string;
   userVariables?: Record<string, string>;
   inputText?: string; // For stdin content
@@ -507,10 +507,7 @@ export class VariablesBuilder {
       errors.push({ kind: "missing", field: "promptFilePath" });
     }
 
-    // outputFilePath is typically required
-    if (!factoryValues.outputFilePath) {
-      errors.push({ kind: "missing", field: "outputFilePath" });
-    }
+    // outputFilePath is optional - if not provided, the variable won't exist in the template
 
     // Validate custom variables have uv- prefix
     if (factoryValues.userVariables) {

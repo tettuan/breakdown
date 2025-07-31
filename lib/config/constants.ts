@@ -65,3 +65,9 @@ export const DEFAULT_WORKSPACE_WORKING_DIR = _DEFAULT_WORKSPACE_STRUCTURE.root;
  * Used as fallback in prompt template path resolution.
  */
 export const DEFAULT_FROM_LAYER_TYPE = "default" as const;
+
+/**
+ * The default value for output_file_path variable in templates when no output file is specified.
+ * This is used as a template variable, not for actual file output.
+ */
+export const DEFAULT_OUTPUT_FILE_PATH_VARIABLE = "output.md" as const;
