@@ -173,15 +173,13 @@ execute_breakdown() {
     
     # Execute breakdown
     echo -e "${GREEN}⚡ Executing: breakdown ${cmd_args}${NC}"
-    run_breakdown $cmd_args
-    
-    # Validate output
-    if [[ ! -f "$output_file" ]]; then
-        handle_error 1 "Output file was not created: $output_file"
-    elif [[ ! -s "$output_file" ]]; then
-        echo -e "${YELLOW}⚠️  Warning: Output file is empty: ${output_file}${NC}"
+    if run_breakdown $cmd_args; then
+        echo -e "${GREEN}✅ Command executed successfully${NC}"
+        echo -e "${BLUE}   Input: ${input_file}${NC}"
+        echo -e "${BLUE}   Output reference: ${output_file}${NC}"
+        echo -e "${DIM}   (Prompt sent to stdout)${NC}"
     else
-        echo -e "${GREEN}✅ Successfully created: ${output_file}${NC}"
+        handle_error 1 "Command failed"
     fi
 }
 

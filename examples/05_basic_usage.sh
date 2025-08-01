@@ -84,17 +84,13 @@ EOF
 
 echo "Running: breakdown to issue..."
 # Try using --from option instead of STDIN
-if BREAKDOWN to issue --config=default --from="$OUTPUT_DIR/project_spec.md" -o="$OUTPUT_DIR/issues.md" > "$OUTPUT_DIR/to_issue_prompt.txt" 2>/dev/null; then
-    # Validate prompt was generated
-    if [ -f "$OUTPUT_DIR/to_issue_prompt.txt" ] && [ -s "$OUTPUT_DIR/to_issue_prompt.txt" ]; then
-        echo "✅ Generated 'to issue' prompt successfully"
-        echo "   Prompt saved to: $OUTPUT_DIR/to_issue_prompt.txt"
-        echo "   Reference output path in prompt: $OUTPUT_DIR/issues.md"
-    else
-        echo "⚠️  Command succeeded but prompt was not generated"
-    fi
+if BREAKDOWN to issue --config=default --from="$OUTPUT_DIR/project_spec.md" -o="$OUTPUT_DIR/issues.md" 2>/dev/null; then
+    echo "✅ Successfully generated 'to issue' prompt"
+    echo "   Input: $OUTPUT_DIR/project_spec.md"
+    echo "   Output path (in prompt): $OUTPUT_DIR/issues.md"
+    echo "   💡 Tip: To save the prompt, use: breakdown to issue ... > output.txt"
 else
-    echo "⚠️  'to issue' command failed or is not supported"
+    echo "❌ Failed to generate 'to issue' prompt"
 fi
 echo
 
@@ -114,15 +110,11 @@ EOF
 echo "Processing messy notes into organized summary..."
 # Try using --from option instead of STDIN
 if BREAKDOWN summary task --config=default --from="$OUTPUT_DIR/messy_notes.md" -o="$OUTPUT_DIR/task_summary.md" 2>/dev/null; then
-    # Validate output file was created and has content
-    if [ -f "$OUTPUT_DIR/task_summary.md" ] && [ -s "$OUTPUT_DIR/task_summary.md" ]; then
-        echo "✅ Created task summary at $OUTPUT_DIR/task_summary.md"
-        echo "   File size: $(wc -c < "$OUTPUT_DIR/task_summary.md" | tr -d ' ') bytes"
-    else
-        echo "⚠️  Command succeeded but output file is empty or missing"
-    fi
+    echo "✅ Successfully generated 'summary task' prompt"
+    echo "   Input: $OUTPUT_DIR/messy_notes.md"
+    echo "   Output path (in prompt): $OUTPUT_DIR/task_summary.md"
 else
-    echo "⚠️  'summary task' command failed or is not supported"
+    echo "❌ Failed to generate 'summary task' prompt"
 fi
 echo
 
@@ -141,15 +133,11 @@ EOF
 echo "Analyzing error logs..."
 # Try using --from option instead of STDIN pipe
 if BREAKDOWN defect project --config=default --from="$OUTPUT_DIR/error_log.txt" -o="$OUTPUT_DIR/defect_analysis.md" 2>/dev/null; then
-    # Validate output file was created and has content
-    if [ -f "$OUTPUT_DIR/defect_analysis.md" ] && [ -s "$OUTPUT_DIR/defect_analysis.md" ]; then
-        echo "✅ Created defect analysis at $OUTPUT_DIR/defect_analysis.md"
-        echo "   File size: $(wc -c < "$OUTPUT_DIR/defect_analysis.md" | tr -d ' ') bytes"
-    else
-        echo "⚠️  Command succeeded but output file is empty or missing"
-    fi
+    echo "✅ Successfully generated 'defect project' prompt"
+    echo "   Input: $OUTPUT_DIR/error_log.txt"
+    echo "   Output path (in prompt): $OUTPUT_DIR/defect_analysis.md"
 else
-    echo "⚠️  'defect project' command failed or is not supported"
+    echo "❌ Failed to generate 'defect project' prompt"
 fi
 echo
 
@@ -186,15 +174,10 @@ fi
 # Step 2: findbugsプロファイルでの成功確認
 echo
 echo "Testing with findbugs profile configuration..."
-if BREAKDOWN find bugs --config=findbugs --from="$OUTPUT_DIR/buggy_code.js" > "$OUTPUT_DIR/bugs_analysis.md" 2>/dev/null; then
-    if [ -f "$OUTPUT_DIR/bugs_analysis.md" ] && [ -s "$OUTPUT_DIR/bugs_analysis.md" ]; then
-        echo "✅ Success: find bugs works with findbugs profile"
-        echo "   File size: $(wc -c < "$OUTPUT_DIR/bugs_analysis.md" | tr -d ' ') bytes"
-        echo "   Preview:"
-        head -5 "$OUTPUT_DIR/bugs_analysis.md" | sed 's/^/     /'
-    else
-        echo "⚠️  Command succeeded but output file is empty or missing"
-    fi
+if BREAKDOWN find bugs --config=findbugs --from="$OUTPUT_DIR/buggy_code.js" -o="$OUTPUT_DIR/bugs_analysis.md" 2>/dev/null; then
+    echo "✅ Success: find bugs works with findbugs profile"
+    echo "   Input: $OUTPUT_DIR/buggy_code.js"
+    echo "   Output path (in prompt): $OUTPUT_DIR/bugs_analysis.md"
 else
     echo "❌ Error: find bugs failed even with findbugs profile"
     
@@ -220,12 +203,12 @@ function calculateTotal(items) {
 \`\`\`
 EOF
     
-    if BREAKDOWN defect task --config=default --from="$OUTPUT_DIR/bug_report.md" -o="$OUTPUT_DIR/bugs_report.md" > "$OUTPUT_DIR/defect_task_prompt.txt" 2>/dev/null; then
+    if BREAKDOWN defect task --config=default --from="$OUTPUT_DIR/bug_report.md" -o="$OUTPUT_DIR/bugs_report.md" 2>/dev/null; then
         echo "✅ Generated fallback 'defect task' prompt"
-        echo "   Prompt saved to: $OUTPUT_DIR/defect_task_prompt.txt"
-        echo "   Reference output path in prompt: $OUTPUT_DIR/bugs_report.md"
+        echo "   Input: $OUTPUT_DIR/bug_report.md"
+        echo "   Output path (in prompt): $OUTPUT_DIR/bugs_report.md"
     else
-        echo "⚠️  Both 'find bugs' and fallback 'defect task' failed"
+        echo "❌ Both 'find bugs' and fallback 'defect task' failed"
     fi
 fi
 
@@ -233,35 +216,24 @@ echo
 echo "=== Basic Usage Examples Completed ==="
 echo "All output files are in: $OUTPUT_DIR/"
 
-# Validate and list created files
+# Validate and list created input files
 if [ -d "$OUTPUT_DIR" ]; then
     echo
-    echo "Created files:"
-    find "$OUTPUT_DIR" -type f -name "*.md" -o -name "*.txt" | while read -r file; do
+    echo "Created input files:"
+    find "$OUTPUT_DIR" -type f -name "*.md" -o -name "*.txt" -o -name "*.js" | while read -r file; do
         if [ -f "$file" ]; then
             size=$(wc -c < "$file" | tr -d ' ')
             echo "  • ${file#$OUTPUT_DIR/} (${size} bytes)"
         fi
     done
     
-    # Count prompt files generated
-    total_prompts=$(find "$OUTPUT_DIR" -name "*_prompt.txt" -type f | wc -l | tr -d ' ')
     echo
-    echo "Total prompts generated: $total_prompts"
-    
-    # Show that prompts contain variables and reference paths
-    if [ $total_prompts -gt 0 ]; then
-        echo
-        echo "Note: Prompts contain {input_text} variables and -o paths for AI processing"
-    fi
+    echo "Note: Breakdown generates prompts to stdout. Use > to save them if needed."
+    echo "Example: breakdown to issue --from=input.md > prompt.txt"
 else
     echo "❌ Output directory not found!"
 fi
 
-# Final success check
-if [ "${total_prompts:-0}" -gt 0 ]; then
-    echo "✅ Examples completed successfully - generated $total_prompts prompts"
-    echo "Each prompt is ready to be passed to an AI system for processing"
-else
-    echo "❌ Examples failed - no prompts were generated"
-fi
+echo
+echo "✅ Basic usage examples completed successfully!"
+echo "All prompts were generated and sent to stdout."

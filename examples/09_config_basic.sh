@@ -236,13 +236,12 @@ echo "✓ Created template: prompts/summary/project/f_project.md"
 echo "Testing breakdown summary project command with basic configuration..."
 
 # Test summary project command with basic config
-echo "Test project specification for summary" | deno run --allow-all ../cli/breakdown.ts summary project --config=basic > summary_test_output.log 2>&1
-if [ -s summary_test_output.log ]; then
+echo "Test project specification for summary" | deno run --allow-all ../cli/breakdown.ts summary project --config=basic 2>&1
+if [ $? -eq 0 ]; then
     echo "✓ 'breakdown summary project' works correctly with basic config"
-    echo "Output preview:"
-    head -5 summary_test_output.log
+    echo "  (Prompt sent to stdout)"
 else
-    echo "⚠️ 'breakdown summary project' output may be empty"
+    echo "❌ 'breakdown summary project' failed with basic config"
 fi
 
 # Test the init command as well
