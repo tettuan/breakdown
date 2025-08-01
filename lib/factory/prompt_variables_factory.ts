@@ -666,8 +666,9 @@ export class PromptVariablesFactory {
    */
   public get inputFilePath(): string {
     if (!this._inputFilePath) {
+      // Return empty string when fromFile is not provided (input is optional)
       if (!this.cliParams.options.fromFile) {
-        throw new Error("fromFile option is required but not provided");
+        return "";
       }
       return this.cliParams.options.fromFile;
     }
@@ -679,8 +680,9 @@ export class PromptVariablesFactory {
    */
   public getInputFilePath(): Result<string, PromptVariablesFactoryErrors> {
     if (!this._inputFilePath) {
+      // Return empty string when fromFile is not provided (input is optional)
       if (!this.cliParams.options.fromFile) {
-        return resultError(PromptVariablesFactoryErrorFactory.missingInput());
+        return ok("");
       }
       return ok(this.cliParams.options.fromFile);
     }
@@ -895,15 +897,30 @@ export class PromptVariablesFactory {
     }
 
     // Create PromptParams object with correct structure
+    // Build base variables (always present)
+    const baseVariables: Record<string, string> = {
+      directive_type: this.cliParams.directiveType,
+      layer_type: this.cliParams.layerType,
+      prompt_path: templatePathResult.data,
+      schema_path: this.schemaFilePath,
+    };
+
+    // Add optional variables only if they have values
+    const inputPath = this.inputFilePath;
+    if (inputPath && inputPath.trim() !== "") {
+      baseVariables.input_file = inputPath;
+    }
+
+    const outputPath = this.outputFilePath;
+    if (outputPath && outputPath.trim() !== "") {
+      baseVariables.output_file = outputPath;
+    }
+
+    // Merge with user variables
     const promptParams: PromptParams = {
       template_file: templatePathResult.data,
       variables: {
-        directive_type: this.cliParams.directiveType,
-        layer_type: this.cliParams.layerType,
-        input_file: this.inputFilePath,
-        output_file: this.outputFilePath,
-        prompt_path: templatePathResult.data,
-        schema_path: this.schemaFilePath,
+        ...baseVariables,
         ...this.userVariables,
       },
     };
@@ -985,16 +1002,18 @@ export class PromptVariablesFactory {
       } else {
         // Input path resolution failed - use fallback
         if (!this.cliParams.options.fromFile) {
-          throw new Error("fromFile option is required but not provided");
+          this._inputFilePath = "";
+        } else {
+          this._inputFilePath = this.cliParams.options.fromFile;
         }
-        this._inputFilePath = this.cliParams.options.fromFile;
       }
     } else {
       // No input resolver - use fallback path
       if (!this.cliParams.options.fromFile) {
-        throw new Error("fromFile option is required but not provided");
+        this._inputFilePath = "";
+      } else {
+        this._inputFilePath = this.cliParams.options.fromFile;
       }
-      this._inputFilePath = this.cliParams.options.fromFile;
     }
 
     // Resolve output path using new Result-based API (if resolver exists)
