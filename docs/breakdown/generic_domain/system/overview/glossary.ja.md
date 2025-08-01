@@ -107,7 +107,6 @@ STDIN以外は、実際の内容を読み書きしない。PATHを値とし、�
 
 | 用語 | 使用箇所 | 説明 | 関連ワード |
 |------|----------|------|------------|
-| 入力ソース | app_factory.ja.md, cli.ja.md | アプリケーションへの入力データの供給源。ファイル（-i）または標準入力のいずれかが必須。両方とも指定がない場合はエラーとなる。入力データはプロンプトマネージャーを通じて処理される。 | -i, stdin, promptmanager |
 | fromFile | options.ja.md, path.ja.md | 入力ファイルを指定するパラメータ（-f, --from）。ファイルパスを指定し、PATHを変数の値として使用する。 | -f, --from, 入力ソース |
 | destinationFile | options.ja.md, path.ja.md | 出力先を指定するパラメータ（-o, --destination）。ファイルパスまたはディレクトリパスを指定し、出力先情報のPATHを変数の値として使用する。 | -o, --destination, 出力先 |
 | stdin | app_factory.ja.md, cli.ja.md | 標準入力からのデータ読み込み。入力ソースの一つとして機能し、ファイル入力と排他的に使用される。入力データの検出と読み込みの処理が実装されている。 | 入力ソース, -i, promptmanager |
