@@ -1,5 +1,18 @@
 # 全域性原則：型安全なコード設計指針
 
+## 目次
+- 基本パターン L33
+  - パターン1：Discriminated Union L35
+  - パターン2：Smart Constructor L44
+  - パターン3：Result型によるエラー値化 L92
+  - パターン4：非空文字列型によるランタイム判定の排除 L129
+- 人間による設計観点 L163
+- エラー処理の圧縮テクニック L229
+- 実装チェックリスト L291
+  - 🚫 禁止パターン L293
+  - ✅ 推奨パターン L300
+- Claude向け実装指示 L322
+
 ## 核心理念
 **部分関数を全域関数に変換**し、型システムで「ありえない状態」を排除する。
 
@@ -97,6 +110,40 @@ const getDefaultMessage = (error: ValidationError): string => {
       return `Value "${error.value}" exceeds maximum length of ${error.maxLength}`;
   }
 };
+```
+
+### パターン4：非空文字列型によるランタイム判定の排除
+```typescript
+// ❌ 悪い例：ランタイムでの空文字判定
+function processFile(outputPath?: string) {
+  if (outputPath && outputPath.trim() !== "") {
+    // ファイル処理
+  }
+}
+
+// ✅ 良い例：非空文字列型
+class NonEmptyString {
+  private constructor(readonly value: string) {}
+  
+  static create(input: string): Result<NonEmptyString, ValidationError & { message: string }> {
+    const trimmed = input.trim();
+    if (trimmed.length === 0) {
+      return { ok: false, error: createError({ kind: "EmptyInput" }) };
+    }
+    return { ok: true, data: new NonEmptyString(trimmed) };
+  }
+}
+
+// ✅ 良い例：ランタイム判定不要
+function processFile(outputPath: NonEmptyString): Result<void, ProcessError> {
+  // outputPathは既に検証済み。if文不要
+  return performFileOperation(outputPath.value);
+}
+
+// ✅ 良い例：optional型の改善
+type ProcessOptions = 
+  | { outputPath: NonEmptyString }  // 必須かつ有効なパス
+  | { inMemory: true };             // 出力なしオプション
 ```
 
 ## 人間による設計観点
@@ -234,12 +281,14 @@ const result = ValidatedValue.builder<string>()
 - オプショナルプロパティによる状態表現 `{ a?: X; b?: Y }`
 - `any`/`unknown`の安易な使用
 - 例外による制御フロー
+- ランタイムでの空文字・null判定 `if (str && str.trim() !== "")`
 
 ### ✅ 推奨パターン
 - タグ付きユニオン： `{ kind: string; ... }`
 - Result型： `{ ok: boolean; ... }`
 - Smart Constructor： `private constructor + static create`
 - `switch`文による網羅的分岐
+- 非空文字列型： `NonEmptyString.create()`
 
 ## 段階的適用手順
 
@@ -266,6 +315,7 @@ const result = ValidatedValue.builder<string>()
 3. **型定義を改善**: オプショナルプロパティ → Discriminated Union
 4. **エラー処理を改善**: 例外 → Result型
 5. **分岐を改善**: `if`チェーン → `switch`文
+6. **ランタイム判定を排除**: `if (str && str.trim() !== "")` → `NonEmptyString`型
 
 ### ビジネスルール質問例
 ```
