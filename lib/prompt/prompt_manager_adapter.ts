@@ -102,6 +102,8 @@ export class PromptManagerAdapter {
 
       // Debug output to investigate the content type
       if (this.debug || Deno.env.get("LOG_LEVEL") === "debug") {
+        console.log("[PromptManagerAdapter] Input variables:", variableDict);
+        console.log("[PromptManagerAdapter] Template path:", templatePath);
         console.debug("PromptManager returned content:", {
           type: typeof content,
           content: content,

@@ -126,9 +126,12 @@ export class PromptAdapterImpl {
     if (inputFilePath) {
       builder.addStandardVariable("input_text_file", inputFilePath);
     }
+    // Only add destination_path when output file is specified
     if (outputFilePath) {
       builder.addStandardVariable("destination_path", outputFilePath);
     }
+    // When no output file specified, do not add destination_path variable
+    // This allows {destination_path} to remain unsubstituted in the template
 
     // Add file path variables
     if (schemaFilePath) {

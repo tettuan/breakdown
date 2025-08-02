@@ -329,6 +329,8 @@ export class TwoParamsVariableProcessor {
     if (destinationPath !== undefined) {
       standardVariables.destination_path = String(destinationPath);
     }
+    // When no output destination specified, do not set destination_path
+    // This allows the template to show {destination_path} as-is
 
     return standardVariables;
   }

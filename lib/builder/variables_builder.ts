@@ -15,6 +15,7 @@ import type { PromptVariable, PromptVariables } from "../types/prompt_variables_
 import { PromptVariablesVO } from "../types/prompt_variables_vo.ts";
 // Import ErrorInfo from @tettuan/breakdownparams for unified error handling
 import type { ErrorInfo as _ErrorInfo } from "@tettuan/breakdownparams";
+import { FilePath } from "../types/file_path_value.ts";
 
 // Import concrete variable types
 import {
@@ -384,17 +385,18 @@ export class VariablesBuilder {
    */
   addFromFactoryValues(factoryValues: FactoryResolvedValues): this {
     // Add input file path as standard variable (if not stdin)
-    if (
-      factoryValues.inputFilePath && factoryValues.inputFilePath !== "-" &&
-      factoryValues.inputFilePath !== ""
-    ) {
-      const validatedPath = this.validateValueWithFallback(
-        factoryValues.inputFilePath,
-        "default-input.txt",
-        "inputFilePath",
-      );
-      if (validatedPath) {
-        this.addStandardVariable("input_text_file", validatedPath);
+    if (factoryValues.inputFilePath) {
+      const filePath = FilePath.fromString(factoryValues.inputFilePath);
+      // Only add if it's an actual path (not empty or stdin)
+      if (filePath.hasValue() && filePath.getPath() !== "-") {
+        const validatedPath = this.validateValueWithFallback(
+          filePath.getPath()!,
+          "default-input.txt",
+          "inputFilePath",
+        );
+        if (validatedPath) {
+          this.addStandardVariable("input_text_file", validatedPath);
+        }
       }
     }
 

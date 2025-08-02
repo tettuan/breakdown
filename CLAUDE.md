@@ -8,6 +8,8 @@
 
 # Claude Behavior
 - No Celebrating Message. Save Token.
+- use Serena MCP for codebase search.
+  - find, grep, dir, ls, readlines
 
 # Coding Guidelines
 Implement target use cases using Domain Driven Design & totality functions with Occam's razor principle for minimal configuration. Extract only necessary features and prioritize aligning business meaning with structure.

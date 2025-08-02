@@ -577,6 +577,23 @@ export class TwoParamsPromptGenerator {
       // Add values to builder
       builder.addFromFactoryValues(factoryValues);
 
+      // Only add destination_path if it exists in variables
+      // Do not add it when outputFilePath is not provided
+      if (allParams.outputFilePath && !factoryValues.outputFilePath) {
+        // outputFilePath exists but wasn't added to factoryValues
+        if (context.variables.allVariables?.destination_path) {
+          builder.addStandardVariable(
+            "destination_path",
+            context.variables.allVariables.destination_path,
+          );
+        } else if (context.variables.standardVariables?.destination_path) {
+          builder.addStandardVariable(
+            "destination_path",
+            context.variables.standardVariables.destination_path,
+          );
+        }
+      }
+
       // Build variables
       const buildResult = builder.build();
       if (!buildResult.ok) {
@@ -614,6 +631,7 @@ export class TwoParamsPromptGenerator {
     context?: GenerationContext,
     config?: Record<string, unknown>,
   ): Promise<Result<PromptResult, PromptGeneratorError>> {
+    const isDebug = Deno.env.get("LOG_LEVEL") === "debug";
     try {
       // Use PromptTemplatePathResolverTotality if context and config are available
       if (context && config) {
@@ -679,6 +697,12 @@ export class TwoParamsPromptGenerator {
         }
 
         // Generate prompt using PromptTemplatePathResolverTotality result
+        if (isDebug) {
+          console.log(
+            "[generatePrompt] Creating prompt variables with:",
+            JSON.stringify(variables, null, 2),
+          );
+        }
         const promptVariables = this.createPromptVariables(variables);
         const result = await this.adapter.generatePrompt(
           promptPathResult.data,
@@ -720,6 +744,12 @@ export class TwoParamsPromptGenerator {
         }
 
         // Create PromptVariables
+        if (isDebug) {
+          console.log(
+            "[generatePrompt] Creating prompt variables with:",
+            JSON.stringify(variables, null, 2),
+          );
+        }
         const promptVariables = this.createPromptVariables(variables);
 
         // Generate prompt using adapter
@@ -760,7 +790,9 @@ export class TwoParamsPromptGenerator {
   /**
    * Create PromptVariables implementation
    */
-  private createPromptVariables(variables: Record<string, string>): PromptVariables {
+  private createPromptVariables(
+    variables: Record<string, string>,
+  ): PromptVariables {
     return {
       toRecord(): Record<string, string> {
         return { ...variables };

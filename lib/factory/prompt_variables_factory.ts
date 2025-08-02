@@ -48,6 +48,8 @@ import {
   PromptVariablesFactoryErrorFactory,
   PromptVariablesFactoryErrors,
 } from "../types/prompt_variables_factory_error.ts";
+import { OutputPath } from "../types/output_destination.ts";
+import { FilePath } from "../types/file_path_value.ts";
 
 /**
  * Configuration options for prompt generation and file resolution.
@@ -690,6 +692,20 @@ export class PromptVariablesFactory {
   }
 
   /**
+   * Get resolved input file path using type-safe FilePath
+   */
+  public getInputFilePathValue(): Result<FilePath, PromptVariablesFactoryErrors> {
+    if (!this._inputFilePath) {
+      // When fromFile is not provided, return not-specified
+      if (!this.cliParams.options.fromFile) {
+        return ok(FilePath.notSpecified());
+      }
+      return ok(FilePath.fromString(this.cliParams.options.fromFile));
+    }
+    return ok(FilePath.fromString(this._inputFilePath));
+  }
+
+  /**
    * Get resolved output file path
    */
   public get outputFilePath(): string {
@@ -702,12 +718,61 @@ export class PromptVariablesFactory {
    */
   public getOutputFilePath(): Result<string, PromptVariablesFactoryErrors> {
     if (!this._outputFilePath) {
+      // When destinationFile is not provided, return empty string
+      // Empty string means no output file was specified
       if (!this.cliParams.options.destinationFile) {
-        return resultError(PromptVariablesFactoryErrorFactory.missingOutput());
+        return ok("");
       }
       return ok(this.cliParams.options.destinationFile);
     }
     return ok(this._outputFilePath);
+  }
+
+  /**
+   * Get resolved output file path using type-safe FilePath
+   */
+  public getOutputFilePathValue(): Result<FilePath, PromptVariablesFactoryErrors> {
+    if (!this._outputFilePath) {
+      // When destinationFile is not provided, return not-specified
+      if (!this.cliParams.options.destinationFile) {
+        return ok(FilePath.notSpecified());
+      }
+      return ok(FilePath.fromString(this.cliParams.options.destinationFile));
+    }
+    return ok(FilePath.fromString(this._outputFilePath));
+  }
+
+  /**
+   * Get resolved output destination using Totality principle
+   * Returns a type-safe OutputPath instead of relying on empty string convention
+   */
+  public getOutputDestination(): Result<OutputPath, PromptVariablesFactoryErrors> {
+    if (!this._outputFilePath) {
+      // When destinationFile is not provided, explicitly return stdout destination
+      if (!this.cliParams.options.destinationFile) {
+        return ok(OutputPath.stdout());
+      }
+      // Create file destination
+      const fileResult = OutputPath.file(this.cliParams.options.destinationFile);
+      if (!fileResult.ok) {
+        return resultError(
+          PromptVariablesFactoryErrorFactory.pathOptionsCreationFailed(
+            fileResult.error.message,
+          ),
+        );
+      }
+      return ok(fileResult.data);
+    }
+    // Create file destination from resolved path
+    const fileResult = OutputPath.file(this._outputFilePath);
+    if (!fileResult.ok) {
+      return resultError(
+        PromptVariablesFactoryErrorFactory.pathOptionsCreationFailed(
+          fileResult.error.message,
+        ),
+      );
+    }
+    return ok(fileResult.data);
   }
 
   /**
@@ -821,9 +886,10 @@ export class PromptVariablesFactory {
       return resultError(new Error("Input file path validation failed"));
     }
 
-    const outputResult = this.getOutputFilePath();
-    if (!outputResult.ok) {
-      return resultError(new Error("Output file path validation failed"));
+    // Check output destination using type-safe method
+    const outputDestResult = this.getOutputDestination();
+    if (!outputDestResult.ok) {
+      return resultError(new Error("Output destination validation failed"));
     }
 
     const schemaResult = this.getSchemaFilePath();
@@ -905,15 +971,30 @@ export class PromptVariablesFactory {
       schema_path: this.schemaFilePath,
     };
 
-    // Add optional variables only if they have values
-    const inputPath = this.inputFilePath;
-    if (inputPath && inputPath.trim() !== "") {
-      baseVariables.input_file = inputPath;
+    // Use type-safe file path value for input
+    const inputPathResult = this.getInputFilePathValue();
+    if (inputPathResult.ok) {
+      const inputPath = inputPathResult.data;
+      // Only add input_file if a path was actually specified
+      if (inputPath.shouldCreateVariable()) {
+        const pathValue = inputPath.getPath();
+        if (pathValue) {
+          baseVariables.input_file = pathValue;
+        }
+      }
     }
 
-    const outputPath = this.outputFilePath;
-    if (outputPath && outputPath.trim() !== "") {
-      baseVariables.output_file = outputPath;
+    // Use type-safe file path value
+    const outputPathResult = this.getOutputFilePathValue();
+    if (outputPathResult.ok) {
+      const outputPath = outputPathResult.data;
+      // Only add output_file if a path was actually specified
+      if (outputPath.shouldCreateVariable()) {
+        const pathValue = outputPath.getPath();
+        if (pathValue) {
+          baseVariables.output_file = pathValue;
+        }
+      }
     }
 
     // Merge with user variables
@@ -935,11 +1016,15 @@ export class PromptVariablesFactory {
     PromptVariableSource,
     PromptVariablesFactoryErrors
   > {
+    // Get output destination using type-safe method
+    const outputDestResult = this.getOutputDestination();
+    const destinationFile = outputDestResult.ok ? outputDestResult.data.getPath() : undefined;
+
     const cliSource = PromptVariableSourceFactory.fromCLI({
       directive: this.cliParams.directiveType,
       layer: this.cliParams.layerType,
       fromFile: this.cliParams.options.fromFile,
-      destinationFile: this.cliParams.options.destinationFile,
+      destinationFile: destinationFile || undefined, // Convert null to undefined
       userVariables: this.cliParams.options.userVariables,
     });
 
