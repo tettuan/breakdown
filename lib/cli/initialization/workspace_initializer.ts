@@ -43,30 +43,44 @@ export async function initializeBreakdownConfiguration(): Promise<void> {
     throw new Error("Configuration must define layer types");
   }
 
-  // Create directories dynamically based on layer types
-  const directories = [
-    "config",
-    ...layerTypes.map((type) => `${type}s`), // pluralize layer types
-    "temp",
-    "prompts",
-    "schema",
-  ];
-
-  for (const dir of directories) {
-    const dirPath = `${baseDir}/${dir}`;
-    await ensureDir(dirPath);
-    console.log(`✅ Created directory: ${dirPath}`);
-  }
-
   // Get directive types from JSR pattern adapter
   const directiveTypes = adapter.getValidDirectiveTypes();
   if (directiveTypes.length === 0) {
     throw new Error("Configuration must define directive types");
   }
 
+  // Create base directories only
+  const baseDirectories = [
+    "config",
+    "temp",
+    "prompts",
+    "schema",
+  ];
+
+  for (const dir of baseDirectories) {
+    const dirPath = `${baseDir}/${dir}`;
+    await ensureDir(dirPath);
+    console.log(`✅ Created directory: ${dirPath}`);
+  }
+
+  // Create structured directories for prompts and schema
+  // based on directive and layer type combinations
+  for (const directive of directiveTypes) {
+    for (const layer of layerTypes) {
+      const promptPath = `${baseDir}/prompts/${directive}/${layer}`;
+      const schemaPath = `${baseDir}/schema/${directive}/${layer}`;
+
+      await ensureDir(promptPath);
+      console.log(`✅ Created directory: ${promptPath}`);
+
+      await ensureDir(schemaPath);
+      console.log(`✅ Created directory: ${schemaPath}`);
+    }
+  }
+
   // Build configuration content dynamically
   const configContent = `# Breakdown Configuration
-base_dir: ".agent/climpt"
+working_dir: "${DEFAULT_WORKSPACE_ROOT}"
 app_prompt:
   base_dir: "prompts"
 app_schema:
