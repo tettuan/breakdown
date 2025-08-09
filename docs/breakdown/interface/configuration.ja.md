@@ -173,6 +173,76 @@ const promptBaseDir = settings.app_prompt.base_dir;
 const schemaBaseDir = settings.app_schema.base_dir;
 ```
 
+## 出力先設定（options.destination.prefix）
+
+### 概要
+
+Breakdown CLI v1.3.5以降では、出力先のデフォルトパスまたはベースディレクトリを設定ファイルで指定できます。`options.destination.prefix`は、CLIオプションと組み合わせて使用することも、単独でデフォルトパスとして使用することもできます。
+
+### 設定項目
+
+```yaml
+# アプリケーション設定またはユーザー設定に追加
+options:
+  destination:
+    prefix: "パス指定文字列"  # ベースディレクトリまたはデフォルトパス
+```
+
+### パス解決ロジック
+
+1. **絶対パスの場合**: そのまま使用（prefixは無視）
+2. **相対パスの場合**: `Deno.cwd()` + `working_dir` + `destinationFile` を結合
+3. **相対パスの場合かつprefix指定あり**: `Deno.cwd()` + `working_dir` + `prefix` + `destinationFile` を結合
+4. **CLIオプション未指定かつprefix指定あり**: `Deno.cwd()` + `working_dir` + `prefix` を結合
+5. **両方未指定**: エラー（`destination_path`変数自体が生成されない）
+
+### 使用例
+
+#### 例1: ベースディレクトリとして使用
+```yaml
+options:
+  destination:
+    prefix: "results"  # ベースディレクトリ
+```
+コマンド: `breakdown to task -o report.md`  
+結果パス: `.agent/climpt/results/report.md`
+
+#### 例2: デフォルトファイルパスとして使用
+```yaml
+options:
+  destination:
+    prefix: "tmp/default_output.md"  # デフォルトファイル
+```
+コマンド: `breakdown to task`（`-o`オプションなし）  
+結果パス: `.agent/climpt/tmp/default_output.md`
+
+#### 例3: ネストされたディレクトリ構造
+```yaml
+options:
+  destination:
+    prefix: "outputs/2024/jan"
+```
+コマンド: `breakdown to task -o weekly/report.md`  
+結果パス: `.agent/climpt/outputs/2024/jan/weekly/report.md`
+
+#### 例4: 日時プレースホルダー付きパス（将来拡張予定）
+```yaml
+options:
+  destination:
+    prefix: "dest/yyyy/mm/yyyymmdd-HH-something.md"
+```
+注: プレースホルダーの展開は現在サポートされておらず、文字列がそのまま使用されます。
+
+### 優先順位と動作
+
+| CLIオプション | prefix設定 | 動作 |
+|--------------|-----------|------|
+| 指定あり（絶対パス） | あり/なし | CLIオプションをそのまま使用（prefixは無視） |
+| 指定あり（相対パス） | あり | prefix配下にCLIオプションのパスを配置 |
+| 指定あり（相対パス） | なし | 従来通りの動作 |
+| 指定なし | あり | prefixをデフォルトパスとして使用 |
+| 指定なし | なし | エラー |
+
 ## 設定管理のベストプラクティス
 
 ### 1. 環境別設定の分離

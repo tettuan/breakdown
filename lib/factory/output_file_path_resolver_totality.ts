@@ -34,6 +34,20 @@ interface FilePath {
  */
 export class OutputFilePathResolverTotality {
   /**
+   * Safely extract destination prefix from config
+   */
+  private static getDestinationPrefix(config: Record<string, unknown>): string | undefined {
+    const options = config.options as Record<string, unknown> | undefined;
+    if (!options) return undefined;
+
+    const destination = options.destination as Record<string, unknown> | undefined;
+    if (!destination) return undefined;
+
+    const prefix = destination.prefix;
+    return typeof prefix === "string" ? prefix : undefined;
+  }
+
+  /**
    * Creates a new OutputFilePathResolverTotality instance
    */
   static create(
@@ -42,19 +56,35 @@ export class OutputFilePathResolverTotality {
   ): Result<OutputFilePathResolverTotality, OutputFilePathResolutionError> {
     // Extract destination file from options
     const destinationFile = cliParams.options.destinationFile;
+    const destinationPrefix = this.getDestinationPrefix(config);
+    const workingDir = (config.working_dir as string) || ".";
 
-    if (!destinationFile) {
+    let resolvedPath: string;
+
+    if (destinationFile) {
+      // Case 1-3: CLI option specified
+      if (isAbsolute(String(destinationFile))) {
+        // Case 2: Absolute path - use as-is
+        resolvedPath = String(destinationFile);
+      } else if (destinationPrefix) {
+        // Case 3: Relative path with prefix - combine prefix + destinationFile
+        const basePath = resolve(Deno.cwd(), workingDir, destinationPrefix);
+        resolvedPath = resolve(basePath, String(destinationFile));
+      } else {
+        // Case 1: Relative path without prefix - traditional behavior
+        resolvedPath = resolve(Deno.cwd(), workingDir, String(destinationFile));
+      }
+    } else if (destinationPrefix) {
+      // Case 4: No CLI option but prefix specified
+      resolvedPath = resolve(Deno.cwd(), workingDir, destinationPrefix);
+    } else {
+      // Case 5: Neither specified - error
       return error({
         kind: "MissingDestinationFile",
-        message: "No destination file specified in options (use -o, --destination, or --output)",
+        message:
+          "No destination file specified in options (use -o, --destination, or --output) and no prefix configured in options.destination.prefix",
       });
     }
-
-    // Resolve path
-    const workingDir = (config.working_dir as string) || ".";
-    const resolvedPath = isAbsolute(String(destinationFile))
-      ? String(destinationFile)
-      : resolve(Deno.cwd(), workingDir, String(destinationFile));
 
     const filePath: FilePath = {
       value: resolvedPath,
