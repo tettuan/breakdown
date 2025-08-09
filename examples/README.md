@@ -49,26 +49,27 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 7. `07_summary_issue.sh` - summary issueコマンドの例
 8. `08_defect_patterns.sh` - defect issue/taskコマンドの例
 
-### 設定確認 (09-14)
+### 設定確認 (09-15)
 9. `09_config_basic.sh` - 基本的な設定例
-10. `10_config_environments.sh` - 環境別設定例
-11. `11_config_team.sh` - チーム開発用設定例
-12. `12_config_production.sh` - 本番環境用設定例
-13. `13_config_production_example.sh` - 本番環境設定とバグ検出例
-14. `14_config_production_custom.sh` - 本番環境カスタム設定とFind Bugs
+10. `10_config_destination_prefix.sh` - options.destination.prefix設定例
+11. `11_config_environments.sh` - 環境別設定例
+12. `12_config_team.sh` - チーム開発用設定例
+13. `13_config_production.sh` - 本番環境用設定例
+14. `14_config_production_example.sh` - 本番環境設定とバグ検出例
+15. `15_config_production_custom.sh` - 本番環境カスタム設定とFind Bugs
 
-### パラメータ動作確認 (15-17)
-15. `15_input_parameter.sh` - --input/-i= パラメータの動作確認
-16. `16_adaptation_parameter.sh` - --adaptation/-a= パラメータの動作確認
-17. `17_custom_variables.sh` - カスタム変数（--uv-*）の動作確認
+### パラメータ動作確認 (16-18)
+16. `16_input_parameter.sh` - --input/-i= パラメータの動作確認
+17. `17_adaptation_parameter.sh` - --adaptation/-a= パラメータの動作確認
+18. `18_custom_variables.sh` - カスタム変数（--uv-*）の動作確認
 
-### 応用例 (18-20)
-18. `18_pipeline_processing.sh` - パイプライン処理の例
-19. `19_batch_processing.sh` - バッチ処理の例
-20. `20_error_handling.sh` - エラーハンドリングの例
+### 応用例 (19-21)
+19. `19_pipeline_processing.sh` - パイプライン処理の例
+20. `20_batch_processing.sh` - バッチ処理の例
+21. `21_error_handling.sh` - エラーハンドリングの例
 
-### クリーンアップ (21)
-21. `21_clean.sh` - 生成されたファイルのクリーンアップ
+### クリーンアップ (22)
+22. `22_clean.sh` - 生成されたファイルのクリーンアップ
 
 - クリーンアップは全ての動作確認が正常に完了した最後に実行すること
 - 異常終了時に最初から実行する際には、クリーンアップしてから再実行すること
@@ -156,36 +157,46 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 - デフォルト設定の確認
 - 簡単な設定のカスタマイズ
 
-### 10. 環境別設定例
+### 10. Destination Prefix設定例
 ```bash
-./examples/10_config_environments.sh
+./examples/10_config_destination_prefix.sh
+```
+このスクリプトは以下を実行します：
+- options.destination.prefix設定の使用方法
+- 設定ファイルでのprefix定義（basic-user.yml、production-user.yml）
+- destination_path変数へのprefix適用の確認
+- 複数プロファイルでの異なるprefix設定
+
+### 11. 環境別設定例
+```bash
+./examples/11_config_environments.sh
 ```
 このスクリプトは以下を実行します：
 - 開発、ステージング、本番環境の設定切り替え
 - 環境変数による設定管理
 - 環境別のプロンプト設定
 
-### 11. チーム開発用設定例
+### 12. チーム開発用設定例
 ```bash
-./examples/11_config_team.sh
+./examples/12_config_team.sh
 ```
 このスクリプトは以下を実行します：
 - チーム開発向けの共有設定
 - コラボレーション設定
 - 権限管理の設定
 
-### 12. 本番環境用設定例
+### 13. 本番環境用設定例
 ```bash
-./examples/12_config_production.sh
+./examples/13_config_production.sh
 ```
 このスクリプトは以下を実行します：
 - 本番環境向けの設定ファイル作成
 - セキュリティ設定の強化
 - パフォーマンス最適化設定
 
-### 13. 本番環境設定とバグ検出例
+### 14. 本番環境設定とバグ検出例
 ```bash
-./examples/13_config_production_example.sh
+./examples/14_config_production_example.sh
 ```
 このスクリプトは以下を実行します：
 - production-user.ymlを使用した `breakdown find bugs` コマンドのデモンストレーション
@@ -194,9 +205,9 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 - `breakdown find bugs` コマンドの実行と結果表示
 - 本番環境設定の詳細表示（検出パターン、対象ファイル拡張子、除外ディレクトリ等）
 
-### 14. 本番環境カスタム設定とFind Bugs
+### 15. 本番環境カスタム設定とFind Bugs
 ```bash
-./examples/14_config_production_custom.sh
+./examples/15_config_production_custom.sh
 ```
 このスクリプトは以下を実行します：
 - production-user.ymlを使用したCustomConfig機能のデモンストレーション
@@ -208,18 +219,18 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 
 ## パラメータ動作確認の詳細
 
-### 15. Inputパラメータの動作確認
+### 16. Inputパラメータの動作確認
 ```bash
-./examples/15_input_parameter.sh
+./examples/16_input_parameter.sh
 ```
 このスクリプトは以下を実行します：
 - --input/-i= パラメータがテンプレート選択に与える影響の確認（短縮形使用時は必ずイコール記号）
 - f_{fromLayerType}.md ファイル名パターンの検証
 - project/issue/task 各レベルでの動作確認
 
-### 16. Adaptationパラメータの動作確認
+### 17. Adaptationパラメータの動作確認
 ```bash
-./examples/16_adaptation_parameter.sh
+./examples/17_adaptation_parameter.sh
 ```
 このスクリプトは以下を実行します：
 - --adaptation/-a= パラメータがテンプレート選択に与える影響の確認（短縮形使用時は必ずイコール記号）
@@ -227,9 +238,9 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 - strict/agile/detailed 各アダプテーションでの動作確認
 - フォールバック動作の確認
 
-### 17. カスタム変数の動作確認
+### 18. カスタム変数の動作確認
 ```bash
-./examples/17_custom_variables.sh
+./examples/18_custom_variables.sh
 ```
 このスクリプトは以下を実行します：
 - --uv-*カスタム変数の使用方法と動作確認
@@ -238,27 +249,27 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 
 ## 応用例の詳細
 
-### 18. パイプライン処理の例
+### 19. パイプライン処理の例
 ```bash
-./examples/18_pipeline_processing.sh
+./examples/19_pipeline_processing.sh
 ```
 このスクリプトは以下を実行します：
 - 複数のbreakdownコマンドの連携
 - UNIXツールとの統合
 - プロセス置換の活用
 
-### 19. バッチ処理の例
+### 20. バッチ処理の例
 ```bash
-./examples/19_batch_processing.sh
+./examples/20_batch_processing.sh
 ```
 このスクリプトは以下を実行します：
 - 複数ファイルの一括処理
 - 処理結果のレポート生成
 - 定期実行用スクリプトの作成
 
-### 20. エラーハンドリングの例
+### 21. エラーハンドリングの例
 ```bash
-./examples/20_error_handling.sh
+./examples/21_error_handling.sh
 ```
 このスクリプトは以下を実行します：
 - エラーの捕捉と記録
@@ -267,9 +278,9 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 
 ## クリーンアップの詳細
 
-### 21. クリーンアップ
+### 22. クリーンアップ
 ```bash
-./examples/21_clean.sh
+./examples/22_clean.sh
 ```
 このスクリプトは以下を実行します：
 - 生成された全ての出力ファイルの削除
@@ -340,26 +351,28 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 
 | スクリプト | コマンド | 設定ファイルPATH | 設定内容 | 想定のプロンプトPATH | プロンプトの存在 |
 |------------|----------|------------------|----------|---------------------|------------------|
-| 00_instructions.sh | - | - | - | - | - |
-| 00_template_check.sh | - | - | - | - | - |
-| 01_install.sh | - | - | - | - | - |
-| 02_init_deno_run.sh | init | `.agent/climpt/config/default-app.yml` | 初期設定作成 | 全テンプレート | ✅ |
-| 03_create_user_config.sh | - | `.agent/climpt/config/default-user.yml` | ユーザー設定作成 | - | - |
-| 04_stdin_example.sh | summary project | `.agent/climpt/config/stdin-app.yml`<br/>`.agent/climpt/config/stdin-user.yml` | STDIN用設定<br/>（プロファイル: stdin） | `.agent/climpt/prompts/summary/project/f_project.md` | ✅ |
-| 05_basic_usage.sh | to issue<br/>summary task<br/>defect project | `.agent/climpt/config/timeout-app.yml`<br/>`.agent/climpt/config/timeout-user.yml`<br/>`.agent/climpt/config/default-app.yml`<br/>`.agent/climpt/config/default-user.yml` | タイムアウト設定<br/>（プロファイル: timeout）<br/>デフォルト設定<br/>（プロファイル: default） | `.agent/climpt/prompts/to/issue/f_issue.md`<br/>`.agent/climpt/prompts/summary/task/f_task.md`<br/>`.agent/climpt/prompts/defect/project/f_project.md` | ✅<br/>✅<br/>✅ |
-| 06_config_basic.sh | - | `.agent/climpt/config/basic-app.yml`<br/>`.agent/climpt/config/basic-user.yml` | 基本設定例<br/>（プロファイル: basic） | - | - |
-| 07_config_production.sh | summary issue | `.agent/climpt/config/production-app.yml`<br/>`.agent/climpt/config/production-user.yml` | 本番環境設定<br/>（プロファイル: production） | `.agent/climpt/prompts/summary/issue/f_issue.md` | ✅ |
-| 08_config_team.sh | to task | `.agent/climpt/config/team-app.yml`<br/>`.agent/climpt/config/team-user.yml` | チーム設定<br/>（プロファイル: team） | `.agent/climpt/prompts/to/task/f_task.md` | ✅ |
-| 09_config_environments.sh | defect issue | `.agent/climpt/config/{env}-app.yml`<br/>`.agent/climpt/config/{env}-user.yml` | 環境別設定<br/>（プロファイル: {env}） | `.agent/climpt/prompts/defect/issue/f_issue.md` | ✅ |
-| 10_config_production_example.sh | defect issue | `.agent/climpt/config/production-bugs-app.yml`<br/>`.agent/climpt/config/production-bugs-user.yml` | 本番バグ検出設定<br/>（プロファイル: production-bugs） | `.agent/climpt/prompts/defect/issue/f_issue.md` | ✅ |
-| 11_config_production_custom.sh | - | `.agent/climpt/config/production-custom-app.yml`<br/>`.agent/climpt/config/production-custom-user.yml` | カスタム本番設定<br/>（プロファイル: production-custom） | - | - |
-| 12_summary_issue.sh | summary issue | `.agent/climpt/config/default-app.yml`<br/>`.agent/climpt/config/default-user.yml` | デフォルト設定<br/>（プロファイル: default） | `.agent/climpt/prompts/summary/issue/f_issue.md` | ✅ |
-| 13_defect_patterns.sh | defect issue<br/>defect task | `.agent/climpt/config/default-app.yml`<br/>`.agent/climpt/config/default-user.yml` | デフォルト設定<br/>（プロファイル: default） | `.agent/climpt/prompts/defect/issue/f_issue.md`<br/>`.agent/climpt/prompts/defect/task/f_task.md` | ✅<br/>✅ |
-| 14_custom_variables.sh | to project<br/>summary task | `.agent/climpt/config/default-app.yml`<br/>`.agent/climpt/config/default-user.yml` | デフォルト設定<br/>（プロファイル: default） | `.agent/climpt/prompts/to/project/f_project.md`<br/>`.agent/climpt/prompts/summary/task/f_task.md` | ✅<br/>✅ |
-| 15_pipeline_processing.sh | summary project<br/>defect task<br/>to issue | `.agent/climpt/config/default-app.yml`<br/>`.agent/climpt/config/default-user.yml` | デフォルト設定<br/>（プロファイル: default） | `.agent/climpt/prompts/summary/project/f_project.md`<br/>`.agent/climpt/prompts/defect/task/f_task.md`<br/>`.agent/climpt/prompts/to/issue/f_issue.md` | ✅<br/>✅<br/>✅ |
-| 16_batch_processing.sh | to project<br/>defect issue<br/>summary project | `.agent/climpt/config/default-app.yml`<br/>`.agent/climpt/config/default-user.yml` | デフォルト設定<br/>（プロファイル: default） | `.agent/climpt/prompts/to/project/f_project.md`<br/>`.agent/climpt/prompts/defect/issue/f_issue.md`<br/>`.agent/climpt/prompts/summary/project/f_project.md` | ✅<br/>✅<br/>✅ |
-| 17_error_handling.sh | to project<br/>summary task | `.agent/climpt/config/default-app.yml`<br/>`.agent/climpt/config/default-user.yml` | デフォルト設定<br/>（プロファイル: default） | `.agent/climpt/prompts/to/project/f_project.md`<br/>`.agent/climpt/prompts/summary/task/f_task.md` | ✅<br/>✅ |
-| 18_clean.sh | - | - | クリーンアップ | - | - |
+| 01_instructions.sh | - | - | - | - | - |
+| 02_install.sh | - | - | - | - | - |
+| 03_init_deno_run.sh | init | `.agent/climpt/config/default-app.yml` | 初期設定作成 | 全テンプレート | ✅ |
+| 04_create_user_config.sh | - | `.agent/climpt/config/default-user.yml` | ユーザー設定作成 | - | - |
+| 05_basic_usage.sh | to issue<br/>summary task<br/>defect project | `.agent/climpt/config/default-app.yml`<br/>`.agent/climpt/config/default-user.yml` | デフォルト設定<br/>（プロファイル: default） | `.agent/climpt/prompts/to/issue/f_issue.md`<br/>`.agent/climpt/prompts/summary/task/f_task.md`<br/>`.agent/climpt/prompts/defect/project/f_project.md` | ✅<br/>✅<br/>✅ |
+| 06_stdin_example.sh | summary project | `.agent/climpt/config/stdin-app.yml`<br/>`.agent/climpt/config/stdin-user.yml` | STDIN用設定<br/>（プロファイル: stdin） | `.agent/climpt/prompts/summary/project/f_project.md` | ✅ |
+| 07_summary_issue.sh | summary issue | `.agent/climpt/config/default-app.yml`<br/>`.agent/climpt/config/default-user.yml` | デフォルト設定<br/>（プロファイル: default） | `.agent/climpt/prompts/summary/issue/f_issue.md` | ✅ |
+| 08_defect_patterns.sh | defect issue<br/>defect task | `.agent/climpt/config/default-app.yml`<br/>`.agent/climpt/config/default-user.yml` | デフォルト設定<br/>（プロファイル: default） | `.agent/climpt/prompts/defect/issue/f_issue.md`<br/>`.agent/climpt/prompts/defect/task/f_task.md` | ✅<br/>✅ |
+| 09_config_basic.sh | - | `.agent/climpt/config/basic-app.yml`<br/>`.agent/climpt/config/basic-user.yml` | 基本設定例<br/>（プロファイル: basic） | - | - |
+| 10_config_destination_prefix.sh | summary project | `.agent/climpt/config/basic-app.yml`<br/>`.agent/climpt/config/basic-user.yml`<br/>`.agent/climpt/config/production-app.yml`<br/>`.agent/climpt/config/production-user.yml` | prefix設定例<br/>（basic: output/basic/）<br/>（production: reports/production/2024/） | `.agent/climpt/prompts/summary/project/f_project.md` | ✅ |
+| 11_config_environments.sh | defect issue | `.agent/climpt/config/{env}-app.yml`<br/>`.agent/climpt/config/{env}-user.yml` | 環境別設定<br/>（プロファイル: {env}） | `.agent/climpt/prompts/defect/issue/f_issue.md` | ✅ |
+| 12_config_team.sh | to task | `.agent/climpt/config/team-app.yml`<br/>`.agent/climpt/config/team-user.yml` | チーム設定<br/>（プロファイル: team） | `.agent/climpt/prompts/to/task/f_task.md` | ✅ |
+| 13_config_production.sh | summary issue | `.agent/climpt/config/production-app.yml`<br/>`.agent/climpt/config/production-user.yml` | 本番環境設定<br/>（プロファイル: production） | `.agent/climpt/prompts/summary/issue/f_issue.md` | ✅ |
+| 14_config_production_example.sh | find bugs | `.agent/climpt/config/production-bugs-app.yml`<br/>`.agent/climpt/config/production-bugs-user.yml` | 本番バグ検出設定<br/>（プロファイル: production-bugs） | `.agent/climpt/prompts/find/bugs/f_bugs.md` | ✅ |
+| 15_config_production_custom.sh | - | `.agent/climpt/config/production-custom-app.yml`<br/>`.agent/climpt/config/production-custom-user.yml` | カスタム本番設定<br/>（プロファイル: production-custom） | - | - |
+| 16_input_parameter.sh | to task | `.agent/climpt/config/default-app.yml`<br/>`.agent/climpt/config/default-user.yml` | デフォルト設定<br/>（プロファイル: default） | `.agent/climpt/prompts/to/task/f_project.md`<br/>`.agent/climpt/prompts/to/task/f_issue.md`<br/>`.agent/climpt/prompts/to/task/f_task.md` | ✅<br/>✅<br/>✅ |
+| 17_adaptation_parameter.sh | to task | `.agent/climpt/config/default-app.yml`<br/>`.agent/climpt/config/default-user.yml` | デフォルト設定<br/>（プロファイル: default） | `.agent/climpt/prompts/to/task/f_*_{adaptation}.md` | ✅ |
+| 18_custom_variables.sh | to project<br/>summary task | `.agent/climpt/config/default-app.yml`<br/>`.agent/climpt/config/default-user.yml` | デフォルト設定<br/>（プロファイル: default） | `.agent/climpt/prompts/to/project/f_project.md`<br/>`.agent/climpt/prompts/summary/task/f_task.md` | ✅<br/>✅ |
+| 19_pipeline_processing.sh | summary project<br/>defect task<br/>to issue | `.agent/climpt/config/default-app.yml`<br/>`.agent/climpt/config/default-user.yml` | デフォルト設定<br/>（プロファイル: default） | `.agent/climpt/prompts/summary/project/f_project.md`<br/>`.agent/climpt/prompts/defect/task/f_task.md`<br/>`.agent/climpt/prompts/to/issue/f_issue.md` | ✅<br/>✅<br/>✅ |
+| 20_batch_processing.sh | to project<br/>defect issue<br/>summary project | `.agent/climpt/config/default-app.yml`<br/>`.agent/climpt/config/default-user.yml` | デフォルト設定<br/>（プロファイル: default） | `.agent/climpt/prompts/to/project/f_project.md`<br/>`.agent/climpt/prompts/defect/issue/f_issue.md`<br/>`.agent/climpt/prompts/summary/project/f_project.md` | ✅<br/>✅<br/>✅ |
+| 21_error_handling.sh | to project<br/>summary task | `.agent/climpt/config/default-app.yml`<br/>`.agent/climpt/config/default-user.yml` | デフォルト設定<br/>（プロファイル: default） | `.agent/climpt/prompts/to/project/f_project.md`<br/>`.agent/climpt/prompts/summary/task/f_task.md` | ✅<br/>✅ |
+| 22_clean.sh | - | - | クリーンアップ | - | - |
 
 ### テンプレート依存関係
 
