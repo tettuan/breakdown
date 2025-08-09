@@ -50,13 +50,13 @@ cat > "$CONFIG_DIR/basic-user.yml" << 'EOF'
 # Basic user configuration with destination prefix
 options:
   destination:
-    prefix: "output/basic/"
+    prefix: "output/basic"
     
 app_prompt:
   working_dir: "./.agent/climpt/examples"
 EOF
 
-echo "✅ Created basic profile with destination.prefix: 'output/basic/'"
+echo "✅ Created basic profile with destination.prefix: 'output/basic'"
 
 # Create production-app.yml
 cat > "$CONFIG_DIR/production-app.yml" << 'EOF'
@@ -79,13 +79,13 @@ cat > "$CONFIG_DIR/production-user.yml" << 'EOF'
 # Production user configuration with dated prefix
 options:
   destination:
-    prefix: "reports/production/2024/"
+    prefix: "reports/production/2024"
     
 app_prompt:
   working_dir: "./.agent/climpt/examples"
 EOF
 
-echo "✅ Created production profile with destination.prefix: 'reports/production/2024/'"
+echo "✅ Created production profile with destination.prefix: 'reports/production/2024'"
 
 # Create template that shows destination_path
 TEMPLATE_DIR="./.agent/climpt/prompts/summary/project"
@@ -135,9 +135,9 @@ $BREAKDOWN summary project \
   --destination="summary.md" 2>&1 | grep -E "(Destination Path:|saved to:)" || echo "No destination_path found in output"
 
 echo
-echo "=== Test 2: Basic Profile (with prefix 'output/basic/') ==="
+echo "=== Test 2: Basic Profile (with prefix 'output/basic') ==="
 echo "Command: breakdown summary project --config=basic"
-echo "Expected: destination_path = 'output/basic/summary.md'"
+echo "Expected: destination_path = 'output/basicsummary.md'"
 echo
 
 $BREAKDOWN summary project \
@@ -146,9 +146,9 @@ $BREAKDOWN summary project \
   --destination="summary.md" 2>&1 | grep -E "(Destination Path:|saved to:)" || echo "No destination_path found in output"
 
 echo
-echo "=== Test 3: Production Profile (with prefix 'reports/production/2024/') ==="
+echo "=== Test 3: Production Profile (with prefix 'reports/production/2024') ==="
 echo "Command: breakdown summary project --config=production"
-echo "Expected: destination_path = 'reports/production/2024/summary.md'"
+echo "Expected: destination_path = 'reports/production/2024summary.md'"
 echo
 
 $BREAKDOWN summary project \
@@ -160,7 +160,7 @@ echo
 echo "=== Test 4: Dynamic filename with prefix ==="
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 echo "Command: breakdown summary project --config=basic --destination=${TIMESTAMP}.md"
-echo "Expected: destination_path = 'output/basic/${TIMESTAMP}.md'"
+echo "Expected: destination_path = 'output/basic${TIMESTAMP}.md'"
 echo
 
 $BREAKDOWN summary project \
@@ -191,7 +191,7 @@ echo
 echo "Example configuration:"
 echo "  options:"
 echo "    destination:"
-echo "      prefix: 'reports/2024/'"
+echo "      prefix: 'reports/2024'"
 echo
 echo "Result: destination_path = prefix + destination"
-echo "  e.g., 'reports/2024/' + 'output.md' = 'reports/2024/output.md'"
+echo "  e.g., 'reports/2024' + 'output.md' = 'reports/2024output.md'"
