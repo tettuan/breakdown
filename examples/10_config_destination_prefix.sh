@@ -146,10 +146,9 @@ echo "Command: breakdown summary project --config=default"
 echo "Expected: destination_path without prefix"
 echo
 
-LOG_LEVEL=debug $BREAKDOWN summary project \
+timeout 30 env LOG_LEVEL=debug $BREAKDOWN summary project \
   --config=default \
-  --from="$OUTPUT_DIR/project_data.md" \
-  -o="summary.md" 2>&1 | grep -E "(destination|Destination)" || echo "No destination_path found in output"
+  -o="summary.md" < "$OUTPUT_DIR/project_data.md" 2>&1 | grep -E "(destination|Destination)" || echo "No destination_path found in output"
 
 echo
 echo "=== Test 2: Basic Profile (with prefix 'output/basic') ==="
@@ -157,10 +156,9 @@ echo "Command: breakdown summary project --config=basic"
 echo "Expected: destination_path = 'output/basicsummary.md'"
 echo
 
-LOG_LEVEL=debug $BREAKDOWN summary project \
+timeout 30 env LOG_LEVEL=debug $BREAKDOWN summary project \
   --config=basic \
-  --from="$OUTPUT_DIR/project_data.md" \
-  -o="summary.md" 2>&1 | grep -E "(destination|Destination)" || echo "No destination_path found in output"
+  -o="summary.md" < "$OUTPUT_DIR/project_data.md" 2>&1 | grep -E "(destination|Destination)" || echo "No destination_path found in output"
 
 echo
 echo "=== Test 3: Production Profile (with prefix 'reports/production/2024') ==="
@@ -168,10 +166,9 @@ echo "Command: breakdown summary project --config=production"
 echo "Expected: destination_path = 'reports/production/2024summary.md'"
 echo
 
-LOG_LEVEL=debug $BREAKDOWN summary project \
+timeout 30 env LOG_LEVEL=debug $BREAKDOWN summary project \
   --config=production \
-  --from="$OUTPUT_DIR/project_data.md" \
-  -o="summary.md" 2>&1 | grep -E "(destination|Destination)" || echo "No destination_path found in output"
+  -o="summary.md" < "$OUTPUT_DIR/project_data.md" 2>&1 | grep -E "(destination|Destination)" || echo "No destination_path found in output"
 
 echo
 echo "=== Test 4: Dynamic filename with prefix ==="
@@ -180,10 +177,9 @@ echo "Command: breakdown summary project --config=basic --destination=${TIMESTAM
 echo "Expected: destination_path = 'output/basic${TIMESTAMP}.md'"
 echo
 
-LOG_LEVEL=debug $BREAKDOWN summary project \
+timeout 30 env LOG_LEVEL=debug $BREAKDOWN summary project \
   --config=basic \
-  --from="$OUTPUT_DIR/project_data.md" \
-  -o="${TIMESTAMP}.md" 2>&1 | grep -E "(destination|Destination)" || echo "No destination_path found in output"
+  -o="${TIMESTAMP}.md" < "$OUTPUT_DIR/project_data.md" 2>&1 | grep -E "(destination|Destination)" || echo "No destination_path found in output"
 
 echo
 echo "=== Configuration Files Created ==="

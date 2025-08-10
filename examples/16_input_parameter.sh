@@ -230,7 +230,7 @@ echo "Command: breakdown to task --from=project_overview.md"
 echo "Expected: Should use f_default.md template (no --input specified)"
 echo
 
-$BREAKDOWN to task --from="$OUTPUT_DIR/project_overview.md" -o="$OUTPUT_DIR/result_no_input.md" > "$OUTPUT_DIR/result_no_input.md" 2>&1
+$BREAKDOWN to task -o="$OUTPUT_DIR/result_no_input.md" < "$OUTPUT_DIR/project_overview.md" 2>&1
 
 if [ -f "$OUTPUT_DIR/result_no_input.md" ]; then
     echo "Result preview:"
@@ -258,7 +258,7 @@ echo "Command: breakdown to task --from=project_overview.md --input=project"
 echo "Expected: Should use f_project.md template (not f_task.md)"
 echo
 
-$BREAKDOWN to task --from="$OUTPUT_DIR/project_overview.md" --input=project -o="$OUTPUT_DIR/result_input_project.md" > "$OUTPUT_DIR/result_input_project.md" 2>&1
+$BREAKDOWN to task --input=project -o="$OUTPUT_DIR/result_input_project.md" < "$OUTPUT_DIR/project_overview.md" 2>&1
 
 if [ -f "$OUTPUT_DIR/result_input_project.md" ]; then
     echo "Result preview:"
@@ -282,7 +282,7 @@ echo "Command: breakdown to task --from=issue_list.md --input=issue"
 echo "Expected: Should use f_issue.md template (not f_task.md)"
 echo
 
-$BREAKDOWN to task --from="$OUTPUT_DIR/issue_list.md" --input=issue -o="$OUTPUT_DIR/result_input_issue.md" > "$OUTPUT_DIR/result_input_issue.md" 2>&1
+$BREAKDOWN to task --input=issue -o="$OUTPUT_DIR/result_input_issue.md" < "$OUTPUT_DIR/issue_list.md" 2>&1
 
 if [ -f "$OUTPUT_DIR/result_input_issue.md" ]; then
     echo "Result preview:"
@@ -306,7 +306,7 @@ echo "Command: breakdown to task --from=task_list.md -i=task"
 echo "Expected: Should use f_task.md template"
 echo
 
-$BREAKDOWN to task --from="$OUTPUT_DIR/task_list.md" -i=task -o="$OUTPUT_DIR/result_short_form.md" > "$OUTPUT_DIR/result_short_form.md" 2>&1
+$BREAKDOWN to task -i=task -o="$OUTPUT_DIR/result_short_form.md" < "$OUTPUT_DIR/task_list.md" 2>&1
 
 if [ -f "$OUTPUT_DIR/result_short_form.md" ]; then
     echo "Result preview:"
@@ -344,12 +344,16 @@ echo "=== Checking Actual Implementation ==="
 echo
 if [ -d "$TEMPLATE_DIR" ]; then
     echo "Created templates in: $TEMPLATE_DIR"
-    ls -la "$TEMPLATE_DIR"/f_*.md 2>/dev/null | sed 's/^/  /'
+    if ls "$TEMPLATE_DIR"/f_*.md >/dev/null 2>&1; then
+        ls -la "$TEMPLATE_DIR"/f_*.md 2>/dev/null | sed 's/^/  /'
+    fi
 fi
 echo
 if [ -d "$OUTPUT_DIR" ]; then
     echo "Generated outputs:"
-    ls -la "$OUTPUT_DIR"/result_*.md 2>/dev/null | sed 's/^/  /'
+    if ls "$OUTPUT_DIR"/result_*.md >/dev/null 2>&1; then
+        ls -la "$OUTPUT_DIR"/result_*.md 2>/dev/null | sed 's/^/  /'
+    fi
 fi
 
 echo

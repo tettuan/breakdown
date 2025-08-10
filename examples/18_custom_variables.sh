@@ -95,7 +95,6 @@ echo
 echo "【3. 実行コマンド】"
 
 $BREAKDOWN to project \
-  --from="$OUTPUT_DIR/project_brief.md" \
   --input=project \
   --uv-company_name="テックコーポレーション" \
   --uv-project_name="ECサイトリニューアル" \
@@ -103,7 +102,7 @@ $BREAKDOWN to project \
   --uv-team_size="5名" \
   --uv-deadline="2024年3月末" \
   --uv-budget="500万円" \
-  -o="$OUTPUT_DIR/custom_project.md" > "$OUTPUT_DIR/custom_project.md"
+  -o="$OUTPUT_DIR/custom_project.md" < "$OUTPUT_DIR/project_brief.md" 2>&1
 
 echo
 echo "【4. 生成結果の検証】"
@@ -205,12 +204,11 @@ echo
 echo "【3. 実行コマンド】"
 
 $BREAKDOWN summary task \
-  --from="$OUTPUT_DIR/feature_request.md" \
   --input=task \
   --adaptation="agile" \
   --uv-sprint_length="2週間" \
   --uv-story_point_scale="フィボナッチ数列" \
-  -o="$OUTPUT_DIR/agile_tasks.md" > "$OUTPUT_DIR/agile_tasks.md"
+  -o="$OUTPUT_DIR/agile_tasks.md" < "$OUTPUT_DIR/feature_request.md" 2>&1
 
 echo
 echo "【4. 生成結果の検証】"
@@ -247,12 +245,11 @@ echo "システム要件:
 - 高可用性
 - スケーラブル
 - セキュア" | $BREAKDOWN to issue \
-  --from=- \
   --uv-system_type="マイクロサービス" \
   --uv-deployment="Kubernetes" \
   --uv-monitoring="Prometheus + Grafana" \
   --uv-security_level="PCI-DSS準拠" \
-  -o="$OUTPUT_DIR/system_issue.md" > "$OUTPUT_DIR/system_issue.md"
+  -o="$OUTPUT_DIR/system_issue.md" 2>&1
 
 echo "✅ STDINとカスタム変数の組み合わせ完了"
 

@@ -70,7 +70,7 @@ for PROFILE in dev staging prod; do
     echo "   - 設定値に基づくプロンプト生成を実行"
     
     # Execute breakdown command with profile
-    if deno run --allow-all ../cli/breakdown.ts defect issue --config=${PROFILE} --from=./profile_test.md > ./${PROFILE}_output.md 2>&1; then
+    if deno run --allow-all ../cli/breakdown.ts defect issue --config=${PROFILE} < ./profile_test.md > ./${PROFILE}_output.md 2>&1; then
         echo "✅ breakdown実行成功 (profile: ${PROFILE})"
         
         echo "📊 Output preview:"
@@ -118,7 +118,7 @@ echo ""
 echo "🔍 基本プロファイル動作確認"
 echo "デフォルトプロファイルでの動作確認:"
 
-if deno run --allow-all ../cli/breakdown.ts defect issue --from=./profile_test.md > ./default_output.md 2>&1; then
+if deno run --allow-all ../cli/breakdown.ts defect issue < ./profile_test.md > ./default_output.md 2>&1; then
     echo "✅ default profile動作確認完了"
     echo "📊 Default output preview:"
     head -3 ./default_output.md
