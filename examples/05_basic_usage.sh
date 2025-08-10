@@ -58,7 +58,7 @@ done
 # Use deno run for breakdown command
 # Define as function to avoid quote issues with timeout
 BREAKDOWN() {
-    timeout 10 deno run --allow-read --allow-write --allow-env --allow-net ../cli/breakdown.ts "$@"
+    timeout 10 deno run --allow-read --allow-write --allow-env --allow-net ../cli/breakdown.ts "$@" 2>/dev/null
 }
 
 # Create output directory for examples
