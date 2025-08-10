@@ -31,6 +31,7 @@ mkdir -p "$CONFIG_DIR"
 
 # Create a basic-app.yml (reuse existing pattern)
 cat > "$CONFIG_DIR/basic-app.yml" << 'EOF'
+working_dir: ".agent/climpt"
 params:
   two:
     directiveType:
@@ -40,26 +41,25 @@ params:
       pattern: "^(project|issue|task|bugs)$"
       errorMessage: "Invalid layer type. Must be one of: project, issue, task, bugs"
 app_prompt:
-  base_dir: "./.agent/climpt/prompts"
+  base_dir: "prompts"
 app_schema:
-  base_dir: "./.agent/climpt/schema"
+  base_dir: "schema"
 EOF
 
 # Create basic-user.yml with destination.prefix
 cat > "$CONFIG_DIR/basic-user.yml" << 'EOF'
 # Basic user configuration with destination prefix
+working_dir: ".agent/climpt"
 options:
   destination:
     prefix: "output/basic"
-    
-app_prompt:
-  working_dir: "./.agent/climpt/examples"
 EOF
 
 echo "✅ Created basic profile with destination.prefix: 'output/basic'"
 
 # Create production-app.yml
 cat > "$CONFIG_DIR/production-app.yml" << 'EOF'
+working_dir: ".agent/climpt"
 params:
   two:
     directiveType:
@@ -69,20 +69,18 @@ params:
       pattern: "^(project|issue|task|bugs|feature)$"
       errorMessage: "Invalid layer type"
 app_prompt:
-  base_dir: "./.agent/climpt/prompts"
+  base_dir: "prompts"
 app_schema:
-  base_dir: "./.agent/climpt/schema"
+  base_dir: "schema"
 EOF
 
 # Create production-user.yml with different prefix
 cat > "$CONFIG_DIR/production-user.yml" << 'EOF'
 # Production user configuration with dated prefix
+working_dir: ".agent/climpt"
 options:
   destination:
     prefix: "reports/production/2024"
-    
-app_prompt:
-  working_dir: "./.agent/climpt/examples"
 EOF
 
 echo "✅ Created production profile with destination.prefix: 'reports/production/2024'"
@@ -95,19 +93,38 @@ cat > "$TEMPLATE_DIR/f_project.md" << 'EOF'
 # Project Summary Template
 
 ## Configuration Information
-- Profile: Current configuration profile in use
-- Destination Path: {{destination_path}}
+- Profile: Current configuration profile in use  
+- Destination Path: {destination_path}
 
 ## Input Content
-{{input_text}}
+{input_text}
 
 ## Summary
 Creating project summary...
 
-The output will be saved to: {{destination_path}}
+The output will be saved to: {destination_path}
 EOF
 
 echo "✅ Created template that displays destination_path"
+
+# Also create f_default.md since it's used when no from_layer is specified
+cat > "$TEMPLATE_DIR/f_default.md" << 'EOF'
+# Project Summary Template
+
+## Configuration Information
+- Profile: Current configuration profile in use  
+- Destination Path: {destination_path}
+
+## Input Content
+{input_text}
+
+## Summary
+Creating project summary...
+
+The output will be saved to: {destination_path}
+EOF
+
+echo "✅ Created f_default.md template"
 echo
 
 # Create test input
@@ -129,10 +146,10 @@ echo "Command: breakdown summary project --config=default"
 echo "Expected: destination_path without prefix"
 echo
 
-$BREAKDOWN summary project \
+LOG_LEVEL=debug $BREAKDOWN summary project \
   --config=default \
   --from="$OUTPUT_DIR/project_data.md" \
-  --destination="summary.md" 2>&1 | grep -E "(Destination Path:|saved to:)" || echo "No destination_path found in output"
+  -o="summary.md" 2>&1 | grep -E "(destination|Destination)" || echo "No destination_path found in output"
 
 echo
 echo "=== Test 2: Basic Profile (with prefix 'output/basic') ==="
@@ -140,10 +157,10 @@ echo "Command: breakdown summary project --config=basic"
 echo "Expected: destination_path = 'output/basicsummary.md'"
 echo
 
-$BREAKDOWN summary project \
+LOG_LEVEL=debug $BREAKDOWN summary project \
   --config=basic \
   --from="$OUTPUT_DIR/project_data.md" \
-  --destination="summary.md" 2>&1 | grep -E "(Destination Path:|saved to:)" || echo "No destination_path found in output"
+  -o="summary.md" 2>&1 | grep -E "(destination|Destination)" || echo "No destination_path found in output"
 
 echo
 echo "=== Test 3: Production Profile (with prefix 'reports/production/2024') ==="
@@ -151,10 +168,10 @@ echo "Command: breakdown summary project --config=production"
 echo "Expected: destination_path = 'reports/production/2024summary.md'"
 echo
 
-$BREAKDOWN summary project \
+LOG_LEVEL=debug $BREAKDOWN summary project \
   --config=production \
   --from="$OUTPUT_DIR/project_data.md" \
-  --destination="summary.md" 2>&1 | grep -E "(Destination Path:|saved to:)" || echo "No destination_path found in output"
+  -o="summary.md" 2>&1 | grep -E "(destination|Destination)" || echo "No destination_path found in output"
 
 echo
 echo "=== Test 4: Dynamic filename with prefix ==="
@@ -163,10 +180,10 @@ echo "Command: breakdown summary project --config=basic --destination=${TIMESTAM
 echo "Expected: destination_path = 'output/basic${TIMESTAMP}.md'"
 echo
 
-$BREAKDOWN summary project \
+LOG_LEVEL=debug $BREAKDOWN summary project \
   --config=basic \
   --from="$OUTPUT_DIR/project_data.md" \
-  --destination="${TIMESTAMP}.md" 2>&1 | grep -E "(Destination Path:|saved to:)" || echo "No destination_path found in output"
+  -o="${TIMESTAMP}.md" 2>&1 | grep -E "(destination|Destination)" || echo "No destination_path found in output"
 
 echo
 echo "=== Configuration Files Created ==="
