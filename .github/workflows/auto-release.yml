@@ -1,0 +1,101 @@
+name: Auto Release on Merge
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  auto-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check if this is a release branch merge
+        id: check-release
+        run: |
+          # 最新コミットのメッセージを取得
+          COMMIT_MSG=$(git log -1 --pretty=format:"%s")
+          echo "Commit message: $COMMIT_MSG"
+
+          # release/ または release- ブランチのマージかチェック
+          if [[ "$COMMIT_MSG" =~ Merge\ pull\ request.*release[/-] ]] || [[ "$COMMIT_MSG" =~ Merge\ branch\ \'release[/-] ]]; then
+            echo "is_release_merge=true" >> $GITHUB_OUTPUT
+            echo "✅ Release branch merge detected"
+          else
+            echo "is_release_merge=false" >> $GITHUB_OUTPUT
+            echo "ℹ️ Not a release branch merge, skipping release"
+          fi
+
+      - name: Extract version from deno.json
+        if: steps.check-release.outputs.is_release_merge == 'true'
+        id: get-version
+        run: |
+          VERSION=$(jq -r '.version' deno.json)
+          if [[ -z "$VERSION" || "$VERSION" == "null" ]]; then
+            echo "❌ Error: Could not extract version from deno.json"
+            exit 1
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "✅ Extracted version: $VERSION"
+
+      - name: Check if tag already exists
+        if: steps.check-release.outputs.is_release_merge == 'true'
+        id: check-tag
+        run: |
+          VERSION="${{ steps.get-version.outputs.version }}"
+          TAG_NAME="v$VERSION"
+
+          if git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
+            echo "tag_exists=true" >> $GITHUB_OUTPUT
+            echo "⚠️ Tag $TAG_NAME already exists, skipping release"
+          else
+            echo "tag_exists=false" >> $GITHUB_OUTPUT
+            echo "✅ Tag $TAG_NAME does not exist, proceeding with release"
+          fi
+
+      - name: Create and push version tag
+        if: steps.check-release.outputs.is_release_merge == 'true' && steps.check-tag.outputs.tag_exists == 'false'
+        run: |
+          VERSION="${{ steps.get-version.outputs.version }}"
+          TAG_NAME="v$VERSION"
+
+          echo "Creating release tag: $TAG_NAME"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag "$TAG_NAME"
+          git push origin "$TAG_NAME"
+          echo "✅ Tag $TAG_NAME created and pushed successfully"
+
+      - name: Create GitHub Release
+        if: steps.check-release.outputs.is_release_merge == 'true' && steps.check-tag.outputs.tag_exists == 'false'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: "v${{ steps.get-version.outputs.version }}"
+          release_name: "Release v${{ steps.get-version.outputs.version }}"
+          body: |
+            Release v${{ steps.get-version.outputs.version }}
+
+            ## Installation
+            ```bash
+            deno add @tettuan/breakdown@${{ steps.get-version.outputs.version }}
+            ```
+
+            For more details, see the [changelog](CHANGELOG.md).
+          draft: false
+          prerelease: false
+
+      - name: Output release information
+        if: steps.check-release.outputs.is_release_merge == 'true' && steps.check-tag.outputs.tag_exists == 'false'
+        run: |
+          VERSION="${{ steps.get-version.outputs.version }}"
+          echo "🎉 Release v$VERSION created successfully!"
+          echo "📦 This will trigger the publish workflow to JSR"
+          echo "🔗 Release URL: https://github.com/${{ github.repository }}/releases/tag/v$VERSION"
