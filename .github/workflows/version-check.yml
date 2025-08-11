@@ -70,7 +70,7 @@ jobs:
           VERSION_TS_CONTENT=$(cat lib/version.ts)
           # Extract version using grep and sed for more reliable parsing
           VERSION_TS_VERSION=$(grep 'export const VERSION' lib/version.ts | sed -E 's/.*"([^"]+)".*/\1/')
-          
+
           if [[ -n "$VERSION_TS_VERSION" ]]; then
             # Remove leading "v" if present
             VERSION_TS_VERSION=$(echo "$VERSION_TS_VERSION" | sed 's/^v//')
