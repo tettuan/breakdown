@@ -22,7 +22,7 @@ jobs:
           # 最新コミットのメッセージを取得
           COMMIT_MSG=$(git log -1 --pretty=format:"%s")
           echo "Commit message: $COMMIT_MSG"
-          
+
           # release/ または release- ブランチのマージかチェック
           if [[ "$COMMIT_MSG" =~ Merge\ pull\ request.*release[/-] ]] || [[ "$COMMIT_MSG" =~ Merge\ branch\ \'release[/-] ]]; then
             echo "is_release_merge=true" >> $GITHUB_OUTPUT
@@ -50,7 +50,7 @@ jobs:
         run: |
           VERSION="${{ steps.get-version.outputs.version }}"
           TAG_NAME="v$VERSION"
-          
+
           if git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
             echo "tag_exists=true" >> $GITHUB_OUTPUT
             echo "⚠️ Tag $TAG_NAME already exists, skipping release"
@@ -64,7 +64,7 @@ jobs:
         run: |
           VERSION="${{ steps.get-version.outputs.version }}"
           TAG_NAME="v$VERSION"
-          
+
           echo "Creating release tag: $TAG_NAME"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -82,12 +82,12 @@ jobs:
           release_name: "Release v${{ steps.get-version.outputs.version }}"
           body: |
             Release v${{ steps.get-version.outputs.version }}
-            
+
             ## Installation
             ```bash
             deno add @tettuan/breakdown@${{ steps.get-version.outputs.version }}
             ```
-            
+
             For more details, see the [changelog](CHANGELOG.md).
           draft: false
           prerelease: false

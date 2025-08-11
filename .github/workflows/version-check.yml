@@ -2,9 +2,9 @@ name: Version Consistency Check
 
 on:
   push:
-    branches: 
-      - 'release/**'
-      - 'release-*'
+    branches:
+      - "release/**"
+      - "release-*"
 
 jobs:
   version-check:
@@ -24,7 +24,7 @@ jobs:
         run: |
           BRANCH_NAME="${GITHUB_REF#refs/heads/}"
           echo "Branch name: $BRANCH_NAME"
-          
+
           # Extract version from release/v1.5.0 or release-1.5.0 pattern
           if [[ "$BRANCH_NAME" =~ release[/-]v?([0-9]+\.[0-9]+\.[0-9]+) ]]; then
             BRANCH_VERSION="${BASH_REMATCH[1]}"
@@ -40,13 +40,13 @@ jobs:
         run: |
           BRANCH_VERSION="${{ steps.branch-version.outputs.branch_version }}"
           DENO_VERSION=$(jq -r '.version' deno.json)
-          
+
           # Remove leading "v" if present in deno.json version
           DENO_VERSION=$(echo "$DENO_VERSION" | sed 's/^v//')
-          
+
           echo "Branch version: $BRANCH_VERSION"
           echo "deno.json version: $DENO_VERSION"
-          
+
           if [[ "$DENO_VERSION" != "$BRANCH_VERSION" ]]; then
             echo "❌ Version mismatch!"
             echo "   Branch expects: $BRANCH_VERSION"
@@ -61,21 +61,21 @@ jobs:
       - name: Check lib/version.ts VERSION matches branch
         run: |
           BRANCH_VERSION="${{ steps.branch-version.outputs.branch_version }}"
-          
+
           if [[ ! -f "lib/version.ts" ]]; then
             echo "⚠️ lib/version.ts not found, skipping version.ts check"
             exit 0
           fi
-          
+
           VERSION_TS_CONTENT=$(cat lib/version.ts)
           if [[ "$VERSION_TS_CONTENT" =~ export\ const\ VERSION\ =\ [\"\\']([^\"\\\']+)[\"\\'] ]]; then
             VERSION_TS_VERSION="${BASH_REMATCH[1]}"
             # Remove leading "v" if present
             VERSION_TS_VERSION=$(echo "$VERSION_TS_VERSION" | sed 's/^v//')
-            
+
             echo "Branch version: $BRANCH_VERSION"
             echo "lib/version.ts VERSION: $VERSION_TS_VERSION"
-            
+
             if [[ "$VERSION_TS_VERSION" != "$BRANCH_VERSION" ]]; then
               echo "❌ Version mismatch!"
               echo "   Branch expects: $BRANCH_VERSION"
