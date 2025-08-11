@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - "v*.*.*"
+  release:
+    types: [published]
 
 jobs:
   publish:
@@ -23,19 +25,31 @@ jobs:
       - name: Check if tag is on main
         id: check-tag
         run: |
-          TAG_NAME=${GITHUB_REF#refs/tags/}
+          if [[ "${{ github.event_name }}" == "release" ]]; then
+            TAG_NAME="${{ github.event.release.tag_name }}"
+          else
+            TAG_NAME="${GITHUB_REF#refs/tags/}"
+          fi
+          
           TAG_COMMIT=$(git rev-parse $TAG_NAME)
           if git rev-list main | grep -q "^$TAG_COMMIT$"; then
-            echo "Tag is on main branch"
+            echo "✅ Tag $TAG_NAME is on main branch"
           else
-            echo "Tag is not on main branch"
+            echo "❌ Tag $TAG_NAME is not on main branch"
             exit 1
           fi
       # Extract version from tag
       - name: Get tag version
         id: get_tag
         run: |
-          echo "TAG_VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+          if [[ "${{ github.event_name }}" == "release" ]]; then
+            TAG_NAME="${{ github.event.release.tag_name }}"
+          else
+            TAG_NAME="${GITHUB_REF#refs/tags/}"
+          fi
+          TAG_VERSION="${TAG_NAME#v}"
+          echo "TAG_VERSION=$TAG_VERSION" >> $GITHUB_ENV
+          echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
       # Fetch latest JSR version
       - name: Get latest JSR version
         id: get_jsr
