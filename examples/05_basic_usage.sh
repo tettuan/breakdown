@@ -56,9 +56,9 @@ for directive in to summary defect find; do
 done
 
 # Use deno run for breakdown command
-# Define as function to avoid quote issues
+# Define as function to avoid quote issues with timeout
 BREAKDOWN() {
-    deno run --allow-read --allow-write --allow-env --allow-net ../cli/breakdown.ts "$@"
+    timeout 10 deno run --allow-read --allow-write --allow-env --allow-net ../cli/breakdown.ts "$@" 2>/dev/null
 }
 
 # Create output directory for examples
@@ -84,14 +84,19 @@ EOF
 
 echo "Running: breakdown to issue..."
 # Try using --from option instead of STDIN
-if BREAKDOWN to issue --config=default --from="$OUTPUT_DIR/project_spec.md" -o="$OUTPUT_DIR/issues.md" 2>/dev/null; then
+error_log=$(mktemp)
+if BREAKDOWN to issue --config=default --from="$OUTPUT_DIR/project_spec.md" -o="$OUTPUT_DIR/issues.md" 2>"$error_log"; then
     echo "✅ Successfully generated 'to issue' prompt"
     echo "   Input: $OUTPUT_DIR/project_spec.md"
     echo "   Output path (in prompt): $OUTPUT_DIR/issues.md"
     echo "   💡 Tip: To save the prompt, use: breakdown to issue ... > output.txt"
 else
     echo "❌ Failed to generate 'to issue' prompt"
+    if [ -s "$error_log" ]; then
+        echo "   Error details: $(cat "$error_log")"
+    fi
 fi
+rm -f "$error_log"
 echo
 
 # Example 2: SUMMARY command - Summarizing unorganized content
@@ -109,13 +114,18 @@ EOF
 
 echo "Processing messy notes into organized summary..."
 # Try using --from option instead of STDIN
-if BREAKDOWN summary task --config=default --from="$OUTPUT_DIR/messy_notes.md" -o="$OUTPUT_DIR/task_summary.md" 2>/dev/null; then
+error_log=$(mktemp)
+if BREAKDOWN summary task --config=default --from="$OUTPUT_DIR/messy_notes.md" -o="$OUTPUT_DIR/task_summary.md" 2>"$error_log"; then
     echo "✅ Successfully generated 'summary task' prompt"
     echo "   Input: $OUTPUT_DIR/messy_notes.md"
     echo "   Output path (in prompt): $OUTPUT_DIR/task_summary.md"
 else
     echo "❌ Failed to generate 'summary task' prompt"
+    if [ -s "$error_log" ]; then
+        echo "   Error details: $(cat "$error_log")"
+    fi
 fi
+rm -f "$error_log"
 echo
 
 # Example 3: DEFECT command - Analyzing error logs
@@ -132,13 +142,18 @@ EOF
 
 echo "Analyzing error logs..."
 # Try using --from option instead of STDIN pipe
-if BREAKDOWN defect project --config=default --from="$OUTPUT_DIR/error_log.txt" -o="$OUTPUT_DIR/defect_analysis.md" 2>/dev/null; then
+error_log=$(mktemp)
+if BREAKDOWN defect project --config=default --from="$OUTPUT_DIR/error_log.txt" -o="$OUTPUT_DIR/defect_analysis.md" 2>"$error_log"; then
     echo "✅ Successfully generated 'defect project' prompt"
     echo "   Input: $OUTPUT_DIR/error_log.txt"
     echo "   Output path (in prompt): $OUTPUT_DIR/defect_analysis.md"
 else
     echo "❌ Failed to generate 'defect project' prompt"
+    if [ -s "$error_log" ]; then
+        echo "   Error details: $(cat "$error_log")"
+    fi
 fi
+rm -f "$error_log"
 echo
 
 # Example 4: Find bugs command - デフォルト無効からプロファイル有効への確認
@@ -165,21 +180,30 @@ EOF
 
 # Step 1: デフォルト設定での成功確認 (03_init_deno_run.shで有効化済み)
 echo "Testing with default configuration..."
-if BREAKDOWN find bugs --config=default --from="$OUTPUT_DIR/buggy_code.js" > "$OUTPUT_DIR/bugs_default.md" 2>/dev/null; then
+error_log=$(mktemp)
+if BREAKDOWN find bugs --config=default --from="$OUTPUT_DIR/buggy_code.js" > "$OUTPUT_DIR/bugs_default.md" 2>"$error_log"; then
     echo "✅ Success: find bugs is enabled in default configuration"
 else
     echo "❌ Error: find bugs failed with default config"
+    if [ -s "$error_log" ]; then
+        echo "   Error details: $(cat "$error_log")"
+    fi
 fi
+rm -f "$error_log"
 
 # Step 2: findbugsプロファイルでの成功確認
 echo
 echo "Testing with findbugs profile configuration..."
-if BREAKDOWN find bugs --config=findbugs --from="$OUTPUT_DIR/buggy_code.js" -o="$OUTPUT_DIR/bugs_analysis.md" 2>/dev/null; then
+error_log=$(mktemp)
+if BREAKDOWN find bugs --config=findbugs --from="$OUTPUT_DIR/buggy_code.js" -o="$OUTPUT_DIR/bugs_analysis.md" 2>"$error_log"; then
     echo "✅ Success: find bugs works with findbugs profile"
     echo "   Input: $OUTPUT_DIR/buggy_code.js"
     echo "   Output path (in prompt): $OUTPUT_DIR/bugs_analysis.md"
 else
     echo "❌ Error: find bugs failed even with findbugs profile"
+    if [ -s "$error_log" ]; then
+        echo "   Error details: $(cat "$error_log")"
+    fi
     
     # Fallback to defect task for bug analysis
     cat > "$OUTPUT_DIR/bug_report.md" << EOF
@@ -203,14 +227,20 @@ function calculateTotal(items) {
 \`\`\`
 EOF
     
-    if BREAKDOWN defect task --config=default --from="$OUTPUT_DIR/bug_report.md" -o="$OUTPUT_DIR/bugs_report.md" 2>/dev/null; then
+    error_log2=$(mktemp)
+    if BREAKDOWN defect task --config=default --from="$OUTPUT_DIR/bug_report.md" -o="$OUTPUT_DIR/bugs_report.md" 2>"$error_log2"; then
         echo "✅ Generated fallback 'defect task' prompt"
         echo "   Input: $OUTPUT_DIR/bug_report.md"
         echo "   Output path (in prompt): $OUTPUT_DIR/bugs_report.md"
     else
         echo "❌ Both 'find bugs' and fallback 'defect task' failed"
+        if [ -s "$error_log2" ]; then
+            echo "   Fallback error: $(cat "$error_log2")"
+        fi
     fi
+    rm -f "$error_log2"
 fi
+rm -f "$error_log"
 
 echo
 echo "=== Basic Usage Examples Completed ==="

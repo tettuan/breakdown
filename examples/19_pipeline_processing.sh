@@ -78,7 +78,7 @@ echo "Step 1: エラーログから欠陥分析"
 cat "$OUTPUT_DIR/error.log" | $BREAKDOWN defect task --config=default -o="$OUTPUT_DIR/defect_analysis.md" > "$OUTPUT_DIR/defect_analysis.md"
 
 echo "Step 2: 欠陥分析からイシュー生成"
-$BREAKDOWN to issue --config=default --from="$OUTPUT_DIR/defect_analysis.md" -o="$OUTPUT_DIR/error_issues.md" > "$OUTPUT_DIR/error_issues.md"
+$BREAKDOWN to issue --config=default -o="$OUTPUT_DIR/error_issues.md" < "$OUTPUT_DIR/defect_analysis.md" 2>&1
 
 echo "✅ エラーログ分析パイプライン完了"
 
@@ -94,8 +94,8 @@ find . -name "README*.md" -type f | head -3 | while read file; do
 done
 
 if [ -f "$OUTPUT_DIR/all_readmes.md" ]; then
-    $BREAKDOWN summary project --config=default --from="$OUTPUT_DIR/all_readmes.md" \
-        -o="$OUTPUT_DIR/readme_summary.md" > "$OUTPUT_DIR/readme_summary.md"
+    $BREAKDOWN summary project --config=default \
+        -o="$OUTPUT_DIR/readme_summary.md" < "$OUTPUT_DIR/all_readmes.md" 2>&1
     echo "✅ README統合サマリー生成完了"
 fi
 

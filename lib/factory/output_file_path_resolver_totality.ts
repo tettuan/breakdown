@@ -67,9 +67,9 @@ export class OutputFilePathResolverTotality {
         // Case 2: Absolute path - use as-is
         resolvedPath = String(destinationFile);
       } else if (destinationPrefix) {
-        // Case 3: Relative path with prefix - combine prefix + destinationFile
-        const basePath = resolve(Deno.cwd(), workingDir, destinationPrefix);
-        resolvedPath = resolve(basePath, String(destinationFile));
+        // Case 3: Relative path with prefix - concatenate prefix + destinationFile directly
+        const baseDir = resolve(Deno.cwd(), workingDir);
+        resolvedPath = resolve(baseDir, destinationPrefix + String(destinationFile));
       } else {
         // Case 1: Relative path without prefix - traditional behavior
         resolvedPath = resolve(Deno.cwd(), workingDir, String(destinationFile));

@@ -35,9 +35,9 @@ if [ ! -f "${CONFIG_DIR}/production-app.yml" ]; then
 # Breakdown Configuration for Production Profile
 working_dir: ".agent/climpt"
 app_prompt:
-  base_dir: ".agent/climpt/prompts"
+  base_dir: "prompts"
 app_schema:
-  base_dir: ".agent/climpt/schema"
+  base_dir: "schema"
 params:
   two:
     directiveType:
@@ -71,6 +71,20 @@ EOF
   echo "Created production configuration: ${CONFIG_DIR}/production-app.yml"
 else
   echo "Using existing production configuration: ${CONFIG_DIR}/production-app.yml"
+fi
+
+# Create production-user.yml (only if it doesn't exist)
+if [ ! -f "${CONFIG_DIR}/production-user.yml" ]; then
+  cat > "${CONFIG_DIR}/production-user.yml" << 'EOF'
+# Production user configuration
+working_dir: ".agent/climpt"
+username: "production-user"
+project_name: "production-project"
+environment: "production"
+EOF
+  echo "Created production user configuration: ${CONFIG_DIR}/production-user.yml"
+else
+  echo "Using existing production user configuration: ${CONFIG_DIR}/production-user.yml"
 fi
 
 # Create sample production data

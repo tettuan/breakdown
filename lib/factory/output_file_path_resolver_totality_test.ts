@@ -35,9 +35,9 @@ Deno.test("OutputFilePathResolverTotality - Case 3: Relative path with prefix co
     const pathResult = result.data.getPath();
     assertEquals(pathResult.ok, true);
     if (pathResult.ok) {
-      // Should combine prefix + destinationFile
-      const basePath = resolve(Deno.cwd(), "/test/workspace", "results");
-      const expectedPath = resolve(basePath, "output.md");
+      // Should concatenate prefix + destinationFile directly (no automatic path separator)
+      const baseDir = resolve(Deno.cwd(), "/test/workspace");
+      const expectedPath = resolve(baseDir, "results" + "output.md");
       assertEquals(pathResult.data.getValue(), expectedPath);
     }
   }

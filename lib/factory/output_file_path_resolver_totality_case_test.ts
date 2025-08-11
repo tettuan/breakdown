@@ -91,9 +91,9 @@ Deno.test("OutputFilePathResolverTotality - Case 3: Nested path with prefix", ()
     const pathResult = result.data.getPath();
     assertEquals(pathResult.ok, true);
     if (pathResult.ok) {
-      // Case 3: prefix + destinationFile
-      const basePath = resolve(Deno.cwd(), "/test/workspace", "results/2024");
-      const expectedPath = resolve(basePath, "january/report.md");
+      // Case 3: prefix + destinationFile (direct concatenation)
+      const baseDir = resolve(Deno.cwd(), "/test/workspace");
+      const expectedPath = resolve(baseDir, "results/2024" + "january/report.md");
       assertEquals(pathResult.data.getValue(), expectedPath);
     }
   }
@@ -124,9 +124,9 @@ Deno.test("OutputFilePathResolverTotality - Case 3: Relative navigation in desti
     const pathResult = result.data.getPath();
     assertEquals(pathResult.ok, true);
     if (pathResult.ok) {
-      // Should resolve "../archive/old.md" relative to "results/current"
-      const basePath = resolve(Deno.cwd(), "/test/workspace", "results/current");
-      const expectedPath = resolve(basePath, "../archive/old.md");
+      // Should concatenate prefix + destinationFile directly, then resolve the relative path
+      const baseDir = resolve(Deno.cwd(), "/test/workspace");
+      const expectedPath = resolve(baseDir, "results/current" + "../archive/old.md");
       // This should resolve to "/test/workspace/results/archive/old.md"
       assertEquals(pathResult.data.getValue(), expectedPath);
     }

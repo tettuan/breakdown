@@ -283,7 +283,7 @@ echo "📄 使用テンプレート: .agent/climpt/prompts/to/task/f_task.md (�
 echo "📖 参照: glossary.ja.md 118-119行目 (--input オプションによる明示指定)"
 echo
 
-$BREAKDOWN to task --from="$OUTPUT_DIR/project_requirements.md" -o="$OUTPUT_DIR/result_no_adaptation.md" > "$OUTPUT_DIR/result_no_adaptation.md" 2>&1
+$BREAKDOWN to task -o="$OUTPUT_DIR/result_no_adaptation.md" < "$OUTPUT_DIR/project_requirements.md" 2>&1
 
 if [ -f "$OUTPUT_DIR/result_no_adaptation.md" ]; then
     echo "Result preview:"
@@ -307,7 +307,7 @@ echo "Command: breakdown to task --from=project_requirements.md --adaptation=str
 echo "Expected: Should use f_task_strict.md template"
 echo
 
-$BREAKDOWN to task --from="$OUTPUT_DIR/project_requirements.md" --adaptation=strict -o="$OUTPUT_DIR/result_strict.md" > "$OUTPUT_DIR/result_strict.md" 2>&1
+$BREAKDOWN to task --adaptation=strict -o="$OUTPUT_DIR/result_strict.md" < "$OUTPUT_DIR/project_requirements.md" 2>&1
 
 if [ -f "$OUTPUT_DIR/result_strict.md" ]; then
     echo "Result preview:"
@@ -331,7 +331,7 @@ echo "Command: breakdown to task --from=project_requirements.md --adaptation=agi
 echo "Expected: Should use f_task_agile.md template"
 echo
 
-$BREAKDOWN to task --from="$OUTPUT_DIR/project_requirements.md" --adaptation=agile -o="$OUTPUT_DIR/result_agile.md" > "$OUTPUT_DIR/result_agile.md" 2>&1
+$BREAKDOWN to task --adaptation=agile -o="$OUTPUT_DIR/result_agile.md" < "$OUTPUT_DIR/project_requirements.md" 2>&1
 
 if [ -f "$OUTPUT_DIR/result_agile.md" ]; then
     echo "Result preview:"
@@ -356,7 +356,7 @@ echo "Expected: Should use f_task_detailed.md template"
 echo "Note: Short form -a= works the same as --adaptation (equal sign required)"
 echo
 
-$BREAKDOWN to task --from="$OUTPUT_DIR/project_requirements.md" -a=detailed -o="$OUTPUT_DIR/result_detailed.md" > "$OUTPUT_DIR/result_detailed.md" 2>&1
+$BREAKDOWN to task -a=detailed -o="$OUTPUT_DIR/result_detailed.md" < "$OUTPUT_DIR/project_requirements.md" 2>&1
 
 if [ -f "$OUTPUT_DIR/result_detailed.md" ]; then
     echo "Result preview:"
@@ -380,7 +380,7 @@ echo "Command: breakdown to task --from=project_requirements.md --adaptation=cus
 echo "Expected: Should fall back to default template (f_project.md)"
 echo
 
-$BREAKDOWN to task --from="$OUTPUT_DIR/project_requirements.md" --adaptation=custom -o="$OUTPUT_DIR/result_custom.md" > "$OUTPUT_DIR/result_custom.md" 2>&1
+$BREAKDOWN to task --adaptation=custom -o="$OUTPUT_DIR/result_custom.md" < "$OUTPUT_DIR/project_requirements.md" 2>&1
 
 if [ -f "$OUTPUT_DIR/result_custom.md" ]; then
     echo "Result preview:"
@@ -422,12 +422,16 @@ echo "=== Checking Created Files ==="
 echo
 if [ -d "$TEMPLATE_DIR" ]; then
     echo "Created adaptation templates in: $TEMPLATE_DIR"
-    ls -la "$TEMPLATE_DIR"/f_project*.md 2>/dev/null | sed 's/^/  /'
+    if ls "$TEMPLATE_DIR"/f_project*.md >/dev/null 2>&1; then
+        ls -la "$TEMPLATE_DIR"/f_project*.md 2>/dev/null | sed 's/^/  /'
+    fi
 fi
 echo
 if [ -d "$OUTPUT_DIR" ]; then
     echo "Generated outputs:"
-    ls -la "$OUTPUT_DIR"/result_*.md 2>/dev/null | sed 's/^/  /'
+    if ls "$OUTPUT_DIR"/result_*.md >/dev/null 2>&1; then
+        ls -la "$OUTPUT_DIR"/result_*.md 2>/dev/null | sed 's/^/  /'
+    fi
 fi
 
 # Verify actual behavior

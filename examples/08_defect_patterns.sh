@@ -75,7 +75,7 @@ cat > "$OUTPUT_DIR/bug_report.md" << 'EOF'
 EOF
 
 echo "実行: breakdown defect issue < bug_report.md"
-$BREAKDOWN defect issue --config=default --from="$OUTPUT_DIR/bug_report.md" --input=issue -o="$OUTPUT_DIR/defect_issue_analysis.md" > "$OUTPUT_DIR/defect_issue_analysis.md"
+timeout 30 $BREAKDOWN defect issue --config=default < "$OUTPUT_DIR/bug_report.md" > "$OUTPUT_DIR/defect_issue_analysis.md"
 
 echo
 echo "=== Example 2: Defect Task Analysis ==="
@@ -110,7 +110,7 @@ cat > "$OUTPUT_DIR/improvement_request.md" << 'EOF'
 EOF
 
 echo "実行: breakdown defect task < improvement_request.md"
-$BREAKDOWN defect task --config=default --from="$OUTPUT_DIR/improvement_request.md" --input=task -o="$OUTPUT_DIR/defect_task_analysis.md" > "$OUTPUT_DIR/defect_task_analysis.md"
+timeout 30 $BREAKDOWN defect task --config=default < "$OUTPUT_DIR/improvement_request.md" > "$OUTPUT_DIR/defect_task_analysis.md"
 
 echo
 echo "=== 生成されたファイル ==="

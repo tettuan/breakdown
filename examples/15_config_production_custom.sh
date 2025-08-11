@@ -103,10 +103,10 @@ EOF
 echo "=== Running Custom Command: find bugs ==="
 echo
 echo "Executing command:"
-echo "   deno run --allow-all ../cli/breakdown.ts find bugs --config=production-custom --from=$TEST_DIR/test_file.md -o=$OUTPUT_DIR/result.md"
+echo "   deno run --allow-all ../cli/breakdown.ts find bugs --config=production-custom < $TEST_DIR/test_file.md -o=$OUTPUT_DIR/result.md"
 echo
 
-if deno run --allow-all ../cli/breakdown.ts find bugs --config=production-custom --from="$TEST_DIR/test_file.md" -o="$OUTPUT_DIR/result.md" > "$OUTPUT_DIR/result.md" 2>&1; then
+if deno run --allow-all ../cli/breakdown.ts find bugs --config=production-custom < "$TEST_DIR/test_file.md" -o="$OUTPUT_DIR/result.md" > "$OUTPUT_DIR/result.md" 2>&1; then
     echo "✅ Custom command executed successfully!"
     echo "   Output: $OUTPUT_DIR/result.md"
     if [ -f "$OUTPUT_DIR/result.md" ] && [ -s "$OUTPUT_DIR/result.md" ]; then
