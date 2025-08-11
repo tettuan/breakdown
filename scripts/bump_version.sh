@@ -5,10 +5,10 @@
 #
 # Purpose:
 #   - Ensures version consistency between deno.json and lib/version.ts
-#   - Handles version bumping (major/minor/patch) with atomic updates
+#   - Handles version bumping (major/minor/patch) with release branch workflow
 #   - Performs pre-release checks (git status, local CI, GitHub Actions)
 #   - Manages GitHub tags and JSR version synchronization
-#   - Automatically commits, tags, and pushes version changes
+#   - Creates release branch and updates version files for PR workflow
 #
 # Usage:
 #   ./scripts/bump_version.sh [--major|--minor|--patch]
@@ -24,14 +24,15 @@
 #   2. Local CI
 #      - Local CI Check
 #      - JSR Pre-publish Check
-#   3. New Version Bump
+#   3. New Version Preparation
 #      - New Version Generation
+#      - Release Branch Creation
+#   4. Version Update
 #      - Version Update (Atomic)
 #      - Version Verification
-#   4. Git Operations
-#      - Git Commit
-#      - Git Tag
-#      - Push Changes
+#   5. Git Operations
+#      - Git Commit on Release Branch
+#      - Push Release Branch for PR
 # ============================================================================
 
 set -euo pipefail
@@ -159,9 +160,9 @@ fi
 echo "✓ Local CI passed"
 
 # ============================================================================
-# 3. New Version Bump
+# 3. New Version Preparation
 # ============================================================================
-echo -e "\nBumping Version..."
+echo -e "\nPreparing New Version..."
 
 # 3.1 New Version Generation
 bump_type="patch"
@@ -183,7 +184,19 @@ esac
 new_version="$major.$minor.$patch"
 echo "Bumping version from latest JSR version $latest_jsr_version -> $new_version"
 
-# 3.2 Version Update (Atomic)
+# 3.2 Release Branch Creation
+release_branch="release/v$new_version"
+echo "Creating release branch: $release_branch"
+git checkout -b "$release_branch"
+
+echo "✓ Release branch created"
+
+# ============================================================================
+# 4. Version Update
+# ============================================================================
+echo -e "\nUpdating Version Files..."
+
+# 4.1 Version Update (Atomic)
 tmp_deno="${DENO_JSON}.tmp"
 tmp_ts="${VERSION_TS}.tmp"
 jq --arg v "$new_version" '.version = $v' "$DENO_JSON" > "$tmp_deno"
@@ -201,30 +214,31 @@ mv "$tmp_deno" "$DENO_JSON"
 mv "$tmp_ts" "$VERSION_TS"
 deno fmt "$VERSION_TS"
 
-# 3.3 Version Verification
+# 4.2 Version Verification
 if [[ "$(get_deno_version)" != "$new_version" ]] || [[ "$(get_ts_version)" != "$new_version" ]]; then
   echo "Error: Version update failed."
   exit 1
 fi
 
-echo "✓ Version bump completed"
+echo "✓ Version files updated"
 
 # ============================================================================
-# 4. Git Operations
+# 5. Git Operations
 # ============================================================================
 echo -e "\nPerforming Git Operations..."
 
-# 4.1 Git Commit
+# 5.1 Git Commit on Release Branch
 git add "$DENO_JSON" "$VERSION_TS"
 git commit -m "chore: bump version to $new_version"
 
-# 4.2 Git Tag
-git tag "v$new_version"
-
-# 4.3 Push Changes
-git push
-git push origin "v$new_version"
+# 5.2 Push Release Branch for PR
+git push -u origin "$release_branch"
 
 echo "✓ Git operations completed"
 
-echo "\nVersion bumped to $new_version, committed, tagged, and pushed.\n" 
+echo -e "\nRelease branch '$release_branch' created and pushed."
+echo "Next steps:"
+echo "1. Create a PR: gh pr create --title 'Release v$new_version' --body 'Release version $new_version'"
+echo "2. Merge the PR to trigger auto-release workflow"
+echo "3. The auto-release workflow will create the v$new_version tag and GitHub release"
+echo "4. The publish workflow will automatically publish to JSR" 
