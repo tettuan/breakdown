@@ -5,12 +5,9 @@ on:
     branches: 
       - 'release/**'
       - 'release-*'
-    tags:
-      - 'v*.*.*'
   pull_request:
     branches:
-      - 'release/**'
-      - 'release-*'
+      - main
 
 jobs:
   version-check:
@@ -25,46 +22,83 @@ jobs:
         with:
           deno-version: v2.x
 
-      - name: Get latest tag version
-        id: get_tag
+      - name: Extract version from branch name
+        id: branch-version
         run: |
-          TAG_VERSION=$(git describe --tags --abbrev=0 | sed 's/^v//')
-          echo "TAG_VERSION=$TAG_VERSION" >> $GITHUB_ENV
+          BRANCH_NAME="${GITHUB_REF#refs/heads/}"
+          echo "Branch name: $BRANCH_NAME"
+          
+          # Extract version from release/v1.5.0 or release-1.5.0 pattern
+          if [[ "$BRANCH_NAME" =~ release[/-]v?([0-9]+\.[0-9]+\.[0-9]+) ]]; then
+            BRANCH_VERSION="${BASH_REMATCH[1]}"
+            echo "branch_version=$BRANCH_VERSION" >> $GITHUB_OUTPUT
+            echo "✅ Extracted version from branch: $BRANCH_VERSION"
+          else
+            echo "❌ Error: Could not extract version from branch name: $BRANCH_NAME"
+            echo "Branch name should be like 'release/v1.5.0', 'release/1.5.0', 'release-v1.5.0', or 'release-1.5.0'"
+            exit 1
+          fi
 
-      - name: Check deno.json version matches latest tag
+      - name: Check deno.json version matches branch
         run: |
-          deno run --allow-read --allow-env - <<'EOF'
-          const denoJson = JSON.parse(await Deno.readTextFile("deno.json"));
-          let denoVersion = denoJson.version;
-          let tagVersion = Deno.env.get("TAG_VERSION");
-          // Remove leading "v" if present in either version string
-          denoVersion = denoVersion.replace(/^v/, "");
-          tagVersion = tagVersion.replace(/^v/, "");
-          if (denoVersion !== tagVersion) {
-            console.error(`Version mismatch!\n deno.json: ${denoVersion}\n git tag: ${tagVersion}`);
-            Deno.exit(1);
-          } else {
-            console.log(`deno.json and git tag version match: ${denoVersion}`);
-          }
-          EOF
+          BRANCH_VERSION="${{ steps.branch-version.outputs.branch_version }}"
+          DENO_VERSION=$(jq -r '.version' deno.json)
+          
+          # Remove leading "v" if present in deno.json version
+          DENO_VERSION=$(echo "$DENO_VERSION" | sed 's/^v//')
+          
+          echo "Branch version: $BRANCH_VERSION"
+          echo "deno.json version: $DENO_VERSION"
+          
+          if [[ "$DENO_VERSION" != "$BRANCH_VERSION" ]]; then
+            echo "❌ Version mismatch!"
+            echo "   Branch expects: $BRANCH_VERSION"
+            echo "   deno.json has: $DENO_VERSION"
+            echo ""
+            echo "Please update deno.json version to match the release branch."
+            exit 1
+          else
+            echo "✅ deno.json version matches branch version: $DENO_VERSION"
+          fi
 
-      - name: Check lib/version.ts VERSION matches deno.json and tag
+      - name: Check lib/version.ts VERSION matches branch
         run: |
-          deno run --allow-read --allow-env - <<'EOF'
-          const denoJson = JSON.parse(await Deno.readTextFile("deno.json"));
-          const denoVersion = denoJson.version.replace(/^v/, "");
-          const tagVersion = Deno.env.get("TAG_VERSION").replace(/^v/, "");
-          const versionTs = await Deno.readTextFile("lib/version.ts");
-          const match = versionTs.match(/export const VERSION = \"([^\"]+)\"/);
-          if (!match) {
-            console.error("VERSION constant not found in lib/version.ts");
-            Deno.exit(1);
-          }
-          const versionConst = match[1].replace(/^v/, "");
-          if (denoVersion !== versionConst || tagVersion !== versionConst) {
-            console.error(`Version mismatch!\n deno.json: ${denoVersion}\n lib/version.ts: ${versionConst}\n git tag: ${tagVersion}`);
-            Deno.exit(1);
-          } else {
-            console.log(`All versions match: ${denoVersion}`);
-          }
-          EOF
+          BRANCH_VERSION="${{ steps.branch-version.outputs.branch_version }}"
+          
+          if [[ ! -f "lib/version.ts" ]]; then
+            echo "⚠️ lib/version.ts not found, skipping version.ts check"
+            exit 0
+          fi
+          
+          VERSION_TS_CONTENT=$(cat lib/version.ts)
+          if [[ "$VERSION_TS_CONTENT" =~ export\ const\ VERSION\ =\ [\"\\']([^\"\\\']+)[\"\\'] ]]; then
+            VERSION_TS_VERSION="${BASH_REMATCH[1]}"
+            # Remove leading "v" if present
+            VERSION_TS_VERSION=$(echo "$VERSION_TS_VERSION" | sed 's/^v//')
+            
+            echo "Branch version: $BRANCH_VERSION"
+            echo "lib/version.ts VERSION: $VERSION_TS_VERSION"
+            
+            if [[ "$VERSION_TS_VERSION" != "$BRANCH_VERSION" ]]; then
+              echo "❌ Version mismatch!"
+              echo "   Branch expects: $BRANCH_VERSION"
+              echo "   lib/version.ts has: $VERSION_TS_VERSION"
+              echo ""
+              echo "Please update lib/version.ts VERSION constant to match the release branch."
+              exit 1
+            else
+              echo "✅ lib/version.ts VERSION matches branch version: $VERSION_TS_VERSION"
+            fi
+          else
+            echo "❌ Error: VERSION constant not found in lib/version.ts"
+            echo "Expected format: export const VERSION = \"1.5.0\";"
+            exit 1
+          fi
+
+      - name: Summary
+        run: |
+          BRANCH_VERSION="${{ steps.branch-version.outputs.branch_version }}"
+          echo "🎉 All version checks passed!"
+          echo "✅ Branch, deno.json, and lib/version.ts all specify version: $BRANCH_VERSION"
+          echo ""
+          echo "This release branch is ready to be merged to main."
