@@ -68,7 +68,7 @@ jobs:
           fi
 
           VERSION_TS_CONTENT=$(cat lib/version.ts)
-          if [[ "$VERSION_TS_CONTENT" =~ export\ const\ VERSION\ =\ [\"\\']([^\"\\\']+)[\"\\'] ]]; then
+          if [[ "$VERSION_TS_CONTENT" =~ export\ const\ VERSION\ =\ [\"']([^\"']+)[\"'] ]]; then
             VERSION_TS_VERSION="${BASH_REMATCH[1]}"
             # Remove leading "v" if present
             VERSION_TS_VERSION=$(echo "$VERSION_TS_VERSION" | sed 's/^v//')
