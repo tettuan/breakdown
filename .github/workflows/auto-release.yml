@@ -1,7 +1,8 @@
 name: Auto Release on Merge
 
 on:
-  push:
+  pull_request:
+    types: [closed]
     branches:
       - main
 
@@ -19,17 +20,23 @@ jobs:
       - name: Check if this is a release branch merge
         id: check-release
         run: |
-          # 最新コミットのメッセージを取得
-          COMMIT_MSG=$(git log -1 --pretty=format:"%s")
-          echo "Commit message: $COMMIT_MSG"
+          # PRがマージされているかチェック
+          if [[ "${{ github.event.pull_request.merged }}" != "true" ]]; then
+            echo "is_release_merge=false" >> $GITHUB_OUTPUT
+            echo "ℹ️ PR was closed but not merged, skipping release"
+            exit 0
+          fi
 
-          # release/ または release- ブランチのマージかチェック
-          if [[ "$COMMIT_MSG" =~ Merge\ pull\ request.*release[/-] ]] || [[ "$COMMIT_MSG" =~ Merge\ branch\ \'release[/-] ]]; then
+          # PRのheadブランチがrelease/またはrelease-で始まるかチェック
+          HEAD_BRANCH="${{ github.event.pull_request.head.ref }}"
+          echo "Head branch: $HEAD_BRANCH"
+
+          if [[ "$HEAD_BRANCH" =~ ^release/ ]] || [[ "$HEAD_BRANCH" =~ ^release- ]]; then
             echo "is_release_merge=true" >> $GITHUB_OUTPUT
-            echo "✅ Release branch merge detected"
+            echo "✅ Release branch merge detected: $HEAD_BRANCH"
           else
             echo "is_release_merge=false" >> $GITHUB_OUTPUT
-            echo "ℹ️ Not a release branch merge, skipping release"
+            echo "ℹ️ Not a release branch merge (branch: $HEAD_BRANCH), skipping release"
           fi
 
       - name: Extract version from deno.json
