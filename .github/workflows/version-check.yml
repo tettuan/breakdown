@@ -2,9 +2,15 @@ name: Version Consistency Check
 
 on:
   push:
-    branches: [main]
+    branches: 
+      - 'release/**'
+      - 'release-*'
+    tags:
+      - 'v*.*.*'
   pull_request:
-    branches: [main]
+    branches:
+      - 'release/**'
+      - 'release-*'
 
 jobs:
   version-check:
