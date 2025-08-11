@@ -30,7 +30,7 @@ jobs:
           else
             TAG_NAME="${GITHUB_REF#refs/tags/}"
           fi
-          
+
           TAG_COMMIT=$(git rev-parse $TAG_NAME)
           if git rev-list main | grep -q "^$TAG_COMMIT$"; then
             echo "✅ Tag $TAG_NAME is on main branch"
