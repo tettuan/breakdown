@@ -259,6 +259,76 @@ Breakdown leverages a powerful 4-package architecture for maximum modularity:
 | 📦 **JSR Package** | [jsr.io/@tettuan/breakdown](https://jsr.io/@tettuan/breakdown) |
 | 🌏 **Language** | [English](README.md) \| [日本語](README.ja.md) |
 
+## 👨‍💻 Development
+
+### Release Workflow
+
+Breakdown uses a structured release process with automated CI/CD workflows:
+
+#### Creating a Release
+
+1. **Create Release Branch**
+   ```bash
+   # Create release branch with version number
+   git checkout -b release/v1.5.0
+   ```
+
+2. **Update Version Files**
+   ```bash
+   # Update version in deno.json
+   # "version": "1.4.0" → "1.5.0"
+   
+   # Update version in lib/version.ts
+   # export const VERSION = "1.5.0";
+   ```
+
+3. **Push Release Branch**
+   ```bash
+   git commit -m "chore: bump version to 1.5.0"
+   git push origin release/v1.5.0
+   ```
+   
+   > ✅ **Version Check**: Automated workflow validates version consistency across files
+
+4. **Create and Merge PR**
+   ```bash
+   gh pr create --title "Release v1.5.0" --body "Release version 1.5.0"
+   gh pr merge --merge
+   ```
+   
+   > ✅ **Auto Release**: Merging triggers automatic v-tag creation and JSR publishing
+
+#### Workflow Overview
+
+```mermaid
+graph LR
+    A[release/v1.5.0 branch] --> B[Version consistency check]
+    B --> C[PR to main]
+    C --> D[Merge to main]
+    D --> E[Auto create v1.5.0 tag]
+    E --> F[Publish to JSR]
+```
+
+#### Automated Checks
+
+- **Version Consistency**: Ensures branch name, `deno.json`, and `lib/version.ts` versions match
+- **Duplicate Prevention**: Prevents creating duplicate version tags
+- **JSR Publishing**: Automatically publishes to [jsr.io/@tettuan/breakdown](https://jsr.io/@tettuan/breakdown)
+
+### Development Setup
+
+```bash
+# Clone repository
+git clone https://github.com/tettuan/breakdown.git
+cd breakdown
+
+# Run tests
+deno test
+
+# Run examples
+./examples/01_instructions.sh
+```
+
 ## 🤝 Contributing
 
 Contributions are welcome! Please check the [documentation site](https://tettuan.github.io/breakdown/) for contribution guidelines.
