@@ -43,19 +43,19 @@ Breakdownツールには以下の主要なコマンドがあります：
 ### プロジェクトの分解
 
 ```bash
-breakdown to project <written_project_summary.md> -o <project_dir>
+breakdown to project -f=<written_project_summary.md> -o=<project_dir>
 ```
 
 ### 課題の分解
 
 ```bash
-breakdown to issue <project_summary.md|written_issue.md> -o <issue_dir>
+breakdown to issue -f=<project_summary.md|written_issue.md> -o=<issue_dir>
 ```
 
 ### タスクの分解
 
 ```bash
-breakdown to task <issue.md|written_task.md> -o <tasks_dir>
+breakdown to task -f=<issue.md|written_task.md> -o=<tasks_dir>
 ```
 
 ### Markdownサマリーの生成
@@ -63,19 +63,19 @@ breakdown to task <issue.md|written_task.md> -o <tasks_dir>
 **プロジェクトサマリー** 未整理の情報からプロジェクト概要を生成：
 
 ```bash
-echo "<messy_something>" | breakdown summary project -o <project_summary.md>
+echo "<messy_something>" | breakdown summary project -o=<project_summary.md>
 ```
 
 **課題サマリー** タスク群から課題を生成：
 
 ```bash
-breakdown summary issue --from=<aggregated_tasks.md> --input=task -o=<issue_markdown_dir>
+breakdown summary issue -f=<aggregated_tasks.md> -i=task -o=<issue_markdown_dir>
 ```
 
 **タスクサマリー** 未整理のタスク情報から整理されたタスクを生成：
 
 ```bash
-breakdown summary task --from=<unorganized_tasks.md> -o=<task_markdown_dir>
+breakdown summary task -f=<unorganized_tasks.md> -o=<task_markdown_dir>
 ```
 
 ### 不具合情報からの修正生成
@@ -83,19 +83,19 @@ breakdown summary task --from=<unorganized_tasks.md> -o=<task_markdown_dir>
 **プロジェクトレベルの不具合分析**
 
 ```bash
-tail -100 "<error_log_file>" | breakdown defect project -o <project_defect.md>
+tail -100 "<error_log_file>" | breakdown defect project -o=<project_defect.md>
 ```
 
 **課題レベルの不具合分析**
 
 ```bash
-breakdown defect issue --from=<bug_report.md> -o=<issue_defect_dir>
+breakdown defect issue -f=<bug_report.md> -o=<issue_defect_dir>
 ```
 
 **タスクレベルの不具合分析**
 
 ```bash
-breakdown defect task --from=<improvement_request.md> -o=<task_defect_dir>
+breakdown defect task -f=<improvement_request.md> -o=<task_defect_dir>
 ```
 
 ## ユースケースパターン
@@ -103,32 +103,32 @@ breakdown defect task --from=<improvement_request.md> -o=<task_defect_dir>
 ### 1. 未整理の情報からプロジェクト実装へ
 
 ```bash
-echo "<messy_something>" | breakdown summary project -o <project_summary.md>
-breakdown to project <project_summary.md> -o <project_dir>
-breakdown to issue <project_summary.md> -o <issue_dir>
-breakdown to task <issue.md> -o <tasks_dir>
+echo "<messy_something>" | breakdown summary project -o=<project_summary.md>
+breakdown to project -f=<project_summary.md> -o=<project_dir>
+breakdown to issue -f=<project_summary.md> -o=<issue_dir>
+breakdown to task -f=<issue.md> -o=<tasks_dir>
 ```
 
 ### 2. タスク群からの課題作成
 
 ```bash
-breakdown summary issue --from=<aggregated_tasks.md> --input=task -o=<issue_markdown_dir>
+breakdown summary issue -f=<aggregated_tasks.md> -i=task -o=<issue_markdown_dir>
 # 必要に応じて生成された課題を編集
-breakdown to task <issue.md> -o <tasks_dir>
+breakdown to task -f=<issue.md> -o=<tasks_dir>
 ```
 
 ### 3. 不具合情報からの修正タスク生成
 
 ```bash
-tail -100 "<error_log_file>" | breakdown defect project -o <project_defect.md>
-breakdown defect issue --from=<project_defect.md> -o=<issue_defect_dir>
-breakdown defect task --from=<issue_defect.md> -o=<task_defect_dir>
+tail -100 "<error_log_file>" | breakdown defect project -o=<project_defect.md>
+breakdown defect issue -f=<project_defect.md> -o=<issue_defect_dir>
+breakdown defect task -f=<issue_defect.md> -o=<task_defect_dir>
 ```
 
 ### 4. 改善要求からの修正提案作成
 
 ```bash
-breakdown defect task --from=<improvement_request.md> -o=<task_defect_dir>
+breakdown defect task -f=<improvement_request.md> -o=<task_defect_dir>
 ```
 
 # セットアップ
