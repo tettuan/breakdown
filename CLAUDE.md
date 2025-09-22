@@ -3,7 +3,7 @@
 - プロジェクト直下へファイルを作らない
   -  JSR, deno, git, renovate関連は配置してOK
 - 一時ファイルはプロジェクト直下の tmp/ へ配置
-- テストファイル: @docs/tests/testing.ja.md 
+- テストファイル: @docs/tests/testing.ja.md
 - About: @docs/breakdown/index.ja.md
 
 # Claude Behavior
@@ -16,7 +16,7 @@ Implement target use cases using Domain Driven Design & totality functions with 
 
 # Project
 - Project: Deno, JSR publish
-- run `scripts/local_ci.sh` for testing code.
+- run `deno task ci` for testing code.
 - publish JSR with CI. see `https://jsr.io/@tettuan/breakdownprompt/publish`
 - when commit, need to pass the test
   - run `deno test <something_test.ts> --allow-env --allow-write --allow-read --allow-run` before git commit <something.ts> and <something_test.ts>.
@@ -39,12 +39,12 @@ Implement target use cases using Domain Driven Design & totality functions with 
 - read `deno.json` for settings
 
 # Git push
-- DO NOT push untile `scripts/local_ci.sh` (deno task ci) pass all.
-- run  `DEBUG=true scripts/local_ci.sh` (DEBUG=true deno task ci) if error.
+- DO NOT push untile `deno task ci` (deno task ci) pass all.
+- run  `DEBUG=true deno task ci` (DEBUG=true deno task ci) if error.
 
 # Run Tests
-- run `scripts/local_ci.sh` (deno task ci) first. catch outlines of errors.
-- if errors, run `DEBUG=true scripts/local_ci.sh` (DEBUG=true deno task ci) for details.
+- run `deno task ci` (deno task ci) first. catch outlines of errors.
+- if errors, run `DEBUG=true deno task ci` (DEBUG=true deno task ci) for details.
 - then, run each `*_test.ts` for more details.
 
 ## Order to fix errors
@@ -196,7 +196,7 @@ for pane in $(tmux list-panes -F "#{pane_id}" | grep -v "$(tmux display-message 
     # エイリアス設定、テーマ設定、起動を順次実行
     tmux send-keys -t $pane "alias cld='claude --dangerously-skip-permissions'" && sleep 0.1 && tmux send-keys -t $pane Enter
     tmux send-keys -t $pane "claude config set -g theme dark" && sleep 0.1 && tmux send-keys -t $pane Enter
-    tmux send-keys -t $pane "cld" && sleep 0.2 && tmux send-keys -t $pane Enter 
+    tmux send-keys -t $pane "cld" && sleep 0.2 && tmux send-keys -t $pane Enter
 done
 wait
 ```
@@ -209,7 +209,7 @@ wait
 tmux send-keys -t %27 "cd 'ワーキングディレクトリ' && あなたはpane1です。タスク内容。エラー時は[pane1]でtmux send-keys -t %22でメイン報告。" && sleep 0.1 && tmux send-keys -t %27 Enter
 ```
 
-**NG例**: 
+**NG例**:
 ```
 tmux send-keys -t %27 "cd 'ワーキングディレクトリ' && あなたはpane1です。タスク内容。エラー時は[pane1]でtmux send-keys -t %22でメイン報告。 Enter"
 ```

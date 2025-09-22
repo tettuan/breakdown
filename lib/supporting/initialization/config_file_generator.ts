@@ -7,8 +7,8 @@
  * @module supporting/initialization/config_file_generator
  */
 
-import { join } from "jsr:@std/path";
-import { ensureDir } from "jsr:@std/fs";
+import { join } from "@std/path";
+import { ensureDir } from "@std/fs";
 import type { Result } from "../../types/result.ts";
 import { error, ok } from "../../types/result.ts";
 import { DEFAULT_CONFIG_DIR } from "../../config/constants.ts";
