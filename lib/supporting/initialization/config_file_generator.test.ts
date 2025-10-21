@@ -3,8 +3,8 @@
  * @module supporting/initialization/config_file_generator.test
  */
 
-import { assertEquals, assertExists } from "jsr:@std/assert";
-import { join } from "jsr:@std/path";
+import { assertEquals, assertExists } from "@std/assert";
+import { join } from "@std/path";
 import { ConfigFileGenerator } from "./config_file_generator.ts";
 import { DEFAULT_CONFIG_DIR } from "../../config/constants.ts";
 
