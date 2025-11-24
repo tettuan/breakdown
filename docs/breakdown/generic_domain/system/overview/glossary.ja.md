@@ -117,7 +117,7 @@ STDIN以外は、実際の内容を読み書きしない。PATHを値とし、�
 |------|----------|------|------------|
 | -f, --from | options.ja.md | 入力ファイルを指定するオプション。ファイルパスを指定し、その内容を`input_text_file`として使用する。標準入力と独立して動作し、両方同時に使用可能。 | stdin, input_text_file |
 | -o, --destination | options.ja.md | 出力先を指定するオプション。ファイルパスまたはディレクトリパスを指定し、その値を`destination_path`として使用する。ディレクトリの場合は自動的にファイル名が生成される。 | destination_path, 出力先 |
-| -i, --input | options.ja.md | 入力レイヤーの種類を指定するオプション。指定された値で`fromLayerType`を設定する。指定がない場合は"default"を使用する。 | fromLayerType, layerType |
+| -e, --edition | options.ja.md | 入力レイヤーの種類を指定するオプション。指定された値で`fromLayerType`を設定する。指定がない場合は"default"を使用する。 | fromLayerType, layerType |
 | -a, --adaptation | options.ja.md | プロンプトの種類を指定するオプション。指定された値で`adaptationType`を設定し、プロンプトファイル名のsuffixとして使用される。 | adaptationType, プロンプト種別 |
 | --help | options.ja.md | ヘルプメッセージを表示するオプション。コマンドの使用方法やオプションの説明を表示する。 | ZeroParamsResult, ヘルプ |
 | --version | options.ja.md | バージョン情報を表示するオプション。アプリケーションのバージョン番号を表示する。 | ZeroParamsResult, バージョン |

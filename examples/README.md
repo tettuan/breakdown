@@ -59,7 +59,7 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 15. `15_config_production_custom.sh` - 本番環境カスタム設定とFind Bugs
 
 ### パラメータ動作確認 (16-18)
-16. `16_input_parameter.sh` - --input/-i= パラメータの動作確認
+16. `16_input_parameter.sh` - --edition/-e= パラメータの動作確認
 17. `17_adaptation_parameter.sh` - --adaptation/-a= パラメータの動作確認
 18. `18_custom_variables.sh` - カスタム変数（--uv-*）の動作確認
 
@@ -224,7 +224,7 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 ./examples/16_input_parameter.sh
 ```
 このスクリプトは以下を実行します：
-- --input/-i= パラメータがテンプレート選択に与える影響の確認（短縮形使用時は必ずイコール記号）
+- --edition/-e= パラメータがテンプレート選択に与える影響の確認（短縮形使用時は必ずイコール記号）
 - f_{fromLayerType}.md ファイル名パターンの検証
 - project/issue/task 各レベルでの動作確認
 
@@ -308,7 +308,7 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 | Directive \ Layer | Project | Issue | Task |
 | --------------- | ------- | ----- | ---- |
 | to | breakdown to project <written_project_summary.md> -o <project_dir> | breakdown to issue <project_summary.md\|written_issue.md> -o <issue_dir> | breakdown to task <issue.md\|written_task.md> -o <tasks_dir> |
-| summary | echo "<messy_something>" \| breakdown summary project -o=<project_summary.md> | breakdown summary issue --from=<aggregated_tasks.md> --input=task -o=<issue_markdown_dir> | breakdown summary task --from=<unorganized_tasks.md> -o=<task_markdown_dir> |
+| summary | echo "<messy_something>" \| breakdown summary project -o=<project_summary.md> | breakdown summary issue --from=<aggregated_tasks.md> --edition=task -o=<issue_markdown_dir> | breakdown summary task --from=<unorganized_tasks.md> -o=<task_markdown_dir> |
 | defect | tail -100 "<error_log_file>" \| breakdown defect project -o=<project_defect.md> | breakdown defect issue --from=<bug_report.md> -o=<issue_defect_dir> | breakdown defect task --from=<improvement_request.md> -o=<task_defect_dir> |
 
 ### 応用のカスタムコマンド
@@ -322,18 +322,18 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 主なオプション：
 - `--from` または `-f`: 入力ファイルを指定
 - `--destination` または `-o`: 出力ファイルまたはディレクトリを指定
-- `--input` または `-i=<type>`: 入力レイヤータイプを指定（短縮形使用時は必ずイコール記号を使用）
+- `--edition` または `-e=<type>`: 入力レイヤータイプを指定（短縮形使用時は必ずイコール記号を使用）
 - `--adaptation` または `-a=<type>`: プロンプトの適応タイプを指定（短縮形使用時は必ずイコール記号を使用）
 - `--uv-*`: カスタム変数を指定（例：`--uv-userName=太郎` `--uv-project=example`）
 
 **重要**: 短縮形式（-i, -a）を使用する場合は、必ずイコール記号（=）を使用してください。
-- ✅ 正しい: `-i=task`, `-a=detailed`
-- ❌ 間違い: `-i task`, `-a detailed`
+- ✅ 正しい: `-e=task`, `-a=detailed`
+- ❌ 間違い: `-e task`, `-a detailed`
 
 ### 実装予定機能
 
 以下のパラメータは将来のバージョンで実装される要件です：
-- `--input/-i`: fromLayerType の設定を動的に変更する機能
+- `--edition/-e`: fromLayerType の設定を動的に変更する機能
 - `--adaptation/-a`: adaptation テンプレートの選択機能
 
 これらは実現すべき要件として定義されており、現在開発中です。

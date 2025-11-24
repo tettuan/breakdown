@@ -39,7 +39,7 @@ Breakdown CLIにおいて、AIが理解すべきプロンプトテンプレー�
 
 **AdaptationType**: ユーザーの「どのような特性のプロンプトを使うか」を表現し、プロンプトファイル名のサフィックスを決定する**個性の表現**です。`--adaptation`オプションから生成され、未指定時はundefinedとなります。
 
-**FromLayerType**: 「どの階層からの変換か」を表現し、プロンプトファイル名のプレフィックスを決定する**変換元の表現**です。`--input`オプションから指定します。
+**FromLayerType**: 「どの階層からの変換か」を表現し、プロンプトファイル名のプレフィックスを決定する**変換元の表現**です。`--edition`オプションから指定します。
 未指定の場合は "default" を用います。
 
 ## 第3章：ドメインサービスの協働
@@ -249,7 +249,7 @@ const context: PathResolutionContext = {
   directiveType: "summary",
   layerType: "project",
   fromFile: undefined,
-  inputOption: "project",  // --input project
+  inputOption: "project",  // --edition project
   adaptation: "strict"
 };
 

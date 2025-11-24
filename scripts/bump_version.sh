@@ -1,244 +1,626 @@
 #!/bin/bash
 
-# ============================================================================
-# Automated Version Management Script for Breakdown (Deno/JSR)
+# Purpose: Automated version management script for Deno projects with PR workflow
+#          - Manages version bumping through work branch → develop → main flow
+#          - Each merge requires remote CI success
+#          - Tracks progress through step identification codes
 #
-# Purpose:
-#   - Ensures version consistency between deno.json and lib/version.ts
-#   - Handles version bumping (major/minor/patch) with release branch workflow
-#   - Performs pre-release checks (git status, local CI, GitHub Actions)
-#   - Manages GitHub tags and JSR version synchronization
-#   - Creates release branch and updates version files for PR workflow
+# Usage: ./scripts/bump_version.sh [--major|--minor|--patch] [--status] [--step]
+#        Default: --patch
+#        --status: Show current step without executing
+#        --step: Execute only current step (default: auto-continue until blocking point)
 #
-# Usage:
-#   ./scripts/bump_version.sh [--major|--minor|--patch]
-#   (default: --patch)
+# Step Flow:
+#   A: Work Branch Phase
+#      A-1: Version update (deno.json, src/version.ts)
+#      A-2: Local CI check
+#      A-3: Create PR to develop
 #
-# Categories:
-#   1. Status Checks
-#      - Local Git Status Check
-#      - Version Sync Check
-#      - GitHub Actions Status Check
-#      - JSR Version Check
-#      - GitHub Tags Cleanup and Version Sync
-#   2. Local CI
-#      - Local CI Check
-#      - JSR Pre-publish Check
-#   3. New Version Preparation
-#      - New Version Generation
-#      - Release Branch Creation
-#   4. Version Update
-#      - Version Update (Atomic)
-#      - Version Verification
-#   5. Git Operations
-#      - Git Commit on Release Branch
-#      - Push Release Branch for PR
-# ============================================================================
+#   B: Develop Integration Phase
+#      B-1: Wait for PR merge (remote CI must pass)
+#      B-2: Create PR to main
+#
+#   C: Main Release Phase
+#      C-1: Wait for PR merge (remote CI must pass)
+#      C-2: Create vtag on main merge commit
+#
+# Exit Codes:
+# 0 - Success or status displayed
+# 1 - Error or validation failed
 
-set -euo pipefail
+set -e
 
-# Constants
-DENO_JSON="deno.json"
-VERSION_TS="lib/version.ts"
-JSR_META_URL="https://jsr.io/@tettuan/breakdown/meta.json"
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
 
-# Helper Functions
-get_deno_version() {
-  jq -r '.version' "$DENO_JSON"
-}
+# Default values
+BUMP_TYPE="patch"
+SHOW_STATUS=false
+SINGLE_STEP=false
 
-get_ts_version() {
-  grep 'export const VERSION' "$VERSION_TS" | sed -E 's/.*\"([0-9.]+)\".*/\1/'
-}
-
-# ============================================================================
-# 1. Status Checks
-# ============================================================================
-echo "Running Status Checks..."
-
-# 1.1 Branch Check
-current_branch=$(git rev-parse --abbrev-ref HEAD)
-if [[ "$current_branch" != "main" ]]; then
-  echo "Error: You must be on the 'main' branch to run this script. Current branch: $current_branch"
-  exit 1
-fi
-
-# 1.2 Git Push Check (main branch only)
-if [[ -n "$(git log main --not --remotes)" ]]; then
-  echo "Error: You have local commits on main branch that have not been pushed to the remote repository. Please push them first."
-  exit 1
-fi
-
-# 1.3 Local Git Status Check
-if [[ -n "$(git status --porcelain)" ]]; then
-  echo "Error: You have uncommitted changes. Please commit or stash them first."
-  exit 1
-fi
-
-# 1.4 Version Sync Check
-deno_ver=$(get_deno_version)
-ts_ver=$(get_ts_version)
-if [[ "$deno_ver" != "$ts_ver" ]]; then
-  echo "Error: Version mismatch between $DENO_JSON ($deno_ver) and $VERSION_TS ($ts_ver)"
-  exit 1
-fi
-
-# 1.5 GitHub Actions Status Check
-latest_commit=$(git rev-parse HEAD)
-for workflow in "test.yml" "version-check.yml"; do
-  echo "Checking $workflow..."
-  if ! gh run list --workflow=$workflow --limit=1 --json status,conclusion,headSha 2>/dev/null | jq -e '.[0].status == "completed" and .[0].conclusion == "success" and .[0].headSha == "'$latest_commit'"' > /dev/null; then
-    echo "Warning: Could not verify $workflow status. Please check manually at https://github.com/tettuan/breakdown/actions"
-    echo "Continuing with version bump..."
-  fi
+# Parse command line arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --major)
+            BUMP_TYPE="major"
+            shift
+            ;;
+        --minor)
+            BUMP_TYPE="minor"
+            shift
+            ;;
+        --patch)
+            BUMP_TYPE="patch"
+            shift
+            ;;
+        --status)
+            SHOW_STATUS=true
+            shift
+            ;;
+        --step)
+            SINGLE_STEP=true
+            shift
+            ;;
+        *)
+            echo "Unknown option: $1"
+            echo "Usage: $0 [--major|--minor|--patch] [--status] [--step]"
+            exit 1
+            ;;
+    esac
 done
 
-# 1.6 JSR Version Check
-latest_jsr_version=$(curl -s "$JSR_META_URL" | jq -r '.versions | keys | .[]' | sort -V | tail -n 1)
-echo "Latest JSR published version: $latest_jsr_version"
+# =============================================================================
+# Helper Functions
+# =============================================================================
 
-# 1.7 GitHub Tags Cleanup and Version Sync
-git fetch --tags
-current_version=$(get_deno_version)
-echo "Current version in deno.json: $current_version"
+log_step() {
+    echo -e "${BLUE}[$1]${NC} $2"
+}
 
-latest_tag=$(git tag --list 'v*' | sed 's/^v//' | sort -V | tail -n 1)
-if [[ "$latest_tag" > "$latest_jsr_version" ]]; then
-  # If all versions match, allow and continue
-  if [[ "$latest_tag" == "$latest_jsr_version" && "$deno_ver" == "$latest_jsr_version" && "$ts_ver" == "$latest_jsr_version" ]]; then
-    echo "All versions match JSR version ($latest_jsr_version). Proceeding."
-  else
-    echo "\n===============================================================================\nLocal tags are ahead of JSR version ($latest_jsr_version).\nPlease run scripts/rewind_to_jsr.sh to rewind local versions and tags.\n===============================================================================\n"
-    exit 1
-  fi
-fi
+log_success() {
+    echo -e "${GREEN}✓${NC} $1"
+}
 
-# 1.8 Version Consistency Check
-jsr_ver="$latest_jsr_version"
-git_tag_ver=$(git tag --list 'v*' | sed 's/^v//' | sort -V | tail -n 1)
-deno_ver=$(get_deno_version)
-ts_ver=$(get_ts_version)
+log_error() {
+    echo -e "${RED}✗${NC} $1"
+}
 
-all_match=true
-if [[ "$jsr_ver" != "$git_tag_ver" ]]; then
-  echo "Mismatch: JSR version ($jsr_ver) != GitHub tag ($git_tag_ver)"; all_match=false
-fi
-if [[ "$jsr_ver" != "$deno_ver" ]]; then
-  echo "Mismatch: JSR version ($jsr_ver) != deno.json ($deno_ver)"; all_match=false
-fi
-if [[ "$jsr_ver" != "$ts_ver" ]]; then
-  echo "Mismatch: JSR version ($jsr_ver) != version.ts ($ts_ver)"; all_match=false
-fi
-if [[ "$all_match" == true ]]; then
-  echo "Version Consistency Check: true (all versions match: $jsr_ver)"
-else
-  echo "Version Consistency Check: false"
-  echo "Please run ./scripts/rewind_to_jsr.sh to synchronize versions."
-  exit 1
-fi
+log_warning() {
+    echo -e "${YELLOW}!${NC} $1"
+}
 
-echo "✓ Status Checks passed"
+log_info() {
+    echo -e "  $1"
+}
 
-# ============================================================================
-# 2. Local CI
-# ============================================================================
-echo -e "\nRunning Local CI..."
+# Get current branch name
+get_current_branch() {
+    git rev-parse --abbrev-ref HEAD
+}
 
-# 2.1 Local CI Check
-if ! deno task ci; then
-  echo "Error: Local CI failed. Aborting version bump."
-  exit 1
-fi
+# Get version from deno.json
+get_deno_version() {
+    deno eval "const config = JSON.parse(await Deno.readTextFile('deno.json')); console.log(config.version);"
+}
 
-# 2.2 JSR Pre-publish Check
-echo "Running JSR pre-publish check..."
-if ! deno publish --dry-run --allow-dirty --no-check > /dev/null 2>&1; then
-  echo "Error: JSR pre-publish check failed. Please fix any issues before bumping version."
-  exit 1
-fi
+# Get version from deno.json (single source of truth)
+get_mod_version() {
+    get_deno_version
+}
 
-echo "✓ Local CI passed"
+# Check if PR exists for given head and base
+get_pr_number() {
+    local head=$1
+    local base=$2
+    gh pr list --head "$head" --base "$base" --state open --json number --jq '.[0].number // empty'
+}
 
-# ============================================================================
-# 3. New Version Preparation
-# ============================================================================
-echo -e "\nPreparing New Version..."
+# Check PR CI status (GitHub Actions)
+check_pr_ci_status() {
+    local pr_number=$1
+    local checks=$(gh pr checks "$pr_number" --json name,state,conclusion 2>/dev/null)
 
-# 3.1 New Version Generation
-bump_type="patch"
-if [[ $# -gt 0 ]]; then
-  case "$1" in
-    --major) bump_type="major" ;;
-    --minor) bump_type="minor" ;;
-    --patch) bump_type="patch" ;;
-    *) echo "Unknown bump type: $1"; exit 1 ;;
-  esac
-fi
+    if [ -z "$checks" ] || [ "$checks" = "[]" ]; then
+        echo "success"
+        return
+    fi
 
-IFS='.' read -r major minor patch <<< "$latest_jsr_version"
-case "$bump_type" in
-  major) major=$((major + 1)); minor=0; patch=0 ;;
-  minor) minor=$((minor + 1)); patch=0 ;;
-  patch) patch=$((patch + 1)) ;;
-esac
-new_version="$major.$minor.$patch"
-echo "Bumping version from latest JSR version $latest_jsr_version -> $new_version"
+    local failed=$(echo "$checks" | jq '[.[] | select(.conclusion == "failure")] | length')
+    local pending=$(echo "$checks" | jq '[.[] | select(.state == "pending" or .state == "in_progress")] | length')
 
-# 3.2 Release Branch Creation
-release_branch="release/v$new_version"
-echo "Creating release branch: $release_branch"
-git checkout -b "$release_branch"
+    if [ "$failed" -gt 0 ]; then
+        echo "failed"
+    elif [ "$pending" -gt 0 ]; then
+        echo "pending"
+    else
+        echo "success"
+    fi
+}
 
-echo "✓ Release branch created"
+# Display PR CI details
+show_pr_ci_details() {
+    local pr_number=$1
+    log_info "GitHub Actions status for PR #$pr_number:"
 
-# ============================================================================
-# 4. Version Update
-# ============================================================================
-echo -e "\nUpdating Version Files..."
+    local checks=$(gh pr checks "$pr_number" --json name,state,conclusion 2>/dev/null)
 
-# 4.1 Version Update (Atomic)
-tmp_deno="${DENO_JSON}.tmp"
-tmp_ts="${VERSION_TS}.tmp"
-jq --arg v "$new_version" '.version = $v' "$DENO_JSON" > "$tmp_deno"
-cat > "$tmp_ts" <<EOF
-// This file is auto-generated. Do not edit manually.
+    if [ -z "$checks" ] || [ "$checks" = "[]" ]; then
+        log_info "  No checks found yet"
+        return
+    fi
+
+    echo "$checks" | jq -r '.[] | "  \(.name): \(.state) \(if .conclusion then "(\(.conclusion))" else "" end)"'
+}
+
+# Check if branch has version bump commit (ahead of develop)
+has_version_commit() {
+    local branch=$1
+    # Only check commits ahead of develop
+    git log "develop..$branch" --oneline --grep="chore: bump version" -1 2>/dev/null | grep -q "bump version"
+}
+
+# Get the new version from latest version commit (ahead of develop)
+get_version_from_commit() {
+    local branch=$1
+    git log "develop..$branch" --oneline --grep="chore: bump version" -1 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1
+}
+
+# =============================================================================
+# Step Detection
+# =============================================================================
+
+detect_current_step() {
+    local current_branch=$(get_current_branch)
+    local work_branch=""
+
+    # Determine work branch name
+    if [ "$current_branch" != "main" ] && [ "$current_branch" != "develop" ]; then
+        work_branch=$current_branch
+    fi
+
+    # Check for existing PRs
+    local pr_to_develop=""
+    local pr_to_main=""
+
+    if [ -n "$work_branch" ]; then
+        pr_to_develop=$(get_pr_number "$work_branch" "develop")
+    fi
+    pr_to_main=$(get_pr_number "develop" "main")
+
+    # Detect step based on state
+
+    # Step C-2: On main with version commit, need to tag
+    if [ "$current_branch" = "main" ]; then
+        if has_version_commit "main"; then
+            local version=$(get_version_from_commit "main")
+            if ! git tag -l "v$version" | grep -q "v$version"; then
+                echo "C-2:$version"
+                return
+            fi
+        fi
+        echo "DONE"
+        return
+    fi
+
+    # Step C-1: PR to main exists
+    if [ -n "$pr_to_main" ]; then
+        echo "C-1:$pr_to_main"
+        return
+    fi
+
+    # Step B-2: On develop, need to create PR to main
+    if [ "$current_branch" = "develop" ]; then
+        # Check if develop has commits ahead of main
+        local commits_ahead=$(git rev-list --count main..develop 2>/dev/null || echo "0")
+        if [ "$commits_ahead" -gt 0 ]; then
+            echo "B-2"
+            return
+        fi
+    fi
+
+    # Step B-1: PR to develop exists
+    if [ -n "$pr_to_develop" ]; then
+        echo "B-1:$pr_to_develop:$work_branch"
+        return
+    fi
+
+    # Step A: On work branch
+    if [ -n "$work_branch" ]; then
+        # Check if version already bumped
+        if has_version_commit "$work_branch"; then
+            # Check if local CI passed (we'll assume it needs to be run)
+            echo "A-3:$work_branch"
+            return
+        fi
+
+        # Check for uncommitted version changes
+        if git diff --name-only | grep -q "deno.json"; then
+            echo "A-2:$work_branch"
+            return
+        fi
+
+        echo "A-1:$work_branch"
+        return
+    fi
+
+    echo "UNKNOWN"
+}
+
+# =============================================================================
+# Step Execution Functions
+# =============================================================================
+
+# Step A-1: Update version on work branch
+execute_step_a1() {
+    local work_branch=$1
+    log_step "A-1" "Updating version on branch: $work_branch"
+
+    # Get current version
+    local deno_version=$(get_deno_version)
+    local mod_version=$(get_mod_version)
+
+    # Version is managed in deno.json only
+    log_info "Current version: $deno_version"
+
+    # Get latest JSR version
+    log_info "Fetching latest version from JSR..."
+    local latest_jsr_version=$(curl -s https://jsr.io/@tettuan/breakdown/versions | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+' | sort -V | tail -n 1)
+
+    if [ -z "$latest_jsr_version" ]; then
+        log_warning "Could not fetch JSR version, using local: $deno_version"
+        latest_jsr_version=$deno_version
+    fi
+
+    log_info "Current JSR version: $latest_jsr_version"
+
+    # Generate new version
+    IFS='.' read -r major minor patch <<< "$latest_jsr_version"
+
+    case $BUMP_TYPE in
+        "major")
+            new_version="$((major + 1)).0.0"
+            ;;
+        "minor")
+            new_version="$major.$((minor + 1)).0"
+            ;;
+        "patch")
+            new_version="$major.$minor.$((patch + 1))"
+            ;;
+    esac
+
+    log_info "New version: $new_version"
+
+    # Update version in deno.json
+    deno eval "const config = JSON.parse(await Deno.readTextFile('deno.json')); config.version = '$new_version'; await Deno.writeTextFile('deno.json', JSON.stringify(config, null, 2).trimEnd() + '\n');"
+
+    # Update version in lib/version.ts
+    deno eval "const content = \`// This file is auto-generated. Do not edit manually.
 // The version is synchronized with deno.json.
 
 /**
  * The current version of Breakdown CLI, synchronized with deno.json.
  * @module
  */
-export const VERSION = "$new_version";
+export const VERSION = \"$new_version\";
+\`; await Deno.writeTextFile('lib/version.ts', content);"
+
+    log_success "Version updated to $new_version in deno.json and lib/version.ts"
+
+    # Return new version for next steps
+    echo "$new_version"
+}
+
+# Step A-2: Commit version changes and run local CI
+execute_step_a2() {
+    local work_branch=$1
+    log_step "A-2" "Committing version changes and running local CI"
+
+    # Commit version changes first (CI requires clean working directory)
+    local new_version=$(get_deno_version)
+    git add deno.json lib/version.ts
+    git commit -m "chore: bump version to $new_version"
+
+    log_success "Version changes committed"
+
+    # Run local CI
+    if ! deno task ci; then
+        log_error "Local CI failed. Please fix issues before continuing."
+        log_info "You may need to amend the commit after fixing issues."
+        exit 1
+    fi
+
+    log_success "Local CI passed"
+
+    # Push to remote
+    git push origin "$work_branch"
+
+    log_success "Version commit pushed to $work_branch"
+}
+
+# Step A-3: Create PR to develop
+execute_step_a3() {
+    local work_branch=$1
+    log_step "A-3" "Creating PR to develop"
+
+    local new_version=$(get_deno_version)
+
+    # Create PR
+    local pr_url=$(gh pr create \
+        --base develop \
+        --head "$work_branch" \
+        --title "chore: bump version to $new_version" \
+        --body "$(cat <<EOF
+## Summary
+- Bump version to $new_version
+
+## Checklist
+- [ ] Remote CI passes
+- [ ] Ready to merge to develop
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
 EOF
-mv "$tmp_deno" "$DENO_JSON"
-mv "$tmp_ts" "$VERSION_TS"
-deno fmt "$VERSION_TS"
+)")
 
-# 4.2 Version Verification
-if [[ "$(get_deno_version)" != "$new_version" ]] || [[ "$(get_ts_version)" != "$new_version" ]]; then
-  echo "Error: Version update failed."
-  exit 1
-fi
+    log_success "PR created: $pr_url"
+    log_info "Wait for remote CI to pass, then merge the PR"
+}
 
-echo "✓ Version files updated"
+# Step B-1: Check PR to develop status
+execute_step_b1() {
+    local pr_number=$1
+    local work_branch=$2
+    log_step "B-1" "Checking PR #$pr_number to develop"
 
-# ============================================================================
-# 5. Git Operations
-# ============================================================================
-echo -e "\nPerforming Git Operations..."
+    show_pr_ci_details "$pr_number"
+    local ci_status=$(check_pr_ci_status "$pr_number")
 
-# 5.1 Git Commit on Release Branch
-git add "$DENO_JSON" "$VERSION_TS"
-git commit -m "chore: bump version to $new_version"
+    case $ci_status in
+        "success")
+            log_success "All GitHub Actions passed"
+            log_info "Merging PR #$pr_number to develop"
 
-# 5.2 Push Release Branch for PR
-git push -u origin "$release_branch"
+            gh pr merge "$pr_number" --merge --delete-branch
+            log_success "PR merged to develop"
 
-echo "✓ Git operations completed"
+            # Switch to develop
+            git checkout develop
+            git pull origin develop
+            ;;
+        "pending")
+            log_warning "GitHub Actions still running on PR #$pr_number"
+            log_info "Wait for all checks to complete, then run --continue"
+            ;;
+        "failed")
+            log_error "GitHub Actions failed on PR #$pr_number"
+            log_info "Fix the issues and push again"
+            exit 1
+            ;;
+    esac
+}
 
-echo -e "\nRelease branch '$release_branch' created and pushed."
-echo "Next steps:"
-echo "1. Create a PR: gh pr create --title 'Release v$new_version' --body 'Release version $new_version'"
-echo "2. Merge the PR to trigger auto-release workflow"
-echo "3. The auto-release workflow will create the v$new_version tag and GitHub release"
-echo "4. The publish workflow will automatically publish to JSR" 
+# Step B-2: Create PR to main
+execute_step_b2() {
+    log_step "B-2" "Creating PR to main"
+
+    local new_version=$(get_deno_version)
+
+    # Create PR
+    local pr_url=$(gh pr create \
+        --base main \
+        --head develop \
+        --title "Release v$new_version" \
+        --body "$(cat <<EOF
+## Summary
+- Release version $new_version
+
+## Checklist
+- [ ] Remote CI passes
+- [ ] Ready to release to main
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+EOF
+)")
+
+    log_success "PR created: $pr_url"
+    log_info "Wait for remote CI to pass, then merge the PR"
+}
+
+# Step C-1: Check PR to main status
+execute_step_c1() {
+    local pr_number=$1
+    log_step "C-1" "Checking PR #$pr_number to main"
+
+    show_pr_ci_details "$pr_number"
+    local ci_status=$(check_pr_ci_status "$pr_number")
+
+    case $ci_status in
+        "success")
+            log_success "All GitHub Actions passed"
+            log_info "Merging PR #$pr_number to main"
+
+            gh pr merge "$pr_number" --merge
+            log_success "PR merged to main"
+
+            # Switch to main
+            git checkout main
+            git pull origin main
+            ;;
+        "pending")
+            log_warning "GitHub Actions still running on PR #$pr_number"
+            log_info "Wait for all checks to complete, then run --continue"
+            ;;
+        "failed")
+            log_error "GitHub Actions failed on PR #$pr_number"
+            log_info "Fix the issues and push again"
+            exit 1
+            ;;
+    esac
+}
+
+# Step C-2: Create vtag on main
+execute_step_c2() {
+    local version=$1
+    log_step "C-2" "Creating vtag for version $version"
+
+    # Ensure we're on main
+    local current_branch=$(get_current_branch)
+    if [ "$current_branch" != "main" ]; then
+        git checkout main
+        git pull origin main
+    fi
+
+    # Create and push tag
+    git tag "v$version"
+    git push origin "v$version"
+
+    log_success "Tag v$version created and pushed"
+    log_success "Version $version released!"
+}
+
+# =============================================================================
+# Main Execution
+# =============================================================================
+
+main() {
+    echo "========================================"
+    echo "  Version Bump with PR Workflow"
+    echo "========================================"
+    echo
+
+    # Detect current step
+    local step_info=$(detect_current_step)
+    local step=$(echo "$step_info" | cut -d: -f1)
+
+    # Show status
+    echo "Current Step: $step"
+    echo "Branch: $(get_current_branch)"
+    echo "Bump Type: $BUMP_TYPE"
+    echo
+
+    if [ "$SHOW_STATUS" = true ]; then
+        case $step in
+            A-1*)
+                log_info "Ready to update version"
+                ;;
+            A-2*)
+                log_info "Ready to commit and run local CI"
+                ;;
+            A-3*)
+                log_info "Ready to create PR to develop"
+                ;;
+            B-1*)
+                local pr=$(echo "$step_info" | cut -d: -f2)
+                log_info "PR #$pr to develop exists"
+                show_pr_ci_details "$pr"
+                local status=$(check_pr_ci_status "$pr")
+                if [ "$status" = "success" ]; then
+                    log_success "GitHub Actions passed - ready to merge"
+                elif [ "$status" = "pending" ]; then
+                    log_warning "GitHub Actions still running"
+                else
+                    log_error "GitHub Actions failed"
+                fi
+                ;;
+            B-2*)
+                log_info "Ready to create PR to main"
+                ;;
+            C-1*)
+                local pr=$(echo "$step_info" | cut -d: -f2)
+                log_info "PR #$pr to main exists"
+                show_pr_ci_details "$pr"
+                local status=$(check_pr_ci_status "$pr")
+                if [ "$status" = "success" ]; then
+                    log_success "GitHub Actions passed - ready to merge"
+                elif [ "$status" = "pending" ]; then
+                    log_warning "GitHub Actions still running"
+                else
+                    log_error "GitHub Actions failed"
+                fi
+                ;;
+            C-2*)
+                local version=$(echo "$step_info" | cut -d: -f2)
+                log_info "Ready to create tag v$version"
+                ;;
+            DONE)
+                log_success "Release process completed"
+                ;;
+            UNKNOWN)
+                log_error "Could not determine current step"
+                log_info "Please ensure you're on a work branch, develop, or main"
+                ;;
+        esac
+        exit 0
+    fi
+
+    # Execute appropriate step (auto-continue by default, --step for single step)
+    case $step in
+        A-1*)
+            local work_branch=$(echo "$step_info" | cut -d: -f2)
+            execute_step_a1 "$work_branch"
+
+            if [ "$SINGLE_STEP" = false ]; then
+                execute_step_a2 "$work_branch"
+                execute_step_a3 "$work_branch"
+            fi
+            ;;
+        A-2*)
+            local work_branch=$(echo "$step_info" | cut -d: -f2)
+            execute_step_a2 "$work_branch"
+
+            if [ "$SINGLE_STEP" = false ]; then
+                execute_step_a3 "$work_branch"
+            fi
+            ;;
+        A-3*)
+            local work_branch=$(echo "$step_info" | cut -d: -f2)
+            execute_step_a3 "$work_branch"
+            # Stop here - need to wait for remote CI
+            ;;
+        B-1*)
+            local pr=$(echo "$step_info" | cut -d: -f2)
+            local work_branch=$(echo "$step_info" | cut -d: -f3)
+            execute_step_b1 "$pr" "$work_branch"
+
+            # Continue to B-2 if merged to develop
+            if [ "$SINGLE_STEP" = false ] && [ "$(get_current_branch)" = "develop" ]; then
+                execute_step_b2
+            fi
+            ;;
+        B-2*)
+            execute_step_b2
+            # Stop here - need to wait for remote CI
+            ;;
+        C-1*)
+            local pr=$(echo "$step_info" | cut -d: -f2)
+            execute_step_c1 "$pr"
+
+            # Continue to C-2 if merged to main
+            if [ "$SINGLE_STEP" = false ] && [ "$(get_current_branch)" = "main" ]; then
+                local version=$(get_deno_version)
+                execute_step_c2 "$version"
+            fi
+            ;;
+        C-2*)
+            local version=$(echo "$step_info" | cut -d: -f2)
+            execute_step_c2 "$version"
+            ;;
+        DONE)
+            log_success "Release process already completed"
+            ;;
+        UNKNOWN)
+            log_error "Could not determine current step"
+            log_info "Please ensure you're on a work branch (not main or develop) to start"
+            exit 1
+            ;;
+    esac
+
+    echo
+    log_info "Run './scripts/bump_version.sh --status' to check progress"
+    log_info "Run './scripts/bump_version.sh' to proceed when ready"
+}
+
+main

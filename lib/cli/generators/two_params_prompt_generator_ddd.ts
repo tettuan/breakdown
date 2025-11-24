@@ -147,7 +147,7 @@ export class TwoParamsPromptGenerator {
         "[TwoParamsPromptGenerator] generatePrompt options:",
         JSON.stringify(options, null, 2),
       );
-      console.log("[TwoParamsPromptGenerator] options.input:", options.input);
+      console.log("[TwoParamsPromptGenerator] options.edition:", options.edition);
     }
 
     // 1. Validate and create configuration
@@ -477,7 +477,7 @@ export class TwoParamsPromptGenerator {
         fromFile: (options.f as string) || (options.from as string) || (options.fromFile as string),
         destinationFile: (options.o as string) || (options.destination as string) ||
           (options.output as string),
-        input: (options.i as string) || (options.input as string), // Add input option for fromLayerType
+        input: (options.e as string) || (options.edition as string), // Add edition option for fromLayerType
         adaptation: (options.a as string) || (options.adaptation as string) ||
           configuration.adaptation,
         promptDir: configuration.promptDir,

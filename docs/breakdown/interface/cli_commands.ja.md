@@ -79,7 +79,7 @@ breakdown to task --from input.md --output output.txt
 |-----------|------|-----|
 | `--use-schema` | スキーマ使用フラグ | `--use-schema` |
 | `--uv-<key>` | カスタム変数 | `--uv-priority=高` |
-| `--input` | 入力階層の明示的指定 | `--input issue` |
+| `--edition` | 入力階層の明示的指定 | `--edition issue` |
 
 ## 使用例
 
