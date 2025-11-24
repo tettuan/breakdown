@@ -64,11 +64,11 @@ breakdown to task --adaptation strict
 # → .agent/climpt/prompts/to/task/f_task_strict.md
 
 # fromLayer指定パス解決
-breakdown to task --input issue
+breakdown to task --edition issue
 # → .agent/climpt/prompts/to/task/f_issue.md
 
 # 複合指定パス解決
-breakdown to task --input issue --adaptation detailed
+breakdown to task --edition issue --adaptation detailed
 # → .agent/climpt/prompts/to/task/f_issue_detailed.md
 ```
 
@@ -160,15 +160,15 @@ breakdown to task -f input.md -o result/output.txt
 
 ```bash
 # 1. 理想的なケース（全て存在）
-breakdown to task --input issue --adaptation detailed
+breakdown to task --edition issue --adaptation detailed
 # → .agent/climpt/prompts/to/task/f_issue_detailed.md
 
 # 2. 適応タイプなしのフォールバック
-breakdown to task --input issue --adaptation nonexistent
+breakdown to task --edition issue --adaptation nonexistent
 # → .agent/climpt/prompts/to/task/f_issue.md
 
 # 3. 基本ファイルへのフォールバック
-breakdown to task --input nonexistent
+breakdown to task --edition nonexistent
 # → .agent/climpt/prompts/to/task/f_task.md
 ```
 
