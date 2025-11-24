@@ -107,7 +107,7 @@ The following combinations are available:
 | Command \ Layer | Command Description                                                  | Project                                                                                                                 | Issue                                                                                                                         | Task                                                                                                          |
 | --------------- | -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
 | to              | Converts input Markdown to the next layer format                    | Decompose to project<br>breakdown to project <written_project_summary.md> -o=<project_dir>                              | Decompose from project to issues<br>breakdown to issue <project_summary.md\|written_issue.md> -o=<issue_dir>                 | Decompose from issue to tasks<br>breakdown to task <issue.md\|written_task.md> -o=<tasks_dir>                |
-| summary         | Generates new Markdown or specified layer Markdown                  | Generate project summary in Markdown format<br>echo "<messy_something>" \| breakdown summary project -o=<project_summary.md> | Generate issue summary in Markdown format<br>breakdown summary issue --from=<aggregated_tasks.md> --input=task -o=<issue_markdown_dir> | Generate task summary in Markdown format<br>breakdown summary task --from=<unorganized_tasks.md> -o=<task_markdown_dir> |
+| summary         | Generates new Markdown or specified layer Markdown                  | Generate project summary in Markdown format<br>echo "<messy_something>" \| breakdown summary project -o=<project_summary.md> | Generate issue summary in Markdown format<br>breakdown summary issue --from=<aggregated_tasks.md> --edition=task -o=<issue_markdown_dir> | Generate task summary in Markdown format<br>breakdown summary task --from=<unorganized_tasks.md> -o=<task_markdown_dir> |
 | defect          | Generates fixes from error logs or defect information               | Generate project info from defect info<br>tail -100 "<error_log_file>" \| breakdown defect project -o=<project_defect.md> | Generate issues from defect info<br>breakdown defect issue --from=<bug_report.md> -o=<issue_defect_dir>                      | Generate tasks from defect info<br>breakdown defect task --from=<improvement_request.md> -o=<task_defect_dir> |
 
 ### Decomposition to Project
@@ -139,7 +139,7 @@ echo "<messy_something>" | breakdown summary project -o=<project_summary.md>
 **Issue Summary** Generate issues from task groups:
 
 ```bash
-breakdown summary issue --from=<aggregated_tasks.md> --input=task -o=<issue_markdown_dir>
+breakdown summary issue --from=<aggregated_tasks.md> --edition=task -o=<issue_markdown_dir>
 ```
 
 **Task Summary** Generate organized tasks from unorganized task information:

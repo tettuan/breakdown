@@ -100,7 +100,7 @@ echo "<messy_something>" | breakdown summary project -o <project_summary.md>
 **Issue Summary** Generate issues from task groups:
 
 ```bash
-breakdown summary issue --from=<aggregated_tasks.md> --input=task -o=<issue_markdown_dir>
+breakdown summary issue --from=<aggregated_tasks.md> --edition=task -o=<issue_markdown_dir>
 ```
 
 **Task Summary** Generate organized tasks from unorganized task information:
@@ -143,7 +143,7 @@ breakdown to task <issue.md> -o <tasks_dir>
 ### 2. Creating Issues from Task Groups
 
 ```bash
-breakdown summary issue --from=<aggregated_tasks.md> --input=task -o=<issue_markdown_dir>
+breakdown summary issue --from=<aggregated_tasks.md> --edition=task -o=<issue_markdown_dir>
 # Edit generated issues if needed
 breakdown to task <issue.md> -o <tasks_dir>
 ```

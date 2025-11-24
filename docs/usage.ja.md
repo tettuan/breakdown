@@ -113,7 +113,7 @@ breakdown init
 | Command \ Layer | コマンドの説明                                                       | Project                                                                                                                 | Issue                                                                                                                         | Task                                                                                                          |
 | --------------- | -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
 | to              | 入力されたMarkdownを次のレイヤー形式に変換するコマンド               | プロジェクトへ分解<br>breakdown to project <written_project_summary.md> -o=<project_dir>                                | プロジェクトから課題へ分解<br>breakdown to issue <project_summary.md\|written_issue.md> -o=<issue_dir>                        | 課題からタスクへ分解<br>breakdown to task <issue.md\|written_task.md> -o=<tasks_dir>                          |
-| summary         | 新規のMarkdownを生成、または指定レイヤーのMarkdownを生成するコマンド | プロジェクト概要をMarkdown形式で生成<br>echo "<messy_something>" \| breakdown summary project -o=<project_summary.md>   | イシュー概要をMarkdown形式で生成<br>breakdown summary issue --from=<aggregated_tasks.md> --input=task -o=<issue_markdown_dir> | タスク概要をMarkdown形式で生成<br>breakdown summary task --from=<unorganized_tasks.md> -o=<task_markdown_dir> |
+| summary         | 新規のMarkdownを生成、または指定レイヤーのMarkdownを生成するコマンド | プロジェクト概要をMarkdown形式で生成<br>echo "<messy_something>" \| breakdown summary project -o=<project_summary.md>   | イシュー概要をMarkdown形式で生成<br>breakdown summary issue --from=<aggregated_tasks.md> --edition=task -o=<issue_markdown_dir> | タスク概要をMarkdown形式で生成<br>breakdown summary task --from=<unorganized_tasks.md> -o=<task_markdown_dir> |
 | defect          | エラーログや不具合情報から修正を生成するコマンド                     | 不具合情報からプロジェクト情報を生成<br>tail -100 "<error_log_file>" \| breakdown defect project -o=<project_defect.md> | 不具合情報から課題を生成<br>breakdown defect issue --from=<bug_report.md> -o=<issue_defect_dir>                               | 不具合情報からタスクを生成<br>breakdown defect task --from=<improvement_request.md> -o=<task_defect_dir>      |
 
 ### プロジェクトへの分解
@@ -145,7 +145,7 @@ echo "<messy_something>" | breakdown summary project -o=<project_summary.md>
 **イシューサマリー** タスク群から課題を生成：
 
 ```bash
-breakdown summary issue --from=<aggregated_tasks.md> --input=task -o=<issue_markdown_dir>
+breakdown summary issue --from=<aggregated_tasks.md> --edition=task -o=<issue_markdown_dir>
 ```
 
 **タスクサマリー** 未整理のタスク情報から整理されたタスクを生成：

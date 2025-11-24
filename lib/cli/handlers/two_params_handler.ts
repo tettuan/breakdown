@@ -399,8 +399,8 @@ export async function handleTwoParams(
   if (isDebug) {
     console.log("[handleTwoParams] Received options:", JSON.stringify(options, null, 2));
     console.log(
-      "[handleTwoParams] --input parameter present:",
-      "input" in options ? `Yes, value: "${options.input}"` : "No",
+      "[handleTwoParams] --edition parameter present:",
+      "edition" in options ? `Yes, value: "${options.edition}"` : "No",
     );
     console.log("[handleTwoParams] All option keys:", Object.keys(options).join(", "));
   }

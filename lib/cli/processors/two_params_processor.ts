@@ -308,7 +308,7 @@ export class TwoParamsProcessor {
 
     return (options.fromFile as string) ||
       (options.from as string) ||
-      (options.input as string) ||
+      (options.edition as string) ||
       "stdin";
   }
 

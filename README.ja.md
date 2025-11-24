@@ -69,7 +69,7 @@ echo "<messy_something>" | breakdown summary project -o <project_summary.md>
 **課題サマリー** タスク群から課題を生成：
 
 ```bash
-breakdown summary issue --from=<aggregated_tasks.md> --input=task -o=<issue_markdown_dir>
+breakdown summary issue --from=<aggregated_tasks.md> --edition=task -o=<issue_markdown_dir>
 ```
 
 **タスクサマリー** 未整理のタスク情報から整理されたタスクを生成：
@@ -112,7 +112,7 @@ breakdown to task <issue.md> -o <tasks_dir>
 ### 2. タスク群からの課題作成
 
 ```bash
-breakdown summary issue --from=<aggregated_tasks.md> --input=task -o=<issue_markdown_dir>
+breakdown summary issue --from=<aggregated_tasks.md> --edition=task -o=<issue_markdown_dir>
 # 必要に応じて生成された課題を編集
 breakdown to task <issue.md> -o <tasks_dir>
 ```
