@@ -48,7 +48,7 @@ app_schema:
 
 | 設定項目 | 説明 | デフォルト値 | 用途 |
 |----------|------|--------------|------|
-| `working_dir` | 作業ディレクトリ | `.agent/climpt` | 出力・入力ファイルの解決（-o, -i オプション） |
+| `working_dir` | 作業ディレクトリ | `.agent/climpt` | 出力・入力ファイルの解決（-o, -f オプション） |
 | `app_prompt.base_dir` | プロンプトベースディレクトリ | `prompts` | プロンプトテンプレートファイルの配置 |
 | `app_schema.base_dir` | スキーマベースディレクトリ | `schemas` | JSONスキーマファイルの配置 |
 
