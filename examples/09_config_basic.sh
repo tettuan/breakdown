@@ -50,18 +50,11 @@ echo "Original CWD: $ORIGINAL_CWD"
 CONFIG_DIR="./.agent/climpt/config"
 echo "Config directory: $CONFIG_DIR"
 
-# Check if initialized
-if [ ! -d "${CONFIG_DIR}" ]; then
-    echo "Error: Project not initialized. Please run 'breakdown init' first."
-    echo "Expected config directory: ${CONFIG_DIR}"
-    exit 1
-fi
-
-# Check if default-user.yml exists
-if [ ! -f "${CONFIG_DIR}/default-user.yml" ]; then
-    echo "Creating user configuration..."
-    if ! bash 03_init_deno_run.sh; then
-        echo "Error: Failed to create user configuration"
+# Check if initialized - run setup if needed
+if [ ! -d "${CONFIG_DIR}" ] || [ ! -f "${CONFIG_DIR}/default-user.yml" ]; then
+    echo "Environment not set up. Running setup script..."
+    if ! bash 03_setup_environment.sh; then
+        echo "Error: Failed to set up environment"
         exit 1
     fi
 fi
@@ -130,13 +123,13 @@ echo "Searching for template files in project root..."
 find .. -name "f_issue.md" -type f 2>/dev/null | head -5 || echo "No f_issue.md files found"
 find .. -name "f_project.md" -type f 2>/dev/null | head -5 || echo "No f_project.md files found"
 
-# Templates are already created by 03_init_deno_run.sh in .agent/climpt/prompts/
+# Templates are created by 03_setup_environment.sh in .agent/climpt/prompts/
 echo ""
 echo "🔍 DEBUG: Checking existing templates"
 if [ -f ".agent/climpt/prompts/summary/issue/f_issue.md" ]; then
     echo "✓ Templates already exist in .agent/climpt/prompts/"
 else
-    echo "⚠️ Templates not found. Please run 03_init_deno_run.sh first"
+    echo "⚠️ Templates not found. Please run 03_setup_environment.sh first"
 fi
 
 # Create a basic configuration file (only if it doesn't exist)
@@ -244,43 +237,12 @@ else
     echo "❌ 'breakdown summary project' failed with basic config"
 fi
 
-# Test the init command as well
 echo ""
-echo "Testing breakdown init with basic configuration..."
-TEMP_TEST_DIR="./test_basic_config"
-mkdir -p "$TEMP_TEST_DIR"
-cd "$TEMP_TEST_DIR"
-
-# Copy our basic config to test directory
-cp "../.agent/climpt/config/basic-app.yml" "./basic-app-test.yml" 2>/dev/null || true
-
-echo "Running: deno run --allow-all ../../cli/breakdown.ts init"
-if deno run --allow-all ../../cli/breakdown.ts init > init_output.log 2>&1; then
-    echo "✓ Breakdown init successful"
-    echo ""
-    echo "=== Init Output ==="
-    cat init_output.log
-    echo ""
-    echo "=== Created Directory Structure ==="
-    find .agent -type f 2>/dev/null | head -10 || echo "No .agent files found"
-else
-    echo "✗ Breakdown init failed"
-    echo "Error output:"
-    cat init_output.log 2>/dev/null || echo "(no output)"
-fi
-
-# Return to examples directory
-cd ..
-
-echo ""
-echo "🔍 CONCLUSION: The 06_config_basic.sh script demonstrates:"
+echo "🔍 CONCLUSION: The 09_config_basic.sh script demonstrates:"
 echo "1. ✓ Template files are correctly copied and functional"
 echo "2. ✓ 'summary project' command is fully implemented and working"
 echo "3. ✓ All breakdown commands (to/summary/defect) are supported"
 echo "4. ✓ Configuration profile system is fully functional"
-
-# Clean up test directory
-rm -rf "$TEMP_TEST_DIR" 2>/dev/null || true
 
 echo ""
 echo "=== Basic Configuration Example Completed ==="

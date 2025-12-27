@@ -31,10 +31,13 @@ echo
 # Run from examples directory
 CONFIG_DIR="./.agent/climpt/config"
 
-# Check if initialized
+# Check if initialized - run setup if needed
 if [ ! -d "${CONFIG_DIR}" ]; then
-    echo "Error: Project not initialized. Please run 'breakdown init' first."
-    exit 1
+    echo "Environment not set up. Running setup script..."
+    if ! bash 03_setup_environment.sh; then
+        echo "Error: Failed to set up environment"
+        exit 1
+    fi
 fi
 
 # Create sample input file for testing

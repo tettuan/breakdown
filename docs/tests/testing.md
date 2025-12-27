@@ -213,8 +213,8 @@ deno test <test_file.ts> --allow-env --allow-write --allow-read
 
 ```typescript
 // Command line argument test example
-Deno.test("CLI argument parsing - init command", async () => {
-  const result = await runCommand(["init", "--config", "custom.json"]);
+Deno.test("CLI argument parsing - to command", async () => {
+  const result = await runCommand(["to", "project", "--config", "custom"]);
   assertCommandSuccess(result);
   // Verify expected output
 });

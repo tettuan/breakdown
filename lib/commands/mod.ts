@@ -140,7 +140,6 @@ Usage:
   breakdown [command] [options]
 
 Commands:
-  init                Initialize workspace
   to <layer>         Convert to specified layer
   summary <layer>    Generate summary for layer
   defect <layer>     Analyze defects in layer
@@ -154,7 +153,6 @@ Options:
   --input=<type>     Input layer type
 
 Examples:
-  breakdown init
   breakdown to project --from=input.md
   breakdown summary issue --from=issue.md
   `;
