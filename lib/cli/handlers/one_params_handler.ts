@@ -1,12 +1,10 @@
 /**
  * Handler for one parameter case
  *
- * This module handles commands with a single parameter, such as 'init'.
+ * This module handles commands with a single parameter.
  *
  * @module lib/cli/handlers/one_params_handler
  */
-
-import { initializeBreakdownConfiguration } from "../initialization/workspace_initializer.ts";
 
 /**
  * Handle one parameter case
@@ -21,13 +19,8 @@ export async function handleOneParams(
   _options: Record<string, unknown>,
 ): Promise<void> {
   if (params.length >= 1) {
-    const [command] = params;
-
-    // Handle common one-parameter commands
-    if (command === "init") {
-      await initializeBreakdownConfiguration();
-    } else {
-      // Future: Handle other single parameter commands
-    }
+    const [_command] = params;
+    // Future: Handle single parameter commands
   }
+  await Promise.resolve();
 }

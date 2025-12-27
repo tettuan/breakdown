@@ -3,14 +3,11 @@
  *
  * This module serves as the main entry point for the Breakdown tool, providing
  * core processing functions and type exports. It exports essential functionality
- * for workspace initialization and type definitions used throughout the application.
+ * and type definitions used throughout the application.
  *
  * @example
  * ```ts
- * import { processWithPrompt, initWorkspace } from "@tettuan/breakdown/lib/mod.ts";
- *
- * // Initialize a new workspace
- * const _workspace = await initWorkspace();
+ * import { TwoParams, DirectiveType, LayerType } from "@tettuan/breakdown/lib/mod.ts";
  * ```
  *
  * @module

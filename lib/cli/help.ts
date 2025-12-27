@@ -21,7 +21,6 @@ export interface HelpTextConfig {
  */
 const DEFAULT_HELP_CONFIG: HelpTextConfig = {
   commands: [
-    { name: "init", description: "Initialize breakdown configuration" },
     {
       name: "to <layer> [from_layer] [adaptation]",
       description: "Process directive with layer parameters using config files",
@@ -36,7 +35,6 @@ const DEFAULT_HELP_CONFIG: HelpTextConfig = {
     { flags: "--version/-v", description: "Show version information" },
   ],
   examples: [
-    "breakdown init",
     "breakdown to project --config=custom",
     "breakdown to issue from_task < input.md",
     "breakdown to task issue adaptation=strict",
