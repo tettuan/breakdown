@@ -29,9 +29,9 @@ echo "=== Basic Usage Examples ==="
 # Set timeout for examples execution (60 seconds)
 export BREAKDOWN_TIMEOUT=60000
 
-# Templates should already be ready from previous initialization scripts
+# Templates should already be ready from setup script
 echo "Checking template availability..."
-# Templates were already set up by 03_init_deno_run.sh
+# Templates should be set up by 03_setup_environment.sh
 
 # Create f_default.md templates if they don't exist
 echo "Ensuring f_default.md templates exist..."
@@ -178,7 +178,7 @@ function processUser(user) {
 }
 EOF
 
-# Step 1: デフォルト設定での成功確認 (03_init_deno_run.shで有効化済み)
+# Step 1: デフォルト設定での成功確認 (03_setup_environment.shで有効化済み)
 echo "Testing with default configuration..."
 error_log=$(mktemp)
 if BREAKDOWN find bugs --config=default --from="$OUTPUT_DIR/buggy_code.js" > "$OUTPUT_DIR/bugs_default.md" 2>"$error_log"; then

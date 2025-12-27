@@ -40,18 +40,11 @@ echo "=== STDIN Input Example ==="
 # Define the config directory path
 CONFIG_DIR="./.agent/climpt/config"
 
-# Check if initialized
-if [ ! -d "${CONFIG_DIR}" ]; then
-    echo "Error: Project not initialized. Please run 'breakdown init' first."
-    echo "Expected config directory: ${CONFIG_DIR}"
-    exit 1
-fi
-
-# Check if default-user.yml exists
-if [ ! -f "${CONFIG_DIR}/default-user.yml" ]; then
-    echo "Creating user configuration..."
-    if ! bash 03_init_deno_run.sh; then
-        echo "Error: Failed to create user configuration"
+# Check if initialized - run setup if needed
+if [ ! -d "${CONFIG_DIR}" ] || [ ! -f "${CONFIG_DIR}/default-user.yml" ]; then
+    echo "Environment not set up. Running setup script..."
+    if ! bash 03_setup_environment.sh; then
+        echo "Error: Failed to set up environment"
         exit 1
     fi
 fi
@@ -80,7 +73,7 @@ if [ ${#MISSING_TEMPLATES[@]} -gt 0 ]; then
         echo "  - $missing"
     done
     echo ""
-    echo "Please run './03_init_deno_run.sh' first to create template files."
+    echo "Please run './03_setup_environment.sh' first to create template files."
     exit 1
 fi
 
@@ -136,7 +129,7 @@ echo "✓ Created template: prompts/summary/project/f_project.md"
 # Check if stdin configuration files exist, if not create them
 if [ ! -f "${CONFIG_DIR}/stdin-app.yml" ] || [ ! -f "${CONFIG_DIR}/stdin-user.yml" ]; then
     echo "Error: STDIN configuration files not found."
-    echo "Please run './03_init_deno_run.sh' first to create all required configuration files."
+    echo "Please run './03_setup_environment.sh' first to create all required configuration files."
     exit 1
 fi
 

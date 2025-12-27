@@ -40,7 +40,8 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 ### 環境準備 (01-04)
 1. `01_instructions.sh` - 使用方法の説明とガイダンス
 2. `02_install.sh` - Breakdownのインストール案内
-3. `04_create_user_config.sh` - ユーザー設定の作成 (deno run で直接実行)
+3. `03_setup_environment.sh` - 環境のセットアップ（ディレクトリ構造、設定、テンプレート作成）
+4. `04_create_user_config.sh` - ユーザー設定の作成 (deno run で直接実行)
 
 ### 基本動作確認 (05-08)
 5. `05_basic_usage.sh` - 基本的なコマンド使用例 (to, summary, defect)
@@ -90,7 +91,17 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 このスクリプトは以下を案内します：
 - Breakdown CLIの推奨利用方法（deno task, バイナリ, グローバルインストール）
 
-### 3. ユーザー設定 (deno run で直接実行)
+### 3. 環境セットアップ
+```bash
+./examples/03_setup_environment.sh
+```
+このスクリプトは以下を実行します：
+- `.agent/climpt/` ディレクトリ構造の作成
+- 設定ファイル（`*-app.yml`, `*-user.yml`）の作成
+- プロンプトテンプレートのコピー・作成
+- 各プロファイル（default, basic, stdin, production等）の設定
+
+### 4. ユーザー設定 (deno run で直接実行)
 ```bash
 ./examples/04_create_user_config.sh
 ```
@@ -343,6 +354,7 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 |------------|----------|------------------|----------|---------------------|------------------|
 | 01_instructions.sh | - | - | - | - | - |
 | 02_install.sh | - | - | - | - | - |
+| 03_setup_environment.sh | - | `.agent/climpt/config/*-app.yml`<br/>`.agent/climpt/config/*-user.yml` | 全プロファイル設定作成 | `.agent/climpt/prompts/*/*/f_*.md` | ✅ |
 | 04_create_user_config.sh | - | `.agent/climpt/config/default-user.yml` | ユーザー設定作成 | - | - |
 | 05_basic_usage.sh | to issue<br/>summary task<br/>defect project | `.agent/climpt/config/default-app.yml`<br/>`.agent/climpt/config/default-user.yml` | デフォルト設定<br/>（プロファイル: default） | `.agent/climpt/prompts/to/issue/f_issue.md`<br/>`.agent/climpt/prompts/summary/task/f_task.md`<br/>`.agent/climpt/prompts/defect/project/f_project.md` | ✅<br/>✅<br/>✅ |
 | 06_stdin_example.sh | summary project | `.agent/climpt/config/stdin-app.yml`<br/>`.agent/climpt/config/stdin-user.yml` | STDIN用設定<br/>（プロファイル: stdin） | `.agent/climpt/prompts/summary/project/f_project.md` | ✅ |
@@ -385,15 +397,16 @@ Breakdownは**プロファイルベース**の設定システムを採用して�
 - `{profile}-app.yml` - アプリケーション設定（プロンプトディレクトリ、出力設定等）
 - `{profile}-user.yml` - ユーザー設定（作業ディレクトリ、ユーザー固有設定等）
 
-**現在必要なプロファイル:**
-- `default` - ✅ 存在（default-app.yml, default-user.yml）
-- `stdin` - ❌ 不足（stdin-app.yml, stdin-user.yml）
-- `timeout` - ❌ 不足（timeout-app.yml, timeout-user.yml）
-- `basic` - ❌ 不足（basic-app.yml, basic-user.yml）
-- `production` - ⚠️ 部分的（production-app.yml ✅, production-user.yml ❌）
-- `team` - ❌ 不足（team-app.yml, team-user.yml）
-- `production-bugs` - ❌ 不足（production-bugs-app.yml, production-bugs-user.yml）
-- `production-custom` - ❌ 不足（production-custom-app.yml, production-custom-user.yml）
+**必要なプロファイル（03_setup_environment.shで作成）:**
+- `default` - ✅（default-app.yml, default-user.yml）
+- `stdin` - ✅（stdin-app.yml, stdin-user.yml）
+- `timeout` - ✅（timeout-user.yml）
+- `basic` - ✅（basic-app.yml, basic-user.yml）
+- `production` - ✅（production-app.yml, production-user.yml）
+- `team` - ✅（team-app.yml, team-user.yml）
+- `findbugs` - ✅（findbugs-app.yml, findbugs-user.yml）
+- `production-bugs` - ✅（production-bugs-app.yml, production-bugs-user.yml）
+- `production-custom` - ✅（production-custom-app.yml, production-custom-user.yml）
 
 **プロファイル使用例:**
 ```bash
