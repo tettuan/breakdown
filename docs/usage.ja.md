@@ -98,14 +98,6 @@ Breakdownは`default-app.yml`と`default-user.yml`で動作をカスタマイズ
 `options.destination.prefix`を設定すると、出力先のデフォルトパスやベースディレクトリを指定できます。
 詳細は[設定管理](./breakdown/interface/configuration.ja.md)を参照してください。
 
-### 作業ディレクトリの初期化
-
-```bash
-breakdown init
-```
-
-このコマンドは、設定で指定された必要な作業ディレクトリ構造を作成します。
-
 ### Markdownの加工コマンド
 
 以下の組み合わせになります。

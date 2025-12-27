@@ -30,7 +30,7 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 完了後、実行環境をきれいにするため、クリアする必要があります。
 
 1. 事前準備:
-  - 設定ファイルを作成する必要があります。`breakdown init`がデフォルトの作成を行います。(そのためのshが必要)
+  - 設定ファイルを作成する必要があります。(そのためのshが必要)
   - プロンプトとSchemaファイルは、実行時にshが作成します。この examples/ 配下に作成してください。(そのためのshが必要)
 2. 事後清算: 実行によって生成された出力、インプット用ファイル、プロンプトや設定ファイルをクリーンにする必要があります。（99_cleanup.sh）
 
@@ -40,8 +40,7 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 ### 環境準備 (01-04)
 1. `01_instructions.sh` - 使用方法の説明とガイダンス
 2. `02_install.sh` - Breakdownのインストール案内
-3. `03_init_deno_run.sh` - プロジェクトの初期化 (deno run で直接実行)
-4. `04_create_user_config.sh` - ユーザー設定の作成 (deno run で直接実行)
+3. `04_create_user_config.sh` - ユーザー設定の作成 (deno run で直接実行)
 
 ### 基本動作確認 (05-08)
 5. `05_basic_usage.sh` - 基本的なコマンド使用例 (to, summary, defect)
@@ -91,16 +90,7 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 このスクリプトは以下を案内します：
 - Breakdown CLIの推奨利用方法（deno task, バイナリ, グローバルインストール）
 
-### 3. 初期化 (deno run で直接実行)
-```bash
-./examples/03_init_deno_run.sh
-```
-このスクリプトは以下を実行します（`deno run` で `cli/breakdown.ts` を直接使用）：
-- プロジェクト構造の初期化
-- 必要なディレクトリの作成
-- 基本設定の配置
-
-### 4. ユーザー設定 (deno run で直接実行)
+### 3. ユーザー設定 (deno run で直接実行)
 ```bash
 ./examples/04_create_user_config.sh
 ```
@@ -353,7 +343,6 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 |------------|----------|------------------|----------|---------------------|------------------|
 | 01_instructions.sh | - | - | - | - | - |
 | 02_install.sh | - | - | - | - | - |
-| 03_init_deno_run.sh | init | `.agent/climpt/config/default-app.yml` | 初期設定作成 | 全テンプレート | ✅ |
 | 04_create_user_config.sh | - | `.agent/climpt/config/default-user.yml` | ユーザー設定作成 | - | - |
 | 05_basic_usage.sh | to issue<br/>summary task<br/>defect project | `.agent/climpt/config/default-app.yml`<br/>`.agent/climpt/config/default-user.yml` | デフォルト設定<br/>（プロファイル: default） | `.agent/climpt/prompts/to/issue/f_issue.md`<br/>`.agent/climpt/prompts/summary/task/f_task.md`<br/>`.agent/climpt/prompts/defect/project/f_project.md` | ✅<br/>✅<br/>✅ |
 | 06_stdin_example.sh | summary project | `.agent/climpt/config/stdin-app.yml`<br/>`.agent/climpt/config/stdin-user.yml` | STDIN用設定<br/>（プロファイル: stdin） | `.agent/climpt/prompts/summary/project/f_project.md` | ✅ |
@@ -376,7 +365,7 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 
 ### テンプレート依存関係
 
-現在、以下のプロンプトテンプレートが`02_init_deno_run.sh`により自動生成されます：
+現在、以下のプロンプトテンプレートが必要です：
 
 **必須テンプレート（TwoParams対応）:**
 - `to/project/f_project.md` ✅

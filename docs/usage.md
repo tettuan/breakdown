@@ -92,14 +92,6 @@ echo $PATH
 
 ## Basic Commands
 
-### Initialize Working Directory
-
-```bash
-breakdown init
-```
-
-This command creates the necessary working directory structure specified in the configuration.
-
 ### Markdown Processing Commands
 
 The following combinations are available:
