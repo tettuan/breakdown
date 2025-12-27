@@ -23,7 +23,6 @@
 - **supporting_domain/workspace_management/workspace.ja.md** - ワークスペース管理
 - **supporting_domain/template_management/app_prompt.ja.md** - テンプレート管理
 - **supporting_domain/template_management/app_schema.ja.md** - スキーマ管理
-- **supporting_domain/initialization/init.ja.md** - 初期化処理
 
 ### 汎用ドメイン（Generic Domain）
 - **generic_domain/factory/app_factory.ja.md** - ファクトリパターン

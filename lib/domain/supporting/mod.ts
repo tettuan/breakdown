@@ -16,10 +16,6 @@ export * from "./workspace_management/index.ts";
 // TODO: When template_management is moved here from generic domain
 // export * from "./template_management/mod.ts";
 
-// Initialization Domain (future implementation)
-// TODO: When initialization is moved here from lib/supporting
-// export * from "./initialization/mod.ts";
-
 /**
  * Supporting Domain Factory for common creation patterns
  */
@@ -49,19 +45,6 @@ export class SupportingDomainFactory {
       },
     };
   }
-
-  /**
-   * Create initialization objects
-   */
-  static get initialization() {
-    return {
-      // TODO: Add factory methods when initialization is moved here
-      createInitService() {
-        // Placeholder for future implementation
-        throw new Error("Initialization service not yet implemented in supporting domain");
-      },
-    };
-  }
 }
 
 /**
@@ -88,19 +71,6 @@ export class SupportingDomainGuards {
     return {
       // TODO: Add type guards when template management is moved here
       isTemplateManager(_value: unknown): boolean {
-        // Placeholder for future implementation
-        return false;
-      },
-    };
-  }
-
-  /**
-   * Type guards for initialization
-   */
-  static get initialization() {
-    return {
-      // TODO: Add type guards when initialization is moved here
-      isInitService(_value: unknown): boolean {
         // Placeholder for future implementation
         return false;
       },
