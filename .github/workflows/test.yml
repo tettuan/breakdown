@@ -23,7 +23,7 @@ jobs:
           deno-version: v2.x
 
       - name: Check formatting
-        run: deno fmt --check --config deno.json
+        run: deno fmt --check lib/ cli/ mod.ts tests/
 
       - name: Run linting
         run: deno lint
