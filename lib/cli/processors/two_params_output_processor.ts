@@ -1,8 +1,13 @@
 /**
  * @fileoverview Two Params Output Processor
  *
- * Handles output writing for two params handler following clean architecture.
- * Encapsulates all infrastructure concerns related to output.
+ * Handles output processing for two params handler following clean architecture.
+ * This processor is a pure function layer - it transforms data without side effects.
+ *
+ * ## Design Principle: I/O Boundary Separation
+ *
+ * This processor does NOT write to stdout. It only processes and returns strings.
+ * The actual output (stdout or return value) is handled by the I/O boundary layer (runBreakdown).
  *
  * @module lib/cli/processors/two_params_output_processor
  */
@@ -97,18 +102,22 @@ export const TwoParamsOutputErrorFactory = {
 /**
  * Two Params Output Processor
  *
- * Responsible for writing processed output to standard output.
- * Encapsulates infrastructure access (Deno.stdout) within processor layer.
+ * Responsible for processing output data (stringification, cleanup).
+ * This is a pure function layer - no side effects (no stdout writing).
+ *
+ * The actual I/O (stdout writing) is handled by runBreakdown (I/O boundary layer).
  */
 export class TwoParamsOutputProcessor {
   /**
-   * Write output data to standard output
+   * Process output data and return as string
    * Following Worker7's Result<T,E> pattern with try-catch elimination
    *
-   * @param data - The data to write (string or object)
-   * @returns Result with void on success or TwoParamsOutputError on failure
+   * This method is a pure function - it only transforms data, no I/O side effects.
+   *
+   * @param data - The data to process (string or object)
+   * @returns Result with processed string on success or TwoParamsOutputError on failure
    */
-  async writeOutput(data: unknown): Promise<Result<void, TwoParamsOutputError>> {
+  processOutput(data: unknown): Result<string, TwoParamsOutputError> {
     // Step 1: Safe stringification
     const stringificationResult = this.safeStringify(data);
     if (!stringificationResult.ok) {
@@ -121,19 +130,7 @@ export class TwoParamsOutputProcessor {
     // Step 3: Add newline if not present
     const finalOutput = cleanedOutput.endsWith("\n") ? cleanedOutput : cleanedOutput + "\n";
 
-    // Step 4: Safe encoding
-    const encodingResult = this.safeEncode(finalOutput);
-    if (!encodingResult.ok) {
-      return error(encodingResult.error);
-    }
-
-    // Step 5: Safe write to stdout
-    const writeResult = await this.safeWrite(encodingResult.data);
-    if (!writeResult.ok) {
-      return error(writeResult.error);
-    }
-
-    return ok(undefined);
+    return ok(finalOutput);
   }
 
   /**
@@ -165,43 +162,4 @@ export class TwoParamsOutputProcessor {
     }
   }
 
-  /**
-   * Safely encode string to Uint8Array
-   */
-  private safeEncode(text: string): Result<Uint8Array, TwoParamsOutputError> {
-    try {
-      const encoder = new TextEncoder();
-      const encodedData = encoder.encode(text);
-      return ok(encodedData);
-    } catch (encodingError) {
-      return error(TwoParamsOutputErrorFactory.encodingError(
-        `Failed to encode text: ${String(encodingError)}`,
-        text,
-        encodingError,
-        {
-          textLength: text.length,
-          errorType: encodingError instanceof Error ? encodingError.constructor.name : "unknown",
-        },
-      ));
-    }
-  }
-
-  /**
-   * Safely write to stdout
-   */
-  private async safeWrite(data: Uint8Array): Promise<Result<void, TwoParamsOutputError>> {
-    try {
-      await Deno.stdout.write(data);
-      return ok(undefined);
-    } catch (writeError) {
-      return error(TwoParamsOutputErrorFactory.outputWriteError(
-        `Failed to write to stdout: ${String(writeError)}`,
-        writeError,
-        {
-          dataLength: data.length,
-          errorType: writeError instanceof Error ? writeError.constructor.name : "unknown",
-        },
-      ));
-    }
-  }
 }

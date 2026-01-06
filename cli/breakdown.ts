@@ -28,6 +28,7 @@ import type {
   ProcessingError as _ProcessingError,
   ValidationError as _ValidationError,
 } from "$lib/types/unified_error_types.ts";
+import type { RunBreakdownOptions } from "$lib/types/run_options.ts";
 
 /**
  * Default configuration profile name
@@ -49,15 +50,28 @@ type BreakdownError =
 /**
  * Main entry point for the Breakdown prompt generation tool.
  *
- * This function orchestrates the complete Breakdown workflow:
+ * ## Architecture: I/O Boundary Separation
+ *
+ * This function is the I/O boundary layer where Input and Output are controlled:
+ * - Input: receives args
+ * - Internal processing: pure data transformation (no side effects)
+ * - Output: determined by options.returnMode
+ *
+ * Internal layers (handleTwoParams, Orchestrator, etc.) are pure functions
+ * that only transform data and return strings.
+ *
+ * ## Workflow
+ *
  * 1. Detects configuration prefix from command line arguments
  * 2. Loads BreakdownConfig with appropriate settings
  * 3. Parses command line arguments using BreakdownParams
  * 4. Delegates to appropriate handlers based on parameter count
  * 5. Generates prompts using BreakdownPrompt with variable substitution
- * 6. Outputs the generated prompt to stdout
+ * 6. Outputs based on returnMode: stdout (default) or return value
  *
- * The function integrates four JSR packages (@tettuan/breakdownconfig,
+ * ## Integration
+ *
+ * Integrates four JSR packages (@tettuan/breakdownconfig,
  * @tettuan/breakdownparams, @tettuan/breakdownprompt, @tettuan/breakdownlogger)
  * to provide a complete AI development assistance tool for prompt generation.
  *
@@ -68,30 +82,29 @@ type BreakdownError =
  *               - Two params: Demonstrative type + layer processing (e.g., "to project")
  *               - Options: --help, --version, --verbose, --experimental, --config=prefix
  *
- * @returns Promise<void> - Resolves when processing completes successfully.
- *                         Generated prompts are written to stdout for piping.
+ * @param options - Options for controlling output behavior
+ * @param options.returnMode - When true, returns prompt content as Result.data instead of writing to stdout
  *
- * @throws {Error} When configuration loading fails, parameter parsing fails,
- *                 or prompt generation encounters errors.
+ * @returns Promise<Result<string | undefined, BreakdownError>>
+ *          - When returnMode=true: data is the prompt string
+ *          - When returnMode=false/omit: data is undefined (prompt written to stdout)
  *
- * @example
+ * @example Default behavior - output to stdout
  * ```typescript
- * // Basic usage - generate project-level prompt
- * await runBreakdown(["project"]);
- *
- * // Generate task breakdown prompt
- * await runBreakdown(["to", "task"]);
- *
- * // Use custom config with verbose output
- * await runBreakdown(["--config=custom", "--verbose", "to", "project"]);
- *
- * // Show help
- * await runBreakdown(["--help"]);
+ * const result = await runBreakdown(["to", "project"]);
+ * // result.data is undefined, prompt was written to stdout
  * ```
  *
- * @example
+ * @example Return mode - get prompt as return value
+ * ```typescript
+ * const result = await runBreakdown(["to", "project"], { returnMode: true });
+ * if (result.ok) {
+ *   console.log("Prompt content:", result.data);
+ * }
+ * ```
+ *
+ * @example CLI usage
  * ```bash
- * # CLI usage examples
  * deno run --allow-read breakdown to project > prompt.md
  * deno run --allow-read breakdown task --verbose
  * deno run --allow-read breakdown --config=myproject to issue
@@ -104,7 +117,8 @@ type BreakdownError =
  */
 export async function runBreakdown(
   args: string[] = Deno.args,
-): Promise<Result<void, BreakdownError>> {
+  options?: RunBreakdownOptions,
+): Promise<Result<string | undefined, BreakdownError>> {
   // Debug flag
   const isDebug = Deno.env.get("LOG_LEVEL") === "debug";
 
@@ -262,8 +276,20 @@ export async function runBreakdown(
           };
         }
         // Error was handled gracefully as warning
+        return { ok: true, data: undefined };
       }
-      return { ok: true, data: undefined };
+
+      // I/O Boundary: Decide output based on returnMode
+      const promptContent = handlerResult.data;
+      if (options?.returnMode) {
+        // Return mode: return prompt content as Result.data
+        return { ok: true, data: promptContent };
+      } else {
+        // Default mode: write to stdout
+        const encoder = new TextEncoder();
+        await Deno.stdout.write(encoder.encode(promptContent));
+        return { ok: true, data: undefined };
+      }
     }
     case "one": {
       if (isDebug) {

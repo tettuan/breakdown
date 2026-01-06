@@ -273,70 +273,62 @@ Deno.test("E2E-STDIN: Basic STDIN Processing Integration", async () => {
 ## Technical Context
 The system processes large datasets and needs to maintain performance under load.`;
 
-  const stdoutCapture = new StdoutCapture();
+  // Create a mock stdin reader with the test content
+  const mockStdinReader = new MockStdinReader({
+    data: stdinContent,
+    terminal: false,
+    delay: 0,
+    shouldFail: false,
+  });
 
-  try {
-    // Create a mock stdin reader with the test content
-    const mockStdinReader = new MockStdinReader({
-      data: stdinContent,
-      terminal: false,
-      delay: 0,
-      shouldFail: false,
-    });
+  // Use same configuration approach as other E2E tests with proper config
+  const config = configResult.userConfig; // Use loaded config
+  const params = [validDirective, validLayer];
+  const options = {
+    skipStdin: false,
+    from: "-",
+    destination: "output.md", // Add required destination option
+    stdinReader: mockStdinReader, // Pass the mock reader
+  }; // Explicitly enable STDIN reading
 
-    // Capture output
-    stdoutCapture.start();
+  logger.debug("TwoParamsHandler execution started", {
+    params,
+    stdinContentLength: stdinContent.length,
+    config: Object.keys(config),
+  });
 
-    // Use same configuration approach as other E2E tests with proper config
-    const config = configResult.userConfig; // Use loaded config
-    const params = [validDirective, validLayer];
-    const options = {
-      skipStdin: false,
-      from: "-",
-      destination: "output.md", // Add required destination option
-      stdinReader: mockStdinReader, // Pass the mock reader
-    }; // Explicitly enable STDIN reading
+  const result = await twoParamsHandler(params, config, options);
+  // Note: twoParamsHandler now returns prompt content in result.data (not stdout)
+  const output = result.ok ? result.data : "";
 
-    logger.debug("TwoParamsHandler execution started", {
-      params,
-      stdinContentLength: stdinContent.length,
-      config: Object.keys(config),
-    });
+  logger.debug("TwoParamsHandler execution result", {
+    success: result.ok,
+    outputLength: output.length,
+    hasOutput: output.length > 0,
+    error: result.ok ? null : result.error,
+  });
 
-    const result = await twoParamsHandler(params, config, options);
-    const output = stdoutCapture.stop();
-
-    logger.debug("TwoParamsHandler execution result", {
-      success: result.ok,
-      outputLength: output.length,
-      hasOutput: output.length > 0,
-      error: result.ok ? null : result.error,
-    });
-
-    // Log detailed error information if the handler failed
-    if (!result.ok) {
-      console.error("TwoParamsHandler failed with error:", result.error);
-    }
-
-    // Verify integration flow works correctly (even with STDIN skipped)
-    assertEquals(result.ok, true, "Integration flow should succeed");
-    assertExists(output, "Output should be generated");
-    assertEquals(output.length > 0, true, "Output should contain generated content");
-
-    // Verify basic template processing occurred
-    const hasTemplateProcessing = output.length >= 10; // Some content was generated
-
-    assertEquals(hasTemplateProcessing, true, "Template processing should occur");
-
-    logger.debug("STDIN integration verification completed", {
-      stdinLength: stdinContent.length,
-      outputLength: output.length,
-      expansionRatio: (output.length / stdinContent.length).toFixed(2),
-      hasIntegration: hasTemplateProcessing,
-    });
-  } finally {
-    stdoutCapture.stop();
+  // Log detailed error information if the handler failed
+  if (!result.ok) {
+    console.error("TwoParamsHandler failed with error:", result.error);
   }
+
+  // Verify integration flow works correctly (even with STDIN skipped)
+  assertEquals(result.ok, true, "Integration flow should succeed");
+  assertExists(output, "Output should be generated");
+  assertEquals(output.length > 0, true, "Output should contain generated content");
+
+  // Verify basic template processing occurred
+  const hasTemplateProcessing = output.length >= 10; // Some content was generated
+
+  assertEquals(hasTemplateProcessing, true, "Template processing should occur");
+
+  logger.debug("STDIN integration verification completed", {
+    stdinLength: stdinContent.length,
+    outputLength: output.length,
+    expansionRatio: (output.length / stdinContent.length).toFixed(2),
+    hasIntegration: hasTemplateProcessing,
+  });
 
   logger.debug("E2E STDIN basic integration test completed", { resultStatus: "SUCCESS" });
 
@@ -427,69 +419,61 @@ This document provides a comprehensive analysis of our enterprise system's curre
 ---
 *This analysis was generated on ${new Date().toISOString()}*`;
 
-  const stdoutCapture = new StdoutCapture();
+  // Create a mock stdin reader with the complex test content
+  const mockStdinReader = new MockStdinReader({
+    data: complexStdinContent,
+    terminal: false,
+    delay: 0,
+    shouldFail: false,
+  });
 
-  try {
-    // Create a mock stdin reader with the complex test content
-    const mockStdinReader = new MockStdinReader({
-      data: complexStdinContent,
-      terminal: false,
-      delay: 0,
-      shouldFail: false,
-    });
+  // Use the loaded configuration directly
+  const config = configResult.userConfig;
 
-    // Capture output
-    stdoutCapture.start();
+  const params = [validDirective, validLayer];
+  const options = {
+    skipStdin: false,
+    from: "-",
+    destination: "output.md", // Add required destination option
+    stdinReader: mockStdinReader, // Pass the mock reader
+  };
 
-    // Use the loaded configuration directly
-    const config = configResult.userConfig;
+  logger.debug("Complex STDIN processing execution started", {
+    params,
+    contentLength: complexStdinContent.length,
+    contentComplexity: {
+      lines: complexStdinContent.split("\n").length,
+      tables: (complexStdinContent.match(/\|/g) || []).length > 5,
+      codeBlocks: (complexStdinContent.match(/```/g) || []).length,
+      sections: (complexStdinContent.match(/#{1,3}\s/g) || []).length,
+    },
+  });
 
-    const params = [validDirective, validLayer];
-    const options = {
-      skipStdin: false,
-      from: "-",
-      destination: "output.md", // Add required destination option
-      stdinReader: mockStdinReader, // Pass the mock reader
-    };
+  const result = await twoParamsHandler(params, config, options);
+  // Note: twoParamsHandler now returns prompt content in result.data (not stdout)
+  const output = result.ok ? result.data : "";
 
-    logger.debug("Complex STDIN processing execution started", {
-      params,
-      contentLength: complexStdinContent.length,
-      contentComplexity: {
-        lines: complexStdinContent.split("\n").length,
-        tables: (complexStdinContent.match(/\|/g) || []).length > 5,
-        codeBlocks: (complexStdinContent.match(/```/g) || []).length,
-        sections: (complexStdinContent.match(/#{1,3}\s/g) || []).length,
-      },
-    });
+  logger.debug("Complex STDIN processing result", {
+    success: result.ok,
+    outputLength: output.length,
+    inputOutputRatio: (output.length / complexStdinContent.length).toFixed(2),
+  });
 
-    const result = await twoParamsHandler(params, config, options);
-    const output = stdoutCapture.stop();
+  // Verify integration flow works with stdin content
+  assertEquals(result.ok, true, "Integration flow should succeed with stdin");
+  assertExists(output, "Output should be generated");
+  assertEquals(output.length > 0, true, "Output should contain template content");
 
-    logger.debug("Complex STDIN processing result", {
-      success: result.ok,
-      outputLength: output.length,
-      inputOutputRatio: (output.length / complexStdinContent.length).toFixed(2),
-    });
+  // Verify stdin content was properly integrated
+  const hasStdinIntegration = output.includes("Input:") ||
+    output.length > complexStdinContent.length / 2;
+  assertEquals(hasStdinIntegration, true, "STDIN content should be integrated");
 
-    // Verify integration flow works with stdin content
-    assertEquals(result.ok, true, "Integration flow should succeed with stdin");
-    assertExists(output, "Output should be generated");
-    assertEquals(output.length > 0, true, "Output should contain template content");
-
-    // Verify stdin content was properly integrated
-    const hasStdinIntegration = output.includes("Input:") ||
-      output.length > complexStdinContent.length / 2;
-    assertEquals(hasStdinIntegration, true, "STDIN content should be integrated");
-
-    logger.debug("Complex STDIN processing verification", {
-      originalComplexity: complexStdinContent.length,
-      processedLength: output.length,
-      processingIndicator: hasStdinIntegration ? "SUCCESS" : "MINIMAL",
-    });
-  } finally {
-    stdoutCapture.stop();
-  }
+  logger.debug("Complex STDIN processing verification", {
+    originalComplexity: complexStdinContent.length,
+    processedLength: output.length,
+    processingIndicator: hasStdinIntegration ? "SUCCESS" : "MINIMAL",
+  });
 
   logger.debug("E2E STDIN complex content processing test completed", { resultStatus: "SUCCESS" });
 
@@ -545,48 +529,41 @@ Deno.test("E2E-STDIN: Error Scenarios", async () => {
       expectSuccess: scenario.expectSuccess,
     });
 
-    const stdoutCapture = new StdoutCapture();
+    // Create a mock stdin reader with the scenario content
+    const mockStdinReader = new MockStdinReader({
+      data: scenario.stdinContent,
+      terminal: false,
+      delay: 0,
+      shouldFail: !scenario.expectSuccess,
+    });
 
-    try {
-      // Create a mock stdin reader with the scenario content
-      const mockStdinReader = new MockStdinReader({
-        data: scenario.stdinContent,
-        terminal: false,
-        delay: 0,
-        shouldFail: !scenario.expectSuccess,
-      });
+    const params = [validDirective, validLayer];
+    const options = {
+      skipStdin: false,
+      from: "-",
+      destination: "output.md", // Add required destination option
+      stdinReader: mockStdinReader, // Pass the mock reader
+    };
 
-      stdoutCapture.start();
+    const result = await twoParamsHandler(params, config, options);
+    // Note: twoParamsHandler now returns prompt content in result.data (not stdout)
+    const output = result.ok ? result.data : "";
 
-      const params = [validDirective, validLayer];
-      const options = {
-        skipStdin: false,
-        from: "-",
-        destination: "output.md", // Add required destination option
-        stdinReader: mockStdinReader, // Pass the mock reader
-      };
+    logger.debug(`STDIN scenario ${scenario.name} result`, {
+      success: result.ok,
+      expectSuccess: scenario.expectSuccess,
+      outputLength: output.length,
+    });
 
-      const result = await twoParamsHandler(params, config, options);
-      const output = stdoutCapture.stop();
+    // All scenarios should succeed with proper stdin mocking
+    assertEquals(
+      result.ok,
+      scenario.expectSuccess,
+      `${scenario.name} integration flow should ${scenario.expectSuccess ? "succeed" : "fail"}`,
+    );
 
-      logger.debug(`STDIN scenario ${scenario.name} result`, {
-        success: result.ok,
-        expectSuccess: scenario.expectSuccess,
-        outputLength: output.length,
-      });
-
-      // All scenarios should succeed with proper stdin mocking
-      assertEquals(
-        result.ok,
-        scenario.expectSuccess,
-        `${scenario.name} integration flow should ${scenario.expectSuccess ? "succeed" : "fail"}`,
-      );
-
-      if (scenario.expectSuccess) {
-        assertExists(output, `${scenario.name} should generate output`);
-      }
-    } finally {
-      stdoutCapture.stop();
+    if (scenario.expectSuccess) {
+      assertExists(output, `${scenario.name} should generate output`);
     }
   }
 
@@ -724,74 +701,66 @@ Additional Information:
       contentLength: scenario.content.length,
     });
 
-    const stdoutCapture = new StdoutCapture();
+    // Load appropriate configuration
+    const configResult = await ConfigurationTestHelper.loadTestConfiguration(
+      "stdin-flexible-test",
+    );
 
-    try {
-      // Load appropriate configuration
-      const configResult = await ConfigurationTestHelper.loadTestConfiguration(
-        "stdin-flexible-test",
-      );
+    // The test configuration already includes app configuration
 
-      // The test configuration already includes app configuration
+    // Validate that the directive and layer are supported
+    const validDirectives = configResult.userConfig.testData.validDirectives;
+    const validLayers = configResult.userConfig.testData.validLayers;
 
-      // Validate that the directive and layer are supported
-      const validDirectives = configResult.userConfig.testData.validDirectives;
-      const validLayers = configResult.userConfig.testData.validLayers;
+    const directive = validDirectives.includes(scenario.directive)
+      ? scenario.directive
+      : validDirectives[0];
+    const layer = validLayers.includes(scenario.layer) ? scenario.layer : validLayers[0];
 
-      const directive = validDirectives.includes(scenario.directive)
-        ? scenario.directive
-        : validDirectives[0];
-      const layer = validLayers.includes(scenario.layer) ? scenario.layer : validLayers[0];
+    // Create a mock stdin reader with the scenario content
+    const mockStdinReader = new MockStdinReader({
+      data: scenario.content,
+      terminal: false,
+      delay: 0,
+      shouldFail: false,
+    });
 
-      // Create a mock stdin reader with the scenario content
-      const mockStdinReader = new MockStdinReader({
-        data: scenario.content,
-        terminal: false,
-        delay: 0,
-        shouldFail: false,
-      });
+    // Use the loaded configuration directly
+    const config = configResult.userConfig;
 
-      // Capture output
-      stdoutCapture.start();
+    const params = [directive, layer];
+    const options = {
+      skipStdin: false,
+      from: "-",
+      destination: "output.md", // Add required destination option
+      stdinReader: mockStdinReader, // Pass the mock reader
+    };
 
-      // Use the loaded configuration directly
-      const config = configResult.userConfig;
+    const result = await twoParamsHandler(params, config, options);
+    // Note: twoParamsHandler now returns prompt content in result.data (not stdout)
+    const output = result.ok ? result.data : "";
 
-      const params = [directive, layer];
-      const options = {
-        skipStdin: false,
-        from: "-",
-        destination: "output.md", // Add required destination option
-        stdinReader: mockStdinReader, // Pass the mock reader
-      };
+    logger.debug(`Real-world scenario ${scenario.name} result`, {
+      success: result.ok,
+      usedDirective: directive,
+      usedLayer: layer,
+      outputLength: output.length,
+      expansionRatio: (output.length / scenario.content.length).toFixed(2),
+    });
 
-      const result = await twoParamsHandler(params, config, options);
-      const output = stdoutCapture.stop();
+    // Verify integration flow works with stdin content
+    assertEquals(result.ok, true, `${scenario.name} should succeed with stdin`);
+    assertExists(output, `${scenario.name} should generate output`);
+    assertEquals(output.length > 0, true, `${scenario.name} should produce template output`);
 
-      logger.debug(`Real-world scenario ${scenario.name} result`, {
-        success: result.ok,
-        usedDirective: directive,
-        usedLayer: layer,
-        outputLength: output.length,
-        expansionRatio: (output.length / scenario.content.length).toFixed(2),
-      });
+    // Verify stdin content was integrated
+    const hasStdinProcessing = output.length > scenario.content.length / 2;
 
-      // Verify integration flow works with stdin content
-      assertEquals(result.ok, true, `${scenario.name} should succeed with stdin`);
-      assertExists(output, `${scenario.name} should generate output`);
-      assertEquals(output.length > 0, true, `${scenario.name} should produce template output`);
-
-      // Verify stdin content was integrated
-      const hasStdinProcessing = output.length > scenario.content.length / 2;
-
-      assertEquals(
-        hasStdinProcessing,
-        true,
-        `${scenario.name} should show stdin processing occurred`,
-      );
-    } finally {
-      stdoutCapture.stop();
-    }
+    assertEquals(
+      hasStdinProcessing,
+      true,
+      `${scenario.name} should show stdin processing occurred`,
+    );
   }
 
   logger.debug("E2E STDIN real-world integration scenario test completed", {
