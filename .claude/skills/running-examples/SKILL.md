@@ -97,15 +97,15 @@ bash 22_clean.sh
 
 ## Script Summary
 
-| Range | Purpose |
-|-------|---------|
-| 01-02 | Guidance, install info |
-| 03-04 | Environment setup |
+| Range | Purpose                                     |
+| ----- | ------------------------------------------- |
+| 01-02 | Guidance, install info                      |
+| 03-04 | Environment setup                           |
 | 05-08 | Basic commands (to, summary, defect, stdin) |
-| 09-15 | Configuration variations |
-| 16-18 | Parameter options |
-| 19-21 | Advanced patterns |
-| 22 | Cleanup |
+| 09-15 | Configuration variations                    |
+| 16-18 | Parameter options                           |
+| 19-21 | Advanced patterns                           |
+| 22    | Cleanup                                     |
 
 ## Error Recovery
 
@@ -117,8 +117,8 @@ bash 03_setup_environment.sh  # Re-setup
 
 ## Output Verification
 
-If these directories exist at project root (not in examples/), something is wrong:
-`prompts`, `prompt`, `output`, `schema`, `schemas`, `configs`
+If these directories exist at project root (not in examples/), something is wrong: `prompts`,
+`prompt`, `output`, `schema`, `schemas`, `configs`
 
 ## References
 

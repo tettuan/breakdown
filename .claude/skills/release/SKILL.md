@@ -49,6 +49,7 @@ All tests must pass before proceeding.
 ### 3. Determine version number
 
 Follow semantic versioning:
+
 - **MAJOR** (X.0.0): Breaking changes
 - **MINOR** (0.X.0): New features, backward compatible
 - **PATCH** (0.0.X): Bug fixes only
@@ -105,6 +106,7 @@ Create PR: `develop` → `main`
 ### 10. Merge triggers automation
 
 When PR to main is merged:
+
 1. `auto-release.yml` creates tag `v{NEW_VERSION}`
 2. `publish.yml` publishes to JSR
 

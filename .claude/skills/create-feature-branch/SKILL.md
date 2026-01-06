@@ -10,13 +10,13 @@ This skill creates feature branches following the project's Git Flow strategy.
 
 ## Branch Naming Convention
 
-| Prefix | Purpose | Example |
-|--------|---------|---------|
-| `feat/` | New feature | `feat/issue-88-return-mode` |
-| `fix/` | Bug fix | `fix/stdout-encoding` |
-| `refactor/` | Refactoring | `refactor/output-processor` |
-| `update/` | Dependency updates | `update/jsr-packages` |
-| `remove/` | Feature removal | `remove/deprecated-api` |
+| Prefix      | Purpose            | Example                     |
+| ----------- | ------------------ | --------------------------- |
+| `feat/`     | New feature        | `feat/issue-88-return-mode` |
+| `fix/`      | Bug fix            | `fix/stdout-encoding`       |
+| `refactor/` | Refactoring        | `refactor/output-processor` |
+| `update/`   | Dependency updates | `update/jsr-packages`       |
+| `remove/`   | Feature removal    | `remove/deprecated-api`     |
 
 ## Workflow
 
