@@ -12,18 +12,20 @@ This skill guides the release process following Git Flow with automated CI/CD.
 
 ```
 develop ──▶ release/v{X.Y.Z} ──PR──▶ main
-                                      │
-                                      ▼
-                               (auto-release.yml)
-                                      │
-                                      ▼
-                                 tag: v{X.Y.Z}
-                                      │
-                                      ▼
-                               (publish.yml)
-                                      │
-                                      ▼
-                                 JSR publish
+   ▲                                   │
+   │                                   ▼
+   │                            (auto-release.yml)
+   │                                   │
+   │                                   ▼
+   │                              tag: v{X.Y.Z}
+   │                                   │
+   │                                   ▼
+   │                            (publish.yml)
+   │                                   │
+   │                                   ▼
+   │                              JSR publish
+   │                                   │
+   └───────────── backmerge ◀──────────┘
 ```
 
 ## Workflow
@@ -91,24 +93,35 @@ git add deno.json CHANGELOG.md
 git commit -m "chore: bump version to {NEW_VERSION}"
 ```
 
-### 8. Push and create PR to develop
+### 8. Push and create PR to main
 
 ```bash
 git push -u origin release/v{NEW_VERSION}
 ```
 
-Create PR: `release/v{NEW_VERSION}` → `develop`
+Create PR: `release/v{NEW_VERSION}` → `main`
 
-### 9. After develop merge, create PR to main
+**Important**: PR must be from `release/*` branch directly to `main` for auto-release to trigger.
 
-Create PR: `develop` → `main`
-
-### 10. Merge triggers automation
+### 9. Merge triggers automation
 
 When PR to main is merged:
 
 1. `auto-release.yml` creates tag `v{NEW_VERSION}`
 2. `publish.yml` publishes to JSR
+
+### 10. Sync develop with main
+
+After release is published, backmerge main to develop:
+
+```bash
+git checkout develop
+git pull origin develop
+git merge origin/main
+git push origin develop
+```
+
+This ensures develop has the version bump and CHANGELOG updates.
 
 ## Checklist
 
@@ -118,9 +131,10 @@ When PR to main is merged:
 - [ ] Release branch created from develop
 - [ ] Version bumped in `deno.json`
 - [ ] CHANGELOG.md updated
-- [ ] PR to develop created and merged
-- [ ] PR to main created and merged
+- [ ] PR to main created (from release/* branch)
+- [ ] PR merged → auto-release creates tag
 - [ ] Verify JSR publication
+- [ ] Backmerge main to develop
 
 ## Example: Release v1.8.0
 
@@ -138,9 +152,14 @@ git add deno.json CHANGELOG.md
 git commit -m "chore: bump version to 1.8.0"
 git push -u origin release/v1.8.0
 
-# Create PRs via GitHub
-# release/v1.8.0 → develop
-# develop → main (after first merge)
+# Create PR via GitHub
+# release/v1.8.0 → main (triggers auto-release on merge)
+
+# After merge and JSR publish, sync develop
+git checkout develop
+git pull origin develop
+git merge origin/main
+git push origin develop
 ```
 
 ## Important Notes
