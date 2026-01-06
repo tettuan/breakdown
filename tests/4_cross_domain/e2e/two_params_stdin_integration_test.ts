@@ -39,7 +39,7 @@ const logger = new BreakdownLogger("e2e-stdin-integration");
 /**
  * STDOUT Capture for Result Verification
  */
-class StdoutCapture {
+class _StdoutCapture {
   private originalWrite: typeof Deno.stdout.write = Deno.stdout.write;
   private capturedOutput: Uint8Array[] = [];
 
