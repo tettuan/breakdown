@@ -95,8 +95,8 @@ debug*.ts
 instructions/project-worker.md
 
 # Claude specific
-.claude
-.claude/
+.claude/*
+!.claude/skills/
 
 # Test fixtures
 # Static test fixtures are in tests/fixtures/static-prompts/ (git tracked)
