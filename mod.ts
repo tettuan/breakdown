@@ -8,8 +8,9 @@
 // Purpose: This approach ensures that the JSR package overview is sourced from the README,
 // providing richer and more maintainable documentation for users.
 
-// Export only the CLI entry point
+// Export the CLI entry point and types
 export { runBreakdown } from "./cli/breakdown.ts";
+export type { RunBreakdownOptions } from "./lib/types/run_options.ts";
 
 // When this file is executed directly (not imported as a module), redirect to CLI
 if (import.meta.main) {
