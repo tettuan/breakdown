@@ -66,12 +66,15 @@ class TwoParamsOrchestrator {
 
   /**
    * Execute the orchestrated flow
+   *
+   * This method returns the processed prompt content as a string.
+   * The I/O decision (stdout vs return) is made by the caller (runBreakdown).
    */
   async execute(
     params: string[],
     config: Record<string, unknown>,
     options: Record<string, unknown>,
-  ): Promise<Result<void, TwoParamsHandlerError>> {
+  ): Promise<Result<string, TwoParamsHandlerError>> {
     const isDebug = Deno.env.get("LOG_LEVEL") === "debug";
     if (isDebug) {
       console.log("[TwoParamsOrchestrator] Starting execution with:", {
@@ -187,24 +190,25 @@ class TwoParamsOrchestrator {
       return error(this.mapPromptError(promptResult.error));
     }
 
-    // 5. Write output using processor
+    // 5. Process output using processor (no I/O, just string processing)
     if (isDebug) {
       console.log("[TwoParamsPromptGenerator → TwoParamsOutputProcessor] Passing:", {
         promptLength: promptResult.data.length,
       });
     }
-    const writeResult = await this.outputProcessor.writeOutput(promptResult.data);
+    const processResult = this.outputProcessor.processOutput(promptResult.data);
     if (isDebug) {
-      console.log("[TwoParamsOutputProcessor] Returning:", JSON.stringify(writeResult, null, 2));
+      console.log("[TwoParamsOutputProcessor] Returning:", JSON.stringify(processResult, null, 2));
     }
-    if (!writeResult.ok) {
-      return error(this.mapOutputError(writeResult.error));
+    if (!processResult.ok) {
+      return error(this.mapOutputError(processResult.error));
     }
 
     if (isDebug) {
       console.log("[TwoParamsOrchestrator] Execution completed successfully");
     }
-    return ok(undefined);
+    // Return processed prompt content (I/O decision made by runBreakdown)
+    return ok(processResult.data);
   }
 
   /**
@@ -356,16 +360,19 @@ class TwoParamsOrchestrator {
  * Uses orchestration pattern internally for better maintainability.
  * Provides strong type safety through Result types and exhaustive error handling.
  *
+ * Returns the processed prompt content as a string.
+ * The I/O decision (stdout vs return) is made by the caller (runBreakdown).
+ *
  * @param params - Command line parameters from BreakdownParams
  * @param config - Configuration object from BreakdownConfig
  * @param options - Parsed options from BreakdownParams
- * @returns Result with void on success or TwoParamsHandlerError on failure
+ * @returns Result with prompt string on success or TwoParamsHandlerError on failure
  */
 export async function twoParamsHandler(
   params: string[],
   config: Record<string, unknown>,
   options: Record<string, unknown> = {},
-): Promise<Result<void, TwoParamsHandlerError>> {
+): Promise<Result<string, TwoParamsHandlerError>> {
   // Validate params array is not null/undefined
   if (!Array.isArray(params)) {
     return error({
@@ -385,16 +392,19 @@ export async function twoParamsHandler(
 /**
  * Handle two parameters case (alias for backward compatibility)
  *
+ * Returns the processed prompt content as a string.
+ * The I/O decision (stdout vs return) is made by the caller (runBreakdown).
+ *
  * @param params - Command line parameters from BreakdownParams
  * @param config - Configuration object from BreakdownConfig
  * @param options - Parsed options from BreakdownParams
- * @returns Result with void on success or TwoParamsHandlerError on failure
+ * @returns Result with prompt string on success or TwoParamsHandlerError on failure
  */
 export async function handleTwoParams(
   params: string[],
   config: Record<string, unknown>,
   options: Record<string, unknown>,
-): Promise<Result<void, TwoParamsHandlerError>> {
+): Promise<Result<string, TwoParamsHandlerError>> {
   const isDebug = Deno.env.get("LOG_LEVEL") === "debug";
   if (isDebug) {
     console.log("[handleTwoParams] Received options:", JSON.stringify(options, null, 2));
