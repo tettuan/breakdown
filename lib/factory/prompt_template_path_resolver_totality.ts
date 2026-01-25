@@ -26,6 +26,24 @@ import type { PathResolutionError } from "../types/path_resolution_option.ts";
 // type DoubleParams_Result = PromptCliParams; // Deprecated: use TwoParams_Result
 
 /**
+ * Pure function to compute the prompt directory path.
+ * This function is dependency-free and can be used independently
+ * by both path resolution and variable construction.
+ *
+ * @param baseDir - The base directory for prompts (e.g., "/workspace/prompts")
+ * @param directiveType - The directive type (e.g., "to", "summary", "defect")
+ * @param layerType - The layer type (e.g., "project", "issue", "task")
+ * @returns The computed directory path (e.g., "/workspace/prompts/to/task")
+ */
+export function computePromptDirectory(
+  baseDir: string,
+  directiveType: string,
+  layerType: string,
+): string {
+  return join(baseDir, directiveType, layerType);
+}
+
+/**
  * Simplified configuration type with clear base directory resolution
  */
 export type PromptResolverConfig = {
@@ -495,8 +513,8 @@ export class PromptTemplatePathResolverTotality {
     const directiveType = this.getDirectiveType();
     const layerType = this.getLayerType();
 
-    // Construct the expected directory path
-    const directoryPath = join(baseDir, directiveType, layerType);
+    // Construct the expected directory path using pure function
+    const directoryPath = computePromptDirectory(baseDir, directiveType, layerType);
 
     if (isDebug) {
       console.log("[verifyDirectoryStructure] Checking directory:", directoryPath);
@@ -666,12 +684,12 @@ export class PromptTemplatePathResolverTotality {
   }
 
   /**
-   * Builds the full prompt template path
+   * Builds the full prompt template path using the pure function computePromptDirectory.
    */
   public buildPromptPath(baseDir: string, fileName: string): string {
     const directiveType = this.getDirectiveType();
     const layerType = this.getLayerType();
-    return join(baseDir, directiveType, layerType, fileName);
+    return join(computePromptDirectory(baseDir, directiveType, layerType), fileName);
   }
 
   /**

@@ -13,6 +13,7 @@
 import { assertEquals, assertExists } from "../deps.ts";
 import { join } from "jsr:@std/path@^1.0.9";
 import {
+  computePromptDirectory,
   formatPathResolutionError,
   PromptTemplatePathResolverTotality,
 } from "./prompt_template_path_resolver_totality.ts";
@@ -637,4 +638,48 @@ Deno.test("PromptTemplatePathResolverTotality - input option priority over fromF
   } finally {
     await cleanupTestDirectory(testBaseDir);
   }
+});
+
+Deno.test("computePromptDirectory - Pure function computes directory path correctly", () => {
+  // Basic case
+  assertEquals(
+    computePromptDirectory("/workspace/prompts", "to", "task"),
+    join("/workspace/prompts", "to", "task"),
+  );
+
+  // Different directive types
+  assertEquals(
+    computePromptDirectory("/prompts", "summary", "project"),
+    join("/prompts", "summary", "project"),
+  );
+
+  assertEquals(
+    computePromptDirectory("/prompts", "defect", "issue"),
+    join("/prompts", "defect", "issue"),
+  );
+
+  // Relative base directory
+  assertEquals(
+    computePromptDirectory("prompts", "to", "task"),
+    join("prompts", "to", "task"),
+  );
+});
+
+Deno.test("computePromptDirectory - Can be used independently without resolver instance", () => {
+  // This test verifies that the pure function can be used for variable construction
+  // without needing to create a resolver instance (no dependency on path resolution result)
+  const baseDir = "/workspace/prompts";
+  const directiveType = "to";
+  const layerType = "task";
+
+  const result = computePromptDirectory(baseDir, directiveType, layerType);
+
+  // The result should be deterministic and independent of any resolver state
+  assertEquals(result, "/workspace/prompts/to/task");
+
+  // Same inputs always produce same outputs (referential transparency)
+  assertEquals(
+    computePromptDirectory(baseDir, directiveType, layerType),
+    computePromptDirectory(baseDir, directiveType, layerType),
+  );
 });
