@@ -81,17 +81,6 @@ export class DomainPromptAdapter {
  */
 export class DomainPromptAdapterFactory {
   /**
-   * @deprecated createDefault() is deprecated.
-   * Migrating to config file-based implementation with BreakdownParams integration.
-   * Please use the regular constructor instead.
-   *
-   * Create a new DomainPromptAdapter with default service
-   */
-  static createDefault(): DomainPromptAdapter {
-    return new DomainPromptAdapter();
-  }
-
-  /**
    * Create a new DomainPromptAdapter with custom service
    */
   static createWithService(service: PromptGenerationService): DomainPromptAdapter {

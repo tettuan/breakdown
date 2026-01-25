@@ -282,35 +282,6 @@ export class PromptGenerationService {
   }
 
   /**
-   * Legacy method - kept for backward compatibility
-   * @deprecated Use selectTemplateSafe instead
-   */
-  private selectTemplate(request: PromptGenerationRequest): TemplatePath {
-    const result = this.selectTemplateSafe(request);
-    if (!result.ok) {
-      throw new Error(`Failed to select template: ${result.error}`);
-    }
-    return result.data;
-  }
-
-  /**
-   * Legacy method - kept for backward compatibility
-   * @deprecated Use prepareVariablesSafe instead
-   */
-  private async prepareVariables(
-    request: PromptGenerationRequest,
-    template: PromptTemplate,
-  ): Promise<TemplateVariables> {
-    const result = await this.prepareVariablesSafe(request, template);
-    if (!result.ok) {
-      throw new Error(
-        `Variable preparation failed: ${result.error}`,
-      );
-    }
-    return result.data;
-  }
-
-  /**
    * Prepare variables safely using Result type
    * @param request - The prompt generation request
    * @param template - The template to prepare variables for
@@ -396,21 +367,6 @@ export class PromptGenerationService {
   }
 
   /**
-   * Legacy method - kept for backward compatibility
-   * @deprecated Use getOrCreateAggregateSafe instead
-   */
-  private getOrCreateAggregate(
-    path: TemplatePath,
-    template: PromptTemplate,
-  ): PromptGenerationAggregate {
-    const result = this.getOrCreateAggregateSafe(path, template);
-    if (!result.ok) {
-      throw new Error(`Failed to create aggregate: ${result.error}`);
-    }
-    return result.data;
-  }
-
-  /**
    * Safe generation result handling using Result type
    */
   private handleGenerationResultSafe(
@@ -438,40 +394,6 @@ export class PromptGenerationService {
       }
 
       return this.createErrorResponse(error);
-    }
-  }
-
-  /**
-   * Legacy method - kept for backward compatibility
-   * @deprecated Use handleGenerationResultSafe instead
-   */
-  private handleGenerationResult(
-    result: GenerationResult,
-    templatePath: TemplatePath,
-  ): PromptGenerationResponse {
-    if (result.success && result.prompt) {
-      return {
-        success: true,
-        content: result.prompt.getContent(),
-        templatePath: templatePath.getPath(),
-        appliedVariables: result.prompt.getAppliedVariables().toObject(),
-      };
-    } else {
-      const fallbackAction = this.deps.policy.handleFailure(
-        result.error || new Error("Unknown generation error"),
-      );
-
-      if (fallbackAction?.type === "useDefault") {
-        return {
-          success: true,
-          content: fallbackAction.defaultValue,
-          templatePath: templatePath.getPath(),
-        };
-      }
-
-      return this.createErrorResponse(
-        result.error || new Error("Generation failed"),
-      );
     }
   }
 

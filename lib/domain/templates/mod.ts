@@ -106,15 +106,6 @@ export {
   VariableSubstitution,
 } from "./template_value_objects.ts";
 
-// Type Adapters
-export {
-  TypedPathResolver,
-  TypedTemplatePathFactory,
-  TypedVariableFactory,
-  TypeIntegrationUtils,
-  TypeValidator,
-} from "./type_adapters.ts";
-
 // Schema Reader Service
 export {
   createTemplateSchemaReader,

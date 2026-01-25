@@ -34,17 +34,6 @@ export class ConfigProfile {
   }
 
   /**
-   * @deprecated createDefault() is scheduled for deprecation.
-   * Migrating to config file-based implementation with BreakdownParams integration.
-   * Please use ConfigProfile.create() instead.
-   *
-   * @returns Default ConfigProfile instance
-   */
-  static createDefault(): ConfigProfile {
-    return new ConfigProfile(ConfigProfile.DEFAULT);
-  }
-
-  /**
    * Create ConfigProfile from CLI option value
    * @param cliOption - CLI option value
    * @returns ConfigProfile instance

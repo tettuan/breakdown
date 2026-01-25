@@ -502,16 +502,6 @@ export class TwoParamsApplicationService {
     };
   }
 
-  /**
-   * @deprecated createDefault() is deprecated.
-   * Migrated to config-file-based implementation via BreakdownParams integration.
-   * Please use the regular constructor instead.
-   *
-   * @returns New TwoParamsApplicationService instance
-   */
-  static createDefault(): TwoParamsApplicationService {
-    return new TwoParamsApplicationService();
-  }
 }
 
 /**

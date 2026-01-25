@@ -367,31 +367,6 @@ export class ErrorSeverity {
     return new ErrorSeverity(SeverityLevel.FATAL, impact, metadata);
   }
 
-  /**
-   * Generate ErrorSeverity with custom settings (legacy compatibility)
-   * @deprecated Use the create method of Smart Constructor pattern
-   */
-  static custom(
-    level: SeverityLevel,
-    impact: ImpactScope,
-    metadata?: ErrorMetadata,
-  ): ErrorSeverity {
-    return new ErrorSeverity(level, impact, metadata);
-  }
-
-  /**
-   * Unsafe conversion from string (legacy compatibility)
-   * Maintains legacy behavior of throwing exceptions on error
-   * @deprecated Use fromString method (safe handling via Result type)
-   */
-  static fromStringUnsafe(levelString: string): ErrorSeverity {
-    const result = ErrorSeverity.fromString(levelString);
-    if (!result.ok) {
-      throw new Error(formatErrorSeverityError(result.error));
-    }
-    return result.data;
-  }
-
   // =============================================================================
   // VALUE OBJECT METHODS
   // =============================================================================

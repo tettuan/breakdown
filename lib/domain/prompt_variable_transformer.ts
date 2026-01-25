@@ -315,20 +315,6 @@ export class PromptVariableTransformer {
  */
 export class TransformerFactory {
   /**
-   * @deprecated createDefault() is scheduled for deprecation.
-   * Migrating to config file-based implementation due to BreakdownParams integration.
-   * Please use createWithPathValidation() or the constructor directly.
-   *
-   * Create a default transformer
-   */
-  static createDefault(): PromptVariableTransformer {
-    return new PromptVariableTransformer({
-      validatePaths: false,
-      allowEmpty: false,
-    });
-  }
-
-  /**
    * Create a transformer with path validation
    */
   static createWithPathValidation(

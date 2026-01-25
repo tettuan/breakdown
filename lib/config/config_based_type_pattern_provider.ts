@@ -137,26 +137,6 @@ export class ConfigBasedTypePatternProvider implements TypePatternProvider {
   }
 
   /**
-   * Check if DirectiveType is valid (for backward compatibility)
-   * @param value Value to check
-   * @returns true if valid
-   * @deprecated Use validateDirectiveType instead
-   */
-  isValidDirectiveType(value: string): boolean {
-    return this.validateDirectiveType(value);
-  }
-
-  /**
-   * Check if LayerType is valid (for backward compatibility)
-   * @param value Value to check
-   * @returns true if valid
-   * @deprecated Use validateLayerType instead
-   */
-  isValidLayerType(value: string): boolean {
-    return this.validateLayerType(value);
-  }
-
-  /**
    * Get profile name
    * @returns Profile name
    */

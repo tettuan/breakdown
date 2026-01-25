@@ -40,17 +40,6 @@ export class DefaultPromptGenerationServiceFactory implements PromptGenerationSe
  */
 export class PromptGenerationServiceFactories {
   /**
-   * @deprecated createDefault() is scheduled for removal.
-   * Migration to config-file-based implementation due to BreakdownParams integration.
-   * Please use the DefaultPromptGenerationServiceFactory constructor directly.
-   *
-   * Create a factory with default configuration
-   */
-  static createDefault(): PromptGenerationServiceFactory {
-    return new DefaultPromptGenerationServiceFactory();
-  }
-
-  /**
    * Create a factory with custom PromptManager
    */
   static createWithManager(promptManager: PromptManager): PromptGenerationServiceFactory {
