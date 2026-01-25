@@ -62,15 +62,28 @@
   "lint": {
     "include": [
       "lib/",
-      "tests/"
+      "tests/",
+      "cli/"
     ],
     "exclude": [
       "tmp/",
-      "tests/fixtures/"
+      "tests/fixtures/",
+      "**/*.ja.*",
+      "**/日本語.*"
     ],
     "rules": {
       "tags": [
         "recommended"
+      ],
+      "include": [
+        "no-await-in-loop",
+        "no-console",
+        "no-eval",
+        "no-external-import",
+        "no-sync-fn-in-async-fn",
+        "prefer-ascii",
+        "single-var-declarator",
+        "verbatim-module-syntax"
       ]
     }
   },
