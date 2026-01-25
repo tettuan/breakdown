@@ -363,43 +363,31 @@ Deno.test("3_core: VariablesBuilder.fromFactoryValues() - static factory method"
  * Environment Integration tests
  */
 
-Deno.test("3_core: VariablesBuilder test environment fallback", () => {
+Deno.test("3_core: VariablesBuilder empty values handling", () => {
   const builder = new VariablesBuilder();
 
   const factoryValues = {
     promptFilePath: "/prompts/template.md",
-    inputFilePath: "", // empty string - fallback in test environment
+    inputFilePath: "", // empty string - not added to variables
     outputFilePath: "",
     schemaFilePath: "",
-    inputText: "",
+    inputText: "", // empty string - TEST_MODE fallback used
   };
 
   builder.addFromFactoryValues(factoryValues);
 
-  // Fallback values are used in the test environment
+  // No errors should occur
   assertEquals(builder.getErrorCount(), 0);
-  assertEquals(builder.getVariableCount() > 0, true);
 
   const record = builder.toRecord();
-  // Changed to existence check to verify actual fallback behavior
-  const hasInputTextFile = "input_text_file" in record;
-  const hasDestinationPath = "destination_path" in record;
-  const hasSchemaFile = "schema_file" in record;
-  const hasInputText = "input_text" in record;
+  // Empty file paths are NOT added to variables
+  assertEquals("input_text_file" in record, false);
+  assertEquals("destination_path" in record, false);
+  assertEquals("schema_file" in record, false);
 
-  // Verify that fallback values are set in the test environment
-  if (hasInputTextFile) {
-    assertEquals(record["input_text_file"], "default-input.txt");
-  }
-  if (hasDestinationPath) {
-    assertEquals(record["destination_path"], "default-output.md");
-  }
-  if (hasSchemaFile) {
-    assertEquals(record["schema_file"], "default-schema.json");
-  }
-  if (hasInputText) {
-    assertEquals(record["input_text"], "# Default input text for testing");
-  }
+  // Only input_text has TEST_MODE fallback
+  assertEquals("input_text" in record, true);
+  assertEquals(record["input_text"], "# Default input text for testing");
 });
 
 /**
@@ -586,8 +574,3 @@ Deno.test("2_structure: base_prompt_dir is independent of other variables", () =
   const record = builder.toRecord();
   assertEquals(Object.keys(record).includes("base_prompt_dir"), true);
 });
-
-// Final quality metrics report
-console.log("[pane1] variables_builder.test.ts - Technical perfection achieved");
-console.log("Test statistics: 29 tests implemented, 100% pass rate, 0 errors, 0 warnings");
-console.log("Worker7 masterpiece quality standards fully achieved - Manager2 team technical excellence demonstrated");
