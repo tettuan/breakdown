@@ -62,7 +62,7 @@ export type InputProcessorError =
 export class TwoParamsStdinProcessor {
   /**
    * Check if stdin should be read based on options
-   * 🎖️ DEPLOYED: shouldReadStdin() pattern for consistency across processors
+   * DEPLOYED: shouldReadStdin() pattern for consistency across processors
    */
   private shouldReadStdin(options: Record<string, unknown>): boolean {
     // Skip in test environments to prevent resource leaks

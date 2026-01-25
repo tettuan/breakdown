@@ -136,7 +136,7 @@ Deno.test("BreakdownConfig - Profile switching with patterns", async () => {
 Deno.test("Dynamic configuration loading - Multiple profiles", async () => {
   const profiles = ["default", "default-test", "flexible-test"];
 
-  for (const profileName of profiles) {
+  const testProfile = async (profileName: string): Promise<void> => {
     logger.info(`Testing profile: ${profileName}`);
 
     try {
@@ -162,7 +162,9 @@ Deno.test("Dynamic configuration loading - Multiple profiles", async () => {
         error: error instanceof Error ? error.message : String(error),
       });
     }
-  }
+  };
+
+  await Promise.all(profiles.map(testProfile));
 });
 
 Deno.test("Configuration value resolution - Profile-specific patterns", async () => {
@@ -215,7 +217,7 @@ Deno.test("Profile switching runtime behavior", async () => {
     ConfigProfile.create("flexible-test"),
   ];
 
-  for (const profile of profiles) {
+  const testProfileSwitch = async (profile: ConfigProfile): Promise<void> => {
     logger.debug(`Switching to profile: ${profile.value}`);
 
     try {
@@ -248,7 +250,9 @@ Deno.test("Profile switching runtime behavior", async () => {
         error: error instanceof Error ? error.message : String(error),
       });
     }
-  }
+  };
+
+  await Promise.all(profiles.map(testProfileSwitch));
 });
 
 Deno.test("Configuration isolation between profiles", async () => {

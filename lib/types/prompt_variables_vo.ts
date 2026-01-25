@@ -28,16 +28,16 @@ import { ErrorFactory } from "./unified_error_types.ts";
 /**
  * PromptVariablesVO - Immutable collection of prompt variables
  *
- * Totality原則に準拠した純粋なSmart Constructor実装。
- * 検証済みのPromptVariable配列を保持し、不変性を保証する。
+ * Pure Smart Constructor implementation following the Totality principle.
+ * Holds validated PromptVariable array and guarantees immutability.
  *
- * ## 設計原則
- * 1. **単一責任**: 検証済み変数コレクションの型安全な保持のみ
+ * ## Design Principles
+ * 1. **Single Responsibility**: Type-safe holding of validated variable collections only
  * 2. **Smart Constructor**: private constructor + static create
- * 3. **Immutable**: 構築後の変更不可
- * 4. **Total Function**: 全ての入力に対して定義済み
+ * 3. **Immutable**: No modification after construction
+ * 4. **Total Function**: Defined for all inputs
  *
- * @example 基本的な使用例
+ * @example Basic usage
  * ```typescript
  * const var1 = StandardVariable.create("input_text_file", "/path/to/file");
  * const var2 = FilePathVariable.create("schema_file", "/path/to/schema");
@@ -49,7 +49,7 @@ import { ErrorFactory } from "./unified_error_types.ts";
  * }
  * ```
  *
- * @example 空のコレクション
+ * @example Empty collection
  * ```typescript
  * const empty = PromptVariablesVO.create([]);
  * console.log(empty.isEmpty()); // true
@@ -58,10 +58,10 @@ import { ErrorFactory } from "./unified_error_types.ts";
  */
 export class PromptVariablesVO {
   /**
-   * Private constructor - Smart Constructor パターンの実装
+   * Private constructor - Smart Constructor pattern implementation
    *
-   * 直接インスタンス化を禁止し、create() メソッド経由での作成を強制。
-   * 内部で配列をフリーズして不変性を保証する。
+   * Prevents direct instantiation and enforces creation via create() method.
+   * Freezes the array internally to guarantee immutability.
    */
   private constructor(private readonly variables: readonly PromptVariable[]) {
     // Defensive copy and freeze for true immutability
@@ -69,19 +69,19 @@ export class PromptVariablesVO {
   }
 
   /**
-   * PromptVariable配列から PromptVariablesVO を構築
+   * Constructs PromptVariablesVO from PromptVariable array
    *
-   * Totality原則に従い、有効な配列に対しては常に成功する。
-   * 重複チェックなどのバリデーションは呼び出し側の責任とする。
+   * Following the Totality principle, always succeeds for valid arrays.
+   * Validation such as duplicate checking is the caller's responsibility.
    *
-   * @param variables PromptVariable の配列
-   * @returns PromptVariablesVO インスタンス（常に成功）
+   * @param variables Array of PromptVariable
+   * @returns PromptVariablesVO instance (always succeeds)
    *
    * @example
    * ```typescript
    * const variables = [standardVar, filePathVar];
    * const vo = PromptVariablesVO.create(variables);
-   * // 型安全に使用可能
+   * // Can be used in a type-safe manner
    * ```
    */
   static create(variables: PromptVariable[]): PromptVariablesVO {
@@ -89,15 +89,15 @@ export class PromptVariablesVO {
   }
 
   /**
-   * PromptVariable配列から PromptVariablesVO を構築（Result型版）
+   * Constructs PromptVariablesVO from PromptVariable array (Result type version)
    *
-   * Totality原則に完全準拠し、すべてのエラーケースを明示的に扱う。
-   * PromptVariablesVOの構築前に追加バリデーションを実行し、
-   * 失敗の可能性がある場合はResult型でエラーを返す。
+   * Fully compliant with Totality principle, handles all error cases explicitly.
+   * Executes additional validation before constructing PromptVariablesVO,
+   * returns error via Result type when failure is possible.
    *
-   * @param variables PromptVariable の配列
-   * @param options オプショナル：追加バリデーション設定
-   * @returns 成功時は Result<PromptVariablesVO>、失敗時はエラー情報
+   * @param variables Array of PromptVariable
+   * @param options Optional: additional validation settings
+   * @returns Result<PromptVariablesVO> on success, error information on failure
    *
    * @example
    * ```typescript
@@ -106,10 +106,10 @@ export class PromptVariablesVO {
    *   requireNonEmpty: true
    * });
    * if (result.ok) {
-   *   // 型安全に使用可能
+   *   // Can be used in a type-safe manner
    *   console.log(result.data.size());
    * } else {
-   *   // エラーハンドリング
+   *   // Error handling
    *   console.error(result.error);
    * }
    * ```
@@ -122,7 +122,7 @@ export class PromptVariablesVO {
       maxVariables?: number;
     },
   ): Result<PromptVariablesVO, ValidationError> {
-    // 基本的なバリデーション
+    // Basic validation
     if (!variables || variables === null || variables === undefined) {
       return error(ErrorFactory.validationError("MissingRequiredField", {
         field: "variables",
@@ -140,7 +140,7 @@ export class PromptVariablesVO {
       }));
     }
 
-    // 空配列チェック（オプショナル）
+    // Empty array check (optional)
     if (options?.requireNonEmpty && variables.length === 0) {
       return error(ErrorFactory.validationError("InvalidInput", {
         field: "variables",
@@ -149,7 +149,7 @@ export class PromptVariablesVO {
       }));
     }
 
-    // 最大数チェック（オプショナル）
+    // Maximum count check (optional)
     if (options?.maxVariables && variables.length > options.maxVariables) {
       return error(ErrorFactory.validationError("InvalidInput", {
         field: "variables",
@@ -159,7 +159,7 @@ export class PromptVariablesVO {
       }));
     }
 
-    // 重複チェック（オプショナル）
+    // Duplicate check (optional)
     if (options?.allowDuplicates === false) {
       const names = new Map<string, number>();
       for (let i = 0; i < variables.length; i++) {
@@ -180,46 +180,46 @@ export class PromptVariablesVO {
       }
     }
 
-    // すべてのバリデーションに成功
+    // All validations succeeded
     return ok(new PromptVariablesVO(variables));
   }
 
   /**
-   * 検証済み変数の配列を取得
+   * Gets the array of validated variables
    *
-   * 不変の配列を返すため、外部から変更することはできない。
+   * Returns an immutable array, cannot be modified from outside.
    *
-   * @returns 読み取り専用の変数配列
+   * @returns Read-only array of variables
    */
   get value(): readonly PromptVariable[] {
     return this.variables;
   }
 
   /**
-   * 変数の数を取得
+   * Gets the number of variables
    *
-   * @returns 変数の数
+   * @returns Number of variables
    */
   size(): number {
     return this.variables.length;
   }
 
   /**
-   * コレクションが空かどうかをチェック
+   * Checks whether the collection is empty
    *
-   * @returns 変数が存在しない場合 true
+   * @returns true if no variables exist
    */
   isEmpty(): boolean {
     return this.variables.length === 0;
   }
 
   /**
-   * 全ての変数を単一のレコードに変換
+   * Converts all variables to a single record
    *
-   * 各変数の toRecord() を呼び出して結果をマージする。
-   * 重複するキーがある場合は後の値で上書きされる。
+   * Calls toRecord() on each variable and merges the results.
+   * If there are duplicate keys, later values overwrite earlier ones.
    *
-   * @returns 全ての変数のキー値ペアを含むレコード
+   * @returns Record containing key-value pairs of all variables
    */
   toRecord(): Record<string, string> {
     const result: Record<string, string> = {};
@@ -232,9 +232,9 @@ export class PromptVariablesVO {
   }
 
   /**
-   * 変数名のリストを取得
+   * Gets the list of variable names
    *
-   * @returns 全ての変数名の配列
+   * @returns Array of all variable names
    */
   getNames(): string[] {
     const names: string[] = [];
@@ -248,10 +248,10 @@ export class PromptVariablesVO {
   }
 
   /**
-   * 指定された名前の変数を検索
+   * Searches for a variable with the specified name
    *
-   * @param name 検索する変数名
-   * @returns 見つかった場合は変数、見つからない場合は undefined
+   * @param name Variable name to search for
+   * @returns The variable if found, undefined if not found
    */
   findByName(name: string): PromptVariable | undefined {
     for (const variable of this.variables) {
@@ -264,10 +264,10 @@ export class PromptVariablesVO {
   }
 
   /**
-   * 指定された名前の変数が存在するかチェック
+   * Checks whether a variable with the specified name exists
    *
-   * @param name チェックする変数名
-   * @returns 変数が存在する場合 true
+   * @param name Variable name to check
+   * @returns true if the variable exists
    */
   hasVariable(name: string): boolean {
     return this.findByName(name) !== undefined;
@@ -276,10 +276,10 @@ export class PromptVariablesVO {
   /**
    * equals method for value comparison
    *
-   * 順序も含めて完全に同じ変数を持つ場合のみ true を返す。
+   * Returns true only when both have exactly the same variables including order.
    *
-   * @param other 比較対象の PromptVariablesVO
-   * @returns 同じ変数を持つ場合 true
+   * @param other PromptVariablesVO to compare with
+   * @returns true if they have the same variables
    */
   equals(other: PromptVariablesVO): boolean {
     if (this.variables.length !== other.variables.length) {
@@ -309,22 +309,22 @@ export class PromptVariablesVO {
   /**
    * String representation of PromptVariablesVO
    *
-   * デバッグや表示用の文字列表現を返す。
-   * フォーマット: "PromptVariablesVO(count: n)"
+   * Returns string representation for debugging and display purposes.
+   * Format: "PromptVariablesVO(count: n)"
    *
-   * @returns PromptVariablesVO の文字列表現
+   * @returns String representation of PromptVariablesVO
    */
   toString(): string {
     return `PromptVariablesVO(count: ${this.variables.length})`;
   }
 
   /**
-   * 元の変数配列への読み取り専用アクセス
+   * Read-only access to the original variable array
    *
-   * デバッグや詳細情報が必要な場合に使用。
-   * Immutable なので安全に公開可能。
+   * Used when debugging or detailed information is needed.
+   * Safe to expose since it is immutable.
    *
-   * @returns 元の変数配列（読み取り専用）
+   * @returns Original variable array (read-only)
    */
   get originalVariables(): readonly PromptVariable[] {
     return this.variables;

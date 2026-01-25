@@ -76,13 +76,13 @@ export interface TwoParamsOutput {
 }
 
 /**
- * TwoParamsApplicationService - アプリケーションサービス
+ * TwoParamsApplicationService - Application Service
  *
- * 責務:
- * - TwoParamsドメインの使用ケースのオーケストレーション
- * - 外部システム（JSRパッケージ）との協調
- * - ドメインロジックと技術的詳細の分離
- * - エラーハンドリングと結果の統一
+ * Responsibilities:
+ * - Orchestration of TwoParams domain use cases
+ * - Coordination with external systems (JSR packages)
+ * - Separation of domain logic and technical details
+ * - Error handling and result unification
  *
  * Design Principles:
  * - Single Responsibility: Two-parameter workflow orchestration only
@@ -503,9 +503,9 @@ export class TwoParamsApplicationService {
   }
 
   /**
-   * @deprecated createDefault() は廃止予定
-   * BreakdownParams統合により設定ファイルベース実装に移行。
-   * 通常のコンストラクタを使用してください。
+   * @deprecated createDefault() is deprecated.
+   * Migrated to config-file-based implementation via BreakdownParams integration.
+   * Please use the regular constructor instead.
    *
    * @returns New TwoParamsApplicationService instance
    */

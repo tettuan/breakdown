@@ -9,7 +9,7 @@
 
 import { PromptPath } from "../types/prompt_types.ts";
 import {
-  FilePathVariable as _FilePathVariable,
+  type FilePathVariable as _FilePathVariable,
   type PromptCliParams,
   type PromptVariables,
   StandardVariable,

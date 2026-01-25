@@ -7,7 +7,7 @@
  * @module types/prompt_types
  */
 
-import { error as resultError, ok as resultOk, Result } from "./result.ts";
+import { error as resultError, ok as resultOk, type Result } from "./result.ts";
 
 /**
  * Error types for prompt path operations

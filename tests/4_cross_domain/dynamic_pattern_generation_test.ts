@@ -132,38 +132,49 @@ Deno.test(
       { name: "edge-case", configName: "edge-case" },
     ];
 
-    for (const config of patternConfigs) {
-      logger.debug(`Pattern file dynamization verification: ${config.name}`, { stage: "test" });
+    // Load all configurations in parallel using Promise.all
+    const results = await Promise.all(
+      patternConfigs.map(async (config) => {
+        logger.debug(`Pattern file dynamization verification: ${config.name}`, { stage: "test" });
 
-      try {
-        const result = await ConfigurationTestHelper.loadTestConfiguration(config.configName);
+        try {
+          const result = await ConfigurationTestHelper.loadTestConfiguration(config.configName);
+          return { config, result, error: null };
+        } catch (error) {
+          logger.debug(`${config.name} dynamization failed`, { tag: "failed", error });
+          return { config, result: null, error };
+        }
+      }),
+    );
 
-        // Verify that dynamically generated data is loaded correctly
-        assertExists(result.userConfig.testData);
-        assertEquals(Array.isArray(result.userConfig.testData.validDirectives), true);
-        assertEquals(Array.isArray(result.userConfig.testData.validLayers), true);
-
-        // Verify that it's not empty (dynamic generation succeeded)
-        assertEquals(
-          result.userConfig.testData.validDirectives.length > 0,
-          true,
-          `${config.name}: validDirectives is empty`,
-        );
-        assertEquals(
-          result.userConfig.testData.validLayers.length > 0,
-          true,
-          `${config.name}: validLayers is empty`,
-        );
-
-        logger.debug(`${config.name} dynamization verification completed`, {
-          tag: "verification-completed",
-          validDirectivesCount: result.userConfig.testData.validDirectives.length,
-          validLayersCount: result.userConfig.testData.validLayers.length,
-        });
-      } catch (error) {
-        logger.debug(`${config.name} dynamization failed`, { tag: "failed", error });
+    // Verify all results
+    for (const { config, result, error } of results) {
+      if (error) {
         throw error;
       }
+
+      // Verify that dynamically generated data is loaded correctly
+      assertExists(result!.userConfig.testData);
+      assertEquals(Array.isArray(result!.userConfig.testData.validDirectives), true);
+      assertEquals(Array.isArray(result!.userConfig.testData.validLayers), true);
+
+      // Verify that it's not empty (dynamic generation succeeded)
+      assertEquals(
+        result!.userConfig.testData.validDirectives.length > 0,
+        true,
+        `${config.name}: validDirectives is empty`,
+      );
+      assertEquals(
+        result!.userConfig.testData.validLayers.length > 0,
+        true,
+        `${config.name}: validLayers is empty`,
+      );
+
+      logger.debug(`${config.name} dynamization verification completed`, {
+        tag: "verification-completed",
+        validDirectivesCount: result!.userConfig.testData.validDirectives.length,
+        validLayersCount: result!.userConfig.testData.validLayers.length,
+      });
     }
 
     logger.debug("Hardcode elimination verification completed", {

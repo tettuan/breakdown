@@ -7,7 +7,7 @@
  * @module prompt/prompt_generation_service_factory
  */
 
-import { PromptManager } from "@tettuan/breakdownprompt";
+import type { PromptManager } from "@tettuan/breakdownprompt";
 import type {
   PromptGenerationService,
   PromptGenerationServiceFactory,
@@ -40,9 +40,9 @@ export class DefaultPromptGenerationServiceFactory implements PromptGenerationSe
  */
 export class PromptGenerationServiceFactories {
   /**
-   * @deprecated createDefault() は廃止予定
-   * BreakdownParams統合により設定ファイルベース実装に移行。
-   * DefaultPromptGenerationServiceFactory コンストラクタを直接使用してください。
+   * @deprecated createDefault() is scheduled for removal.
+   * Migration to config-file-based implementation due to BreakdownParams integration.
+   * Please use the DefaultPromptGenerationServiceFactory constructor directly.
    *
    * Create a factory with default configuration
    */

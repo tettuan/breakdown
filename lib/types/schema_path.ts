@@ -15,8 +15,8 @@
 
 import type { Result } from "./result.ts";
 import { error, ok } from "./result.ts";
-import { DirectiveType } from "../domain/core/value_objects/directive_type.ts";
-import { LayerType } from "../domain/core/value_objects/layer_type.ts";
+import type { DirectiveType } from "../domain/core/value_objects/directive_type.ts";
+import type { LayerType } from "../domain/core/value_objects/layer_type.ts";
 
 // ============================================================================
 // Error Types

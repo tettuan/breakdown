@@ -7,7 +7,7 @@
  * @module prompt/variables/composite_prompt_variables
  */
 
-import { PromptVariables } from "../../types/prompt_types.ts";
+import type { PromptVariables } from "../../types/prompt_types.ts";
 
 /**
  * Composite implementation of PromptVariables

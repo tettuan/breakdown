@@ -9,8 +9,13 @@
  */
 
 import { PromptManager } from "@tettuan/breakdownprompt";
-import { error as resultError, ok as resultOk, Result } from "../types/result.ts";
-import { PromptError, PromptPath, PromptResult, PromptVariables } from "../types/prompt_types.ts";
+import { error as resultError, ok as resultOk, type Result } from "../types/result.ts";
+import type {
+  PromptError,
+  PromptPath,
+  PromptResult,
+  PromptVariables,
+} from "../types/prompt_types.ts";
 
 /**
  * Configuration options for PromptManagerAdapter

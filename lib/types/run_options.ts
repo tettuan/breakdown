@@ -10,17 +10,17 @@
  * Internal layers are pure functions with no side effects.
  *
  * ```
- * runBreakdown(args, options?)      ← I/O boundary layer
- *   │
- *   ├─ Input:  receives args
- *   │
- *   ├─ Internal processing (pure data transformation)
- *   │    └─ handleTwoParams → Orchestrator → Generator
- *   │         └─ return promptContent (data only, no side effects)
- *   │
- *   └─ Output: determined by returnMode
- *        ├─ true  → return ok(promptContent)
- *        └─ false → stdout.write(promptContent)
+ * runBreakdown(args, options?)      <- I/O boundary layer
+ *   |
+ *   +-- Input:  receives args
+ *   |
+ *   +-- Internal processing (pure data transformation)
+ *   |    +-- handleTwoParams -> Orchestrator -> Generator
+ *   |         +-- return promptContent (data only, no side effects)
+ *   |
+ *   +-- Output: determined by returnMode
+ *        +-- true  -> return ok(promptContent)
+ *        +-- false -> stdout.write(promptContent)
  * ```
  *
  * @module types/run_options

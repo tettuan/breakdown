@@ -1,8 +1,9 @@
 /**
- * @fileoverview ConfigBasedTwoParamsBuilder - 設定ファイルベースTwoParams生成
+ * @fileoverview ConfigBasedTwoParamsBuilder - Config file based TwoParams generation
  *
- * createDefault()依存を排除し、設定ファイル→CustomConfig→TwoParamsResultの
- * 統合フローを提供する。BreakdownParams統合による設定ベース初期化実装。
+ * Eliminates createDefault() dependency and provides an integrated flow of
+ * config file -> CustomConfig -> TwoParamsResult.
+ * Config-based initialization implementation via BreakdownParams integration.
  *
  * @module config/config_based_two_params_builder
  */
@@ -12,7 +13,7 @@ import { ConfigProfile } from "./config_profile_name.ts";
 import { loadUserConfig } from "./user_config_loader.ts";
 
 /**
- * 設定関連エラー型
+ * Config-related error type
  */
 export interface ConfigError {
   kind: "ConfigLoadFailed" | "MissingPattern" | "BuilderCreationFailed";
@@ -21,7 +22,7 @@ export interface ConfigError {
 }
 
 /**
- * バリデーション関連エラー型
+ * Validation-related error type
  */
 export interface ValidationError {
   kind: "MissingPattern" | "ValidationFailed";
@@ -30,7 +31,7 @@ export interface ValidationError {
 }
 
 /**
- * ビルド関連エラー型
+ * Build-related error type
  */
 export interface BuildError {
   kind: "ValidationFailed" | "BuildFailed";
@@ -39,7 +40,7 @@ export interface BuildError {
 }
 
 /**
- * Result型のシンプル実装
+ * Simple Result type implementation
  */
 export type Result<T, E> =
   | { ok: true; data: T; error?: never }
@@ -54,19 +55,19 @@ export function error<T, E>(err: E): Result<T, E> {
 }
 
 /**
- * TwoParams_Result拡張インターフェース
- * BreakdownParamsの仕様に合わせた結果型
+ * TwoParams_Result extended interface
+ * Result type aligned with BreakdownParams specification
  */
 export interface TwoParams_Result {
   type: "two";
   params: string[]; // [directiveType, layerType]
-  layerType: string; // レイヤータイプ文字列
-  directiveType: string; // ディレクティブタイプ文字列
+  layerType: string; // layer type string
+  directiveType: string; // directive type string
   options: Record<string, unknown>;
 }
 
 /**
- * TwoParams_Result生成ファクトリー関数
+ * TwoParams_Result factory function
  */
 export function createTwoParamsResult(
   directiveType: string,
@@ -84,7 +85,7 @@ export function createTwoParamsResult(
 
 /**
  * ConfigBasedTwoParamsBuilder
- * 設定ファイルベースでTwoParams_Resultを生成するビルダークラス
+ * Builder class that generates TwoParams_Result based on config files
  */
 export class ConfigBasedTwoParamsBuilder {
   constructor(
@@ -93,19 +94,19 @@ export class ConfigBasedTwoParamsBuilder {
   ) {}
 
   /**
-   * 設定ファイルからConfigBasedTwoParamsBuilderを構築
-   * @param profileName プロファイル名（デフォルト: "default"）
-   * @returns ConfigBasedTwoParamsBuilderまたはエラー
+   * Build ConfigBasedTwoParamsBuilder from config file
+   * @param profileName Profile name (default: "default")
+   * @returns ConfigBasedTwoParamsBuilder or error
    */
   static async fromConfig(
     profileName: string = "default",
   ): Promise<Result<ConfigBasedTwoParamsBuilder, ConfigError>> {
     try {
-      // 1. 設定ファイル読み込み
+      // 1. Load config file
       const profile = ConfigProfile.create(profileName);
       const configData = await loadUserConfig(profile);
 
-      // 2. CustomConfig作成
+      // 2. Create CustomConfig
       const customConfig = ParamsCustomConfig.create(configData);
 
       return ok(new ConfigBasedTwoParamsBuilder(customConfig, profileName));
@@ -119,10 +120,10 @@ export class ConfigBasedTwoParamsBuilder {
   }
 
   /**
-   * DirectiveTypeとLayerTypeの検証
-   * @param directiveType ディレクティブタイプ
-   * @param layerType レイヤータイプ
-   * @returns 検証結果
+   * Validate DirectiveType and LayerType
+   * @param directiveType Directive type
+   * @param layerType Layer type
+   * @returns Validation result
    */
   validateParams(
     directiveType: string,
@@ -138,7 +139,7 @@ export class ConfigBasedTwoParamsBuilder {
       });
     }
 
-    // パターン検証処理
+    // Pattern validation
     const directiveValid = new RegExp(`^(${directivePattern})$`).test(directiveType);
     const layerValid = new RegExp(`^(${layerPattern})$`).test(layerType);
 
@@ -154,16 +155,16 @@ export class ConfigBasedTwoParamsBuilder {
   }
 
   /**
-   * 設定ベースTwoParams_Result生成
-   * @param directiveType ディレクティブタイプ
-   * @param layerType レイヤータイプ
-   * @returns TwoParams_Resultまたはエラー
+   * Generate config-based TwoParams_Result
+   * @param directiveType Directive type
+   * @param layerType Layer type
+   * @returns TwoParams_Result or error
    */
   build(
     directiveType: string,
     layerType: string,
   ): Result<TwoParams_Result, BuildError> {
-    // 1. パラメータ検証
+    // 1. Parameter validation
     const validationResult = this.validateParams(directiveType, layerType);
     if (!validationResult.ok) {
       return error({
@@ -174,7 +175,7 @@ export class ConfigBasedTwoParamsBuilder {
     }
 
     try {
-      // 2. TwoParams_Result生成
+      // 2. Generate TwoParams_Result
       const result = createTwoParamsResult(
         directiveType,
         layerType,
@@ -196,24 +197,24 @@ export class ConfigBasedTwoParamsBuilder {
   }
 
   /**
-   * 設定からDirectiveTypeパターンを取得
-   * @returns DirectiveTypeパターン
+   * Get DirectiveType pattern from config
+   * @returns DirectiveType pattern
    */
   getDirectivePattern(): string | undefined {
     return this.customConfig.directivePattern;
   }
 
   /**
-   * 設定からLayerTypeパターンを取得
-   * @returns LayerTypeパターン
+   * Get LayerType pattern from config
+   * @returns LayerType pattern
    */
   getLayerPattern(): string | undefined {
     return this.customConfig.layerPattern;
   }
 
   /**
-   * プロファイル名を取得
-   * @returns プロファイル名
+   * Get profile name
+   * @returns Profile name
    */
   getProfile(): string {
     return this.profile;
@@ -221,9 +222,9 @@ export class ConfigBasedTwoParamsBuilder {
 }
 
 /**
- * createDefault()の代替として設定ベースビルダーを作成
- * @param profileName プロファイル名（デフォルト: "breakdown"）
- * @returns ConfigBasedTwoParamsBuilderまたはエラー
+ * Create config-based builder as an alternative to createDefault()
+ * @param profileName Profile name (default: "breakdown")
+ * @returns ConfigBasedTwoParamsBuilder or error
  */
 export async function createConfigBasedBuilder(
   profileName: string = "breakdown",

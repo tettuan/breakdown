@@ -372,10 +372,10 @@ This document provides a comprehensive analysis of our enterprise system's curre
 ## Current Architecture
 
 \`\`\`
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Load Balancer │ -> │  Application    │ -> │    Database     │
-│                 │    │    Server       │    │     Cluster     │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
++-------------------+    +-------------------+    +-------------------+
+|   Load Balancer   | -> |   Application     | -> |    Database       |
+|                   |    |     Server        |    |      Cluster      |
++-------------------+    +-------------------+    +-------------------+
 \`\`\`
 
 ## Issues Identified
@@ -400,9 +400,9 @@ This document provides a comprehensive analysis of our enterprise system's curre
 
 | Component | Current Version | Latest Version | Security Status |
 |-----------|----------------|----------------|-----------------|
-| Node.js   | 18.12.0        | 20.10.0        | ⚠️ Update needed |
-| Database  | PostgreSQL 13  | PostgreSQL 15  | ✅ Supported     |
-| Redis     | 6.2.7          | 7.2.4          | ⚠️ Update needed |
+| Node.js   | 18.12.0        | 20.10.0        | [!] Update needed |
+| Database  | PostgreSQL 13  | PostgreSQL 15  | [OK] Supported     |
+| Redis     | 6.2.7          | 7.2.4          | [!] Update needed |
 
 ## Recommendations
 
@@ -517,8 +517,9 @@ Deno.test("E2E-STDIN: Error Scenarios", async () => {
     },
     {
       name: "Unicode Content",
-      stdinContent: "# Unicode Test\n日本語コンテンツ\n🎉 Emoji content\n中文内容",
-      expectSuccess: true, // Should handle Unicode
+      stdinContent:
+        "# Unicode Test\n\u65E5\u672C\u8A9E\u30B3\u30F3\u30C6\u30F3\u30C4\n\u{1F389} Emoji content\n\u4E2D\u6587\u5185\u5BB9",
+      expectSuccess: true, // Should handle Unicode (Japanese, emoji, Chinese)
     },
   ];
 

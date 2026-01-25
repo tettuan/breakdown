@@ -148,9 +148,9 @@ Deno.test("JSRPatternAdapter - AsyncConfigPatternProvider compatibility function
   assertExists(allPatternsResult.data.directive);
   assertExists(allPatternsResult.data.layer);
 
-  // clearCache (正常動作確認)
+  // clearCache (verify normal operation)
   adapter.clearCache();
-  assertEquals(adapter.hasValidPatterns(), true); // 再初期化されるので有効のまま
+  assertEquals(adapter.hasValidPatterns(), true); // Re-initialized, so still valid
 
   // Debug information
   const debugInfo = adapter.debug();

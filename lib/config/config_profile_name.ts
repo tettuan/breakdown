@@ -34,9 +34,9 @@ export class ConfigProfile {
   }
 
   /**
-   * @deprecated createDefault() は廃止予定
-   * BreakdownParams統合により設定ファイルベース実装に移行。
-   * ConfigProfile.create() を使用してください。
+   * @deprecated createDefault() is scheduled for deprecation.
+   * Migrating to config file-based implementation with BreakdownParams integration.
+   * Please use ConfigProfile.create() instead.
    *
    * @returns Default ConfigProfile instance
    */

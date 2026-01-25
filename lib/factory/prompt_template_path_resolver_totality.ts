@@ -262,7 +262,7 @@ export class PromptTemplatePathResolverTotality {
     // CRITICAL FIX: Use working_dir from config as primary source
     const workingDir = (config.working_dir as string | undefined) || Deno.cwd();
 
-    // base_dir のデフォルト値を取得
+    // Get default value for base_dir
     const promptBaseDir = appPrompt?.base_dir || DEFAULT_PROMPT_BASE_DIR;
     const schemaBaseDir = appSchema?.base_dir || DEFAULT_SCHEMA_BASE_DIR;
 
@@ -281,7 +281,7 @@ export class PromptTemplatePathResolverTotality {
       });
     }
 
-    // working_dir と結合して正規化 - 設定のworking_dirを確実に使用する
+    // Combine with working_dir and normalize - ensure config's working_dir is used
     const result = {
       promptBaseDir: isAbsolute(promptBaseDir) ? promptBaseDir : resolve(workingDir, promptBaseDir),
       schemaBaseDir: isAbsolute(schemaBaseDir) ? schemaBaseDir : resolve(workingDir, schemaBaseDir),
@@ -752,7 +752,7 @@ export class PromptTemplatePathResolverTotality {
 
   /**
    * Resolves the fromLayerType with Result type (no partial functions)
-   * Implements FromLayerType決定ロジック per docs 190-205 lines
+   * Implements FromLayerType decision logic per docs lines 190-205
    */
   public resolveFromLayerTypeSafe(): Result<
     string,
@@ -813,7 +813,7 @@ export class PromptTemplatePathResolverTotality {
 
   /**
    * Infers layerType from file name following pattern: {layerType}_*.{ext}
-   * Examples: task_data.md → task, project_spec.txt → project
+   * Examples: task_data.md -> task, project_spec.txt -> project
    */
   private inferLayerTypeFromFileName(fileName: string): Result<
     string,
@@ -863,10 +863,10 @@ export function formatPathResolutionError(error: PathResolutionError): string {
 
     case "TemplateNotFound": {
       const message = [
-        `パスは正確に生成されました: ${error.attempted[0]}`,
-        `しかし、このファイルは存在しません。`,
+        `Path was generated correctly: ${error.attempted[0]}`,
+        `However, this file does not exist.`,
         ``,
-        `試行したパス:`,
+        `Attempted paths:`,
         ...error.attempted.map((p, i) => `  ${i + 1}. ${p}`),
         ``,
       ];
@@ -876,7 +876,7 @@ export function formatPathResolutionError(error: PathResolutionError): string {
         message.push(``);
       }
 
-      message.push(`プロンプトテンプレートファイルの準備が必要です。`);
+      message.push(`Prompt template file needs to be prepared.`);
       return message.join("\n");
     }
 

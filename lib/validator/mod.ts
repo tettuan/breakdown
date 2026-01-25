@@ -7,7 +7,7 @@
  * @module validator
  */
 
-// Parameter Validatorのエクスポート
+// Parameter Validator exports
 export {
   type ConfigValidator,
   ParameterValidator,
@@ -17,5 +17,5 @@ export {
   type ValidationMetadata,
 } from "./parameter_validator.ts";
 
-// 統一エラータイプも継続エクスポート
+// Also re-export unified error types
 export type { ValidationError as UnifiedValidationError } from "../types/unified_error_types.ts";

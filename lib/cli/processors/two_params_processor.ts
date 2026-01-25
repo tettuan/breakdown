@@ -8,7 +8,7 @@
  * @module cli/processors/two_params_processor
  */
 
-import { error, ok, Result } from "$lib/types/result.ts";
+import { error, ok, type Result } from "$lib/types/result.ts";
 import { type FactoryResolvedValues, VariablesBuilder } from "$lib/builder/variables_builder.ts";
 import type { TwoParams_Result } from "$lib/deps.ts";
 import type { BuilderVariableError } from "$lib/builder/variables_builder.ts";

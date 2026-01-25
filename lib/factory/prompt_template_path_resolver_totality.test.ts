@@ -451,8 +451,8 @@ Deno.test("formatPathResolutionError - Error message formatting", () => {
     attempted: ["/path1", "/path2"],
     fallback: "Attempted fallback",
   });
-  assertEquals(error4.includes("パスは正確に生成されました"), true);
-  assertEquals(error4.includes("試行したパス"), true);
+  assertEquals(error4.includes("Path was generated correctly"), true);
+  assertEquals(error4.includes("Attempted paths"), true);
 });
 
 Deno.test("PromptTemplatePathResolverTotality - fromFile option with working_dir", async () => {

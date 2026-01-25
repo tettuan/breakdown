@@ -18,9 +18,9 @@ import type { TwoParams_Result } from "../deps.ts";
 import { error as resultError, ok as resultOk, type Result } from "../types/result.ts";
 import type { PathResolutionError } from "../types/path_resolution_option.ts";
 import {
-  _DEFAULT_WORKSPACE_STRUCTURE,
+  type _DEFAULT_WORKSPACE_STRUCTURE,
   DEFAULT_SCHEMA_BASE_DIR,
-  DEFAULT_SCHEMA_WORKSPACE_DIR as _DEFAULT_SCHEMA_WORKSPACE_DIR,
+  type DEFAULT_SCHEMA_WORKSPACE_DIR as _DEFAULT_SCHEMA_WORKSPACE_DIR,
 } from "../config/constants.ts";
 
 // Legacy type alias for backward compatibility during migration

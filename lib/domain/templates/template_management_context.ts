@@ -13,15 +13,15 @@ import type { Result } from "../../types/result.ts";
 import { error, ok } from "../../types/result.ts";
 import type { TemplateRepository } from "./template_repository.ts";
 import type { SchemaRepository } from "./schema_repository.ts";
-import {
+import type {
   PromptGenerationAggregate,
   PromptTemplate as _PromptTemplate,
   TemplatePath,
 } from "./prompt_generation_aggregate.ts";
 import {
-  Schema as _Schema,
+  type Schema as _Schema,
   SchemaManagementAggregate,
-  SchemaPath,
+  type SchemaPath,
 } from "./schema_management_aggregate.ts";
 
 /**
@@ -325,62 +325,87 @@ export class ValidationPolicy {
   async validateTemplates(registry: TemplateRegistry): Promise<TemplateValidationResult> {
     const errors: ValidationError[] = [];
     const warnings: ValidationWarning[] = [];
+    const entries = registry.getEntries();
     const summary = {
-      totalChecked: 0,
+      totalChecked: entries.length,
       missingTemplates: 0,
       missingSchemas: 0,
       invalidTemplates: 0,
       dependencyErrors: 0,
     };
 
-    for (const entry of registry.getEntries()) {
-      summary.totalChecked++;
+    // Validate all entries in parallel
+    const validationResults = await Promise.all(
+      entries.map(async (entry) => {
+        const entryErrors: ValidationError[] = [];
+        const entryWarnings: ValidationWarning[] = [];
+        let missingTemplate = false;
+        let invalidTemplate = false;
+        let missingSchema = false;
 
-      // Check template exists
-      const templateExists = await this.templateRepo.exists(entry.templatePath);
-      if (!templateExists) {
-        if (entry.required) {
-          errors.push({
-            type: "missing_template",
-            path: entry.templatePath.getPath(),
-            message: `Required template not found: ${entry.templatePath.getPath()}`,
-          });
-          summary.missingTemplates++;
+        // Check template exists
+        const templateExists = await this.templateRepo.exists(entry.templatePath);
+        if (!templateExists) {
+          if (entry.required) {
+            entryErrors.push({
+              type: "missing_template",
+              path: entry.templatePath.getPath(),
+              message: `Required template not found: ${entry.templatePath.getPath()}`,
+            });
+            missingTemplate = true;
+          } else {
+            entryWarnings.push({
+              type: "optional_missing",
+              path: entry.templatePath.getPath(),
+              message: `Optional template not found: ${entry.templatePath.getPath()}`,
+            });
+          }
         } else {
-          warnings.push({
-            type: "optional_missing",
-            path: entry.templatePath.getPath(),
-            message: `Optional template not found: ${entry.templatePath.getPath()}`,
-          });
+          // Validate template content
+          try {
+            const _template = await this.templateRepo.loadTemplate(entry.templatePath);
+            // Additional validation logic here
+          } catch (caught) {
+            const errorMessage = this.extractErrorMessage(caught);
+            entryErrors.push({
+              type: "invalid_template",
+              path: entry.templatePath.getPath(),
+              message: `Invalid template: ${errorMessage}`,
+            });
+            invalidTemplate = true;
+          }
         }
-      } else {
-        // Validate template content
-        try {
-          const _template = await this.templateRepo.loadTemplate(entry.templatePath);
-          // Additional validation logic here
-        } catch (caught) {
-          const errorMessage = this.extractErrorMessage(caught);
-          errors.push({
-            type: "invalid_template",
-            path: entry.templatePath.getPath(),
-            message: `Invalid template: ${errorMessage}`,
-          });
-          summary.invalidTemplates++;
-        }
-      }
 
-      // Check associated schema if defined
-      if (entry.schemaPath) {
-        const schemaExists = await this.schemaRepo.exists(entry.schemaPath);
-        if (!schemaExists && entry.required) {
-          errors.push({
-            type: "missing_schema",
-            path: entry.schemaPath.getPath(),
-            message: `Required schema not found: ${entry.schemaPath.getPath()}`,
-          });
-          summary.missingSchemas++;
+        // Check associated schema if defined
+        if (entry.schemaPath) {
+          const schemaExists = await this.schemaRepo.exists(entry.schemaPath);
+          if (!schemaExists && entry.required) {
+            entryErrors.push({
+              type: "missing_schema",
+              path: entry.schemaPath.getPath(),
+              message: `Required schema not found: ${entry.schemaPath.getPath()}`,
+            });
+            missingSchema = true;
+          }
         }
-      }
+
+        return {
+          errors: entryErrors,
+          warnings: entryWarnings,
+          missingTemplate,
+          invalidTemplate,
+          missingSchema,
+        };
+      }),
+    );
+
+    // Aggregate results from parallel validation
+    for (const result of validationResults) {
+      errors.push(...result.errors);
+      warnings.push(...result.warnings);
+      if (result.missingTemplate) summary.missingTemplates++;
+      if (result.invalidTemplate) summary.invalidTemplates++;
+      if (result.missingSchema) summary.missingSchemas++;
     }
 
     return {
@@ -482,19 +507,40 @@ export class InitializationService {
     _sourcePath: string,
     result: InitializationResult,
   ): Promise<void> {
-    for (const entry of registry.getRequiredEntries()) {
-      try {
-        const exists = await this.templateRepo.exists(entry.templatePath);
-        if (!exists) {
-          // Copy from source
-          // Implementation would load from source and save to repository
-          result.initialized.templates.push(entry.templatePath.getPath());
+    const entries = registry.getRequiredEntries();
+
+    // Process all entries in parallel
+    const copyResults = await Promise.all(
+      entries.map(async (entry) => {
+        try {
+          const exists = await this.templateRepo.exists(entry.templatePath);
+          if (!exists) {
+            // Copy from source
+            // Implementation would load from source and save to repository
+            return { success: true, path: entry.templatePath.getPath() };
+          }
+          return { success: true, path: null };
+        } catch (caught) {
+          const errorMessage = this.extractErrorMessage(caught);
+          return {
+            success: false,
+            path: entry.templatePath.getPath(),
+            error: errorMessage,
+          };
         }
-      } catch (caught) {
-        const errorMessage = this.extractErrorMessage(caught);
+      }),
+    );
+
+    // Aggregate results from parallel copying
+    for (const copyResult of copyResults) {
+      if (copyResult.success) {
+        if (copyResult.path !== null) {
+          result.initialized.templates.push(copyResult.path);
+        }
+      } else {
         result.failed.templates.push({
-          path: entry.templatePath.getPath(),
-          error: errorMessage,
+          path: copyResult.path!,
+          error: copyResult.error!,
         });
       }
     }

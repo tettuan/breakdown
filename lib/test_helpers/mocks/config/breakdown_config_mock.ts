@@ -1,7 +1,7 @@
 /**
  * BreakdownConfig Mock
- * テスト用のBreakdownConfigモック実装
- * BreakdownConfigの動作を模擬し、テスト環境での設定管理をサポート
+ * Mock implementation of BreakdownConfig for testing purposes.
+ * Simulates BreakdownConfig behavior and supports configuration management in test environments.
  */
 
 export interface MockConfigProfile {
@@ -27,7 +27,7 @@ export class BreakdownConfigMock {
   private currentProfile = "default";
 
   constructor() {
-    // デフォルトプロファイルを追加
+    // Add default profile
     this.addProfile({
       name: "default",
       workingDir: "/tmp/test-working",
@@ -40,14 +40,14 @@ export class BreakdownConfigMock {
   }
 
   /**
-   * プロファイルを追加
+   * Add a profile
    */
   addProfile(profile: MockConfigProfile): void {
     this.profiles.set(profile.name, profile);
   }
 
   /**
-   * 現在のプロファイルを設定
+   * Set the current profile
    */
   setCurrentProfile(profileName: string): boolean {
     if (this.profiles.has(profileName)) {
@@ -58,7 +58,7 @@ export class BreakdownConfigMock {
   }
 
   /**
-   * 設定を取得（BreakdownConfig.get模擬）
+   * Get configuration (simulates BreakdownConfig.get)
    */
   get(profilePrefix?: string): MockConfigResult {
     const profileName = profilePrefix || this.currentProfile;
@@ -80,7 +80,7 @@ export class BreakdownConfigMock {
   }
 
   /**
-   * 作業ディレクトリを取得
+   * Get working directory
    */
   async getWorkingDir(profilePrefix?: string): Promise<string> {
     const result = await this.get(profilePrefix);
@@ -88,7 +88,7 @@ export class BreakdownConfigMock {
   }
 
   /**
-   * リソースディレクトリを取得
+   * Get resource directory
    */
   async getResourceDir(profilePrefix?: string): Promise<string> {
     const result = await this.get(profilePrefix);
@@ -96,7 +96,7 @@ export class BreakdownConfigMock {
   }
 
   /**
-   * カスタムパターンを取得
+   * Get custom patterns
    */
   getCustomPatterns(profileName?: string): { directiveType?: string; layerType?: string } {
     const profile = this.profiles.get(profileName || this.currentProfile);
@@ -104,21 +104,21 @@ export class BreakdownConfigMock {
   }
 
   /**
-   * 利用可能なプロファイル一覧を取得
+   * Get list of available profiles
    */
   getAvailableProfiles(): string[] {
     return Array.from(this.profiles.keys());
   }
 
   /**
-   * プロファイルが存在するかチェック
+   * Check if a profile exists
    */
   hasProfile(profileName: string): boolean {
     return this.profiles.has(profileName);
   }
 
   /**
-   * テスト用のリセット機能
+   * Reset function for testing
    */
   resetToDefaults(): void {
     this.profiles.clear();
@@ -135,7 +135,7 @@ export class BreakdownConfigMock {
   }
 
   /**
-   * エラーをシミュレート
+   * Simulate an error
    */
   simulateError(profileName: string, _errorMessage: string): void {
     this.profiles.set(profileName, {
@@ -147,7 +147,7 @@ export class BreakdownConfigMock {
 }
 
 /**
- * テスト用のファクトリー関数
+ * Factory function for testing
  */
 export function createMockBreakdownConfig(profiles?: MockConfigProfile[]): BreakdownConfigMock {
   const mock = new BreakdownConfigMock();
@@ -161,7 +161,7 @@ export function createMockBreakdownConfig(profiles?: MockConfigProfile[]): Break
 }
 
 /**
- * 標準的なテストプロファイルセット
+ * Standard test profile set
  */
 export const STANDARD_TEST_PROFILES: MockConfigProfile[] = [
   {

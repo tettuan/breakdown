@@ -1,4 +1,4 @@
-import { PromptVariables } from "../../types/prompt_types.ts";
+import type { PromptVariables } from "../../types/prompt_types.ts";
 import type { Result } from "../../types/result.ts";
 import { error, ok } from "../../types/result.ts";
 

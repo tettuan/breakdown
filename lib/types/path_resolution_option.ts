@@ -8,9 +8,9 @@
  * @module types/path_resolution_option
  */
 
-import { error, ok, Result } from "./result.ts";
+import { error, ok, type Result } from "./result.ts";
 import type { ConfigurationError, PathError, PathValidationRule } from "./unified_error_types.ts";
-import { ErrorFactory as _ErrorFactory } from "./unified_error_types.ts";
+import type { ErrorFactory as _ErrorFactory } from "./unified_error_types.ts";
 
 // Re-export PathValidationRule for test compatibility
 export type { PathValidationRule } from "./unified_error_types.ts";

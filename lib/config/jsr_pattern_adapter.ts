@@ -1,8 +1,8 @@
 /**
- * @fileoverview JSRPatternAdapter - TypePatternProvider完全実装
+ * @fileoverview JSRPatternAdapter - Complete TypePatternProvider Implementation
  *
- * @tettuan/breakdownparams の CustomConfig を使用し、TypePatternProvider
- * インターフェースを完全実装。AsyncConfigPatternProvider の全機能を代替。
+ * Uses CustomConfig from @tettuan/breakdownparams to fully implement the
+ * TypePatternProvider interface. Replaces all functionality of AsyncConfigPatternProvider.
  *
  * @module config/jsr_pattern_adapter
  */
@@ -14,7 +14,7 @@ import type { Result } from "../types/result.ts";
 import { error as resultError, ok as resultOk } from "../types/result.ts";
 
 /**
- * JSRPatternAdapter エラー型
+ * JSRPatternAdapter Error Types
  */
 export type JSRPatternAdapterError =
   | { kind: "InitializationFailed"; message: string }
@@ -22,31 +22,31 @@ export type JSRPatternAdapterError =
   | { kind: "PatternExtractionFailed"; patternType: "directive" | "layer" };
 
 /**
- * JSRPatternAdapter - TypePatternProvider完全実装
+ * JSRPatternAdapter - Complete TypePatternProvider Implementation
  *
- * AsyncConfigPatternProviderの全機能を@tettuan/breakdownparams直接利用で実現。
- * 583行のAsyncConfigPatternProviderを150行以下で完全代替。
+ * Implements all AsyncConfigPatternProvider functionality using @tettuan/breakdownparams directly.
+ * Completely replaces the 583-line AsyncConfigPatternProvider with under 150 lines.
  */
 export class JSRPatternAdapter implements TypePatternProvider {
   private customConfig: CustomConfig;
   private _initialized = false;
 
-  // パターンキャッシュ（TypePatternProvider互換）
+  // Pattern cache (TypePatternProvider compatible)
   private _directivePattern: { test(value: string): boolean; getPattern(): string } | null = null;
   private _layerTypePattern: { test(value: string): boolean; getPattern(): string } | null = null;
 
   /**
-   * プライベートコンストラクタ - create()ファクトリメソッド使用
+   * Private constructor - Use create() factory method
    */
   private constructor(customConfig: CustomConfig) {
     this.customConfig = customConfig;
   }
 
   /**
-   * ファクトリメソッド - JSRPatternAdapterを作成・初期化
+   * Factory method - Create and initialize JSRPatternAdapter
    *
-   * @param customConfig - BreakdownParams用カスタム設定
-   * @returns JSRPatternAdapter インスタンス
+   * @param customConfig - Custom configuration for BreakdownParams
+   * @returns JSRPatternAdapter instance
    */
   static create(
     customConfig?: CustomConfig,
@@ -55,7 +55,7 @@ export class JSRPatternAdapter implements TypePatternProvider {
       const config = customConfig || DEFAULT_CUSTOM_CONFIG;
       const adapter = new JSRPatternAdapter(config);
 
-      // 初期化処理
+      // Initialization process
       const initResult = adapter.initialize();
       if (!initResult.ok) {
         return resultError(initResult.error);
@@ -71,11 +71,11 @@ export class JSRPatternAdapter implements TypePatternProvider {
   }
 
   /**
-   * アダプター初期化
+   * Initialize adapter
    */
   private initialize(): Result<void, JSRPatternAdapterError> {
     try {
-      // 設定の有効性確認
+      // Validate configuration
       if (!this.customConfig.params?.two) {
         return resultError({
           kind: "ConfigurationInvalid",
@@ -83,7 +83,7 @@ export class JSRPatternAdapter implements TypePatternProvider {
         });
       }
 
-      // パターンキャッシュの初期化
+      // Initialize pattern cache
       this.initializePatterns();
 
       this._initialized = true;
@@ -97,10 +97,10 @@ export class JSRPatternAdapter implements TypePatternProvider {
   }
 
   /**
-   * パターンキャッシュ初期化
+   * Initialize pattern cache
    */
   private initializePatterns(): void {
-    // DirectiveTypeパターン初期化
+    // Initialize DirectiveType pattern
     const directivePattern = this.customConfig.params?.two?.directiveType?.pattern;
     if (directivePattern) {
       const regex = new RegExp(`^(${directivePattern})$`);
@@ -110,7 +110,7 @@ export class JSRPatternAdapter implements TypePatternProvider {
       };
     }
 
-    // LayerTypeパターン初期化
+    // Initialize LayerType pattern
     const layerPattern = this.customConfig.params?.two?.layerType?.pattern;
     if (layerPattern) {
       const regex = new RegExp(`^(${layerPattern})$`);
@@ -122,8 +122,8 @@ export class JSRPatternAdapter implements TypePatternProvider {
   }
 
   /**
-   * DirectiveType用バリデーション結果を取得
-   * TypePatternProvider実装メソッド
+   * Get validation result for DirectiveType
+   * TypePatternProvider implementation method
    */
   validateDirectiveType(value: string): boolean {
     if (!this._initialized || !this._directivePattern) {
@@ -133,8 +133,8 @@ export class JSRPatternAdapter implements TypePatternProvider {
   }
 
   /**
-   * LayerType用バリデーション結果を取得
-   * TypePatternProvider実装メソッド
+   * Get validation result for LayerType
+   * TypePatternProvider implementation method
    */
   validateLayerType(value: string): boolean {
     if (!this._initialized || !this._layerTypePattern) {
@@ -144,8 +144,8 @@ export class JSRPatternAdapter implements TypePatternProvider {
   }
 
   /**
-   * 利用可能なDirectiveType値を取得
-   * TypePatternProvider実装メソッド
+   * Get available DirectiveType values
+   * TypePatternProvider implementation method
    */
   getValidDirectiveTypes(): readonly string[] {
     if (!this._initialized || !this._directivePattern) {
@@ -157,8 +157,8 @@ export class JSRPatternAdapter implements TypePatternProvider {
   }
 
   /**
-   * 利用可能なLayerType値を取得
-   * TypePatternProvider実装メソッド
+   * Get available LayerType values
+   * TypePatternProvider implementation method
    */
   getValidLayerTypes(): readonly string[] {
     if (!this._initialized || !this._layerTypePattern) {
@@ -170,39 +170,39 @@ export class JSRPatternAdapter implements TypePatternProvider {
   }
 
   /**
-   * DirectiveType用パターンオブジェクトを取得
-   * TypePatternProvider実装メソッド
+   * Get pattern object for DirectiveType
+   * TypePatternProvider implementation method
    */
   getDirectivePattern(): { test(value: string): boolean; getPattern(): string } | null {
     return this._directivePattern;
   }
 
   /**
-   * LayerType用パターンオブジェクトを取得
-   * TypePatternProvider実装メソッド
+   * Get pattern object for LayerType
+   * TypePatternProvider implementation method
    */
   getLayerTypePattern(): { test(value: string): boolean; getPattern(): string } | null {
     return this._layerTypePattern;
   }
 
   /**
-   * 初期化状態確認
+   * Check initialization status
    */
   isInitialized(): boolean {
     return this._initialized;
   }
 
   /**
-   * 両方のパターンが有効か確認
-   * AsyncConfigPatternProvider互換メソッド
+   * Check if both patterns are valid
+   * AsyncConfigPatternProvider compatible method
    */
   hasValidPatterns(): boolean {
     return this._directivePattern !== null && this._layerTypePattern !== null;
   }
 
   /**
-   * パターンキャッシュをクリア
-   * AsyncConfigPatternProvider互換メソッド
+   * Clear pattern cache
+   * AsyncConfigPatternProvider compatible method
    */
   clearCache(): void {
     this._directivePattern = null;
@@ -211,8 +211,8 @@ export class JSRPatternAdapter implements TypePatternProvider {
   }
 
   /**
-   * 全パターン取得
-   * AsyncConfigPatternProvider互換メソッド
+   * Get all patterns
+   * AsyncConfigPatternProvider compatible method
    */
   getAllPatterns(): Result<
     {
@@ -235,19 +235,19 @@ export class JSRPatternAdapter implements TypePatternProvider {
   }
 
   /**
-   * パターン文字列から値を抽出
-   * 正規表現パターン "^(値1|値2|値3)$" から ["値1", "値2", "値3"] を抽出
+   * Extract values from pattern string
+   * Extracts ["value1", "value2", "value3"] from regex pattern "^(value1|value2|value3)$"
    */
   private extractValuesFromPattern(pattern: string): readonly string[] {
-    // 正規表現パターン "^(値1|値2|値3)$" または "値1|値2|値3" 形式に対応
+    // Supports regex pattern "^(value1|value2|value3)$" or "value1|value2|value3" format
     let valuePart: string | undefined;
 
-    // 括弧付きパターンをチェック
+    // Check for parenthesized pattern
     const bracketMatch = pattern.match(/^\^?\(([^)]+)\)\$?$/);
     if (bracketMatch && bracketMatch[1]) {
       valuePart = bracketMatch[1];
     } else {
-      // 直接的な値パターン（括弧なし）もサポート
+      // Also support direct value pattern (without parentheses)
       valuePart = pattern;
     }
 
@@ -263,8 +263,8 @@ export class JSRPatternAdapter implements TypePatternProvider {
   }
 
   /**
-   * デバッグ情報取得
-   * AsyncConfigPatternProvider互換メソッド（完全互換版）
+   * Get debug information
+   * AsyncConfigPatternProvider compatible method (fully compatible version)
    */
   debug(): {
     initialized: boolean;
@@ -298,8 +298,8 @@ export class JSRPatternAdapter implements TypePatternProvider {
 }
 
 /**
- * AsyncConfigPatternProvider互換ファクトリー関数
- * AsyncConfigPatternProviderの置き換え用
+ * AsyncConfigPatternProvider compatible factory function
+ * Used for replacing AsyncConfigPatternProvider
  */
 export function createJSRPatternAdapter(
   customConfig?: CustomConfig,
@@ -315,8 +315,8 @@ export function createJSRPatternAdapter(
 }
 
 /**
- * TypePatternProvider作成のためのファクトリー関数
- * 既存コードとの互換性確保
+ * Factory function for creating TypePatternProvider
+ * Ensures compatibility with existing code
  */
 export function createTypePatternProvider(
   customConfig?: CustomConfig,

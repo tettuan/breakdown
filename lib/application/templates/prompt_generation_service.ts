@@ -12,8 +12,8 @@ import type { DirectiveType, LayerType } from "../../types/mod.ts";
 import {
   type GeneratedPrompt,
   PromptGenerationAggregate,
-  PromptTemplate,
-  TemplatePath,
+  type PromptTemplate,
+  type TemplatePath,
   TemplateVariables,
 } from "../../domain/templates/prompt_generation_aggregate.ts";
 import type { TemplateRepository } from "../../domain/templates/template_repository.ts";
@@ -25,7 +25,7 @@ import type {
 import type { Result } from "../../types/result.ts";
 import {
   PromptGenerationServiceErrorFactory,
-  PromptGenerationServiceErrors,
+  type PromptGenerationServiceErrors,
 } from "../../types/prompt_generation_service_error.ts";
 
 /**

@@ -12,7 +12,7 @@ import { error, ok } from "../types/result.ts";
 import { DirectiveType } from "../domain/core/value_objects/directive_type.ts";
 import { LayerType } from "../domain/core/value_objects/layer_type.ts";
 import type { OneParamsResult, TwoParams_Result, ZeroParamsResult } from "../deps.ts";
-// TypePatternProvider依存を除去 - JSR統合により不要
+// TypePatternProvider dependency removed - no longer needed with JSR integration
 import { PathValidator } from "./path_validator.ts";
 import { OptionsNormalizer } from "./options_normalizer.ts";
 import { ParamsTypeValidator } from "./params_type_validator.ts";

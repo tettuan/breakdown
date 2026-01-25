@@ -5,23 +5,23 @@
  * Architecture:
  * - Delegates to BreakdownConfig, BreakdownParams, BreakdownPrompt
  * - Handles only config prefix detection and STDIN processing
- * - Follows the flow: config prefix � BreakdownParams � STDIN � BreakdownPrompt � output
+ * - Follows the flow: config prefix -> BreakdownParams -> STDIN -> BreakdownPrompt -> output
  *
  * @module
  */
 
 import { ConfigPrefixDetector } from "$lib/factory/config_prefix_detector.ts";
 import { ConfigLoader } from "$lib/config/loader.ts";
-import { BreakdownConfig as _BreakdownConfig } from "@tettuan/breakdownconfig";
+import type { BreakdownConfig as _BreakdownConfig } from "@tettuan/breakdownconfig";
 import { ParamsParser } from "@tettuan/breakdownparams";
-import { showHelp as _showHelp, showVersion as _showVersion } from "$lib/cli/help.ts";
+import type { showHelp as _showHelp, showVersion as _showVersion } from "$lib/cli/help.ts";
 import { handleZeroParams } from "$lib/cli/handlers/zero_params_handler.ts";
 import { handleOneParams } from "$lib/cli/handlers/one_params_handler.ts";
 import { handleTwoParams } from "$lib/cli/handlers/two_params_handler.ts";
 import { ParamsCustomConfig } from "$lib/types/params_custom_config.ts";
 import { ResultStatus } from "$lib/types/enums.ts";
 import { ConfigProfile } from "$lib/config/config_profile_name.ts";
-import { formatError as _formatError, handleTwoParamsError } from "$lib/cli/error_handler.ts";
+import { type formatError as _formatError, handleTwoParamsError } from "$lib/cli/error_handler.ts";
 import type { Result } from "$lib/types/result.ts";
 import type {
   ConfigurationError as _ConfigurationError,
@@ -197,7 +197,7 @@ export async function runBreakdown(
     }
 
     console.warn(
-      "⚠️ Configuration not found, using defaults:",
+      "[Warning] Configuration not found, using defaults:",
       errorMessage,
       configProfile.value ? `profile: ${configProfile.value}` : "no profile",
     );
@@ -220,14 +220,14 @@ export async function runBreakdown(
   if (paramsConfigResult.status === ResultStatus.SUCCESS) {
     customConfig = paramsConfigResult.data; // undefined if no breakdown config, or CustomConfig if present
   } else {
-    console.warn("⚠️ Configuration extraction failed:", paramsConfigResult.error?.message);
+    console.warn("[Warning] Configuration extraction failed:", paramsConfigResult.error?.message);
     customConfig = undefined; // Fall back to BreakdownParams defaults
   }
 
   const paramsParser = new ParamsParser(undefined, customConfig);
 
   if (isDebug) {
-    console.log("[breakdown.ts → ParamsParser] Input:", {
+    console.log("[breakdown.ts -> ParamsParser] Input:", {
       args: args,
       customConfig: customConfig
         ? {
@@ -242,7 +242,7 @@ export async function runBreakdown(
   const result = paramsParser.parse(args);
 
   if (isDebug) {
-    console.log("[ParamsParser → breakdown.ts] Output:", JSON.stringify(result, null, 2));
+    console.log("[ParamsParser -> breakdown.ts] Output:", JSON.stringify(result, null, 2));
   }
 
   // 4. Determine zero/one/two params and branch

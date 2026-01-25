@@ -9,8 +9,8 @@
 
 import type { Result } from "../types/result.ts";
 import { error, ok } from "../types/result.ts";
-// TypePatternProvider依存を除去 - JSR統合により不要
-import { BreakdownConfig } from "@tettuan/breakdownconfig";
+// TypePatternProvider dependency removed - no longer needed with JSR integration
+import type { BreakdownConfig } from "@tettuan/breakdownconfig";
 import { DirectiveType } from "../domain/core/value_objects/directive_type.ts";
 import { LayerType } from "../domain/core/value_objects/layer_type.ts";
 
@@ -181,7 +181,7 @@ export class ParamsTypeValidator {
    * Validate directive type against pattern (JSR integrated)
    */
   private validateDirectiveType(value: string): Result<void, ParamsTypeError> {
-    // JSR統合により、パターンプロバイダーを使わずDirectiveType.createで検証
+    // With JSR integration, validate using DirectiveType.create instead of pattern provider
     const directiveResult = DirectiveType.create(value);
     if (!directiveResult.ok) {
       return error({
@@ -199,7 +199,7 @@ export class ParamsTypeValidator {
    * Validate layer type against pattern
    */
   private validateLayerType(value: string): Result<void, ParamsTypeError> {
-    // JSR統合により、パターンプロバイダーを使わずLayerType.createで検証
+    // With JSR integration, validate using LayerType.create instead of pattern provider
     const layerResult = LayerType.create(value);
     if (!layerResult.ok) {
       return error({
@@ -258,16 +258,16 @@ export class ParamsTypeValidator {
     }
 
     try {
-      // BreakdownConfigの場合は、設定データから動的取得を試みる
-      // 設定データの取得は非同期だが、ここでは同期的な処理のため、
-      // 将来的には非同期化を検討する必要がある
-      // 現時点では、configから直接取得できる値を使用
+      // For BreakdownConfig, attempt dynamic retrieval from config data
+      // Config data retrieval is async, but this is sync processing,
+      // so async conversion should be considered in the future
+      // For now, use values that can be retrieved directly from config
 
-      // 設定ファイルのtestDataセクションから最初の有効値を使用
-      // これは設定ファイルの validDirectives[0], validLayers[0] に相当
+      // Use first valid value from testData section of config file
+      // This corresponds to validDirectives[0], validLayers[0] in config file
       return {
-        directive: "to", // デフォルト値（将来的に設定から動的取得）
-        layer: "project", // デフォルト値（将来的に設定から動的取得）
+        directive: "to", // Default value (future: dynamic retrieval from config)
+        layer: "project", // Default value (future: dynamic retrieval from config)
       };
     } catch {
       // Fallback if config access fails

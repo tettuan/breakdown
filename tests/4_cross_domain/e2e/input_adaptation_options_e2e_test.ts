@@ -2,7 +2,7 @@
  * @fileoverview --input and --adaptation Options E2E Integration Tests
  *
  * This module provides end-to-end testing for --input and --adaptation CLI options:
- * CLI → BreakdownConfig → BreakdownParams → PathResolver → TemplateFile selection → Output
+ * CLI -> BreakdownConfig -> BreakdownParams -> PathResolver -> TemplateFile selection -> Output
  *
  * Test Coverage:
  * - --input option functionality for fromLayerType specification
@@ -109,13 +109,13 @@ breakdown:
       { path: `${agentConfigDir}/e2e-test-user.yml`, content: userConfigContent },
     ];
 
-    for (const { path, content } of configFiles) {
+    await Promise.all(configFiles.map(async ({ path, content }) => {
       await Deno.writeTextFile(path, content);
       logger.debug("Temporary configuration file created", {
         file: path,
         contentLength: content.length,
       });
-    }
+    }));
   }
 
   async copyStaticPromptsIfNeeded(): Promise<void> {
@@ -195,7 +195,7 @@ breakdown:
       "summary/task",
     ];
 
-    for (const dir of promptDirs) {
+    await Promise.all(promptDirs.map(async (dir) => {
       const dirPath = join(this.agentPromptsDir, dir);
       try {
         await Deno.mkdir(dirPath, { recursive: true });
@@ -204,7 +204,7 @@ breakdown:
           throw error;
         }
       }
-    }
+    }));
 
     // All template files are now managed in tests/fixtures/static-prompts/
     // The copyStaticPromptsIfNeeded() method above handles copying them to the working directory
@@ -223,7 +223,7 @@ breakdown:
       `${agentConfigDir}/e2e-test-user.yml`,
     ];
 
-    for (const configFile of configFiles) {
+    await Promise.all(configFiles.map(async (configFile) => {
       try {
         const content = await Deno.readTextFile(configFile);
         if (content.length === 0) {
@@ -236,7 +236,7 @@ breakdown:
       } catch (error) {
         throw new Error(`Configuration file validation failed for ${configFile}: ${error}`);
       }
-    }
+    }));
   }
 
   async cleanup(): Promise<void> {
@@ -253,14 +253,14 @@ breakdown:
       `${agentConfigDir}/e2e-test-user.yml`,
     ];
 
-    for (const configFile of tempConfigFiles) {
+    await Promise.all(tempConfigFiles.map(async (configFile) => {
       try {
         await Deno.remove(configFile);
         logger.debug("Temporary configuration file removed", { file: configFile });
       } catch {
         // Ignore cleanup errors - file might not exist
       }
-    }
+    }));
 
     // Clean up dynamically generated prompt files
     try {
@@ -308,7 +308,7 @@ const testSetup = new InputAdaptationE2ESetup();
 
 /**
  * E2E Test: --input Option Functionality
- * Tests the complete flow: CLI --input → fromLayerType → template file selection
+ * Tests the complete flow: CLI --input -> fromLayerType -> template file selection
  */
 Deno.test("E2E: --input Option - Complete Flow Validation", async () => {
   logger.debug("E2E --input option test started", {
@@ -410,7 +410,7 @@ The project involves migrating legacy systems to modern infrastructure.`;
 
 /**
  * E2E Test: --adaptation Option Functionality
- * Tests the complete flow: CLI --adaptation → adaptation suffix → template file selection
+ * Tests the complete flow: CLI --adaptation -> adaptation suffix -> template file selection
  */
 Deno.test("E2E: --adaptation Option - Complete Flow Validation", async () => {
   logger.debug("E2E --adaptation option test started", {
@@ -512,7 +512,7 @@ This is a critical task that must follow strict guidelines and protocols.`;
 
 /**
  * E2E Test: Combined --input and --adaptation Options
- * Tests the complete flow: CLI --input=X --adaptation=Y → fromLayerType + adaptation → template file selection
+ * Tests the complete flow: CLI --input=X --adaptation=Y -> fromLayerType + adaptation -> template file selection
  */
 Deno.test("E2E: Combined --input and --adaptation Options - Complete Flow Validation", async () => {
   logger.debug("E2E combined options test started", {
@@ -637,6 +637,82 @@ Converting high-level project requirements into strict, validated task specifica
 });
 
 /**
+ * Helper interface for real-world scenario test configuration
+ */
+interface RealWorldScenario {
+  name: string;
+  args: string[];
+  expectedTemplate: string;
+  inputContent: string;
+}
+
+/**
+ * Execute a single real-world scenario test
+ */
+async function executeRealWorldScenario(
+  scenario: RealWorldScenario,
+  setup: InputAdaptationE2ESetup,
+): Promise<void> {
+  logger.debug(`Real-world scenario test: ${scenario.name}`, {
+    args: scenario.args,
+    expectedTemplate: scenario.expectedTemplate,
+  });
+
+  const inputFile = await setup.createTestInput(
+    `real-world-${scenario.name.toLowerCase().replace(/\s+/g, "-")}.md`,
+    scenario.inputContent,
+  );
+  const stdout = new StdoutCapture();
+  stdout.start();
+
+  try {
+    // Set environment to skip stdin processing
+    const originalSkipStdin = Deno.env.get("BREAKDOWN_SKIP_STDIN");
+    Deno.env.set("BREAKDOWN_SKIP_STDIN", "true");
+
+    try {
+      const argsWithConfig = [
+        "--config=e2e-test",
+        ...scenario.args,
+        `--from=${inputFile}`,
+        "--destination=output.md",
+      ];
+      const result = await runBreakdown(argsWithConfig);
+      const output = stdout.stop();
+
+      logger.debug(`Real-world scenario ${scenario.name} result`, {
+        success: result.ok,
+        outputLength: output.length,
+        command: argsWithConfig.join(" "),
+      });
+
+      // Verify each real-world scenario works (either finds specific template or falls back gracefully)
+      // Note: Some templates might not exist, but the system should handle fallbacks gracefully
+      if (result.ok) {
+        assertExists(output, `${scenario.name} should generate output`);
+        assertEquals(output.length > 0, true, `${scenario.name} should not be empty`);
+        logger.debug(`${scenario.name} - SUCCESS with template selection`);
+      } else {
+        // For real-world scenarios, template file might not exist
+        // This is expected behavior that should be handled gracefully
+        logger.debug(`${scenario.name} - Template not found (expected for some patterns)`, {
+          error: result.error,
+        });
+      }
+    } finally {
+      // Restore environment
+      if (originalSkipStdin !== undefined) {
+        Deno.env.set("BREAKDOWN_SKIP_STDIN", originalSkipStdin);
+      } else {
+        Deno.env.delete("BREAKDOWN_SKIP_STDIN");
+      }
+    }
+  } finally {
+    stdout.stop();
+  }
+}
+
+/**
  * E2E Test: Real-World Scenario Matching examples/15 and examples/16
  * Tests scenarios that match the actual usage patterns from examples
  */
@@ -652,7 +728,7 @@ Deno.test("E2E: Real-World Scenarios - examples/15 and examples/16 Pattern Valid
   await testSetup.validateSetup();
 
   // Test scenarios that match examples/15 and examples/16 patterns
-  const realWorldScenarios = [
+  const realWorldScenarios: RealWorldScenario[] = [
     {
       name: "Example 15 Pattern - Input Parameter",
       args: ["to", "issue", "--input=parameter"],
@@ -669,65 +745,12 @@ Deno.test("E2E: Real-World Scenarios - examples/15 and examples/16 Pattern Valid
     },
   ];
 
-  for (const scenario of realWorldScenarios) {
-    logger.debug(`Real-world scenario test: ${scenario.name}`, {
-      args: scenario.args,
-      expectedTemplate: scenario.expectedTemplate,
-    });
-
-    const inputFile = await testSetup.createTestInput(
-      `real-world-${scenario.name.toLowerCase().replace(/\s+/g, "-")}.md`,
-      scenario.inputContent,
-    );
-    const stdout = new StdoutCapture();
-    stdout.start();
-
-    try {
-      // Set environment to skip stdin processing
-      const originalSkipStdin = Deno.env.get("BREAKDOWN_SKIP_STDIN");
-      Deno.env.set("BREAKDOWN_SKIP_STDIN", "true");
-
-      try {
-        const argsWithConfig = [
-          "--config=e2e-test",
-          ...scenario.args,
-          `--from=${inputFile}`,
-          "--destination=output.md",
-        ];
-        const result = await runBreakdown(argsWithConfig);
-        const output = stdout.stop();
-
-        logger.debug(`Real-world scenario ${scenario.name} result`, {
-          success: result.ok,
-          outputLength: output.length,
-          command: argsWithConfig.join(" "),
-        });
-
-        // Verify each real-world scenario works (either finds specific template or falls back gracefully)
-        // Note: Some templates might not exist, but the system should handle fallbacks gracefully
-        if (result.ok) {
-          assertExists(output, `${scenario.name} should generate output`);
-          assertEquals(output.length > 0, true, `${scenario.name} should not be empty`);
-          logger.debug(`${scenario.name} - SUCCESS with template selection`);
-        } else {
-          // For real-world scenarios, template file might not exist
-          // This is expected behavior that should be handled gracefully
-          logger.debug(`${scenario.name} - Template not found (expected for some patterns)`, {
-            error: result.error,
-          });
-        }
-      } finally {
-        // Restore environment
-        if (originalSkipStdin !== undefined) {
-          Deno.env.set("BREAKDOWN_SKIP_STDIN", originalSkipStdin);
-        } else {
-          Deno.env.delete("BREAKDOWN_SKIP_STDIN");
-        }
-      }
-    } finally {
-      stdout.stop();
-    }
-  }
+  // Execute scenarios sequentially using reduce to avoid await-in-loop
+  // Each scenario must complete before the next starts due to shared stdout/env state
+  await realWorldScenarios.reduce(
+    (promise, scenario) => promise.then(() => executeRealWorldScenario(scenario, testSetup)),
+    Promise.resolve(),
+  );
 
   await testSetup.cleanup();
   logger.debug("E2E real-world scenarios test completed", {
@@ -735,6 +758,121 @@ Deno.test("E2E: Real-World Scenarios - examples/15 and examples/16 Pattern Valid
     resultStatus: "SUCCESS",
   });
 });
+
+/**
+ * Helper interface for STDIN scenario test configuration
+ */
+interface StdinScenario {
+  name: string;
+  args: string[];
+  expectedTemplate: string;
+}
+
+/**
+ * Execute a single STDIN scenario test
+ */
+async function executeStdinScenario(
+  scenario: StdinScenario,
+  stdinContent: string,
+): Promise<void> {
+  logger.debug(`STDIN scenario test: ${scenario.name}`, {
+    args: scenario.args,
+    expectedTemplate: scenario.expectedTemplate,
+  });
+
+  const stdout = new StdoutCapture();
+  stdout.start();
+
+  try {
+    // Create a mock stdin reader with the test content
+    const _mockStdinReader = new MockStdinReader({
+      data: stdinContent,
+      terminal: false,
+      delay: 0,
+      shouldFail: false,
+    });
+
+    // Set environment to enable stdin processing with mock
+    const originalSkipStdin = Deno.env.get("BREAKDOWN_SKIP_STDIN");
+    Deno.env.delete("BREAKDOWN_SKIP_STDIN"); // Enable STDIN processing
+
+    try {
+      // Mock the stdin reader by setting it in the environment
+      // The breakdown system will use the MockStdinReader through proper dependency injection
+      const originalStdin = Deno.stdin;
+
+      // Create a mock readable stream from the content
+      const stdinStream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode(stdinContent));
+          controller.close();
+        },
+      });
+
+      // Replace Deno.stdin temporarily with mock
+      const mockStdin = {
+        ...originalStdin,
+        readable: stdinStream,
+        isTerminal: () => false,
+      };
+
+      Object.defineProperty(Deno, "stdin", {
+        value: mockStdin,
+        configurable: true,
+      });
+
+      const argsWithConfig = [
+        "--config=e2e-test",
+        ...scenario.args,
+        "--from=-",
+        "--destination=output.md",
+      ];
+      const result = await runBreakdown(argsWithConfig);
+      const output = stdout.stop();
+
+      // Restore original stdin
+      Object.defineProperty(Deno, "stdin", {
+        value: originalStdin,
+        configurable: true,
+      });
+
+      logger.debug(`STDIN scenario ${scenario.name} result`, {
+        success: result.ok,
+        outputLength: output.length,
+        hasOutput: output.length > 0,
+      });
+
+      // Verify STDIN processing with options works
+      assertEquals(result.ok, true, `${scenario.name} should succeed`);
+      assertExists(output, `${scenario.name} should generate output`);
+      assertEquals(output.length > 0, true, `${scenario.name} should not be empty`);
+
+      // Verify STDIN content was processed
+      const hasStdinProcessing = output.length > stdinContent.length / 2 ||
+        output.toLowerCase().includes("input") ||
+        output.toLowerCase().includes("project") ||
+        output.toLowerCase().includes("performance");
+
+      assertEquals(
+        hasStdinProcessing,
+        true,
+        `${scenario.name} should show STDIN content processing`,
+      );
+
+      logger.debug(`${scenario.name} - SUCCESS`, {
+        outputLength: output.length,
+        hasStdinProcessing,
+      });
+    } finally {
+      // Restore environment
+      if (originalSkipStdin !== undefined) {
+        Deno.env.set("BREAKDOWN_SKIP_STDIN", originalSkipStdin);
+      }
+    }
+  } finally {
+    stdout.stop();
+  }
+}
 
 /**
  * E2E Test: STDIN Processing with --input and --adaptation Options
@@ -767,7 +905,7 @@ Deno.test("E2E: STDIN Processing with --input and --adaptation Options", async (
 ## Technical Context
 The system processes large datasets and needs to maintain performance under load.`;
 
-  const scenarios = [
+  const scenarios: StdinScenario[] = [
     {
       name: "STDIN with --input option",
       args: ["to", "task", "--input=project"],
@@ -785,105 +923,12 @@ The system processes large datasets and needs to maintain performance under load
     },
   ];
 
-  for (const scenario of scenarios) {
-    logger.debug(`STDIN scenario test: ${scenario.name}`, {
-      args: scenario.args,
-      expectedTemplate: scenario.expectedTemplate,
-    });
-
-    const stdout = new StdoutCapture();
-    stdout.start();
-
-    try {
-      // Create a mock stdin reader with the test content
-      const _mockStdinReader = new MockStdinReader({
-        data: stdinContent,
-        terminal: false,
-        delay: 0,
-        shouldFail: false,
-      });
-
-      // Set environment to enable stdin processing with mock
-      const originalSkipStdin = Deno.env.get("BREAKDOWN_SKIP_STDIN");
-      Deno.env.delete("BREAKDOWN_SKIP_STDIN"); // Enable STDIN processing
-
-      try {
-        // Mock the stdin reader by setting it in the environment
-        // The breakdown system will use the MockStdinReader through proper dependency injection
-        const originalStdin = Deno.stdin;
-
-        // Create a mock readable stream from the content
-        const stdinStream = new ReadableStream({
-          start(controller) {
-            controller.enqueue(new TextEncoder().encode(stdinContent));
-            controller.close();
-          },
-        });
-
-        // Replace Deno.stdin temporarily with mock
-        const mockStdin = {
-          ...originalStdin,
-          readable: stdinStream,
-          isTerminal: () => false,
-        };
-
-        Object.defineProperty(Deno, "stdin", {
-          value: mockStdin,
-          configurable: true,
-        });
-
-        const argsWithConfig = [
-          "--config=e2e-test",
-          ...scenario.args,
-          "--from=-",
-          "--destination=output.md",
-        ];
-        const result = await runBreakdown(argsWithConfig);
-        const output = stdout.stop();
-
-        // Restore original stdin
-        Object.defineProperty(Deno, "stdin", {
-          value: originalStdin,
-          configurable: true,
-        });
-
-        logger.debug(`STDIN scenario ${scenario.name} result`, {
-          success: result.ok,
-          outputLength: output.length,
-          hasOutput: output.length > 0,
-        });
-
-        // Verify STDIN processing with options works
-        assertEquals(result.ok, true, `${scenario.name} should succeed`);
-        assertExists(output, `${scenario.name} should generate output`);
-        assertEquals(output.length > 0, true, `${scenario.name} should not be empty`);
-
-        // Verify STDIN content was processed
-        const hasStdinProcessing = output.length > stdinContent.length / 2 ||
-          output.toLowerCase().includes("input") ||
-          output.toLowerCase().includes("project") ||
-          output.toLowerCase().includes("performance");
-
-        assertEquals(
-          hasStdinProcessing,
-          true,
-          `${scenario.name} should show STDIN content processing`,
-        );
-
-        logger.debug(`${scenario.name} - SUCCESS`, {
-          outputLength: output.length,
-          hasStdinProcessing,
-        });
-      } finally {
-        // Restore environment
-        if (originalSkipStdin !== undefined) {
-          Deno.env.set("BREAKDOWN_SKIP_STDIN", originalSkipStdin);
-        }
-      }
-    } finally {
-      stdout.stop();
-    }
-  }
+  // Execute scenarios sequentially using reduce to avoid await-in-loop
+  // Each scenario must complete before the next starts due to shared stdout/stdin state
+  await scenarios.reduce(
+    (promise, scenario) => promise.then(() => executeStdinScenario(scenario, stdinContent)),
+    Promise.resolve(),
+  );
 
   await testSetup.cleanup();
   logger.debug("E2E STDIN with options test completed", {
@@ -891,6 +936,74 @@ The system processes large datasets and needs to maintain performance under load
     resultStatus: "SUCCESS",
   });
 });
+
+/**
+ * Helper interface for error test case configuration
+ */
+interface ErrorTestCase {
+  name: string;
+  args: string[];
+  expectedError: string;
+}
+
+/**
+ * Execute a single error handling test case
+ */
+async function executeErrorTestCase(
+  testCase: ErrorTestCase,
+  inputFile: string,
+): Promise<void> {
+  logger.debug(`Error handling test: ${testCase.name}`, {
+    args: testCase.args,
+    expectedError: testCase.expectedError,
+  });
+
+  const stdout = new StdoutCapture();
+  stdout.start();
+
+  try {
+    // Set environment to skip stdin processing
+    const originalSkipStdin = Deno.env.get("BREAKDOWN_SKIP_STDIN");
+    Deno.env.set("BREAKDOWN_SKIP_STDIN", "true");
+
+    try {
+      const argsWithConfig = [
+        "--config=e2e-test",
+        ...testCase.args,
+        `--from=${inputFile}`,
+        "--destination=output.md",
+      ];
+      const result = await runBreakdown(argsWithConfig);
+      const output = stdout.stop();
+
+      logger.debug(`Error case ${testCase.name} result`, {
+        success: result.ok,
+        hasError: !result.ok,
+        outputLength: output.length,
+      });
+
+      // Verify error is properly handled
+      if (!result.ok) {
+        assertExists(result.error, "Error should be present for missing template");
+        logger.debug(`Error properly handled for ${testCase.name}`, { error: result.error });
+      } else {
+        // If it succeeds, it might have found a fallback template, which is also valid behavior
+        logger.debug(`${testCase.name} succeeded with fallback template`, {
+          output: output.substring(0, 100),
+        });
+      }
+    } finally {
+      // Restore environment
+      if (originalSkipStdin !== undefined) {
+        Deno.env.set("BREAKDOWN_SKIP_STDIN", originalSkipStdin);
+      } else {
+        Deno.env.delete("BREAKDOWN_SKIP_STDIN");
+      }
+    }
+  } finally {
+    stdout.stop();
+  }
+}
 
 /**
  * E2E Test: Error Handling for Missing Template Files
@@ -914,7 +1027,7 @@ Deno.test("E2E: Error Handling - Missing Template Files with Options", async () 
 
   // Create basic directory structure but WITHOUT template files
   const promptDirs = ["to/task"];
-  for (const dir of promptDirs) {
+  await Promise.all(promptDirs.map(async (dir) => {
     const dirPath = join(testSetup["agentPromptsDir"], dir);
     try {
       await Deno.mkdir(dirPath, { recursive: true });
@@ -923,7 +1036,7 @@ Deno.test("E2E: Error Handling - Missing Template Files with Options", async () 
         throw error;
       }
     }
-  }
+  }));
 
   // Create configuration
   const configContent = `working_dir: "."
@@ -972,7 +1085,7 @@ breakdown:
   const testInputContent = "# Test Content\n\nTesting error handling for missing templates.";
   const inputFile = await testSetup.createTestInput("error-test-input.md", testInputContent);
 
-  const errorTestCases = [
+  const errorTestCases: ErrorTestCase[] = [
     {
       name: "Missing template for --input option",
       args: ["to", "task", "--input=nonexistent"],
@@ -985,58 +1098,12 @@ breakdown:
     },
   ];
 
-  for (const testCase of errorTestCases) {
-    logger.debug(`Error handling test: ${testCase.name}`, {
-      args: testCase.args,
-      expectedError: testCase.expectedError,
-    });
-
-    const stdout = new StdoutCapture();
-    stdout.start();
-
-    try {
-      // Set environment to skip stdin processing
-      const originalSkipStdin = Deno.env.get("BREAKDOWN_SKIP_STDIN");
-      Deno.env.set("BREAKDOWN_SKIP_STDIN", "true");
-
-      try {
-        const argsWithConfig = [
-          "--config=e2e-test",
-          ...testCase.args,
-          `--from=${inputFile}`,
-          "--destination=output.md",
-        ];
-        const result = await runBreakdown(argsWithConfig);
-        const output = stdout.stop();
-
-        logger.debug(`Error case ${testCase.name} result`, {
-          success: result.ok,
-          hasError: !result.ok,
-          outputLength: output.length,
-        });
-
-        // Verify error is properly handled
-        if (!result.ok) {
-          assertExists(result.error, "Error should be present for missing template");
-          logger.debug(`Error properly handled for ${testCase.name}`, { error: result.error });
-        } else {
-          // If it succeeds, it might have found a fallback template, which is also valid behavior
-          logger.debug(`${testCase.name} succeeded with fallback template`, {
-            output: output.substring(0, 100),
-          });
-        }
-      } finally {
-        // Restore environment
-        if (originalSkipStdin !== undefined) {
-          Deno.env.set("BREAKDOWN_SKIP_STDIN", originalSkipStdin);
-        } else {
-          Deno.env.delete("BREAKDOWN_SKIP_STDIN");
-        }
-      }
-    } finally {
-      stdout.stop();
-    }
-  }
+  // Execute test cases sequentially using reduce to avoid await-in-loop
+  // Each test case must complete before the next starts due to shared stdout state
+  await errorTestCases.reduce(
+    (promise, testCase) => promise.then(() => executeErrorTestCase(testCase, inputFile)),
+    Promise.resolve(),
+  );
 
   await testSetup.cleanup();
   logger.debug("E2E error handling test completed", {

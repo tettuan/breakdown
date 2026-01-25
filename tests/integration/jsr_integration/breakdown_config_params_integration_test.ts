@@ -12,8 +12,8 @@ import { describe, it } from "@std/testing/bdd";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import {
   ConfigBasedTwoParamsBuilder,
-  Result as _Result,
-  TwoParams_Result as _TwoParams_Result,
+  type Result as _Result,
+  type TwoParams_Result as _TwoParams_Result,
 } from "../../../lib/config/config_based_two_params_builder.ts";
 import { ConfigProfile } from "../../../lib/config/config_profile_name.ts";
 import { ParamsCustomConfig } from "../../../lib/config/params_custom_config.ts";
@@ -28,14 +28,14 @@ describe("JSR Integration - BreakdownConfig + BreakdownParams", () => {
       const profile = ConfigProfile.create("breakdown-params-integration");
       logger.debug("Config profile created", { profile: profile.value });
 
-      // 設定ファイルの読み込み
+      // Load configuration file
       const configData = await loadUserConfig(profile);
       logger.debug("Config file loading completed", {
         keys: Object.keys(configData),
         paramsSection: configData.params,
       });
 
-      // ParamsCustomConfig の作成
+      // Create ParamsCustomConfig
       const customConfig = ParamsCustomConfig.create(configData);
 
       // Verify patterns (no hardcode)
@@ -59,14 +59,14 @@ describe("JSR Integration - BreakdownConfig + BreakdownParams", () => {
     });
 
     it("Can create configuration-based builder with ConfigBasedTwoParamsBuilder", async () => {
-      // 設定ベースビルダーの作成
+      // Create configuration-based builder
       const builderResult = await ConfigBasedTwoParamsBuilder.fromConfig(
         "breakdown-params-integration",
       );
 
       logger.debug("Builder creation result", { ok: builderResult.ok });
 
-      // Result型のチェック
+      // Check Result type
       assertEquals(builderResult.ok, true);
       assertExists(builderResult.data);
 
@@ -115,7 +115,7 @@ describe("JSR Integration - BreakdownConfig + BreakdownParams", () => {
 
       assertEquals(validationResult.ok, true);
 
-      // test_directive と test_layer も有効
+      // test_directive and test_layer are also valid
       const testValidation = builder.validateParams("test_directive", "test_layer");
       assertEquals(testValidation.ok, true);
     });
@@ -159,7 +159,7 @@ describe("JSR Integration - BreakdownConfig + BreakdownParams", () => {
 
       const builder = builderResult.data;
 
-      // TwoParams_Result の生成
+      // Generate TwoParams_Result
       const result = builder.build("summary", "issue");
 
       logger.debug("TwoParams_Result generation result", {
@@ -174,7 +174,7 @@ describe("JSR Integration - BreakdownConfig + BreakdownParams", () => {
         throw new Error("Build failed");
       }
 
-      // 結果の検証
+      // Verify results
       const twoParamsResult = result.data;
       assertEquals(twoParamsResult.type, "two");
       assertEquals(twoParamsResult.directiveType, "summary");
@@ -190,7 +190,7 @@ describe("JSR Integration - BreakdownConfig + BreakdownParams", () => {
 
   describe("Hardcode elimination verification", () => {
     it("DirectiveType/LayerType definitions are not hardcoded", async () => {
-      // 複数のプロファイルでテスト
+      // Test with multiple profiles
       const profiles = ["default", "flexible-test", "enterprise-test"];
 
       for (const profileName of profiles) {
@@ -228,10 +228,10 @@ describe("JSR Integration - BreakdownConfig + BreakdownParams", () => {
     });
 
     it("Changing configuration files also changes allowed values", async () => {
-      // デフォルトプロファイルのビルダー
+      // Builder for default profile
       const defaultBuilder = await ConfigBasedTwoParamsBuilder.fromConfig("default");
 
-      // breakdown-params-integration プロファイルのビルダー
+      // Builder for breakdown-params-integration profile
       const integrationBuilder = await ConfigBasedTwoParamsBuilder.fromConfig(
         "breakdown-params-integration",
       );
@@ -240,7 +240,7 @@ describe("JSR Integration - BreakdownConfig + BreakdownParams", () => {
         throw new Error("Builder creation failed");
       }
 
-      // test_directive は integration プロファイルでのみ有効
+      // test_directive is only valid in integration profile
       const defaultValidation = defaultBuilder.data.validateParams("test_directive", "test_layer");
       const integrationValidation = integrationBuilder.data.validateParams(
         "test_directive",
@@ -252,10 +252,10 @@ describe("JSR Integration - BreakdownConfig + BreakdownParams", () => {
         integration: integrationValidation.ok,
       });
 
-      // integration プロファイルでのみ有効であることを確認
+      // Verify it is only valid in integration profile
       assertEquals(integrationValidation.ok, true);
       // Invalid in default profile (may be valid depending on configuration)
-      // これは設定ファイルの内容に依存
+      // This depends on the contents of the configuration file
     });
   });
 

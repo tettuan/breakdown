@@ -9,7 +9,7 @@ export interface BreakdownConfig {
   output_directory: string;
   /** The default path to the configuration file. */
   default_config_path: string;
-  // 他の設定項目...
+  // Other configuration items...
 }
 
 /**

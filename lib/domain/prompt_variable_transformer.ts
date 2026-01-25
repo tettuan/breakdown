@@ -315,9 +315,9 @@ export class PromptVariableTransformer {
  */
 export class TransformerFactory {
   /**
-   * @deprecated createDefault() は廃止予定
-   * BreakdownParams統合により設定ファイルベース実装に移行。
-   * createWithPathValidation() またはコンストラクタを直接使用してください。
+   * @deprecated createDefault() is scheduled for deprecation.
+   * Migrating to config file-based implementation due to BreakdownParams integration.
+   * Please use createWithPathValidation() or the constructor directly.
    *
    * Create a default transformer
    */

@@ -7,5 +7,5 @@
  * @module cli/validators
  */
 
-// DDD版 ParameterValidator を標準エクスポート
+// Export DDD-based ParameterValidator as standard export
 export { ParameterValidator } from "../../validator/mod.ts";

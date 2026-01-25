@@ -1,7 +1,7 @@
 /**
  * Template Error Handler Module
  *
- * テンプレート不足時のエラーハンドリング強化
+ * Enhanced error handling for missing templates
  *
  * @module
  */
@@ -52,21 +52,21 @@ export class TemplateError extends Error {
    * Get user-friendly error message with suggestions
    */
   getDetailedMessage(): string {
-    let message = `❌ ${this.message}`;
+    let message = `[ERROR] ${this.message}`;
 
     if (this.templatePath) {
       message += `\n   Template: ${this.templatePath}`;
     }
 
     if (this.suggestions.length > 0) {
-      message += "\n\n💡 Suggestions:";
+      message += "\n\n[HINT] Suggestions:";
       for (const suggestion of this.suggestions) {
         message += `\n   - ${suggestion}`;
       }
     }
 
     if (this.canAutoResolve) {
-      message += "\n\n🔧 Auto-resolution available: Run template generator script";
+      message += "\n\n[FIX] Auto-resolution available: Run template generator script";
     }
 
     return message;
@@ -253,12 +253,12 @@ export class TemplateErrorHandler {
     if (result.success) {
       return {
         resolved: true,
-        message: "✅ Templates generated successfully",
+        message: "[OK] Templates generated successfully",
       };
     } else {
       return {
         resolved: false,
-        message: "❌ Template generation failed",
+        message: "[FAILED] Template generation failed",
       };
     }
   }
@@ -282,12 +282,12 @@ export class TemplateErrorHandler {
     if (result.success) {
       return {
         resolved: true,
-        message: "✅ Template validation and fixes completed",
+        message: "[OK] Template validation and fixes completed",
       };
     } else {
       return {
         resolved: false,
-        message: "❌ Template validation failed",
+        message: "[FAILED] Template validation failed",
       };
     }
   }

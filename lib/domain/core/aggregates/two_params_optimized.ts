@@ -10,7 +10,7 @@
  */
 
 // Import base types from BreakdownParams package
-import { type BaseTwoParamsResult } from "../../../deps.ts";
+import type { BaseTwoParamsResult } from "../../../deps.ts";
 import { DirectiveType } from "../value_objects/directive_type.ts";
 import { LayerType } from "../value_objects/layer_type.ts";
 import { join } from "../../../deps.ts";

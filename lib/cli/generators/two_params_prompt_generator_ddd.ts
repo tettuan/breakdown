@@ -365,7 +365,7 @@ export class TwoParamsPromptGenerator {
    * Extract working directory with unified configuration validation
    */
   private extractWorkingDir(config: Record<string, unknown>): string | undefined {
-    // ✅ SINGLE SOURCE OF TRUTH: Only use working_dir at root level
+    // SINGLE SOURCE OF TRUTH: Only use working_dir at root level
     const workingDir = config.working_dir as string | undefined;
 
     return workingDir;

@@ -19,7 +19,7 @@ import type { CustomConfig } from "@tettuan/breakdownparams";
 import { DEFAULT_CUSTOM_CONFIG } from "@tettuan/breakdownparams";
 
 // Import result types
-import { Result, ResultStatus } from "./enums.ts";
+import { type Result, ResultStatus } from "./enums.ts";
 
 /**
  * Configuration creation errors

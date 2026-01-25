@@ -448,7 +448,7 @@ Deno.test("E2E-ERROR: Parameter Validation Error Handling", async () => {
 
 /**
  * Test Suite: Resource Constraint Error Handling
- * リソース制約エラーハンドリングテスト
+ * Resource constraint error handling test
  */
 Deno.test("E2E-ERROR: Resource Constraint Error Handling", async () => {
   logger.debug("E2E resource constraint error handling test started", {
@@ -596,7 +596,7 @@ Deno.test("E2E-ERROR: Resource Constraint Error Handling", async () => {
 
 /**
  * Test Suite: Edge Case Input Handling
- * エッジケース入力処理テスト
+ * Edge case input handling test
  */
 Deno.test("E2E-ERROR: Edge Case Input Handling", async () => {
   logger.debug("E2E edge case input handling test started", {
@@ -654,7 +654,7 @@ Deno.test("E2E-ERROR: Edge Case Input Handling", async () => {
     },
     {
       name: "Emoji Parameters",
-      params: ["🚀📊", "💻🎯"],
+      params: ["\u{1F680}\u{1F4CA}", "\u{1F4BB}\u{1F3AF}"],
       expectError: true,
     },
   ];
@@ -722,7 +722,7 @@ Deno.test("E2E-ERROR: Edge Case Input Handling", async () => {
 
 /**
  * Test Suite: Security and Injection Prevention
- * セキュリティ・インジェクション防止テスト
+ * Security and injection prevention test
  */
 Deno.test("E2E-ERROR: Security and Injection Prevention", async () => {
   logger.debug("E2E security and injection prevention test started", {
@@ -757,7 +757,7 @@ Deno.test("E2E-ERROR: Security and Injection Prevention", async () => {
     },
     {
       name: "Unicode Spoofing Attempt",
-      params: ["tо", "project"], // Cyrillic 'о' instead of Latin 'o'
+      params: ["t\u043E", "project"], // Cyrillic 'o' instead of Latin 'o'
       maliciousIntent: "Unicode spoofing",
     },
     {

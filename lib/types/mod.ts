@@ -95,7 +95,7 @@ export { createTwoParamsType, TwoParamsType, type TwoParamsTypeError } from "./t
 // Factory and creation utilities
 export { TypeFactory } from "./type_factory.ts";
 export type { TypeCreationResult } from "./type_factory.ts";
-// TypePatternProvider removed - JSR統合により削除
+// TypePatternProvider removed - removed due to JSR integration
 
 // Pattern types - LayerType pattern (now unified with domain implementation)
 // Note: TwoParamsLayerTypePattern has been removed (@deprecated)

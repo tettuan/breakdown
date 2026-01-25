@@ -1,6 +1,6 @@
 /**
  * Performance Memory API Type Definitions
- * Node.js/Browser特有のパフォーマンスAPIの型定義
+ * Type definitions for Node.js/Browser-specific performance APIs
  */
 
 declare global {

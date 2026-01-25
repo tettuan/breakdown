@@ -31,8 +31,8 @@ export const DEPENDENCY_VERSIONS = {
   },
 } as const;
 
-import { error, ok, Result } from "../types/result.ts";
-import { ErrorFactory, ValidationError } from "../types/unified_error_types.ts";
+import { error, ok, type Result } from "../types/result.ts";
+import { ErrorFactory, type ValidationError } from "../types/unified_error_types.ts";
 
 /**
  * Get JSR import URL for a dependency

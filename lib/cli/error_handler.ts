@@ -319,11 +319,11 @@ export function handleCliError(cliError: CliError): ErrorHandlingResult {
   const message = extractCliErrorMessage(cliError);
 
   if (severity.kind === "warning") {
-    console.warn(`⚠️ CLI warning: ${message}`);
+    console.warn(`[WARNING] CLI warning: ${message}`);
     return { ok: true, handled: true, action: "logged_warning" };
   }
 
-  console.error(`❌ CLI error: ${message}`);
+  console.error(`[ERROR] CLI error: ${message}`);
   return { ok: true, handled: false, reason: "critical_error" };
 }
 
@@ -366,7 +366,7 @@ export function handleTwoParamsError(
     const errorMsgResult = extractErrorMessage(promptError.error);
     if (!errorMsgResult.ok) {
       // Log the extraction error for debugging
-      console.warn(`⚠️ Error message extraction failed: ${errorMsgResult.error.cause}`);
+      console.warn(`[WARNING] Error message extraction failed: ${errorMsgResult.error.cause}`);
       return { ok: true, handled: false, reason: "invalid_error_type" };
     }
 
@@ -385,8 +385,8 @@ export function handleTwoParamsError(
     }
 
     // Handle as warning
-    console.warn(`⚠️ Prompt generation issue: ${errorMsgResult.data}`);
-    console.log("✅ Breakdown execution completed with warnings");
+    console.warn(`[WARNING] Prompt generation issue: ${errorMsgResult.data}`);
+    console.log("[OK] Breakdown execution completed with warnings");
     return { ok: true, handled: true, action: "logged_warning" };
   }
 

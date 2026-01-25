@@ -8,7 +8,7 @@
  * @module factory/stdin_variable_factory
  */
 
-import { error, ok, Result } from "../types/result.ts";
+import { error, ok, type Result } from "../types/result.ts";
 import { StdinVariable } from "../types/prompt_variables_vo.ts";
 // Import ErrorInfo from @tettuan/breakdownparams for unified error handling
 import type { ErrorInfo } from "@tettuan/breakdownparams";

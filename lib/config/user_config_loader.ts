@@ -1,11 +1,11 @@
 /**
  * User Config Loader
- * テスト用の設定ファイルローダー
+ * Configuration file loader for testing
  */
 
 import { join } from "@std/path";
 import { parse } from "@std/yaml";
-import { ConfigProfile } from "./config_profile_name.ts";
+import type { ConfigProfile } from "./config_profile_name.ts";
 import { DEFAULT_CONFIG_DIR } from "./constants.ts";
 
 export async function loadUserConfig(profile: ConfigProfile): Promise<Record<string, unknown>> {

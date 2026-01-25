@@ -142,10 +142,14 @@ export class PromptHelperPrototype {
     const allDetected = [...requiredVars, ...additionalVars];
     const missing = allDetected.filter((v) => !providedVars.includes(v));
 
-    // Generate suggested defaults based on variable names
+    // Generate suggested defaults based on variable names (parallel execution)
     const suggestedDefaults = new Map<string, string>();
-    for (const varName of missing) {
+    const defaultValuePromises = missing.map(async (varName) => {
       const defaultValue = await this.generateDefaultValue(varName);
+      return { varName, defaultValue };
+    });
+    const defaultValueResults = await Promise.all(defaultValuePromises);
+    for (const { varName, defaultValue } of defaultValueResults) {
       suggestedDefaults.set(varName, defaultValue);
     }
 

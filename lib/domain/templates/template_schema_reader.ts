@@ -98,14 +98,28 @@ export class TemplateSchemaReader {
     const successful: SchemaReadResult[] = [];
     const failed: Array<{ path: SchemaPath; error: string }> = [];
 
-    for (const path of paths) {
-      try {
-        const result = await this.readSchema(path, options);
-        successful.push(result);
-      } catch (error) {
+    const results = await Promise.all(
+      paths.map(async (path) => {
+        try {
+          const result = await this.readSchema(path, options);
+          return { success: true as const, result, path };
+        } catch (error) {
+          return {
+            success: false as const,
+            path,
+            error: error instanceof Error ? error.message : String(error),
+          };
+        }
+      }),
+    );
+
+    for (const result of results) {
+      if (result.success) {
+        successful.push(result.result);
+      } else {
         failed.push({
-          path,
-          error: error instanceof Error ? error.message : String(error),
+          path: result.path,
+          error: result.error,
         });
       }
     }
@@ -179,9 +193,21 @@ export class TemplateSchemaReader {
     const schema = await this.schemaRepository.loadSchema(path);
     const depPaths = await this.schemaRepository.getDependencies(path);
 
-    const dependencies: Schema[] = [];
+    // Mark all dependency paths as visited before parallel loading to detect circular dependencies
     for (const depPath of depPaths) {
-      const depResult = await this.readSchemaRecursive(depPath, visited);
+      const depPathStr = depPath.getPath();
+      if (visited.has(depPathStr)) {
+        throw new Error(`Circular dependency detected: ${depPathStr}`);
+      }
+      visited.add(depPathStr);
+    }
+
+    const depResults = await Promise.all(
+      depPaths.map((depPath) => this.readSchemaRecursive(depPath, visited)),
+    );
+
+    const dependencies: Schema[] = [];
+    for (const depResult of depResults) {
       dependencies.push(depResult.schema);
       dependencies.push(...depResult.dependencies);
     }
@@ -198,20 +224,23 @@ export class TemplateSchemaReader {
   }
 
   private async loadDependencies(paths: SchemaPath[]): Promise<Schema[]> {
-    const dependencies: Schema[] = [];
+    const results = await Promise.all(
+      paths.map(async (path) => {
+        try {
+          const schema = await this.schemaRepository.loadSchema(path);
+          return { success: true as const, schema };
+        } catch (error) {
+          // Log error but continue - dependency might be optional
+          // Note: Using console.warn for dependency loading failures as per domain service guidelines
+          console.warn(`Failed to load dependency ${path.getPath()}:`, error);
+          return { success: false as const };
+        }
+      }),
+    );
 
-    for (const path of paths) {
-      try {
-        const schema = await this.schemaRepository.loadSchema(path);
-        dependencies.push(schema);
-      } catch (error) {
-        // Log error but continue - dependency might be optional
-        // Note: Using console.warn for dependency loading failures as per domain service guidelines
-        console.warn(`Failed to load dependency ${path.getPath()}:`, error);
-      }
-    }
-
-    return dependencies;
+    return results
+      .filter((result): result is { success: true; schema: Schema } => result.success)
+      .map((result) => result.schema);
   }
 }
 

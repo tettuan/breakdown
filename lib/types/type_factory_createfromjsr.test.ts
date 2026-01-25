@@ -104,7 +104,7 @@ Deno.test("TypeFactory.createFromJSR - Invalid inputs", async (t) => {
 
 Deno.test("TypeFactory.createFromJSR - JSR integration benefits", async (t) => {
   await t.step("Should bypass pattern validation (JSR already validated)", () => {
-    // JSRが既に検証済みの値なので、パターンに依存しない
+    // Since JSR has already validated the values, pattern validation is not required
     const jsrResult = createMockTwoParamsResult("unusual-directive", "special-layer");
     const result = TypeFactory.createFromJSR(jsrResult);
 
@@ -116,7 +116,7 @@ Deno.test("TypeFactory.createFromJSR - JSR integration benefits", async (t) => {
   });
 
   await t.step("Should work without TypePatternProvider", () => {
-    // TypePatternProviderが不要であることを確認
+    // Verify that TypePatternProvider is not required
     const jsrResult = createMockTwoParamsResult("direct", "construction");
     const result = TypeFactory.createFromJSR(jsrResult);
 

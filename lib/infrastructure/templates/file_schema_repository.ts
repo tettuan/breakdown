@@ -10,7 +10,7 @@
 import { exists, walk } from "@std/fs";
 import { join, relative } from "@std/path";
 import type { DirectiveType as _DirectiveType, LayerType as _LayerType } from "../../types/mod.ts";
-import { Schema, SchemaPath } from "../../domain/templates/schema_management_aggregate.ts";
+import { Schema, type SchemaPath } from "../../domain/templates/schema_management_aggregate.ts";
 import type {
   SchemaBatchResult,
   SchemaManifest,

@@ -1,7 +1,7 @@
 import { assertEquals } from "@std/assert";
 import { removeYamlFrontmatter } from "./markdown_utils.ts";
 
-Deno.test("removeYamlFrontmatter - フロントマターを除去する", () => {
+Deno.test("removeYamlFrontmatter - removes frontmatter", () => {
   const input = `---
 title: Test Document
 date: 2024-01-01
@@ -19,7 +19,7 @@ This is the actual content.`;
   assertEquals(removeYamlFrontmatter(input), expected);
 });
 
-Deno.test("removeYamlFrontmatter - フロントマターがない場合はそのまま返す", () => {
+Deno.test("removeYamlFrontmatter - returns input unchanged when no frontmatter exists", () => {
   const input = `# Main Content
 
 This is the actual content.`;
@@ -27,7 +27,7 @@ This is the actual content.`;
   assertEquals(removeYamlFrontmatter(input), input);
 });
 
-Deno.test("removeYamlFrontmatter - 空のフロントマターも除去する", () => {
+Deno.test("removeYamlFrontmatter - removes empty frontmatter", () => {
   const input = `---
 ---
 

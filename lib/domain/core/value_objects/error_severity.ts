@@ -1,15 +1,16 @@
 /**
  * @fileoverview ErrorSeverity Value Object - Enhanced Totality Pattern Implementation
  *
- * Smart Constructor、Result型、Discriminated Unionパターンを統合したTotality準拠の
- * エラー重要度管理システム。型安全性、不変性、包括的エラーハンドリングを実現。
+ * Totality-compliant error severity management system integrating Smart Constructor,
+ * Result type, and Discriminated Union patterns. Achieves type safety, immutability,
+ * and comprehensive error handling.
  *
- * 主要パターン:
- * - Smart Constructor: プライベートコンストラクタ + パブリック静的ファクトリーメソッド
- * - Result型: 例外ではなく明示的なエラーハンドリング
- * - Discriminated Union: 型安全なエラー分類
- * - Value Object: 不変性と等価性の保証
- * - Defensive Copying: メタデータの改変防止
+ * Key patterns:
+ * - Smart Constructor: Private constructor + public static factory methods
+ * - Result type: Explicit error handling instead of exceptions
+ * - Discriminated Union: Type-safe error classification
+ * - Value Object: Guarantees immutability and equality
+ * - Defensive Copying: Prevents metadata modification
  *
  * @module domain/core/value_objects/error_severity
  */
@@ -22,8 +23,8 @@ import { error, ok } from "../../../types/result.ts";
 // =============================================================================
 
 /**
- * エラー重要度レベル（数値ベース）
- * 数値が大きいほど重要度が高い
+ * Error severity level (numeric-based)
+ * Higher numeric value indicates higher severity
  */
 export enum SeverityLevel {
   DEBUG = 0,
@@ -35,7 +36,7 @@ export enum SeverityLevel {
 }
 
 /**
- * 影響範囲（文字列ベースのDiscriminated Union）
+ * Impact scope (string-based Discriminated Union)
  */
 export enum ImpactScope {
   NONE = "none",
@@ -46,8 +47,8 @@ export enum ImpactScope {
 }
 
 /**
- * エラーメタデータインターフェース
- * 拡張可能なメタデータ構造を提供
+ * Error metadata interface
+ * Provides extensible metadata structure
  */
 export interface ErrorMetadata {
   readonly code?: string;
@@ -61,8 +62,8 @@ export interface ErrorMetadata {
 // =============================================================================
 
 /**
- * ErrorSeverity Discriminated Union エラー型
- * 各エラー種別を型安全に区別可能
+ * ErrorSeverity Discriminated Union error type
+ * Allows type-safe distinction of each error kind
  */
 export type ErrorSeverityError =
   | { kind: "InvalidLevel"; level: unknown; message: string }
@@ -110,8 +111,8 @@ export function isNullOrUndefinedError(
 // =============================================================================
 
 /**
- * ErrorSeverityError 包括的フォーマッター
- * ユーザーフレンドリーなエラーメッセージを生成
+ * ErrorSeverityError comprehensive formatter
+ * Generates user-friendly error messages
  */
 export function formatErrorSeverityError(error: ErrorSeverityError): string {
   switch (error.kind) {
@@ -201,15 +202,15 @@ function severityLevelToString(level: SeverityLevel): string {
 /**
  * ErrorSeverity Value Object
  *
- * Smart Constructor パターンによる安全な生成と
- * Result型による明示的エラーハンドリングを実装。
+ * Implements safe creation via Smart Constructor pattern
+ * and explicit error handling via Result type.
  *
- * 特徴:
- * - プライベートコンストラクタ（直接インスタンス化不可）
- * - パブリック静的ファクトリーメソッド
- * - 完全な不変性（Object.freeze）
- * - 防御的コピー（メタデータ）
- * - 包括的バリデーション
+ * Features:
+ * - Private constructor (direct instantiation not allowed)
+ * - Public static factory methods
+ * - Complete immutability (Object.freeze)
+ * - Defensive copying (metadata)
+ * - Comprehensive validation
  */
 export class ErrorSeverity {
   // Private fields (immutable after construction)
@@ -218,8 +219,8 @@ export class ErrorSeverity {
   private readonly _metadata: Readonly<ErrorMetadata>;
 
   /**
-   * プライベートコンストラクタ
-   * Smart Constructor パターンの実装
+   * Private constructor
+   * Implementation of Smart Constructor pattern
    */
   private constructor(
     level: SeverityLevel,
@@ -228,13 +229,13 @@ export class ErrorSeverity {
   ) {
     this._level = level;
     this._impact = impact;
-    // 防御的コピー: メタデータの深いコピーを作成
+    // Defensive copying: Create deep copy of metadata
     this._metadata = Object.freeze({
       ...metadata,
       context: metadata.context ? { ...metadata.context } : undefined,
     });
 
-    // Value Object の不変性を保証
+    // Guarantee Value Object immutability
     Object.freeze(this);
   }
 
@@ -243,15 +244,15 @@ export class ErrorSeverity {
   // =============================================================================
 
   /**
-   * プライマリ Smart Constructor
-   * 包括的バリデーションとResult型を使用
+   * Primary Smart Constructor
+   * Uses comprehensive validation and Result type
    */
   static create(
     level: SeverityLevel,
     impact: ImpactScope,
     metadata?: ErrorMetadata,
   ): Result<ErrorSeverity, ErrorSeverityError> {
-    // Null/undefined チェック
+    // Null/undefined check
     if (level === null || level === undefined) {
       return error({
         kind: "NullOrUndefined" as const,
@@ -266,7 +267,7 @@ export class ErrorSeverity {
       });
     }
 
-    // レベル バリデーション
+    // Level validation
     if (!isValidSeverityLevel(level)) {
       return error({
         kind: "InvalidLevel" as const,
@@ -275,7 +276,7 @@ export class ErrorSeverity {
       });
     }
 
-    // 影響範囲 バリデーション
+    // Impact scope validation
     if (!isValidImpactScope(impact)) {
       return error({
         kind: "InvalidImpact" as const,
@@ -284,7 +285,7 @@ export class ErrorSeverity {
       });
     }
 
-    // メタデータ バリデーション
+    // Metadata validation
     if (metadata !== undefined && !isValidMetadata(metadata)) {
       return error({
         kind: "InvalidMetadata" as const,
@@ -297,11 +298,11 @@ export class ErrorSeverity {
   }
 
   /**
-   * 文字列からの Smart Constructor
-   * 大文字小文字を問わない柔軟な解析
+   * Smart Constructor from string
+   * Flexible parsing regardless of case
    */
   static fromString(levelString: string): Result<ErrorSeverity, ErrorSeverityError> {
-    // Null/undefined チェック
+    // Null/undefined check
     if (levelString === null || levelString === undefined) {
       return error({
         kind: "NullOrUndefined" as const,
@@ -309,7 +310,7 @@ export class ErrorSeverity {
       });
     }
 
-    // 文字列バリデーション
+    // String validation
     if (typeof levelString !== "string" || levelString.trim() === "") {
       return error({
         kind: "InvalidLevel" as const,
@@ -327,7 +328,7 @@ export class ErrorSeverity {
       });
     }
 
-    // デフォルト影響範囲を適用
+    // Apply default impact scope
     const defaultImpact = getDefaultImpactForLevel(level);
     return ok(new ErrorSeverity(level, defaultImpact));
   }
@@ -367,8 +368,8 @@ export class ErrorSeverity {
   }
 
   /**
-   * カスタム設定によるErrorSeverity生成（レガシー互換）
-   * @deprecated Smart Constructor パターンのcreateメソッドを使用してください
+   * Generate ErrorSeverity with custom settings (legacy compatibility)
+   * @deprecated Use the create method of Smart Constructor pattern
    */
   static custom(
     level: SeverityLevel,
@@ -379,9 +380,9 @@ export class ErrorSeverity {
   }
 
   /**
-   * 文字列からの安全でない変換（レガシー互換）
-   * エラー時に例外を投げる従来の動作を維持
-   * @deprecated fromStringメソッドを使用してください（Result型による安全な処理）
+   * Unsafe conversion from string (legacy compatibility)
+   * Maintains legacy behavior of throwing exceptions on error
+   * @deprecated Use fromString method (safe handling via Result type)
    */
   static fromStringUnsafe(levelString: string): ErrorSeverity {
     const result = ErrorSeverity.fromString(levelString);
@@ -404,7 +405,7 @@ export class ErrorSeverity {
   }
 
   /**
-   * 防御的コピーでメタデータを返す
+   * Return metadata with defensive copying
    */
   getMetadata(): ErrorMetadata {
     return {
@@ -442,8 +443,8 @@ export class ErrorSeverity {
   }
 
   /**
-   * 重要度のエスカレーション
-   * より高い重要度を選択、同レベルなら影響範囲を考慮
+   * Severity escalation
+   * Selects higher severity, considers impact scope if same level
    */
   escalate(other: ErrorSeverity): ErrorSeverity {
     if (this._level > other._level) {
@@ -451,7 +452,7 @@ export class ErrorSeverity {
     } else if (other._level > this._level) {
       return other;
     } else {
-      // 同レベルの場合、影響範囲で判定
+      // If same level, determine by impact scope
       const impactOrder = [
         ImpactScope.NONE,
         ImpactScope.LOCAL,
@@ -549,7 +550,7 @@ export class ErrorSeverity {
 // =============================================================================
 
 /**
- * 重要度レベルに対するデフォルト影響範囲を取得
+ * Get default impact scope for severity level
  */
 function getDefaultImpactForLevel(level: SeverityLevel): ImpactScope {
   switch (level) {

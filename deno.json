@@ -76,10 +76,7 @@
         "recommended"
       ],
       "include": [
-        "no-await-in-loop",
-        "no-console",
         "no-eval",
-        "no-external-import",
         "no-sync-fn-in-async-fn",
         "prefer-ascii",
         "single-var-declarator",

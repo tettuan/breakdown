@@ -159,7 +159,7 @@ export async function readStdinSafe(
       timeoutId = setTimeout(() => reject(new Error("Timeout")), config.timeout);
     });
 
-    // Read stdin
+    // Read stdin using Response API to avoid await-in-loop
     const readPromise = (async () => {
       try {
         // Check if stdin is available first
@@ -167,16 +167,11 @@ export async function readStdinSafe(
           throw new Error("Stdin not readable");
         }
 
-        const reader = Deno.stdin.readable.getReader();
-        try {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            if (value) chunks.push(value);
-          }
-        } finally {
-          reader.releaseLock();
-        }
+        // Use Response API to read the entire stream at once
+        // This avoids the no-await-in-loop lint error
+        const response = new Response(Deno.stdin.readable);
+        const arrayBuffer = await response.arrayBuffer();
+        chunks.push(new Uint8Array(arrayBuffer));
       } catch (err) {
         // If stdin is not available, return empty
         if (config.allowEmpty) {

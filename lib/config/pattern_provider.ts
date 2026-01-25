@@ -9,38 +9,38 @@
  */
 
 import { BreakdownConfig } from "@tettuan/breakdownconfig";
-// TypePatternProvider インターフェースをここで定義
+// TypePatternProvider interface definition
 export interface TypePatternProvider {
   /**
-   * DirectiveType用バリデーション結果を取得
-   * @param value 検証対象の値
-   * @returns バリデーション結果
+   * Gets validation result for DirectiveType
+   * @param value The value to validate
+   * @returns Validation result
    */
   validateDirectiveType(value: string): boolean;
 
   /**
-   * LayerType用バリデーション結果を取得
-   * @param value 検証対象の値
-   * @returns バリデーション結果
+   * Gets validation result for LayerType
+   * @param value The value to validate
+   * @returns Validation result
    */
   validateLayerType(value: string): boolean;
 
   /**
-   * 利用可能なDirectiveType値を取得
-   * @returns 設定で許可されたDirectiveType値の配列
+   * Gets available DirectiveType values
+   * @returns Array of DirectiveType values allowed in configuration
    */
   getValidDirectiveTypes(): readonly string[];
 
   /**
-   * 利用可能なLayerType値を取得
-   * @returns 設定で許可されたLayerType値の配列
+   * Gets available LayerType values
+   * @returns Array of LayerType values allowed in configuration
    */
   getValidLayerTypes(): readonly string[];
 }
 import { TwoParamsDirectivePattern } from "../domain/core/value_objects/directive_type.ts";
 import { TwoParamsLayerTypePattern } from "../domain/core/value_objects/layer_type.ts";
-import { error, ok, Result } from "../types/result.ts";
-import { ConfigurationError, ErrorFactory } from "../types/unified_error_types.ts";
+import { error, ok, type Result } from "../types/result.ts";
+import { type ConfigurationError, ErrorFactory } from "../types/unified_error_types.ts";
 
 /**
  * Configuration structure for validation patterns
@@ -263,7 +263,7 @@ export class ConfigPatternProvider implements TypePatternProvider {
 
   /**
    * Gets configuration data from BreakdownConfig synchronously
-   * ❌ CRITICAL: This method must properly access config data for pattern loading
+   * [CRITICAL]: This method must properly access config data for pattern loading
    * Currently using async getConfigData() method through temporary sync wrapper
    *
    * @returns Record<string, unknown> - Configuration data object
@@ -323,7 +323,7 @@ export class ConfigPatternProvider implements TypePatternProvider {
       return validation.directive.pattern;
     }
 
-    // ❌ HARDCODE ELIMINATION: No fallback patterns allowed
+    // [HARDCODE ELIMINATION]: No fallback patterns allowed
     // Configuration MUST define patterns explicitly
     return null;
   }
@@ -356,7 +356,7 @@ export class ConfigPatternProvider implements TypePatternProvider {
       return validation.layer.pattern;
     }
 
-    // ❌ HARDCODE ELIMINATION: No fallback patterns allowed
+    // [HARDCODE ELIMINATION]: No fallback patterns allowed
     // Configuration MUST define patterns explicitly
     return null;
   }

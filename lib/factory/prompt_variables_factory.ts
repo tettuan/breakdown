@@ -18,7 +18,7 @@ import { ConfigProfile } from "../config/mod.ts";
 import { DEFAULT_PROMPT_BASE_DIR, DEFAULT_SCHEMA_BASE_DIR } from "../config/constants.ts";
 import type { TwoParams_Result } from "../deps.ts";
 import {
-  PromptVariableSource,
+  type PromptVariableSource,
   PromptVariableSourceFactory,
 } from "../types/prompt_variable_source.ts";
 import {
@@ -26,8 +26,8 @@ import {
   TransformerFactory,
 } from "../domain/prompt_variable_transformer.ts";
 import {
-  formatPathResolutionError as _formatPathResolutionError,
-  PromptTemplatePath as _PromptTemplatePathResolver,
+  type formatPathResolutionError as _formatPathResolutionError,
+  type PromptTemplatePath as _PromptTemplatePathResolver,
   PromptTemplatePathResolverTotality,
 } from "./prompt_template_path_resolver_totality.ts";
 import { SchemaFilePathResolverTotality } from "./schema_file_path_resolver_totality.ts";
@@ -38,15 +38,15 @@ import {
 import {
   OutputFilePathResolverTotality as OutputFilePathResolver,
 } from "./output_file_path_resolver_totality.ts";
-import {
+import type {
   formatSchemaError as _formatSchemaError,
   SchemaFilePathResolverTotality as _SchemaFilePathResolver,
 } from "./schema_file_path_resolver_totality.ts";
 import { PathResolutionOption } from "../types/path_resolution_option.ts";
-import { error as resultError, ok, Result } from "../types/result.ts";
+import { error as resultError, ok, type Result } from "../types/result.ts";
 import {
   PromptVariablesFactoryErrorFactory,
-  PromptVariablesFactoryErrors,
+  type PromptVariablesFactoryErrors,
 } from "../types/prompt_variables_factory_error.ts";
 import { OutputPath } from "../types/output_destination.ts";
 import { FilePath } from "../types/file_path_value.ts";
@@ -352,8 +352,8 @@ export class PromptVariablesFactory {
   }
 
   /**
-   * 設定ベースでデフォルトTransformerを作成
-   * createDefault()の代替実装
+   * Create default Transformer based on configuration.
+   * Alternative implementation for createDefault()
    */
   private createDefaultTransformer(): PromptVariableTransformer {
     const fallbackPathResult = PathResolutionOption.create("relative", DEFAULT_PROMPT_BASE_DIR, [
@@ -444,16 +444,17 @@ export class PromptVariablesFactory {
   }
 
   /**
-   * Create factory with BreakdownParams integration
+   * Create factory with BreakdownParams integration.
    *
-   * createDefaultConfig() 依存を完全排除し、設定ファイルベース実装に移行。
+   * Completely removed dependency on createDefaultConfig() and migrated
+   * to configuration file-based implementation.
    */
   static async create(
     cliParams: PromptCliParams,
     profileName: string = "default",
   ): Promise<Result<PromptVariablesFactory, PromptVariablesFactoryErrors>> {
     try {
-      // BreakdownConfig から動的に設定を読み込み
+      // Dynamically load configuration from BreakdownConfig
       const { BreakdownConfig } = await import("@tettuan/breakdownconfig");
       const breakdownConfigResult = await BreakdownConfig.create(profileName);
 
@@ -506,7 +507,7 @@ export class PromptVariablesFactory {
         };
       }
 
-      // FactoryConfig 形式に変換
+      // Convert to FactoryConfig format
       const config: FactoryConfig = {
         app_prompt: { base_dir: configData.app_prompt?.base_dir || DEFAULT_PROMPT_BASE_DIR },
         app_schema: { base_dir: configData.app_schema?.base_dir || DEFAULT_SCHEMA_BASE_DIR },
@@ -1138,9 +1139,9 @@ export class PromptVariablesFactory {
 }
 
 /**
- * @deprecated createDefaultConfig関数は削除されました
- * BreakdownParams統合により設定ファイルベース実装に移行。
- * BreakdownConfig を使用してください。
+ * @deprecated The createDefaultConfig function has been removed.
+ * Migrated to configuration file-based implementation via BreakdownParams integration.
+ * Please use BreakdownConfig instead.
  */
 
 /**

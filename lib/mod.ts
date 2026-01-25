@@ -33,8 +33,8 @@ export {
   type TypeCreationResult,
   TypeFactory,
 } from "./types/mod.ts";
-// TypePatternProvider export removed - JSR統合によりTypePatternProviderは非推奨
-// JSR統合では TypeFactory.createFromJSR() を直接使用してください
+// TypePatternProvider export removed - deprecated due to JSR integration
+// Use TypeFactory.createFromJSR() directly for JSR integration
 
 // Export Result types (Result type already exported via types/mod.ts)
 export { error, ok } from "./types/result.ts";

@@ -159,7 +159,7 @@ export function getRecoverySuggestions(error: BreakdownError): ErrorRecoverySugg
  */
 export function formatErrorForTerminal(error: BreakdownError): string {
   const lines: string[] = [
-    `❌ ${error.getUserMessage()}`,
+    `[ERROR] ${error.getUserMessage()}`,
     ``,
     `Error ID: ${error.id}`,
     `Domain: ${error.domain}`,
@@ -176,9 +176,9 @@ export function formatErrorForTerminal(error: BreakdownError): string {
   const suggestions = getRecoverySuggestions(error);
   if (suggestions.length > 0) {
     lines.push(``);
-    lines.push(`💡 Suggestions:`);
+    lines.push(`Suggestions:`);
     for (const suggestion of suggestions) {
-      lines.push(`  • ${suggestion.action}: ${suggestion.description}`);
+      lines.push(`  - ${suggestion.action}: ${suggestion.description}`);
       if (suggestion.command) {
         lines.push(`    $ ${suggestion.command}`);
       }
@@ -207,14 +207,14 @@ export function handleBreakdownError(error: unknown): void {
     }
   } else if (error instanceof Error) {
     // Handle non-Breakdown errors
-    console.error(`❌ Unexpected error: ${error.message}`);
+    console.error(`[ERROR] Unexpected error: ${error.message}`);
     const debugEnv = Deno.env.get("DEBUG") || Deno.env.get("LOG_LEVEL");
     if (debugEnv === "debug" || debugEnv === "true") {
       console.error(error.stack);
     }
   } else {
     // Handle unknown errors
-    console.error("❌ An unknown error occurred");
+    console.error("[ERROR] An unknown error occurred");
     console.error(error);
   }
 }

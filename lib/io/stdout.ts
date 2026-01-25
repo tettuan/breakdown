@@ -7,7 +7,7 @@
  * @module io/stdout
  */
 
-import { error, ok, Result } from "../types/result.ts";
+import { error, ok, type Result } from "../types/result.ts";
 
 /**
  * Error types for stdout operations

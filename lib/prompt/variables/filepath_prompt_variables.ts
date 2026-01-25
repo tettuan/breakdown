@@ -7,9 +7,9 @@
  * @module prompt/variables/filepath_prompt_variables
  */
 
-import { PromptVariables } from "../../types/prompt_types.ts";
-import { error as resultError, ok as resultOk, Result } from "../../types/result.ts";
-import { FilePathVariable } from "../../types/prompt_variables_vo.ts";
+import type { PromptVariables } from "../../types/prompt_types.ts";
+import { error as resultError, ok as resultOk, type Result } from "../../types/result.ts";
+import type { FilePathVariable } from "../../types/prompt_variables_vo.ts";
 import { existsSync } from "@std/fs";
 import { isAbsolute, join, normalize } from "@std/path";
 

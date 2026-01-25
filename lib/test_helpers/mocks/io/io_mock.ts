@@ -1,7 +1,7 @@
 /**
  * IO Mock
- * テスト用のIO操作モック実装
- * STDIN/STDOUT/ファイルシステム操作の動作を模擬
+ * Mock implementation of IO operations for testing
+ * Simulates STDIN/STDOUT/file system operations
  */
 
 export interface MockStdinData {
@@ -31,7 +31,7 @@ export class IOServiceMock {
   }
 
   /**
-   * デフォルトファイルシステムのセットアップ
+   * Setup default file system
    */
   private setupDefaultFileSystem(): void {
     const defaultFiles: MockFileSystemEntry[] = [
@@ -59,9 +59,9 @@ export class IOServiceMock {
     });
   }
 
-  // STDIN操作のモック
+  // STDIN operation mocks
   /**
-   * STDINにデータを設定
+   * Set data for STDIN
    */
   setStdinContent(content: string): void {
     this.stdinBuffer = content;
@@ -70,7 +70,7 @@ export class IOServiceMock {
   }
 
   /**
-   * STDINからの読み込み（非同期）
+   * Read from STDIN (async)
    */
   readStdin(): string {
     if (this.stdinClosed) {
@@ -83,7 +83,7 @@ export class IOServiceMock {
   }
 
   /**
-   * STDINの1行読み込み
+   * Read a single line from STDIN
    */
   readStdinLine(): string | null {
     if (this.stdinClosed || this.readPosition >= this.stdinBuffer.length) {
@@ -94,7 +94,7 @@ export class IOServiceMock {
     const lineEndIndex = remaining.indexOf("\n");
 
     if (lineEndIndex === -1) {
-      // 最後の行
+      // Last line
       this.readPosition = this.stdinBuffer.length;
       return remaining;
     }
@@ -105,14 +105,14 @@ export class IOServiceMock {
   }
 
   /**
-   * STDINを閉じる
+   * Close STDIN
    */
   closeStdin(): void {
     this.stdinClosed = true;
   }
 
   /**
-   * STDINの状態をリセット
+   * Reset STDIN state
    */
   resetStdin(): void {
     this.stdinBuffer = "";
@@ -120,53 +120,53 @@ export class IOServiceMock {
     this.stdinClosed = false;
   }
 
-  // STDOUT操作のモック
+  // STDOUT operation mocks
   /**
-   * STDOUTへの書き込み
+   * Write to STDOUT
    */
   writeStdout(content: string): void {
     this.stdoutBuffer += content;
   }
 
   /**
-   * STDOUTの内容を取得
+   * Get STDOUT content
    */
   getStdoutContent(): string {
     return this.stdoutBuffer;
   }
 
   /**
-   * STDOUTをクリア
+   * Clear STDOUT
    */
   clearStdout(): void {
     this.stdoutBuffer = "";
   }
 
-  // STDERR操作のモック
+  // STDERR operation mocks
   /**
-   * STDERRへの書き込み
+   * Write to STDERR
    */
   writeStderr(content: string): void {
     this.stderrBuffer += content;
   }
 
   /**
-   * STDERRの内容を取得
+   * Get STDERR content
    */
   getStderrContent(): string {
     return this.stderrBuffer;
   }
 
   /**
-   * STDERRをクリア
+   * Clear STDERR
    */
   clearStderr(): void {
     this.stderrBuffer = "";
   }
 
-  // ファイルシステム操作のモック
+  // File system operation mocks
   /**
-   * ファイルの読み込み
+   * Read a file
    */
   readFile(path: string): string {
     const entry = this.fileSystem.get(path);
@@ -183,7 +183,7 @@ export class IOServiceMock {
   }
 
   /**
-   * ファイルの書き込み
+   * Write to a file
    */
   writeFile(path: string, content: string): void {
     this.fileSystem.set(path, {
@@ -195,7 +195,7 @@ export class IOServiceMock {
   }
 
   /**
-   * ファイルの存在確認
+   * Check if a file exists
    */
   fileExists(path: string): boolean {
     const entry = this.fileSystem.get(path);
@@ -203,7 +203,7 @@ export class IOServiceMock {
   }
 
   /**
-   * ディレクトリの作成
+   * Create a directory
    */
   mkdir(path: string): void {
     this.fileSystem.set(path, {
@@ -215,7 +215,7 @@ export class IOServiceMock {
   }
 
   /**
-   * ファイル/ディレクトリの削除
+   * Remove a file/directory
    */
   remove(path: string): void {
     const entry = this.fileSystem.get(path);
@@ -225,23 +225,23 @@ export class IOServiceMock {
   }
 
   /**
-   * ファイルシステムにエントリを追加
+   * Add an entry to the file system
    */
   addFileSystemEntry(entry: MockFileSystemEntry): void {
     this.fileSystem.set(entry.path, entry);
   }
 
   /**
-   * ファイルシステムのリセット
+   * Reset the file system
    */
   resetFileSystem(): void {
     this.fileSystem.clear();
     this.setupDefaultFileSystem();
   }
 
-  // テスト用のユーティリティ
+  // Utility methods for testing
   /**
-   * 全バッファをクリア
+   * Clear all buffers
    */
   clearAllBuffers(): void {
     this.clearStdout();
@@ -250,7 +250,7 @@ export class IOServiceMock {
   }
 
   /**
-   * 模擬的なエラー状況を作成
+   * Simulate an error condition
    */
   simulateFileError(
     path: string,
@@ -273,7 +273,7 @@ export class IOServiceMock {
   }
 
   /**
-   * ファイルシステムの状態を取得（デバッグ用）
+   * Get file system state (for debugging)
    */
   getFileSystemState(): Array<{ path: string; exists: boolean; type: string; size: number }> {
     return Array.from(this.fileSystem.entries()).map(([path, entry]) => ({
@@ -285,7 +285,7 @@ export class IOServiceMock {
   }
 
   /**
-   * 入出力統計を取得
+   * Get IO statistics
    */
   getIOStats(): {
     stdinBytesRead: number;
@@ -308,7 +308,7 @@ export class IOServiceMock {
 }
 
 /**
- * テスト用のファクトリー関数
+ * Factory function for testing
  */
 export function createMockIOService(options?: {
   stdinContent?: string;
@@ -328,7 +328,7 @@ export function createMockIOService(options?: {
 }
 
 /**
- * 標準的なテストファイルセット
+ * Standard test file set
  */
 export const STANDARD_TEST_FILES: MockFileSystemEntry[] = [
   {

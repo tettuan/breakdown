@@ -81,9 +81,9 @@ export class DomainPromptAdapter {
  */
 export class DomainPromptAdapterFactory {
   /**
-   * @deprecated createDefault() は廃止予定
-   * BreakdownParams統合により設定ファイルベース実装に移行。
-   * 通常のコンストラクタを使用してください。
+   * @deprecated createDefault() is deprecated.
+   * Migrating to config file-based implementation with BreakdownParams integration.
+   * Please use the regular constructor instead.
    *
    * Create a new DomainPromptAdapter with default service
    */

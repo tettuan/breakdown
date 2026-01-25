@@ -9,12 +9,12 @@
 
 import { exists, walk } from "@std/fs";
 import { join, relative } from "@std/path";
-import { BreakdownConfig } from "@tettuan/breakdownconfig";
+import type { BreakdownConfig } from "@tettuan/breakdownconfig";
 import { DEFAULT_PROMPT_BASE_DIR } from "../../config/constants.ts";
 import type { DirectiveType as _DirectiveType, LayerType as _LayerType } from "../../types/mod.ts";
 import {
   PromptTemplate,
-  TemplatePath,
+  type TemplatePath,
 } from "../../domain/templates/prompt_generation_aggregate.ts";
 import type {
   TemplateManifest,
@@ -285,23 +285,23 @@ export class FileTemplateRepository implements TemplateRepository {
   }
 
   /**
-   * BreakdownConfigからプロンプトディレクトリ名を取得
+   * Get the prompts subdirectory name from BreakdownConfig
    *
-   * @returns プロンプトディレクトリ名（相対パス）
+   * @returns Prompts directory name (relative path)
    */
   private async getPromptsSubDirectory(): Promise<string> {
-    // BreakdownConfigから設定値を取得
+    // Get configuration value from BreakdownConfig
     if (this.config.breakdownConfig) {
       try {
-        // getConfig()メソッドを使用して設定データを取得
+        // Get configuration data using getConfig() method
         const configData = await this.config.breakdownConfig.getConfig();
         const promptConfig = configData.app_prompt;
 
         if (promptConfig?.base_dir) {
-          // app_prompt.base_dirを直接使用（相対パスとして扱う）
+          // Use app_prompt.base_dir directly (treated as relative path)
           const baseDir = promptConfig.base_dir.trim();
 
-          // 絶対パスの場合は警告してフォールバックを使用
+          // Warn and use fallback if absolute path is provided
           if (baseDir.startsWith("/") || baseDir.match(/^[A-Za-z]:[\\\/]/)) {
             console.warn(
               `app_prompt.base_dir should be relative path, got: ${baseDir}. Using fallback.`,
@@ -312,12 +312,12 @@ export class FileTemplateRepository implements TemplateRepository {
           return baseDir;
         }
       } catch (error) {
-        // 設定取得エラーの場合のみフォールバック
+        // Fallback only when config retrieval fails
         console.warn(`Failed to get prompt directory from config: ${error}`);
       }
     }
 
-    // 設定がない場合や取得に失敗した場合のフォールバック
+    // Fallback when config is not available or retrieval fails
     return DEFAULT_PROMPT_BASE_DIR;
   }
 }

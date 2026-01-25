@@ -1,8 +1,8 @@
 /**
- * @fileoverview JSR直接統合 TypePatternProvider implementation
+ * @fileoverview JSR Direct Integration TypePatternProvider implementation
  *
- * BreakdownParams JSRパッケージを直接利用してTypePatternProvider依存を完全排除。
- * 設定ファイル → BreakdownParams → 直接パターン提供の簡潔なフローを実現。
+ * Direct integration with BreakdownParams JSR package to eliminate TypePatternProvider dependency.
+ * Achieves a simple flow: Config file -> BreakdownParams -> Direct pattern provision.
  *
  * @module config/jsr_pattern_provider
  */
@@ -13,17 +13,17 @@ import type { Result } from "../types/result.ts";
 import { error as resultError, ok as resultOk } from "../types/result.ts";
 
 /**
- * JSR統合パターンプロバイダー
+ * JSR Integration Pattern Provider
  *
- * BreakdownParams JSRパッケージを直接利用し、TypePatternProvider依存を完全排除。
- * AsyncConfigPatternProviderの583行コードを100行以下に簡素化。
+ * Direct integration with BreakdownParams JSR package to eliminate TypePatternProvider dependency.
+ * Simplifies AsyncConfigPatternProvider's 583 lines of code to under 100 lines.
  */
 export class JSRPatternProvider {
   private customConfig: CustomConfig;
   private _initialized = false;
 
   /**
-   * プライベートコンストラクタ - create()ファクトリメソッドを使用
+   * Private constructor - Use create() factory method
    */
   private constructor(customConfig: CustomConfig) {
     this.customConfig = customConfig;
@@ -31,10 +31,10 @@ export class JSRPatternProvider {
   }
 
   /**
-   * ファクトリメソッド - JSRPatternProviderを作成・初期化
+   * Factory method - Create and initialize JSRPatternProvider
    *
-   * @param customConfig - BreakdownParams用カスタム設定
-   * @returns JSRPatternProvider インスタンス
+   * @param customConfig - Custom configuration for BreakdownParams
+   * @returns JSRPatternProvider instance
    */
   static create(customConfig?: CustomConfig): Result<JSRPatternProvider, string> {
     try {
@@ -48,8 +48,8 @@ export class JSRPatternProvider {
   }
 
   /**
-   * DirectiveTypeの検証
-   * CustomConfigのpatternを直接利用
+   * Validate DirectiveType
+   * Directly uses pattern from CustomConfig
    */
   validateDirectiveType(value: string): boolean {
     if (!this._initialized) return false;
@@ -66,8 +66,8 @@ export class JSRPatternProvider {
   }
 
   /**
-   * LayerTypeの検証
-   * CustomConfigのpatternを直接利用
+   * Validate LayerType
+   * Directly uses pattern from CustomConfig
    */
   validateLayerType(value: string): boolean {
     if (!this._initialized) return false;
@@ -84,8 +84,8 @@ export class JSRPatternProvider {
   }
 
   /**
-   * 利用可能なDirectiveType値を取得
-   * カスタム設定から直接パターンを抽出
+   * Get available DirectiveType values
+   * Extracts patterns directly from custom config
    */
   getValidDirectiveTypes(): readonly string[] {
     if (!this._initialized || !this.customConfig.params?.two?.directiveType?.pattern) {
@@ -97,8 +97,8 @@ export class JSRPatternProvider {
   }
 
   /**
-   * 利用可能なLayerType値を取得
-   * カスタム設定から直接パターンを抽出
+   * Get available LayerType values
+   * Extracts patterns directly from custom config
    */
   getValidLayerTypes(): readonly string[] {
     if (!this._initialized || !this.customConfig.params?.two?.layerType?.pattern) {
@@ -110,8 +110,8 @@ export class JSRPatternProvider {
   }
 
   /**
-   * DirectiveTypeパターンオブジェクトを取得
-   * TypePatternProvider互換性のため
+   * Get DirectiveType pattern object
+   * For TypePatternProvider compatibility
    */
   getDirectivePattern(): { test(value: string): boolean; getPattern(): string } | null {
     if (!this._initialized || !this.customConfig.params?.two?.directiveType?.pattern) {
@@ -128,8 +128,8 @@ export class JSRPatternProvider {
   }
 
   /**
-   * LayerTypeパターンオブジェクトを取得
-   * TypePatternProvider互換性のため
+   * Get LayerType pattern object
+   * For TypePatternProvider compatibility
    */
   getLayerTypePattern(): { test(value: string): boolean; getPattern(): string } | null {
     if (!this._initialized || !this.customConfig.params?.two?.layerType?.pattern) {
@@ -146,15 +146,15 @@ export class JSRPatternProvider {
   }
 
   /**
-   * 初期化状態を取得
+   * Get initialization status
    */
   isInitialized(): boolean {
     return this._initialized;
   }
 
   /**
-   * パターン文字列から値を抽出
-   * 正規表現パターン "^(値1|値2|値3)$" から ["値1", "値2", "値3"] を抽出
+   * Extract values from pattern string
+   * Extracts ["value1", "value2", "value3"] from regex pattern "^(value1|value2|value3)$"
    */
   private extractValuesFromPattern(pattern: string): readonly string[] {
     const match = pattern.match(/^\^?\(([^)]+)\)\$?$/);
@@ -169,7 +169,7 @@ export class JSRPatternProvider {
   }
 
   /**
-   * デバッグ情報取得
+   * Get debug information
    */
   debug(): {
     initialized: boolean;
@@ -189,8 +189,8 @@ export class JSRPatternProvider {
 }
 
 /**
- * BreakdownConfig互換のファクトリー関数
- * AsyncConfigPatternProviderの置き換え用
+ * Factory function compatible with BreakdownConfig
+ * Replacement for AsyncConfigPatternProvider
  */
 export function createJSRPatternProvider(
   customConfig?: CustomConfig,

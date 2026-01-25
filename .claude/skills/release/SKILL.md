@@ -121,6 +121,7 @@ gh workflow run publish.yml -f tag=v{NEW_VERSION}
 ```
 
 Verify publication:
+
 ```bash
 # Check workflow status
 gh run list --workflow=publish.yml --limit=1

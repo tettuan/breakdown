@@ -1,8 +1,8 @@
 /**
- * @fileoverview ConfigBasedTypePatternProvider - 設定ベースのTypePatternProvider実装
+ * @fileoverview ConfigBasedTypePatternProvider - Configuration-based TypePatternProvider implementation
  *
- * BreakdownConfigの設定ファイルから動的にDirectiveType/LayerTypeのパターンを
- * 提供するプロバイダークラス。ハードコード依存を完全に排除。
+ * A provider class that dynamically provides DirectiveType/LayerType patterns
+ * from BreakdownConfig configuration files. Completely eliminates hardcoded dependencies.
  *
  * @module config/config_based_type_pattern_provider
  */
@@ -13,8 +13,8 @@ import { ConfigProfile } from "./config_profile_name.ts";
 import { loadUserConfig } from "./user_config_loader.ts";
 
 /**
- * 設定ベースのTypePatternProvider実装
- * 設定ファイルからDirectiveType/LayerTypeのパターンを動的に提供
+ * Configuration-based TypePatternProvider implementation
+ * Dynamically provides DirectiveType/LayerType patterns from configuration files
  */
 export class ConfigBasedTypePatternProvider implements TypePatternProvider {
   private directiveTypes: readonly string[] = [];
@@ -28,9 +28,9 @@ export class ConfigBasedTypePatternProvider implements TypePatternProvider {
   }
 
   /**
-   * 設定ファイルからプロバイダーを作成
-   * @param profileName プロファイル名
-   * @returns ConfigBasedTypePatternProvider インスタンス
+   * Create provider from configuration file
+   * @param profileName Profile name
+   * @returns ConfigBasedTypePatternProvider instance
    */
   static async create(profileName: string = "default"): Promise<ConfigBasedTypePatternProvider> {
     const profile = ConfigProfile.create(profileName);
@@ -41,10 +41,10 @@ export class ConfigBasedTypePatternProvider implements TypePatternProvider {
   }
 
   /**
-   * カスタム設定から直接作成（テスト用）
-   * @param customConfig カスタム設定
-   * @param profileName プロファイル名
-   * @returns ConfigBasedTypePatternProvider インスタンス
+   * Create directly from custom configuration (for testing)
+   * @param customConfig Custom configuration
+   * @param profileName Profile name
+   * @returns ConfigBasedTypePatternProvider instance
    */
   static fromConfig(
     customConfig: ParamsCustomConfig,
@@ -54,16 +54,16 @@ export class ConfigBasedTypePatternProvider implements TypePatternProvider {
   }
 
   /**
-   * タイプの初期化
+   * Initialize types
    */
   private initializeTypes(): void {
-    // DirectiveTypeパターンから配列を生成
+    // Generate array from DirectiveType pattern
     const directivePattern = this.customConfig.directivePattern;
     if (directivePattern) {
       this.directiveTypes = Object.freeze(directivePattern.split("|"));
     }
 
-    // LayerTypeパターンから配列を生成
+    // Generate array from LayerType pattern
     const layerPattern = this.customConfig.layerPattern;
     if (layerPattern) {
       this.layerTypes = Object.freeze(layerPattern.split("|"));
@@ -71,8 +71,8 @@ export class ConfigBasedTypePatternProvider implements TypePatternProvider {
   }
 
   /**
-   * DirectiveTypeのパターンオブジェクトを取得
-   * @returns DirectiveTypeパターンオブジェクト
+   * Get DirectiveType pattern object
+   * @returns DirectiveType pattern object
    */
   getDirectivePattern(): { test(value: string): boolean; getPattern(): string } | null {
     const pattern = this.customConfig.directivePattern;
@@ -86,8 +86,8 @@ export class ConfigBasedTypePatternProvider implements TypePatternProvider {
   }
 
   /**
-   * LayerTypeのパターンオブジェクトを取得
-   * @returns LayerTypeパターンオブジェクト
+   * Get LayerType pattern object
+   * @returns LayerType pattern object
    */
   getLayerTypePattern(): { test(value: string): boolean; getPattern(): string } | null {
     const pattern = this.customConfig.layerPattern;
@@ -101,25 +101,25 @@ export class ConfigBasedTypePatternProvider implements TypePatternProvider {
   }
 
   /**
-   * 有効なDirectiveTypesを取得
-   * @returns DirectiveTypeの配列
+   * Get valid DirectiveTypes
+   * @returns Array of DirectiveTypes
    */
   getValidDirectiveTypes(): readonly string[] {
     return this.directiveTypes;
   }
 
   /**
-   * 有効なLayerTypesを取得
-   * @returns LayerTypeの配列
+   * Get valid LayerTypes
+   * @returns Array of LayerTypes
    */
   getValidLayerTypes(): readonly string[] {
     return this.layerTypes;
   }
 
   /**
-   * DirectiveTypeを検証
-   * @param value 検証対象の値
-   * @returns 有効な場合true
+   * Validate DirectiveType
+   * @param value Value to validate
+   * @returns true if valid
    */
   validateDirectiveType(value: string): boolean {
     const pattern = this.getDirectivePattern();
@@ -127,9 +127,9 @@ export class ConfigBasedTypePatternProvider implements TypePatternProvider {
   }
 
   /**
-   * LayerTypeを検証
-   * @param value 検証対象の値
-   * @returns 有効な場合true
+   * Validate LayerType
+   * @param value Value to validate
+   * @returns true if valid
    */
   validateLayerType(value: string): boolean {
     const pattern = this.getLayerTypePattern();
@@ -137,36 +137,36 @@ export class ConfigBasedTypePatternProvider implements TypePatternProvider {
   }
 
   /**
-   * DirectiveTypeが有効かチェック（後方互換性のため）
-   * @param value チェック対象の値
-   * @returns 有効な場合true
-   * @deprecated validateDirectiveType を使用してください
+   * Check if DirectiveType is valid (for backward compatibility)
+   * @param value Value to check
+   * @returns true if valid
+   * @deprecated Use validateDirectiveType instead
    */
   isValidDirectiveType(value: string): boolean {
     return this.validateDirectiveType(value);
   }
 
   /**
-   * LayerTypeが有効かチェック（後方互換性のため）
-   * @param value チェック対象の値
-   * @returns 有効な場合true
-   * @deprecated validateLayerType を使用してください
+   * Check if LayerType is valid (for backward compatibility)
+   * @param value Value to check
+   * @returns true if valid
+   * @deprecated Use validateLayerType instead
    */
   isValidLayerType(value: string): boolean {
     return this.validateLayerType(value);
   }
 
   /**
-   * プロファイル名を取得
-   * @returns プロファイル名
+   * Get profile name
+   * @returns Profile name
    */
   getProfileName(): string {
     return this.profileName;
   }
 
   /**
-   * 設定のサマリーを取得（デバッグ用）
-   * @returns 設定サマリー
+   * Get configuration summary (for debugging)
+   * @returns Configuration summary
    */
   getSummary(): Record<string, unknown> {
     const directivePattern = this.getDirectivePattern();

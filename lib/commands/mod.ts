@@ -30,7 +30,7 @@ export interface CommandResult {
 }
 
 /**
- * app.yml の構造に合わせた型定義
+ * Type definition matching app.yml structure
  */
 interface AppConfig {
   working_dir: string;
@@ -48,7 +48,7 @@ interface AppConfig {
  * All config access must use BreakdownConfig, not direct file reads.
  */
 
-// 5. プロンプト変換処理
+// 5. Prompt conversion processing
 async function runPromptProcessing(
   _fromFile: string,
   _toFile: string,

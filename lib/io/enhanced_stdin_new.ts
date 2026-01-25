@@ -6,7 +6,7 @@
  */
 
 import type { TimeoutManager } from "../config/timeout_manager.ts";
-import { DenoStdinReader, MockStdinReader, StdinReader } from "./stdin_reader_interface.ts";
+import { DenoStdinReader, MockStdinReader, type StdinReader } from "./stdin_reader_interface.ts";
 
 /**
  * Enhanced options for reading from stdin

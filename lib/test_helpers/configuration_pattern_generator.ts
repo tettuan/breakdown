@@ -1,13 +1,13 @@
 /**
  * @fileoverview Configuration Pattern Generator
  *
- * 設定ファイルのパターンから動的にテストデータを生成
- * ハードコードされた配列を完全排除し、設定ファイル駆動の動的生成を実現
+ * Dynamically generates test data from configuration file patterns.
+ * Completely eliminates hardcoded arrays and achieves config-file-driven dynamic generation.
  *
- * EMERGENCY HARDCODE ELIMINATION (緊急ハードコード排除):
- * - 全てのハードコード配列 ["to", "summary", "defect"], ["project", "issue", "task"] を除去
- * - AsyncConfigPatternProvider経由で設定ファイルから動的読み込み
- * - generateFromConfigProfile()の使用を推奨
+ * EMERGENCY HARDCODE ELIMINATION:
+ * - All hardcoded arrays ["to", "summary", "defect"], ["project", "issue", "task"] removed
+ * - Dynamic loading from configuration files via AsyncConfigPatternProvider
+ * - Using generateFromConfigProfile() is recommended
  *
  * @module lib/test_helpers/configuration_pattern_generator
  */
@@ -34,19 +34,19 @@ export interface GeneratedTestData {
 
 export class ConfigurationPatternGenerator {
   /**
-   * パターンから有効な値を生成（ハードコード完全排除版）
-   * 設定ファイルから動的に取得または正規表現パターンから抽出
+   * Generate valid values from pattern (hardcode-free version).
+   * Dynamically retrieves from configuration files or extracts from regex patterns.
    */
   static generateValidValues(pattern: string, baseValues: string[] = []): string[] {
     const generated: string[] = [];
 
-    // 正規表現パターンから値を抽出（例: "^(値1|値2|値3)$" -> 設定ファイルから動的に取得された値配列）
+    // Extract values from regex pattern (e.g., "^(value1|value2|value3)$" -> array of values dynamically retrieved from config file)
     const match = pattern.match(/^\^\(([^)]+)\)\$$/);
     if (match) {
       const values = match[1].split("|");
       generated.push(...values);
     } else {
-      // ❌ HARDCODE ELIMINATION: All hardcoded arrays removed
+      // [X] HARDCODE ELIMINATION: All hardcoded arrays removed
       // Pattern-based value generation should use configuration files instead
       // This fallback section is kept minimal for backwards compatibility only
 
@@ -72,43 +72,43 @@ export class ConfigurationPatternGenerator {
       }
     }
 
-    // 基本値をベースにした生成
+    // Generate based on base values
     for (const base of baseValues) {
       if (this.validatePattern(base, pattern)) {
         generated.push(base);
       }
     }
 
-    // 重複除去
+    // Remove duplicates
     return [...new Set(generated)];
   }
 
   /**
-   * パターンから無効な値を生成
+   * Generate invalid values from pattern.
    */
   static generateInvalidValues(pattern: string): string[] {
     const invalid: string[] = [];
 
-    // 共通の無効パターン
-    invalid.push(""); // 空文字
+    // Common invalid patterns
+    invalid.push(""); // Empty string
 
-    // 長さ制限違反
+    // Length constraint violations
     if (pattern.includes("{1,20}") || pattern.includes("{2,20}")) {
-      invalid.push("a"); // 短すぎる
-      invalid.push("verylongtextthatexceedstwentycharacters"); // 長すぎる
+      invalid.push("a"); // Too short
+      invalid.push("verylongtextthatexceedstwentycharacters"); // Too long
     }
 
-    // 大文字小文字違反
+    // Case violations
     if (pattern.includes("[a-z]") && !pattern.includes("[A-Z]")) {
       invalid.push("TO", "Summary", "PROJECT", "Issue");
     }
 
-    // 特殊文字違反
+    // Special character violations
     if (!pattern.includes("@") && !pattern.includes(" ")) {
       invalid.push("test@email", "test space", "INVALID@LAYER");
     }
 
-    // ❌ HARDCODE ELIMINATION: Remove hardcoded pattern matching
+    // [X] HARDCODE ELIMINATION: Remove hardcoded pattern matching
     // Generate invalid values based on pattern structure instead of hardcoded values
     if (pattern.includes("^(") && pattern.includes(")$")) {
       // Extract values from pattern and create pluralized invalid versions
@@ -126,16 +126,16 @@ export class ConfigurationPatternGenerator {
   }
 
   /**
-   * パターンマッチングを検証
+   * Validate pattern matching.
    */
   static validatePattern(value: string, pattern: string): boolean {
     try {
-      // パターンから正規表現を構築
+      // Build regex from pattern
       let regexPattern = pattern;
 
-      // パターンがすでに正規表現形式の場合
+      // If pattern is already in regex format
       if (!regexPattern.startsWith("^") && !regexPattern.includes("|")) {
-        // 単純なパターンの場合
+        // For simple patterns
         regexPattern = `^${regexPattern}$`;
       }
 
@@ -147,7 +147,7 @@ export class ConfigurationPatternGenerator {
   }
 
   /**
-   * パターン設定から完全なテストデータを生成
+   * Generate complete test data from pattern configuration.
    */
   static generateTestData(
     config: PatternConfig,
@@ -163,7 +163,7 @@ export class ConfigurationPatternGenerator {
   }
 
   /**
-   * 設定ファイルからパターンを抽出してテストデータを生成
+   * Extract patterns from configuration file and generate test data.
    */
   static async generateFromConfigFile(configPath: string): Promise<GeneratedTestData> {
     const configText = await Deno.readTextFile(configPath);
@@ -179,19 +179,19 @@ export class ConfigurationPatternGenerator {
   }
 
   /**
-   * ConfigProfile経由で動的にテストデータを生成
-   * ハードコード配列を完全排除し、設定ファイルから動的読み込み
+   * Dynamically generate test data via ConfigProfile.
+   * Completely eliminates hardcoded arrays and dynamically loads from configuration files.
    *
-   * EMERGENCY REFACTORING: 完全にconfig-drivenなアプローチに移行
-   * - AsyncConfigPatternProvider.create()による設定読み込み
-   * - Result型によるエラーハンドリング
-   * - ハードコード値の完全排除
+   * EMERGENCY REFACTORING: Full migration to config-driven approach
+   * - Configuration loading via AsyncConfigPatternProvider.create()
+   * - Error handling via Result type
+   * - Complete elimination of hardcoded values
    */
   static async generateFromConfigProfile(
     configSetName: string = "default",
     workspacePath: string = Deno.cwd(),
   ): Promise<GeneratedTestData> {
-    // AsyncConfigPatternProviderを利用して設定から動的に取得
+    // Use AsyncConfigPatternProvider to dynamically retrieve from configuration
     const providerResult = await AsyncConfigPatternProvider.create(configSetName, workspacePath);
 
     if (!providerResult.ok) {
@@ -218,11 +218,11 @@ export class ConfigurationPatternGenerator {
 
     const provider = providerResult.data;
 
-    // 設定ファイルから動的に値を取得（ハードコード配列は一切使用しない）
+    // Dynamically retrieve values from configuration file (no hardcoded arrays used)
     const validDirectives = provider.getValidDirectiveTypes();
     const validLayers = provider.getValidLayerTypes();
 
-    // パターンを取得して無効値を生成
+    // Get patterns and generate invalid values
     const directivePattern = provider.getDirectivePattern();
     const layerPattern = provider.getLayerTypePattern();
 
@@ -240,8 +240,8 @@ export class ConfigurationPatternGenerator {
   }
 
   /**
-   * 設定ファイル駆動でパターンから有効な値を生成（推奨メソッド）
-   * ハードコード配列を完全に排除し、AsyncConfigPatternProviderを活用
+   * Generate valid values from patterns using configuration file-driven approach (recommended method).
+   * Completely eliminates hardcoded arrays and utilizes AsyncConfigPatternProvider.
    */
   static async generateValidValuesFromConfig(
     configSetName: string = "default",

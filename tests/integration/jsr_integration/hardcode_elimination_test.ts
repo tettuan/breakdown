@@ -22,13 +22,13 @@ describe("Hardcode elimination verification", () => {
 
       // Define hardcode patterns
       const hardcodePatterns = [
-        // 配列リテラル
+        // Array literals
         /\[(["'])(to|summary|defect|find|project|issue|task)\1[\s,\S]*?\]/g,
-        // new Set() リテラル
+        // new Set() literals
         /new Set\(\[(["'])(to|summary|defect|find|project|issue|task)\1[\s,\S]*?\]\)/g,
-        // Object.freeze() 配列
+        // Object.freeze() arrays
         /Object\.freeze\(\[(["'])(to|summary|defect|find|project|issue|task)\1[\s,\S]*?\]\)/g,
-        // as const 配列
+        // as const arrays
         /\[(["'])(to|summary|defect|find|project|issue|task)\1[\s,\S]*?\] as const/g,
       ];
 
@@ -148,7 +148,7 @@ describe("Hardcode elimination verification", () => {
 
   describe("Configuration-driven verification in integration tests", () => {
     it("Different profiles use different patterns", async () => {
-      // ConfigBasedTwoParamsBuilderを使用して確認
+      // Verify using ConfigBasedTwoParamsBuilder
       const { ConfigBasedTwoParamsBuilder } = await import(
         "../../../lib/config/config_based_two_params_builder.ts"
       );

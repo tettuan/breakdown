@@ -12,14 +12,14 @@ import type { Result } from "../../types/result.ts";
 import { error, ok } from "../../types/result.ts";
 import type { TemplateRepository } from "./template_repository.ts";
 import type { SchemaRepository } from "./schema_repository.ts";
-import { PromptTemplate, TemplatePath } from "./prompt_generation_aggregate.ts";
-import { Schema, SchemaPath } from "./schema_management_aggregate.ts";
+import { type PromptTemplate, TemplatePath } from "./prompt_generation_aggregate.ts";
+import { type Schema, SchemaPath } from "./schema_management_aggregate.ts";
 import {
-  SchemaId as _SchemaId,
-  TemplateId as _TemplateId,
+  type SchemaId as _SchemaId,
+  type TemplateId as _TemplateId,
   TemplateVersion,
 } from "./template_value_objects.ts";
-import { BreakdownConfig } from "@tettuan/breakdownconfig";
+import type { BreakdownConfig } from "@tettuan/breakdownconfig";
 
 /**
  * Resolution request
@@ -313,10 +313,10 @@ export class StandardNamingStrategy implements ResolutionStrategy {
   }
 
   /**
-   * BreakdownConfigからデフォルトプレフィクスを取得（StandardNamingStrategy用）
+   * Get default prefix from BreakdownConfig (for StandardNamingStrategy)
    */
   private getDefaultPrefix(): string {
-    // デフォルト値を直接返す（設定との統合は後で改善）
+    // Return default value directly (integration with config will be improved later)
     return "f_";
   }
 }
@@ -349,29 +349,50 @@ export class TemplateResolverService {
    * Resolve template and schema for given request
    */
   async resolve(request: TemplateResolutionRequest): Promise<TemplateResolutionResult> {
-    const errors: string[] = [];
+    // Filter strategies that can handle this request, preserving priority order
+    const applicableStrategies = this.strategies.filter((strategy) => strategy.canHandle(request));
 
-    // Try each strategy in order of priority
-    for (const strategy of this.strategies) {
-      if (!strategy.canHandle(request)) {
-        continue;
-      }
+    if (applicableStrategies.length === 0) {
+      return error({
+        type: "template_not_found",
+        message: "No applicable resolution strategies found",
+        details: [],
+      });
+    }
 
-      try {
-        const result = await strategy.resolve(request, this.templateRepo, this.schemaRepo);
-
-        if (result.ok) {
-          return result;
-        } else {
-          errors.push(`${strategy.constructor.name}: ${result.error.message}`);
+    // Execute all applicable strategies in parallel
+    const resultsWithStrategy = await Promise.all(
+      applicableStrategies.map(async (strategy) => {
+        try {
+          const result = await strategy.resolve(request, this.templateRepo, this.schemaRepo);
+          return { strategy, result, error: null };
+        } catch (catchError) {
+          const errorMessage = catchError instanceof Error
+            ? catchError.message
+            : String(catchError);
+          return { strategy, result: null, error: errorMessage };
         }
-      } catch (catchError) {
-        const errorMessage = catchError instanceof Error ? catchError.message : String(catchError);
-        errors.push(`${strategy.constructor.name}: ${errorMessage}`);
+      }),
+    );
+
+    // Find the first successful result (maintaining priority order)
+    for (const { result } of resultsWithStrategy) {
+      if (result?.ok) {
+        return result;
       }
     }
 
-    // All strategies failed
+    // All strategies failed - collect error messages
+    const errors = resultsWithStrategy.map(({ strategy, result, error: errorMsg }) => {
+      if (errorMsg) {
+        return `${strategy.constructor.name}: ${errorMsg}`;
+      }
+      if (result && !result.ok) {
+        return `${strategy.constructor.name}: ${result.error.message}`;
+      }
+      return `${strategy.constructor.name}: Unknown error`;
+    });
+
     return error({
       type: "template_not_found",
       message: `Failed to resolve template: ${errors.join("; ")}`,
@@ -445,10 +466,10 @@ export class TemplateResolverService {
   }
 
   /**
-   * BreakdownConfigからデフォルトプレフィクスを取得（TemplateResolverService用）
+   * Get default prefix from BreakdownConfig (for TemplateResolverService)
    */
   private getDefaultPrefix(): string {
-    // デフォルト値を直接返す（設定との統合は後で改善）
+    // Return default value directly (integration with config will be improved later)
     return "f_";
   }
 }

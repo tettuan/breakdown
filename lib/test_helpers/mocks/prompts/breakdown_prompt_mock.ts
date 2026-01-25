@@ -1,7 +1,7 @@
 /**
  * BreakdownPrompt Mock
- * テスト用のBreakdownPromptモック実装
- * プロンプト生成の動作を模擬し、テスト環境でのプロンプト処理をサポート
+ * Mock implementation of BreakdownPrompt for testing
+ * Simulates prompt generation behavior and supports prompt processing in test environments
  */
 
 export interface MockPromptTemplate {
@@ -37,7 +37,7 @@ export class BreakdownPromptMock {
   }
 
   /**
-   * デフォルトテンプレートのセットアップ
+   * Setup default templates
    */
   private setupDefaultTemplates(): void {
     const defaultTemplates: MockPromptTemplate[] = [
@@ -76,7 +76,7 @@ export class BreakdownPromptMock {
   }
 
   /**
-   * テンプレートを追加
+   * Add a template
    */
   addTemplate(template: MockPromptTemplate): void {
     const key = `${template.directiveType}-${template.layerType}`;
@@ -88,7 +88,7 @@ export class BreakdownPromptMock {
   }
 
   /**
-   * プロンプトを生成（BreakdownPrompt.generate模擬）
+   * Generate prompt (simulates BreakdownPrompt.generate)
    */
   generate(
     directiveType: string,
@@ -106,7 +106,7 @@ export class BreakdownPromptMock {
       };
     }
 
-    // 変数の置換処理
+    // Variable substitution processing
     let content = template.content;
     const variables = { ...template.variables, ...options?.userVariables };
 
@@ -114,7 +114,7 @@ export class BreakdownPromptMock {
       content = content.replace("{{input_content}}", inputContent);
     }
 
-    // その他の変数を置換
+    // Substitute other variables
     Object.entries(variables).forEach(([key, value]) => {
       content = content.replace(new RegExp(`{{${key}}}`, "g"), value);
     });
@@ -126,7 +126,7 @@ export class BreakdownPromptMock {
       templatePath: `${options?.resourceDir || "/tmp/resources"}/${directiveType}/${layerType}.md`,
     };
 
-    // スキーマパスを含める場合
+    // Include schema path if requested
     if (options?.includeSchema && this.schemaMapping.has(key)) {
       result.schemaPath = `${options?.resourceDir || "/tmp/resources"}/schema/${
         this.schemaMapping.get(key)
@@ -137,7 +137,7 @@ export class BreakdownPromptMock {
   }
 
   /**
-   * テンプレートが存在するかチェック
+   * Check if a template exists
    */
   hasTemplate(directiveType: string, layerType: string): boolean {
     const key = `${directiveType}-${layerType}`;
@@ -145,7 +145,7 @@ export class BreakdownPromptMock {
   }
 
   /**
-   * 利用可能なテンプレート一覧を取得
+   * Get list of available templates
    */
   getAvailableTemplates(): Array<{ directiveType: string; layerType: string }> {
     return Array.from(this.templates.keys()).map((key) => {
@@ -155,7 +155,7 @@ export class BreakdownPromptMock {
   }
 
   /**
-   * 変数を抽出
+   * Extract variables
    */
   extractVariables(content: string): string[] {
     const variablePattern = /{{(\w+)}}/g;
@@ -172,7 +172,7 @@ export class BreakdownPromptMock {
   }
 
   /**
-   * スキーマパスを取得
+   * Get schema path
    */
   getSchemaPath(directiveType: string, layerType: string): string | undefined {
     const key = `${directiveType}-${layerType}`;
@@ -180,7 +180,7 @@ export class BreakdownPromptMock {
   }
 
   /**
-   * テスト用のリセット機能
+   * Reset functionality for testing
    */
   resetToDefaults(): void {
     this.templates.clear();
@@ -189,21 +189,21 @@ export class BreakdownPromptMock {
   }
 
   /**
-   * エラーをシミュレート
+   * Simulate an error
    */
   simulateError(directiveType: string, layerType: string, _errorMessage: string): void {
     const key = `${directiveType}-${layerType}`;
-    // エラーを起こすために無効なテンプレートを設定
+    // Set an invalid template to trigger an error
     this.templates.set(key, {
       directiveType,
       layerType,
-      content: "", // 空コンテンツでエラーを誘発
+      content: "", // Empty content to induce error
       variables: {},
     });
   }
 
   /**
-   * プロンプトの検証
+   * Validate prompt
    */
   validatePrompt(content: string): { valid: boolean; issues: string[] } {
     const issues: string[] = [];
@@ -225,7 +225,7 @@ export class BreakdownPromptMock {
 }
 
 /**
- * テスト用のファクトリー関数
+ * Factory function for testing
  */
 export function createMockBreakdownPrompt(templates?: MockPromptTemplate[]): BreakdownPromptMock {
   const mock = new BreakdownPromptMock();
@@ -239,7 +239,7 @@ export function createMockBreakdownPrompt(templates?: MockPromptTemplate[]): Bre
 }
 
 /**
- * 標準的なテストテンプレートセット
+ * Standard test template set
  */
 export const STANDARD_TEST_TEMPLATES: MockPromptTemplate[] = [
   {

@@ -9,10 +9,10 @@
  * - Maintain backward compatibility while enabling migration to DDD patterns
  * - Delegate actual prompt generation to domain services
  */
-import { PromptAdapterValidator, ValidationResult } from "./prompt_adapter_validator.ts";
+import { PromptAdapterValidator, type ValidationResult } from "./prompt_adapter_validator.ts";
 import { VariablesBuilder } from "../builder/variables_builder.ts";
 import type { PromptCliOptions } from "../factory/prompt_variables_factory.ts";
-import { Result } from "../types/result.ts";
+import type { Result } from "../types/result.ts";
 import {
   convertLegacyProvider,
   DomainPromptAdapter,

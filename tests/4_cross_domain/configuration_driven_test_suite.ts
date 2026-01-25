@@ -78,15 +78,21 @@ for (const testConfig of CONFIG_TEST_MATRIX) {
       testMatrix,
     });
 
-    // Step 3: Execute each test case
-    for (const testCase of testMatrix) {
-      logger.debug(`Test case execution - args: ${testCase.args}`, {
-        stage: "test_case",
-        ...testCase,
-      });
+    // Step 3: Execute each test case in parallel
+    const testResults = await Promise.all(
+      testMatrix.map(async (testCase) => {
+        logger.debug(`Test case execution - args: ${testCase.args}`, {
+          stage: "test_case",
+          ...testCase,
+        });
 
-      const paramsResult = await executeBreakdownParams(testCase.args, testConfig.configName);
+        const paramsResult = await executeBreakdownParams(testCase.args, testConfig.configName);
+        return { testCase, paramsResult };
+      }),
+    );
 
+    // Verify results
+    for (const { testCase, paramsResult } of testResults) {
       if (testCase.expectedType === "two") {
         assertEquals(
           paramsResult.ok,
@@ -168,22 +174,32 @@ Deno.test("3_core: Configuration-driven complete integration flow", async () => 
     stage: "end_to_end_config_based_test",
   });
 
-  for (const testConfig of CONFIG_TEST_MATRIX.slice(0, 2)) { // Test with the first 2 configurations
-    logger.debug(`Complete integration flow test`, { stage: "integration_test" });
+  // Execute all integration flow tests in parallel
+  const integrationResults = await Promise.all(
+    CONFIG_TEST_MATRIX.slice(0, 2).map(async (testConfig) => {
+      logger.debug(`Complete integration flow test`, { stage: "integration_test" });
 
-    const configResult = await ConfigurationTestHelper.loadTestConfiguration(testConfig.configName);
-    const validDirectives = configResult.userConfig.testData.validDirectives;
-    const validLayers = configResult.userConfig.testData.validLayers;
+      const configResult = await ConfigurationTestHelper.loadTestConfiguration(
+        testConfig.configName,
+      );
+      const validDirectives = configResult.userConfig.testData.validDirectives;
+      const validLayers = configResult.userConfig.testData.validLayers;
 
-    // Test complete integration flow with valid combinations
-    const testArgs = [validDirectives[0], validLayers[0]];
+      // Test complete integration flow with valid combinations
+      const testArgs = [validDirectives[0], validLayers[0]];
 
-    const completeResult = await createTwoParamsFromConfigFile(testArgs, testConfig.configName);
-    logger.debug(`Complete integration flow result - args: ${testArgs}`, {
-      stage: "result",
-      completeResult,
-    });
+      const completeResult = await createTwoParamsFromConfigFile(testArgs, testConfig.configName);
+      logger.debug(`Complete integration flow result - args: ${testArgs}`, {
+        stage: "result",
+        completeResult,
+      });
 
+      return { testArgs, completeResult };
+    }),
+  );
+
+  // Verify results
+  for (const { testArgs, completeResult } of integrationResults) {
     assertEquals(
       completeResult.ok,
       true,
@@ -227,20 +243,28 @@ Deno.test("2_structure: Configuration-driven edge case test", async () => {
       };
       const boundaryTestCases = edgeCaseTestData.boundaryTestCases;
       if (boundaryTestCases) {
-        for (
-          const boundaryCase of boundaryTestCases as Array<
-            { value: string; description?: string; expectValid: boolean }
-          >
-        ) {
-          logger.debug(`Boundary value test case - value: ${boundaryCase.value}`, {
-            stage: "boundary_value_test",
-            ...boundaryCase,
-          });
+        const typedBoundaryTestCases = boundaryTestCases as Array<
+          { value: string; description?: string; expectValid: boolean }
+        >;
 
-          // Boundary value test logic (actual pattern matching)
-          const testArgs = [boundaryCase.value, "project"]; // layer is fixed with valid value
-          const result = await executeBreakdownParams(testArgs, "test-helper");
+        // Execute all boundary test cases in parallel
+        const boundaryResults = await Promise.all(
+          typedBoundaryTestCases.map(async (boundaryCase) => {
+            logger.debug(`Boundary value test case - value: ${boundaryCase.value}`, {
+              stage: "boundary_value_test",
+              ...boundaryCase,
+            });
 
+            // Boundary value test logic (actual pattern matching)
+            const testArgs = [boundaryCase.value, "project"]; // layer is fixed with valid value
+            const result = await executeBreakdownParams(testArgs, "test-helper");
+
+            return { boundaryCase, result };
+          }),
+        );
+
+        // Verify results
+        for (const { boundaryCase, result } of boundaryResults) {
           if (boundaryCase.expectValid) {
             assertEquals(
               result.ok,

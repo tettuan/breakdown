@@ -190,7 +190,7 @@ export class PromptFileGenerator {
     if (fromFile === "-") {
       // Skip input file validation for stdin
     } else {
-      // 3. 入力ファイル存在チェック（引数バリデーション後に実行）
+      // 3. Check input file existence (executed after argument validation)
       try {
         await this.validateInputFile(inputFilePath);
       } catch (e) {
@@ -215,7 +215,7 @@ export class PromptFileGenerator {
       }
     }
 
-    // 4. テンプレートファイル存在チェック
+    // 4. Check template file existence
     const promptDir = dirname(promptFilePath);
     if (!existsSync(promptDir)) {
       return {
@@ -238,7 +238,7 @@ export class PromptFileGenerator {
       };
     }
 
-    // 6. テンプレート処理
+    // 6. Template processing
     const { PromptAdapterImpl } = await import("../prompt/prompt_adapter.ts");
     // PromptVariablesFactory implements PromptVariablesProvider interface
     const _adapter = new PromptAdapterImpl(

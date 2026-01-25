@@ -1,7 +1,7 @@
 /**
  * Template Validator Module
  *
- * exampleス実行前のテンプレート確認・補完機能を提供
+ * Provides template validation and completion functionality before running examples
  *
  * @module
  */
@@ -106,12 +106,18 @@ export class TemplateValidator {
     const missingTemplates: string[] = [];
     const existingTemplates: string[] = [];
 
-    for (const mapping of this.templateMappings) {
-      if (!mapping.required) continue;
+    const requiredMappings = this.templateMappings.filter((m) => m.required);
 
-      const destinationPath = join(this.projectRoot, mapping.destination);
-      const templateExists = await exists(destinationPath);
+    // Check all templates in parallel using Promise.all
+    const results = await Promise.all(
+      requiredMappings.map(async (mapping) => {
+        const destinationPath = join(this.projectRoot, mapping.destination);
+        const templateExists = await exists(destinationPath);
+        return { mapping, templateExists };
+      }),
+    );
 
+    for (const { mapping, templateExists } of results) {
       if (templateExists) {
         existingTemplates.push(mapping.destination);
       } else {
@@ -119,7 +125,7 @@ export class TemplateValidator {
       }
     }
 
-    const totalRequired = this.templateMappings.filter((m) => m.required).length;
+    const totalRequired = requiredMappings.length;
     const isValid = missingTemplates.length === 0;
 
     return {
@@ -137,41 +143,57 @@ export class TemplateValidator {
     generated: string[];
     failed: { template: string; error: string }[];
   }> {
+    const requiredMappings = this.templateMappings.filter((m) => m.required);
+
+    // Process all templates in parallel
+    const results = await Promise.all(
+      requiredMappings.map(async (mapping) => {
+        const sourcePath = join(this.projectRoot, mapping.source);
+        const destinationPath = join(this.projectRoot, mapping.destination);
+
+        // Skip if destination already exists
+        if (await exists(destinationPath)) {
+          return { status: "skipped" as const, mapping };
+        }
+
+        try {
+          // Check if source exists
+          if (!(await exists(sourcePath))) {
+            return {
+              status: "failed" as const,
+              mapping,
+              error: `Source template not found: ${mapping.source}`,
+            };
+          }
+
+          // Create destination directory
+          const destinationDir = destinationPath.substring(0, destinationPath.lastIndexOf("/"));
+          await Deno.mkdir(destinationDir, { recursive: true });
+
+          // Copy template file
+          await Deno.copyFile(sourcePath, destinationPath);
+          return { status: "generated" as const, mapping };
+        } catch (error) {
+          return {
+            status: "failed" as const,
+            mapping,
+            error: error instanceof Error ? error.message : String(error),
+          };
+        }
+      }),
+    );
+
+    // Collect results
     const generated: string[] = [];
     const failed: { template: string; error: string }[] = [];
 
-    for (const mapping of this.templateMappings) {
-      if (!mapping.required) continue;
-
-      const sourcePath = join(this.projectRoot, mapping.source);
-      const destinationPath = join(this.projectRoot, mapping.destination);
-
-      // Skip if destination already exists
-      if (await exists(destinationPath)) {
-        continue;
-      }
-
-      try {
-        // Check if source exists
-        if (!(await exists(sourcePath))) {
-          failed.push({
-            template: mapping.destination,
-            error: `Source template not found: ${mapping.source}`,
-          });
-          continue;
-        }
-
-        // Create destination directory
-        const destinationDir = destinationPath.substring(0, destinationPath.lastIndexOf("/"));
-        await Deno.mkdir(destinationDir, { recursive: true });
-
-        // Copy template file
-        await Deno.copyFile(sourcePath, destinationPath);
-        generated.push(mapping.destination);
-      } catch (error) {
+    for (const result of results) {
+      if (result.status === "generated") {
+        generated.push(result.mapping.destination);
+      } else if (result.status === "failed") {
         failed.push({
-          template: mapping.destination,
-          error: error instanceof Error ? error.message : String(error),
+          template: result.mapping.destination,
+          error: result.error,
         });
       }
     }
@@ -231,30 +253,30 @@ export async function validateTemplatesForExamples(projectRoot?: string): Promis
   const validation = await validator.validateTemplates();
 
   if (validation.isValid) {
-    console.log(`✅ All ${validation.totalRequired} required templates are present`);
+    console.log(`[OK] All ${validation.totalRequired} required templates are present`);
   } else {
     console.warn(
-      `❌ ${validation.missingTemplates.length}/${validation.totalRequired} templates missing:`,
+      `[ERROR] ${validation.missingTemplates.length}/${validation.totalRequired} templates missing:`,
     );
     for (const missing of validation.missingTemplates) {
       console.warn(`   - ${missing}`);
     }
-    console.log("\n💡 Run: bash scripts/template_generator.sh generate");
+    console.log("\n[TIP] Run: bash scripts/template_generator.sh generate");
   }
 
   // Perform preflight check
   const preflight = await validator.preflightCheck();
 
   if (preflight.ready) {
-    console.log("🚀 Examples are ready to run!");
+    console.log("[READY] Examples are ready to run!");
   } else {
-    console.warn("\n⚠️  Issues detected:");
+    console.warn("\n[WARNING] Issues detected:");
     for (const issue of preflight.issues) {
       console.warn(`   ${issue}`);
     }
 
     if (preflight.recommendations.length > 0) {
-      console.log("\n💡 Recommendations:");
+      console.log("\n[TIP] Recommendations:");
       for (const rec of preflight.recommendations) {
         console.log(`   ${rec}`);
       }

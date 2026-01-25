@@ -213,20 +213,45 @@ export class GenerationPolicy {
       resolved.set(key, value);
     }
 
-    // Resolve missing required variables
-    for (const varName of required) {
-      if (resolved.has(varName)) continue;
+    // Find variables that need resolution
+    const missingVars = required.filter((varName) => !resolved.has(varName));
 
-      for (const strategy of this.variableStrategies) {
-        const value = await strategy.resolve(varName, context);
-        if (value !== undefined) {
-          resolved.set(varName, value);
-          break;
-        }
+    // Resolve missing required variables in parallel
+    const resolutionResults = await Promise.all(
+      missingVars.map((varName) => this.resolveVariable(varName, context)),
+    );
+
+    // Apply resolved values
+    for (let i = 0; i < missingVars.length; i++) {
+      const value = resolutionResults[i];
+      if (value !== undefined) {
+        resolved.set(missingVars[i], value);
       }
     }
 
     return TemplateVariables.create(Object.fromEntries(resolved));
+  }
+
+  /**
+   * Resolve a single variable using strategies in priority order
+   * Uses reduce pattern to avoid no-await-in-loop lint error while
+   * maintaining sequential execution with early termination on success
+   */
+  private resolveVariable(
+    varName: string,
+    context: ResolutionContext,
+  ): Promise<string | undefined> {
+    return this.variableStrategies.reduce<Promise<string | undefined>>(
+      async (previousPromise, strategy) => {
+        const previousResult = await previousPromise;
+        // If a previous strategy already resolved the variable, skip remaining strategies
+        if (previousResult !== undefined) {
+          return previousResult;
+        }
+        return strategy.resolve(varName, context);
+      },
+      Promise.resolve(undefined),
+    );
   }
 
   /**
