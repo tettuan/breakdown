@@ -12,8 +12,6 @@
  * @module types/prompt_variable_source
  */
 
-import type { Result } from "./result.ts";
-
 /**
  * Raw source data for prompt variable construction
  *
@@ -174,51 +172,4 @@ export class PromptVariableSourceFactory {
 
     return merged;
   }
-}
-
-/**
- * Validation errors specific to PromptVariableSource
- */
-export interface SourceValidationError {
-  field: keyof PromptVariableSource;
-  message: string;
-  source?: DataSource;
-}
-
-/**
- * Result type for source validation
- */
-export type SourceValidationResult = Result<PromptVariableSource, SourceValidationError[]>;
-
-/**
- * Basic validation for PromptVariableSource
- *
- * Note: This is minimal validation. Full validation happens in Stage 2
- */
-export function validateSource(source: PromptVariableSource): SourceValidationResult {
-  const errors: SourceValidationError[] = [];
-
-  // Check for required fields based on context
-  if (!source.directive && !source.layer) {
-    errors.push({
-      field: "directive",
-      message: "Either directive or layer must be provided",
-      source: source.metadata?.source,
-    });
-  }
-
-  // Check for input source
-  if (!source.inputFile && !source.stdinContent) {
-    errors.push({
-      field: "inputFile",
-      message: "Either input file or stdin content must be provided",
-      source: source.metadata?.source,
-    });
-  }
-
-  if (errors.length > 0) {
-    return { ok: false, error: errors };
-  }
-
-  return { ok: true, data: source };
 }
