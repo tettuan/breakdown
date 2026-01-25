@@ -114,22 +114,6 @@ export {
 } from "./prompt_variables_vo.ts";
 export type { PromptVariable, PromptVariables } from "./prompt_variables_vo.ts";
 
-// Deprecated legacy types (for backward compatibility)
-// NOTE: Legacy factories removed during DirectiveType -> DirectiveType refactor
-// TODO: Remove legacy test files that depend on these exports
-// export type { DirectiveType, LegacyLayerType } from "./legacy_factories.ts";
-// export {
-//   DirectiveTypeFactory,
-//   DirectiveTypeGuards,
-//   DirectiveFactory,
-//   LayerFactory,
-//   LegacyLayerTypeFactory,
-//   LegacyLayerTypeGuards,
-//   TwoParamsConfigFactory,
-//   VariableResultFactory,
-// } from "./legacy_factories.ts";
-// export type { PromptCliParams } from "./prompt_variables.ts"; // Moved to factory re-export to avoid duplicate
-
 // Layer type utilities - moved to domain/core/value_objects
 
 // Default implementations - moved to JSR packages

@@ -206,29 +206,3 @@ export function extractCliErrorMessage(error: CliError): string {
     }
   }
 }
-
-/**
- * Legacy CliErrorCode enum for backward compatibility
- * @deprecated Use CliError discriminated union instead
- */
-export enum CliErrorCode {
-  INVALID_OPTION = "INVALID_OPTION",
-  DUPLICATE_OPTION = "DUPLICATE_OPTION",
-  CONFLICTING_OPTIONS = "CONFLICTING_OPTIONS",
-  INVALID_INPUT_TYPE = "INVALID_INPUT_TYPE",
-  MISSING_REQUIRED = "MISSING_REQUIRED",
-  INVALID_PARAMETERS = "INVALID_PARAMETERS",
-}
-
-/**
- * Legacy CliError class for backward compatibility
- * @deprecated Use CliError discriminated union and CliErrorFactory instead
- */
-export class CliErrorLegacy extends Error {
-  code: CliErrorCode;
-  constructor(code: CliErrorCode, message: string) {
-    super(`[${code}] ${message}`);
-    this.code = code;
-    this.name = "CliError";
-  }
-}

@@ -80,15 +80,6 @@ export class TwoParamsStdinProcessor {
   }
 
   /**
-   * Get file path from options if specified
-   * NOTE: This method is no longer used as --from doesn't read files
-   * @deprecated
-   */
-  private getFilePath(_options: Record<string, unknown>): string | null {
-    return null;
-  }
-
-  /**
    * Read file content
    * Handles missing files gracefully by returning empty string
    */
