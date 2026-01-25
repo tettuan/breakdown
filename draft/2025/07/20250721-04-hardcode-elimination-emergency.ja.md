@@ -15,28 +15,28 @@
 現在のコードベースで以下の**重大な設計違反**が発見された：
 
 ```typescript
-// ❌ 絶対禁止：ハードコードされたDirectiveType配列
+// NG: 絶対禁止：ハードコードされたDirectiveType配列
 getDirectiveTypes(): string[] {
   return ["to", "summary", "defect", "find"];
 }
 
-// ❌ 絶対禁止：ハードコードされたLayerType配列
+// NG: 絶対禁止：ハードコードされたLayerType配列
 getLayerTypes(): string[] {
   return ["project", "issue", "task"];
 }
 
-// ❌ 絶対禁止：ハードコードされたパターン定義
+// NG: 絶対禁止：ハードコードされたパターン定義
 this.directivePattern = TwoParamsDirectivePattern.create("^(to|summary|defect)$");
 this.layerPattern = TwoParamsLayerTypePattern.create("^(project|issue|task|bugs|temp)$");
 
-// ❌ 絶対禁止：ハードコードされた条件分岐
+// NG: 絶対禁止：ハードコードされた条件分岐
 if (directive === "find" && layer === "bugs") {
   // 特別処理
 } else if (directive !== "find") {
   // 通常処理
 }
 
-// ❌ 絶対禁止：テストでのハードコードパターン
+// NG: 絶対禁止：テストでのハードコードパターン
 const validPattern = TwoParamsDirectivePattern.create("^(to|summary|defect)$");
 const layerPattern = TwoParamsLayerTypePattern.create("^(project|issue|task)$");
 ```
@@ -83,35 +83,35 @@ const layerPattern = TwoParamsLayerTypePattern.create("^(project|issue|task)$");
 
 #### 禁止パターン（即座に削除）
 ```typescript
-// ❌ 絶対禁止：ハードコードされたDirectiveType配列
+// NG: 絶対禁止：ハードコードされたDirectiveType配列
 getDirectiveTypes(): string[] {
   return ["to", "summary", "defect", "find"];
 }
 
-// ❌ 絶対禁止：ハードコードされたLayerType配列
+// NG: 絶対禁止：ハードコードされたLayerType配列
 getLayerTypes(): string[] {
   return ["project", "issue", "task"];
 }
 
-// ❌ 絶対禁止：静的配列定義
+// NG: 絶対禁止：静的配列定義
 const DIRECTIVE_TYPES = ["to", "summary", "defect", "find"];
 const LAYER_TYPES = ["project", "issue", "task"];
 
-// ❌ 絶対禁止：メソッド内での直接配列返却
+// NG: 絶対禁止：メソッド内での直接配列返却
 getValidDirectives() { return ["to", "summary", "defect"]; }
 getValidLayers() { return ["project", "issue", "task"]; }
 
-// ❌ 絶対禁止：デフォルト値としての配列ハードコード
+// NG: 絶対禁止：デフォルト値としての配列ハードコード
 directivePatterns: ["to", "summary", "defect", "init", "find"]
 layerPatterns: ["project", "issue", "task", "bugs", "temp"]
 
-// ❌ 絶対禁止：ハードコードされたパターン定義
+// NG: 絶対禁止：ハードコードされたパターン定義
 this.directivePattern = TwoParamsDirectivePattern.create("^(to|summary|defect)$");
 this.layerPattern = TwoParamsLayerTypePattern.create("^(project|issue|task|bugs|temp)$");
 const validPattern = TwoParamsDirectivePattern.create("^(to|summary|defect)$");
 const layerPattern = TwoParamsLayerTypePattern.create("^(project|issue|task)$");
 
-// ❌ 絶対禁止：ハードコードされた条件分岐
+// NG: 絶対禁止：ハードコードされた条件分岐
 if (directive === "find" && layer === "bugs") {
   // 特別処理
 } else if (directive !== "find") {
@@ -120,7 +120,7 @@ if (directive === "find" && layer === "bugs") {
 if (directive === "find") continue; // 特別扱い
 if (directive === "summary" && expectedLayer === "task") continue;
 
-// ❌ 絶対禁止：ループでのハードコード配列使用
+// NG: 絶対禁止：ループでのハードコード配列使用
 for (const directive of ["to", "find", "summary", "defect"]) {
   for (const layer of ["project", "issue", "task", "bugs"]) {
     // 処理
@@ -151,7 +151,7 @@ for (const directive of ["to", "find", "summary", "defect"]) {
 
 #### 設定ファイルベース実装
 ```typescript
-// ✅ 正しいパターン：設定ファイルからの読み込み
+// OK: 正しいパターン：設定ファイルからの読み込み
 import { DEFAULT_CUSTOM_CONFIG } from "@tettuan/breakdownparams";
 import type { ParamsCustomConfig } from "../types/params_custom_config.ts";
 
@@ -182,7 +182,7 @@ const result = await breakdownParams(args, customConfig);
 
 #### 設定ファイル構造（*-user.yml）
 ```yaml
-# ✅ 正しいパターン：CustomConfig完全階層構造
+# OK: 正しいパターン：CustomConfig完全階層構造
 params:
   two:
     directiveType:
@@ -329,30 +329,30 @@ docs/**/*.md                                # ドキュメント更新
 
 #### コード検証
 ```typescript
-// ✅ 許可される実装：設定ファイル読み込み
+// OK: 許可される実装：設定ファイル読み込み
 const userConfig = await loadUserConfig(profileName);
 const directivePattern = userConfig.params.two.directiveType.pattern;
 const layerPattern = userConfig.params.two.layerType.pattern;
 const directiveErrorMessage = userConfig.params.two.directiveType.errorMessage;
 const layerErrorMessage = userConfig.params.two.layerType.errorMessage;
 
-// ✅ 許可される実装：設定ベース条件分岐
+// OK: 許可される実装：設定ベース条件分岐
 const specialCombinations = userConfig.specialCombinations || {};
 if (specialCombinations[`${directive}/${layer}`]) {
   // 設定で定義された特別処理
 }
 
-// ❌ 禁止される実装：ハードコード配列
+// NG: 禁止される実装：ハードコード配列
 const validDirectives = ["to", "summary", "defect"];
 const validLayers = ["project", "issue", "task"];
 const getDirectiveTypes = () => ["to", "summary"];
 const getLayerTypes = () => ["project", "issue"];
 
-// ❌ 禁止される実装：ハードコードパターン
+// NG: 禁止される実装：ハードコードパターン
 const pattern = TwoParamsDirectivePattern.create("^(to|summary|defect)$");
 this.directivePattern = TwoParamsDirectivePattern.create("^(to|summary|defect)$");
 
-// ❌ 禁止される実装：ハードコード条件分岐
+// NG: 禁止される実装：ハードコード条件分岐
 if (directive === "find" && layer === "bugs") { /* 処理 */ }
 if (directive === "find") continue;
 if (directive !== "find") { /* 処理 */ }
@@ -360,7 +360,7 @@ if (directive !== "find") { /* 処理 */ }
 
 #### 設定ファイル検証
 ```bash
-# ✅ 正しい設定ファイル構造（CustomConfig完全階層構造）
+# OK: 正しい設定ファイル構造（CustomConfig完全階層構造）
 config/
 ├── default-user.yml      # params.two.directiveType/layerType階層
 ├── production-user.yml   # params.two.directiveType/layerType階層

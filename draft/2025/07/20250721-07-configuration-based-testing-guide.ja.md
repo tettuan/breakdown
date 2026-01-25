@@ -15,12 +15,12 @@
 テストファイルに**20箇所以上のハードコード配列**と**ConfigProfile依存**が残存し、設定ファイルベースのテストが未整備の状態：
 
 ```typescript
-// ❌ 禁止パターン：ハードコードテスト
+// NG: 禁止パターン：ハードコードテスト
 const validDirectiveTypes = ["to", "summary", "defect"];
 const validLayerTypes = ["project", "issue", "task"];
 DirectiveType.create("to", ConfigProfile.createDefault());
 
-// ❌ 禁止パターン：設定を無視したテスト
+// NG: 禁止パターン：設定を無視したテスト
 describe("DirectiveType validation", () => {
   test("accepts hardcoded values", () => {
     assertEquals(DirectiveType.create("to").isValid(), true);  // 設定無視
@@ -140,7 +140,7 @@ testData:
 
 #### ユニットテスト実装
 ```typescript
-// ✅ 正しいパターン：設定ファイルベースユニットテスト
+// OK: 正しいパターン：設定ファイルベースユニットテスト
 import { assertEquals } from "jsr:@std/assert@0.224.0";
 import { ConfigProfile } from "$lib/config/config_profile_name.ts";
 import { loadUserConfig } from "$lib/config/user_config_loader.ts";
@@ -227,7 +227,7 @@ describe("DirectiveType - Configuration-Based Tests", () => {
 
 #### 統合テスト実装
 ```typescript
-// ✅ 正しいパターン：設定ファイルベース統合テスト
+// OK: 正しいパターン：設定ファイルベース統合テスト
 import { assertEquals } from "jsr:@std/assert@0.224.0";
 import { TwoParamsService } from "$lib/application/services/two_params_service.ts";
 
@@ -279,7 +279,7 @@ describe("TwoParamsService - Configuration Integration Tests", () => {
 
 #### 設定ファイル駆動パラメータ化テスト
 ```typescript
-// ✅ 正しいパターン：設定ファイル駆動パラメータ化テスト
+// OK: 正しいパターン：設定ファイル駆動パラメータ化テスト
 describe("DirectiveType/LayerType - Parameterized Configuration Tests", () => {
   
   const testConfigurations = [
@@ -351,7 +351,7 @@ function generateTestMatrix(testData: any): Array<{
 
 #### 実設定ファイル使用統合テスト
 ```typescript
-// ✅ 正しいパターン：モックレス設定統合テスト
+// OK: 正しいパターン：モックレス設定統合テスト
 describe("Real Configuration Integration Tests", () => {
   
   test("uses actual default configuration", async () => {
@@ -420,7 +420,7 @@ function extractValidValues(pattern: string): string[] {
 
 #### 設定ファイルベーステストヘルパー
 ```typescript
-// ✅ テストヘルパー：設定ファイル駆動テストサポート
+// OK: テストヘルパー：設定ファイル駆動テストサポート
 export class ConfigurationTestHelper {
   
   static async loadTestConfiguration(configName: string) {
@@ -538,8 +538,8 @@ export class ConfigurationTestHelper {
 1. **移行完了検証**
    ```bash
    # ハードコード配列の完全除去確認
-   grep -r "\[\"to\".*\"summary\"" lib/ || echo "✅ No hardcoded arrays found"
-   grep -r "ConfigProfile.*createDefault" lib/ || echo "✅ No ConfigProfile dependencies found"
+   grep -r "\[\"to\".*\"summary\"" lib/ || echo "[OK] No hardcoded arrays found"
+   grep -r "ConfigProfile.*createDefault" lib/ || echo "[OK] No ConfigProfile dependencies found"
    ```
 
 2. **テスト実行とパフォーマンス確認**
@@ -566,12 +566,12 @@ export class ConfigurationTestHelper {
 
 ### 検証条件
 ```bash
-# ✅ これらの検索結果が空であること
+# OK: これらの検索結果が空であること
 grep -r "\[\"to\".*\"summary\"" lib/**/*test*.ts
 grep -r "ConfigProfile.*createDefault" lib/**/*test*.ts
 grep -r "hardcoded.*directive\|hardcoded.*layer" lib/
 
-# ✅ これらが正常動作すること
+# OK: これらが正常動作すること
 deno task test
 deno task test:config-patterns
 deno task test:integration

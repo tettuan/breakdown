@@ -15,7 +15,7 @@
 現在のDirectiveType/LayerType実装で以下の**重大な設計違反**が発見された：
 
 ```typescript
-// ❌ 絶対禁止：DirectiveTypeへのConfigProfile注入
+// NG: 絶対禁止：DirectiveTypeへのConfigProfile注入
 class DirectiveType {
   private constructor(
     private readonly _value: string,
@@ -33,13 +33,13 @@ class DirectiveType {
   ): Result<DirectiveType, DirectiveTypeError> {}
 }
 
-// ❌ 絶対禁止：LayerTypeへのConfigProfile注入
+// NG: 絶対禁止：LayerTypeへのConfigProfile注入
 class LayerType {
   static getCommonLayerTypes(profile?: ConfigProfile): readonly string[] {}  // ← 設計違反
   static getKnownLayerTypes(profile?: ConfigProfile): readonly string[] {}   // ← 設計違反
 }
 
-// ❌ 絶対禁止：テストでのConfigProfile使用
+// NG: 絶対禁止：テストでのConfigProfile使用
 DirectiveType.create(directive, ConfigProfile.createDefault());  // ← 設計違反
 LayerType.create(mockTwoParamsResult.layerType, ConfigProfile.createDefault());  // ← 設計違反
 ```
@@ -81,7 +81,7 @@ LayerType.create(mockTwoParamsResult.layerType, ConfigProfile.createDefault()); 
 
 #### 禁止パターン（即座に削除）
 ```typescript
-// ❌ 絶対禁止：DirectiveTypeのConfigProfile依存
+// NG: 絶対禁止：DirectiveTypeのConfigProfile依存
 class DirectiveType {
   private readonly _profile: ConfigProfile;
   get profile(): ConfigProfile;
@@ -89,14 +89,14 @@ class DirectiveType {
   isValidForProfile(profile: ConfigProfile): boolean;
 }
 
-// ❌ 絶対禁止：LayerTypeのConfigProfile依存
+// NG: 絶対禁止：LayerTypeのConfigProfile依存
 class LayerType {
   static getCommonLayerTypes(profile?: ConfigProfile): readonly string[];
   static getKnownLayerTypes(profile?: ConfigProfile): readonly string[];
   static create(value: string, profile?: ConfigProfile);
 }
 
-// ❌ 絶対禁止：テストでのConfigProfile注入
+// NG: 絶対禁止：テストでのConfigProfile注入
 DirectiveType.create("to", ConfigProfile.createDefault());
 LayerType.create("project", ConfigProfile.createDefault());
 const profile = ConfigProfile.createDefault();
@@ -119,7 +119,7 @@ const profile = ConfigProfile.createDefault();
 
 #### JSR検証済み値統合実装
 ```typescript
-// ✅ 正しいパターン：BreakdownParams検証済み値からの直接生成
+// OK: 正しいパターン：BreakdownParams検証済み値からの直接生成
 class DirectiveType {
   readonly source = "BREAKDOWN_PARAMS_VALIDATED" as const;
   
@@ -157,7 +157,7 @@ class LayerType {
 
 #### BreakdownParams統合ヘルパー関数
 ```typescript
-// ✅ 正しいパターン：BreakdownParams TwoParamsResultから変換するヘルパー関数
+// OK: 正しいパターン：BreakdownParams TwoParamsResultから変換するヘルパー関数
 import type { TwoParamsResult } from "@tettuan/breakdownparams";
 
 function fromTwoParamsResult(twoParamsResult: TwoParamsResult): TwoParams {
@@ -179,7 +179,7 @@ if (result.type === "two") {
 
 #### 設定検証の責務分離
 ```typescript
-// ✅ 正しいパターン：設定ベース検証はBreakdownParams統合で実行
+// OK: 正しいパターン：設定ベース検証はBreakdownParams統合で実行
 // DirectiveType/LayerType型には検証ロジック不要
 
 // ProfileName → BreakdownConfig → CustomConfig → BreakdownParams
@@ -213,7 +213,7 @@ const result = await breakdownParams(args, customConfig);
 
 #### 正しいテストパターン
 ```typescript
-// ✅ 正しいパターン：BreakdownParams検証済み値として直接生成
+// OK: 正しいパターン：BreakdownParams検証済み値として直接生成
 describe("DirectiveType", () => {
   test("creates from BreakdownParams validated value", () => {
     const directive = new DirectiveType("to");
@@ -236,7 +236,7 @@ describe("LayerType", () => {
   });
 });
 
-// ❌ 禁止パターン：ConfigProfile使用
+// NG: 禁止パターン：ConfigProfile使用
 // DirectiveType.create("to", ConfigProfile.createDefault()); // 削除
 // const profile = ConfigProfile.createDefault(); // 削除
 ```
@@ -270,17 +270,17 @@ docs/**/*.md                                             # ドキュメント更
 
 #### コード検証
 ```typescript
-// ✅ 許可される実装：BreakdownParams検証済み値の直接生成
+// OK: 許可される実装：BreakdownParams検証済み値の直接生成
 const directive = new DirectiveType(twoParamsResult.directiveType);
 const layer = new LayerType(twoParamsResult.layerType);
 const twoParams = { directive, layer };
 
-// ✅ 許可される実装：型安全な比較
+// OK: 許可される実装：型安全な比較
 if (directive.equals(otherDirective)) {
   // 処理
 }
 
-// ❌ 禁止される実装：ConfigProfile依存
+// NG: 禁止される実装：ConfigProfile依存
 const directive = DirectiveType.create("to", ConfigProfile.createDefault());
 const profile = directive.profile;
 directive.isValidForProfile(profile);

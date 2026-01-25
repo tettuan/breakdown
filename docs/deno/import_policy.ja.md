@@ -39,12 +39,12 @@
 1. 標準ライブラリの import
 
 ```typescript
-// ✅ 正しい import
+// OK: 正しい import
 import { assertEquals } from "$std/assert/assert_equals.ts";
 import { join } from "$std/path/join.ts";
 import { exists } from "$std/fs/exists.ts";
 
-// ❌ 避けるべき import
+// NG: 避けるべき import
 import { assertEquals } from "https://deno.land/std/testing/asserts.ts";
 import { join } from "./deps.ts"; // 直接的な再エクスポートは避ける
 ```
@@ -55,11 +55,11 @@ import { join } from "./deps.ts"; // 直接的な再エクスポートは避け�
 - 相対パスを使用する場合は `./` または `../` で始める
 
 ```typescript
-// ✅ 正しい import
+// OK: 正しい import
 import { MyComponent } from "./components/MyComponent.ts";
 import type { Config } from "../types.ts";
 
-// ❌ 避けるべき import
+// NG: 避けるべき import
 import { MyComponent } from "components/MyComponent"; // 拡張子なし
 import type { Config } from "types"; // 相対パスが不明確
 ```
@@ -71,10 +71,10 @@ import type { Config } from "types"; // 相対パスが不明確
 // バージョン管理を一元化する場合のみ使用
 export { assertEquals, assertExists } from "$std/assert/mod.ts";
 
-// ✅ 正しい使用
+// OK: 正しい使用
 import { assertEquals } from "./deps.ts";
 
-// ❌ 避けるべき使用
+// NG: 避けるべき使用
 import { assertEquals } from "$std/assert/mod.ts"; // バージョン管理が分散
 ```
 

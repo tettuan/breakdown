@@ -68,7 +68,7 @@ if (allParams.outputFilePath === "stdout" || allParams.outputFilePath === "-") {
     await ensureDir(outputDir);
   }
   await Deno.writeTextFile(allParams.outputFilePath, content);
-  console.log(`✅ Output written to: ${allParams.outputFilePath}`);
+  console.log(`Output written to: ${allParams.outputFilePath}`);
 }
 
 ```

@@ -202,31 +202,31 @@ type BreakdownError =
 ### DirectiveType と layerType のハードコーディング禁止
 
 ```typescript
-// ✅ 許可される実装：設定ファイル読み込み
+// OK: 許可される実装：設定ファイル読み込み
 const userConfig = await loadUserConfig(profileName);
 const directivePattern = userConfig.params.two.directiveType.pattern;
 const layerPattern = userConfig.params.two.layerType.pattern;
 const directiveErrorMessage = userConfig.params.two.directiveType.errorMessage;
 const layerErrorMessage = userConfig.params.two.layerType.errorMessage;
 
-// ✅ 許可される実装：設定ベース条件分岐
+// OK: 許可される実装：設定ベース条件分岐
 const specialCombinations = userConfig.specialCombinations || {};
 if (specialCombinations[`${directive}/${layer}`]) {
   // 設定で定義された特別処理
 }
 
-// ❌ 禁止される実装：ハードコード配列
+// NG: 禁止される実装：ハードコード配列
 const validDirectives = ["to", "summary", "defect"];
 const validLayers = ["project", "issue", "task"];
 const getDirectiveTypes = () => ["to", "summary"];
 const getLayerTypes = () => ["project", "issue"];
 
-// ❌ 禁止される実装：ハードコードパターン
+// NG: 禁止される実装：ハードコードパターン
 const pattern = TwoParamsDirectivePattern.create("^(to|summary|defect)$");
 this.directivePattern = TwoParamsDirectivePattern.create("^(to|summary|defect)$");
 pattern: configData.params?.two?.directiveType?.pattern || "^(to|summary|defect|find|analyze|extract)$",
 
-// ❌ 禁止される実装：ハードコード条件分岐
+// NG: 禁止される実装：ハードコード条件分岐
 if (directive === "find" && layer === "bugs") { /* 処理 */ }
 if (directive === "find") continue;
 if (directive !== "find") { /* 処理 */ }
@@ -649,12 +649,12 @@ flowchart TD
 5. **拡張性と保守性**: ドメイン境界の明確化、変更容易性、テスト可能性
 
 ### 実装チェックリスト
-- [x] JSR検証済み値の直接利用（DirectiveType.fromJSR/LayerType.fromJSR）
+- [DONE] JSR検証済み値の直接利用（DirectiveType.fromJSR/LayerType.fromJSR）
 - [ ] Result型による例外の排除  
 - [ ] Discriminated Unionによる状態表現
 - [ ] `switch`文による網羅的分岐（`default`不要）
 - [ ] 型アサーション使用量最小化
-- [x] 冗長な検証ロジックの削除
+- [DONE] 冗長な検証ロジックの削除
 
 ## 関連ドキュメント
 - [totality.ja.md](../../generic_domain/system/overview/totality.ja.md): 全域性原則

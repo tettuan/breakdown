@@ -2,7 +2,7 @@
 
 ## 実装優先順位
 
-### 🚨 優先度1 (即座実装) - 緊急
+### [CRITICAL] 優先度1 (即座実装) - 緊急
 
 1. **CI環境判定の確実性向上**
    - 複数CI環境変数の包括チェック
@@ -14,7 +14,7 @@
    - CI環境でのフォールバック機能
    - エラー時の安全なデフォルト値
 
-### 🔥 優先度2 (今週実装) - 高
+### [HIGH] 優先度2 (今週実装) - 高
 
 3. **CI環境専用STDINテストモック**
    - MockStdin implementation
@@ -26,7 +26,7 @@
    - Debug logging controls
    - Override mechanisms
 
-### ⚡ 優先度3 (来週実装) - 中
+### [MEDIUM] 優先度3 (来週実装) - 中
 
 5. **CI環境でのSTDIN動作検証フラグ**
    - Validation mode for CI
@@ -166,14 +166,14 @@ async function handleTwoParams(params: string[], config: Record<string, unknown>
 
     // 警告メッセージの処理
     for (const warning of stdinResult.warnings) {
-      console.warn(`⚠️ ${warning}`);
+      console.warn(`[WARN] ${warning}`);
     }
 
     const inputText = stdinResult.inputText;
     // 以下既存処理...
     
   } catch (error) {
-    console.warn("⚠️ STDIN reading failed:", error instanceof Error ? error.message : String(error));
+    console.warn("[WARN] STDIN reading failed:", error instanceof Error ? error.message : String(error));
   }
 }
 ```

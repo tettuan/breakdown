@@ -1,6 +1,6 @@
 # docs/配下での変更が必要な箇所 - Plan1実装のため
 
-## 🎯 Plan1統一設定形式
+## [TARGET] Plan1統一設定形式
 ```yaml
 working_dir: ".agent/breakdown"  # SINGLE SOURCE OF TRUTH
 app_prompt:
@@ -9,9 +9,9 @@ app_schema:
   base_dir: "schemas"            # 常に相対パス
 ```
 
-## 📝 変更が必要なドキュメント一覧
+## [NOTE] 変更が必要なドキュメント一覧
 
-### 🔴 高優先度: 設定例の変更が必要
+### [HIGH] 高優先度: 設定例の変更が必要
 
 #### 1. `/docs/breakdown/interface/configuration.ja.md`
 **変更箇所**:
@@ -42,7 +42,7 @@ app_schema:
 **変更箇所**:
 - **Line 26**: `"base_dir": "./.agent/breakdown/prompts/"` → `"base_dir": "prompts"`
 
-### 🟡 中優先度: パス解決説明の更新が必要
+### [MEDIUM] 中優先度: パス解決説明の更新が必要
 
 #### 4. `/docs/breakdown/interface/path_resolution.ja.md`
 **大幅な更新が必要**:
@@ -65,7 +65,7 @@ app_prompt:
 - **Line 43**: 設定例の統一
 - ディレクトリ構造図の更新（Line 28周辺）
 
-### 🟢 低優先度: 用語説明の更新
+### [LOW] 低優先度: 用語説明の更新
 
 #### 6. `/docs/breakdown/generic_domain/system/overview/glossary.ja.md`
 **変更箇所**:
@@ -78,7 +78,7 @@ app_prompt:
 **変更箇所**:
 - 対応する英語版の更新
 
-### 🔵 追加が必要: 新しい説明セクション
+### [ADD] 追加が必要: 新しい説明セクション
 
 #### 8. 設定ファイル全体に追加すべき説明
 ```markdown
@@ -94,7 +94,7 @@ app_prompt:
 - `base_dir`: 相対的な役割分担の定義
 ```
 
-## 🚨 検証が必要な箇所
+## [CRITICAL] 検証が必要な箇所
 
 ### ドメイン設計ドキュメント
 #### 9. `/docs/breakdown/domain_core/domain_boundaries_flow.ja.md`
@@ -102,7 +102,7 @@ app_prompt:
 - **Line 163**: base_dir設定の記述が統一方針と整合するか
 - プロンプトパス決定ドメインの説明更新
 
-## 📋 変更作業の手順
+## [LIST] 変更作業の手順
 
 ### Phase 1: 高優先度（設定例）
 1. `configuration.ja.md` の設定例統一
@@ -121,7 +121,7 @@ app_prompt:
 8. パス解決統一方針の説明追加
 9. 設定意図の明確化
 
-## ✅ 完了確認チェックリスト
+## [OK] 完了確認チェックリスト
 
 - [ ] 全設定例が統一形式（working_dir + 相対base_dir）
 - [ ] パス解決説明が統一方針と整合

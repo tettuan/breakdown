@@ -178,15 +178,15 @@ goroutine_pools:
       role: 分析官
       state: IDLE
       tasks:
-        completed: [✅タスクA, ✅タスクB]
+        completed: [[DONE]タスクA, [DONE]タスクB]
         current: null
-        queue: [🔲タスクE]
+        queue: [[TODO]タスクE]
     - worker_id: pane5  
       role: 開発者
       state: WORKING
       tasks:
-        completed: [✅タスクC]
-        current: �タスクD
+        completed: [[DONE]タスクC]
+        current: [WIP]タスクD
         queue: []
     - worker_id: pane6
       role: テスター
@@ -195,13 +195,13 @@ goroutine_pools:
       tasks:
         completed: []
         current: null
-        queue: [🔲テスト_タスクD]
+        queue: [[TODO]テスト_タスクD]
   manager2_pool:
     - worker_id: pane7
       role: ドキュメンター
       state: TERMINATED
       tasks:
-        completed: [✅ドキュメント作成]
+        completed: [[DONE]ドキュメント作成]
         current: null
         queue: []
 ```

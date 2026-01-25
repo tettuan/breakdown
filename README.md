@@ -5,7 +5,7 @@
 
 A powerful CLI tool for creating AI-optimized development instructions using TypeScript and JSON Schema. Convert markdown requirements into structured prompts for AI development agents.
 
-## 🚀 Quick Start
+## Quick Start
 
 Install Breakdown globally using JSR:
 
@@ -26,13 +26,13 @@ breakdown to task issue.md -o tasks_output/
 Breakdown transforms human-written development requirements into AI-interpretable structured prompts using TypeScript and JSON Schema. It bridges the communication gap between developers and AI systems by providing standardized formats for expressing complex development requirements.
 
 **Key Benefits:**
-- 📝 Convert markdown specifications into structured AI prompts
-- 🎯 3-tier breakdown hierarchy: Project → Issue → Task
-- 🤖 Optimized for AI development agents (Claude, Cursor, etc.)
-- 📊 JSON Schema-based structured output
-- 🔧 Flexible output formats (Markdown/JSON/YAML)
+- Convert markdown specifications into structured AI prompts
+- 3-tier breakdown hierarchy: Project → Issue → Task
+- Optimized for AI development agents (Claude, Cursor, etc.)
+- JSON Schema-based structured output
+- Flexible output formats (Markdown/JSON/YAML)
 
-## 📋 Core Commands
+## Core Commands
 
 Breakdown provides three main command types for different workflow stages:
 
@@ -42,7 +42,7 @@ Breakdown provides three main command types for different workflow stages:
 | `summary` | Generate consolidated documentation | `breakdown summary project -o summary.md` |
 | `defect` | Create fix proposals from errors | `breakdown defect task --from=bug.md -o fixes/` |
 
-## 💡 Usage Examples
+## Usage Examples
 
 ### Basic Workflow: Requirements → Implementation
 
@@ -162,7 +162,7 @@ breakdown defect task --from=<issue_defect.md> -o=<task_defect_dir>
 breakdown defect task --from=<improvement_request.md> -o=<task_defect_dir>
 ```
 
-## 📦 Installation
+## Installation
 
 ### Global Installation (Recommended)
 
@@ -197,7 +197,7 @@ deno install --allow-read --allow-write --allow-run --allow-env --allow-net -f -
 ### Alternative Installation Methods
 
 <details>
-<summary>📁 Project-Local Installation</summary>
+<summary>Project-Local Installation</summary>
 
 Install for a specific project only:
 
@@ -209,7 +209,7 @@ export PATH="$(pwd)/.deno/bin:$PATH"
 </details>
 
 <details>
-<summary>📚 Library Usage</summary>
+<summary>Library Usage</summary>
 
 Use Breakdown programmatically in TypeScript/JavaScript:
 
@@ -226,7 +226,7 @@ const result = await runBreakdown(["to", "project", "input.md", "-o", "output/"]
 </details>
 
 <details>
-<summary>🔧 Standalone Binary</summary>
+<summary>Standalone Binary</summary>
 
 Compile as a standalone executable:
 
@@ -242,7 +242,7 @@ deno compile --allow-read --allow-write --allow-run --allow-env --allow-net -o .
 - **Deno 2.0+** (recommended)
 - **Permissions**: File system access required for reading/writing files
 
-## 🏗️ Architecture
+## Architecture
 
 Breakdown leverages a powerful 4-package architecture for maximum modularity:
 
@@ -251,15 +251,15 @@ Breakdown leverages a powerful 4-package architecture for maximum modularity:
 - **[@tettuan/breakdownprompt](https://jsr.io/@tettuan/breakdownprompt)** - Core prompt generation engine
 - **[@tettuan/breakdownlogger](https://jsr.io/@tettuan/breakdownlogger)** - Structured logging
 
-## 📚 Documentation & Resources
+## Documentation & Resources
 
 | Resource | Link |
 |----------|------|
-| 📖 **Full Documentation** | [tettuan.github.io/breakdown](https://tettuan.github.io/breakdown/) |
-| 📦 **JSR Package** | [jsr.io/@tettuan/breakdown](https://jsr.io/@tettuan/breakdown) |
-| 🌏 **Language** | [English](README.md) \| [日本語](README.ja.md) |
+| **Full Documentation** | [tettuan.github.io/breakdown](https://tettuan.github.io/breakdown/) |
+| **JSR Package** | [jsr.io/@tettuan/breakdown](https://jsr.io/@tettuan/breakdown) |
+| **Language** | [English](README.md) \| [日本語](README.ja.md) |
 
-## 👨‍💻 Development
+## Development
 
 ### Release Workflow
 
@@ -288,7 +288,7 @@ Breakdown uses a structured release process with automated CI/CD workflows:
    git push origin release/v1.5.0
    ```
    
-   > ✅ **Version Check**: Automated workflow validates version consistency across files
+   > **Version Check**: Automated workflow validates version consistency across files
 
 4. **Create and Merge PR**
    ```bash
@@ -296,7 +296,7 @@ Breakdown uses a structured release process with automated CI/CD workflows:
    gh pr merge --merge
    ```
    
-   > ✅ **Auto Release**: Merging triggers automatic v-tag creation and JSR publishing
+   > **Auto Release**: Merging triggers automatic v-tag creation and JSR publishing
 
 #### Workflow Overview
 
@@ -329,10 +329,10 @@ deno test
 ./examples/01_instructions.sh
 ```
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please check the [documentation site](https://tettuan.github.io/breakdown/) for contribution guidelines.
 
-## 📄 License
+## License
 
 Published under the terms specified in the package configuration.

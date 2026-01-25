@@ -45,8 +45,8 @@ throw createWorkspaceInitError(...); // WorkspaceInitErrorInterface オブジェ
 4. **結果**: CI環境でのみ`assertRejects()`が`A non-Error object was rejected`エラーを発生
 
 ### 確認済み事実
-- ローカルテスト: ✅ 成功（`Error`インスタンスが投げられる）
-- CI環境テスト: ❌ 失敗（`WorkspaceInitErrorInterface`オブジェクトが投げられる）
+- ローカルテスト: [OK] 成功（`Error`インスタンスが投げられる）
+- CI環境テスト: [NG] 失敗（`WorkspaceInitErrorInterface`オブジェクトが投げられる）
 
 ## チームの構成
 

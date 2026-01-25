@@ -8,34 +8,34 @@
 
 ## 完了条件達成状況
 
-### ✅ 完了した条件
+### [OK] 完了した条件
 1. **deno task ci実行成功**: 全テスト pass（114ファイル検証済み）
 2. **examples実行結果記録**: tmp/example_results/に全14件の実行ログ保存完了
 
-### ⚠️ 部分的達成
+### [WARN] 部分的達成
 3. **examples順次実行**: 6/14成功（43%）、最後までエラーなく完了は未達成
 
 ## 実行結果サマリー
 
 ### Manager1担当（05-11番）: 4/6成功
 **成功例**:
-- ✅ 05_basic_usage.sh: 基本コマンド4種(to issue, summary task, defect project/task)確認
-- ✅ 06_config_basic.sh: 基本設定ファイル作成・動作確認
-- ✅ 07_config_production.sh: 本番環境設定・summary issue確認
-- ✅ 11_config_production_custom.sh: JSRパッケージ対応・find bugs機能確認
+- [OK] 05_basic_usage.sh: 基本コマンド4種(to issue, summary task, defect project/task)確認
+- [OK] 06_config_basic.sh: 基本設定ファイル作成・動作確認
+- [OK] 07_config_production.sh: 本番環境設定・summary issue確認
+- [OK] 11_config_production_custom.sh: JSRパッケージ対応・find bugs機能確認
 
 **問題例**:
-- ❌ 08_config_team.sh: チーム開発テンプレート不足
-- ❌ 09_config_environments.sh: 環境別テンプレート不足
-- ❌ 10_config_production_example.sh: find bugs機能未有効化
+- [NG] 08_config_team.sh: チーム開発テンプレート不足
+- [NG] 09_config_environments.sh: 環境別テンプレート不足
+- [NG] 10_config_production_example.sh: find bugs機能未有効化
 
 ### Manager2担当（12-19番）: 2/8成功
 **成功例**:
-- ✅ 18_cicd_integration.sh: CI/CDファイル生成(GitHub Actions, GitLab CI, Jenkins, CircleCI)
-- ✅ 19_clean.sh: クリーンアップ機能完全動作
+- [OK] 18_cicd_integration.sh: CI/CDファイル生成(GitHub Actions, GitLab CI, Jenkins, CircleCI)
+- [OK] 19_clean.sh: クリーンアップ機能完全動作
 
 **問題例**:
-- ❌ 12-17番: テンプレートファイル不足・設定問題によるタイムアウト
+- [NG] 12-17番: テンプレートファイル不足・設定問題によるタイムアウト
 
 ## 技術的成果
 

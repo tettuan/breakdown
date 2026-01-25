@@ -328,8 +328,8 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 - `--uv-*`: カスタム変数を指定（例：`--uv-userName=太郎` `--uv-project=example`）
 
 **重要**: 短縮形式（-i, -a）を使用する場合は、必ずイコール記号（=）を使用してください。
-- ✅ 正しい: `-e=task`, `-a=detailed`
-- ❌ 間違い: `-e task`, `-a detailed`
+- 正しい: `-e=task`, `-a=detailed`
+- 間違い: `-e task`, `-a detailed`
 
 ### 実装予定機能
 
@@ -354,25 +354,25 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 |------------|----------|------------------|----------|---------------------|------------------|
 | 01_instructions.sh | - | - | - | - | - |
 | 02_install.sh | - | - | - | - | - |
-| 03_setup_environment.sh | - | `.agent/climpt/config/*-app.yml`<br/>`.agent/climpt/config/*-user.yml` | 全プロファイル設定作成 | `.agent/climpt/prompts/*/*/f_*.md` | ✅ |
+| 03_setup_environment.sh | - | `.agent/climpt/config/*-app.yml`<br/>`.agent/climpt/config/*-user.yml` | 全プロファイル設定作成 | `.agent/climpt/prompts/*/*/f_*.md` | OK |
 | 04_create_user_config.sh | - | `.agent/climpt/config/default-user.yml` | ユーザー設定作成 | - | - |
-| 05_basic_usage.sh | to issue<br/>summary task<br/>defect project | `.agent/climpt/config/default-app.yml`<br/>`.agent/climpt/config/default-user.yml` | デフォルト設定<br/>（プロファイル: default） | `.agent/climpt/prompts/to/issue/f_issue.md`<br/>`.agent/climpt/prompts/summary/task/f_task.md`<br/>`.agent/climpt/prompts/defect/project/f_project.md` | ✅<br/>✅<br/>✅ |
-| 06_stdin_example.sh | summary project | `.agent/climpt/config/stdin-app.yml`<br/>`.agent/climpt/config/stdin-user.yml` | STDIN用設定<br/>（プロファイル: stdin） | `.agent/climpt/prompts/summary/project/f_project.md` | ✅ |
-| 07_summary_issue.sh | summary issue | `.agent/climpt/config/default-app.yml`<br/>`.agent/climpt/config/default-user.yml` | デフォルト設定<br/>（プロファイル: default） | `.agent/climpt/prompts/summary/issue/f_issue.md` | ✅ |
-| 08_defect_patterns.sh | defect issue<br/>defect task | `.agent/climpt/config/default-app.yml`<br/>`.agent/climpt/config/default-user.yml` | デフォルト設定<br/>（プロファイル: default） | `.agent/climpt/prompts/defect/issue/f_issue.md`<br/>`.agent/climpt/prompts/defect/task/f_task.md` | ✅<br/>✅ |
+| 05_basic_usage.sh | to issue<br/>summary task<br/>defect project | `.agent/climpt/config/default-app.yml`<br/>`.agent/climpt/config/default-user.yml` | デフォルト設定<br/>（プロファイル: default） | `.agent/climpt/prompts/to/issue/f_issue.md`<br/>`.agent/climpt/prompts/summary/task/f_task.md`<br/>`.agent/climpt/prompts/defect/project/f_project.md` | OK<br/>OK<br/>OK |
+| 06_stdin_example.sh | summary project | `.agent/climpt/config/stdin-app.yml`<br/>`.agent/climpt/config/stdin-user.yml` | STDIN用設定<br/>（プロファイル: stdin） | `.agent/climpt/prompts/summary/project/f_project.md` | OK |
+| 07_summary_issue.sh | summary issue | `.agent/climpt/config/default-app.yml`<br/>`.agent/climpt/config/default-user.yml` | デフォルト設定<br/>（プロファイル: default） | `.agent/climpt/prompts/summary/issue/f_issue.md` | OK |
+| 08_defect_patterns.sh | defect issue<br/>defect task | `.agent/climpt/config/default-app.yml`<br/>`.agent/climpt/config/default-user.yml` | デフォルト設定<br/>（プロファイル: default） | `.agent/climpt/prompts/defect/issue/f_issue.md`<br/>`.agent/climpt/prompts/defect/task/f_task.md` | OK<br/>OK |
 | 09_config_basic.sh | - | `.agent/climpt/config/basic-app.yml`<br/>`.agent/climpt/config/basic-user.yml` | 基本設定例<br/>（プロファイル: basic） | - | - |
-| 10_config_destination_prefix.sh | summary project | `.agent/climpt/config/basic-app.yml`<br/>`.agent/climpt/config/basic-user.yml`<br/>`.agent/climpt/config/production-app.yml`<br/>`.agent/climpt/config/production-user.yml` | prefix設定例<br/>（basic: output/basic/）<br/>（production: reports/production/2024/） | `.agent/climpt/prompts/summary/project/f_project.md` | ✅ |
-| 11_config_environments.sh | defect issue | `.agent/climpt/config/{env}-app.yml`<br/>`.agent/climpt/config/{env}-user.yml` | 環境別設定<br/>（プロファイル: {env}） | `.agent/climpt/prompts/defect/issue/f_issue.md` | ✅ |
-| 12_config_team.sh | to task | `.agent/climpt/config/team-app.yml`<br/>`.agent/climpt/config/team-user.yml` | チーム設定<br/>（プロファイル: team） | `.agent/climpt/prompts/to/task/f_task.md` | ✅ |
-| 13_config_production.sh | summary issue | `.agent/climpt/config/production-app.yml`<br/>`.agent/climpt/config/production-user.yml` | 本番環境設定<br/>（プロファイル: production） | `.agent/climpt/prompts/summary/issue/f_issue.md` | ✅ |
-| 14_config_production_example.sh | find bugs | `.agent/climpt/config/production-bugs-app.yml`<br/>`.agent/climpt/config/production-bugs-user.yml` | 本番バグ検出設定<br/>（プロファイル: production-bugs） | `.agent/climpt/prompts/find/bugs/f_bugs.md` | ✅ |
+| 10_config_destination_prefix.sh | summary project | `.agent/climpt/config/basic-app.yml`<br/>`.agent/climpt/config/basic-user.yml`<br/>`.agent/climpt/config/production-app.yml`<br/>`.agent/climpt/config/production-user.yml` | prefix設定例<br/>（basic: output/basic/）<br/>（production: reports/production/2024/） | `.agent/climpt/prompts/summary/project/f_project.md` | OK |
+| 11_config_environments.sh | defect issue | `.agent/climpt/config/{env}-app.yml`<br/>`.agent/climpt/config/{env}-user.yml` | 環境別設定<br/>（プロファイル: {env}） | `.agent/climpt/prompts/defect/issue/f_issue.md` | OK |
+| 12_config_team.sh | to task | `.agent/climpt/config/team-app.yml`<br/>`.agent/climpt/config/team-user.yml` | チーム設定<br/>（プロファイル: team） | `.agent/climpt/prompts/to/task/f_task.md` | OK |
+| 13_config_production.sh | summary issue | `.agent/climpt/config/production-app.yml`<br/>`.agent/climpt/config/production-user.yml` | 本番環境設定<br/>（プロファイル: production） | `.agent/climpt/prompts/summary/issue/f_issue.md` | OK |
+| 14_config_production_example.sh | find bugs | `.agent/climpt/config/production-bugs-app.yml`<br/>`.agent/climpt/config/production-bugs-user.yml` | 本番バグ検出設定<br/>（プロファイル: production-bugs） | `.agent/climpt/prompts/find/bugs/f_bugs.md` | OK |
 | 15_config_production_custom.sh | - | `.agent/climpt/config/production-custom-app.yml`<br/>`.agent/climpt/config/production-custom-user.yml` | カスタム本番設定<br/>（プロファイル: production-custom） | - | - |
-| 16_input_parameter.sh | to task | `.agent/climpt/config/default-app.yml`<br/>`.agent/climpt/config/default-user.yml` | デフォルト設定<br/>（プロファイル: default） | `.agent/climpt/prompts/to/task/f_project.md`<br/>`.agent/climpt/prompts/to/task/f_issue.md`<br/>`.agent/climpt/prompts/to/task/f_task.md` | ✅<br/>✅<br/>✅ |
-| 17_adaptation_parameter.sh | to task | `.agent/climpt/config/default-app.yml`<br/>`.agent/climpt/config/default-user.yml` | デフォルト設定<br/>（プロファイル: default） | `.agent/climpt/prompts/to/task/f_*_{adaptation}.md` | ✅ |
-| 18_custom_variables.sh | to project<br/>summary task | `.agent/climpt/config/default-app.yml`<br/>`.agent/climpt/config/default-user.yml` | デフォルト設定<br/>（プロファイル: default） | `.agent/climpt/prompts/to/project/f_project.md`<br/>`.agent/climpt/prompts/summary/task/f_task.md` | ✅<br/>✅ |
-| 19_pipeline_processing.sh | summary project<br/>defect task<br/>to issue | `.agent/climpt/config/default-app.yml`<br/>`.agent/climpt/config/default-user.yml` | デフォルト設定<br/>（プロファイル: default） | `.agent/climpt/prompts/summary/project/f_project.md`<br/>`.agent/climpt/prompts/defect/task/f_task.md`<br/>`.agent/climpt/prompts/to/issue/f_issue.md` | ✅<br/>✅<br/>✅ |
-| 20_batch_processing.sh | to project<br/>defect issue<br/>summary project | `.agent/climpt/config/default-app.yml`<br/>`.agent/climpt/config/default-user.yml` | デフォルト設定<br/>（プロファイル: default） | `.agent/climpt/prompts/to/project/f_project.md`<br/>`.agent/climpt/prompts/defect/issue/f_issue.md`<br/>`.agent/climpt/prompts/summary/project/f_project.md` | ✅<br/>✅<br/>✅ |
-| 21_error_handling.sh | to project<br/>summary task | `.agent/climpt/config/default-app.yml`<br/>`.agent/climpt/config/default-user.yml` | デフォルト設定<br/>（プロファイル: default） | `.agent/climpt/prompts/to/project/f_project.md`<br/>`.agent/climpt/prompts/summary/task/f_task.md` | ✅<br/>✅ |
+| 16_input_parameter.sh | to task | `.agent/climpt/config/default-app.yml`<br/>`.agent/climpt/config/default-user.yml` | デフォルト設定<br/>（プロファイル: default） | `.agent/climpt/prompts/to/task/f_project.md`<br/>`.agent/climpt/prompts/to/task/f_issue.md`<br/>`.agent/climpt/prompts/to/task/f_task.md` | OK<br/>OK<br/>OK |
+| 17_adaptation_parameter.sh | to task | `.agent/climpt/config/default-app.yml`<br/>`.agent/climpt/config/default-user.yml` | デフォルト設定<br/>（プロファイル: default） | `.agent/climpt/prompts/to/task/f_*_{adaptation}.md` | OK |
+| 18_custom_variables.sh | to project<br/>summary task | `.agent/climpt/config/default-app.yml`<br/>`.agent/climpt/config/default-user.yml` | デフォルト設定<br/>（プロファイル: default） | `.agent/climpt/prompts/to/project/f_project.md`<br/>`.agent/climpt/prompts/summary/task/f_task.md` | OK<br/>OK |
+| 19_pipeline_processing.sh | summary project<br/>defect task<br/>to issue | `.agent/climpt/config/default-app.yml`<br/>`.agent/climpt/config/default-user.yml` | デフォルト設定<br/>（プロファイル: default） | `.agent/climpt/prompts/summary/project/f_project.md`<br/>`.agent/climpt/prompts/defect/task/f_task.md`<br/>`.agent/climpt/prompts/to/issue/f_issue.md` | OK<br/>OK<br/>OK |
+| 20_batch_processing.sh | to project<br/>defect issue<br/>summary project | `.agent/climpt/config/default-app.yml`<br/>`.agent/climpt/config/default-user.yml` | デフォルト設定<br/>（プロファイル: default） | `.agent/climpt/prompts/to/project/f_project.md`<br/>`.agent/climpt/prompts/defect/issue/f_issue.md`<br/>`.agent/climpt/prompts/summary/project/f_project.md` | OK<br/>OK<br/>OK |
+| 21_error_handling.sh | to project<br/>summary task | `.agent/climpt/config/default-app.yml`<br/>`.agent/climpt/config/default-user.yml` | デフォルト設定<br/>（プロファイル: default） | `.agent/climpt/prompts/to/project/f_project.md`<br/>`.agent/climpt/prompts/summary/task/f_task.md` | OK<br/>OK |
 | 22_clean.sh | - | - | クリーンアップ | - | - |
 
 ### テンプレート依存関係
@@ -380,15 +380,15 @@ deno run --allow-read --allow-net jsr:@tettuan/breakdown
 現在、以下のプロンプトテンプレートが必要です：
 
 **必須テンプレート（TwoParams対応）:**
-- `to/project/f_project.md` ✅
-- `to/issue/f_issue.md` ✅  
-- `to/task/f_task.md` ✅
-- `summary/project/f_project.md` ✅
-- `summary/issue/f_issue.md` ✅
-- `summary/task/f_task.md` ✅
-- `defect/project/f_project.md` ✅
-- `defect/issue/f_issue.md` ✅
-- `defect/task/f_task.md` ✅
+- `to/project/f_project.md` OK
+- `to/issue/f_issue.md` OK  
+- `to/task/f_task.md` OK
+- `summary/project/f_project.md` OK
+- `summary/issue/f_issue.md` OK
+- `summary/task/f_task.md` OK
+- `defect/project/f_project.md` OK
+- `defect/issue/f_issue.md` OK
+- `defect/task/f_task.md` OK
 
 **設定ファイル（プロファイルベース設定システム）:**
 
@@ -398,15 +398,15 @@ Breakdownは**プロファイルベース**の設定システムを採用して�
 - `{profile}-user.yml` - ユーザー設定（作業ディレクトリ、ユーザー固有設定等）
 
 **必要なプロファイル（03_setup_environment.shで作成）:**
-- `default` - ✅（default-app.yml, default-user.yml）
-- `stdin` - ✅（stdin-app.yml, stdin-user.yml）
-- `timeout` - ✅（timeout-user.yml）
-- `basic` - ✅（basic-app.yml, basic-user.yml）
-- `production` - ✅（production-app.yml, production-user.yml）
-- `team` - ✅（team-app.yml, team-user.yml）
-- `findbugs` - ✅（findbugs-app.yml, findbugs-user.yml）
-- `production-bugs` - ✅（production-bugs-app.yml, production-bugs-user.yml）
-- `production-custom` - ✅（production-custom-app.yml, production-custom-user.yml）
+- `default` - OK（default-app.yml, default-user.yml）
+- `stdin` - OK（stdin-app.yml, stdin-user.yml）
+- `timeout` - OK（timeout-user.yml）
+- `basic` - OK（basic-app.yml, basic-user.yml）
+- `production` - OK（production-app.yml, production-user.yml）
+- `team` - OK（team-app.yml, team-user.yml）
+- `findbugs` - OK（findbugs-app.yml, findbugs-user.yml）
+- `production-bugs` - OK（production-bugs-app.yml, production-bugs-user.yml）
+- `production-custom` - OK（production-custom-app.yml, production-custom-user.yml）
 
 **プロファイル使用例:**
 ```bash

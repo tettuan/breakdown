@@ -9,8 +9,8 @@
 - 人間による設計観点 L163
 - エラー処理の圧縮テクニック L229
 - 実装チェックリスト L291
-  - 🚫 禁止パターン L293
-  - ✅ 推奨パターン L300
+  - 禁止パターン L293
+  - 推奨パターン L300
 - Claude向け実装指示 L322
 
 ## 核心理念
@@ -20,26 +20,26 @@
 
 ### パターン1：Discriminated Union
 ```typescript
-// ❌ 悪い例：オプショナルプロパティで状態を表現
+// NG: 悪い例：オプショナルプロパティで状態を表現
 interface BadState { a?: X; b?: Y; }
 
-// ✅ 良い例：タグ付きユニオンで状態を表現
+// OK: 良い例：タグ付きユニオンで状態を表現
 type GoodState = { kind: "A"; data: X } | { kind: "B"; data: Y };
 ```
 
 ### パターン2：Smart Constructor
 ```typescript
-// ❌ 悪い例：無制限な値を許可
+// NG: 悪い例：無制限な値を許可
 type Rate = number;
 
-// ❌ 悪い例：列挙型の値で制約を表現
+// NG: 悪い例：列挙型の値で制約を表現
 enum LayerType {
   PROJECT = "project",
   ISSUE = "issue",
   TASK = "task"
 }
 
-// ✅ 良い例：制約のある値型
+// OK: 良い例：制約のある値型
 class ValidRate {
   private constructor(readonly value: number) {}
   static create(n: number): Result<ValidRate, ValidationError & { message: string }> {
@@ -50,7 +50,7 @@ class ValidRate {
   }
 }
 
-// ✅ 良い例：Configルールで制約を表現
+// OK: 良い例：Configルールで制約を表現
 class LayerTypePattern {
   private constructor(readonly pattern: RegExp) {}
   static create(patternString: string): Result<LayerTypePattern, ValidationError & { message: string }> {
@@ -114,14 +114,14 @@ const getDefaultMessage = (error: ValidationError): string => {
 
 ### パターン4：非空文字列型によるランタイム判定の排除
 ```typescript
-// ❌ 悪い例：ランタイムでの空文字判定
+// NG: 悪い例：ランタイムでの空文字判定
 function processFile(outputPath?: string) {
   if (outputPath && outputPath.trim() !== "") {
     // ファイル処理
   }
 }
 
-// ✅ 良い例：非空文字列型
+// OK: 良い例：非空文字列型
 class NonEmptyString {
   private constructor(readonly value: string) {}
   
@@ -134,13 +134,13 @@ class NonEmptyString {
   }
 }
 
-// ✅ 良い例：ランタイム判定不要
+// OK: 良い例：ランタイム判定不要
 function processFile(outputPath: NonEmptyString): Result<void, ProcessError> {
   // outputPathは既に検証済み。if文不要
   return performFileOperation(outputPath.value);
 }
 
-// ✅ 良い例：optional型の改善
+// OK: 良い例：optional型の改善
 type ProcessOptions = 
   | { outputPath: NonEmptyString }  // 必須かつ有効なパス
   | { inMemory: true };             // 出力なしオプション
@@ -148,7 +148,7 @@ type ProcessOptions =
 
 ## 人間による設計観点
 
-### 🧠 ビジネスルール分析
+### ビジネスルール分析
 全域性適用前に、人間が明確化すべき設計観点：
 
 1. **状態の洗い出し**: データが取りうる「正当な状態」を全て列挙
@@ -156,7 +156,7 @@ type ProcessOptions =
 3. **制約の明文化**: 値の範囲、組み合わせ制限、依存関係を特定
 4. **例外ケース**: エラー状態、境界値、異常系の処理方針を決定
 
-### 📋 ビジネスルール収集テンプレート
+### ビジネスルール収集テンプレート
 
 Claudeにビジネスルールを提示する際の推奨フォーマット：
 
@@ -167,7 +167,7 @@ Claudeにビジネスルールを提示する際の推奨フォーマット：
 - **[エンティティ名]** の取りうる状態：
   - 状態A: [条件・説明]
   - 状態B: [条件・説明]
-  - ❌ 不正状態: [ありえない組み合わせ]
+  - NG 不正状態: [ありえない組み合わせ]
 
 ### 2. 値の制約
 - **[プロパティ名]**: [型] - [制約条件]
@@ -177,7 +177,7 @@ Claudeにビジネスルールを提示する際の推奨フォーマット：
 ### 3. 状態遷移ルール
 - [状態A] → [状態B]: [遷移条件]
 - [状態B] → [状態C]: [遷移条件]
-- ❌ 禁止遷移: [状態X] → [状態Y]
+- NG 禁止遷移: [状態X] → [状態Y]
 
 ### 4. ビジネス例外
 - **正常系**: [期待される動作]
@@ -200,7 +200,7 @@ Claudeにビジネスルールを提示する際の推奨フォーマット：
 ### 1. 割引の状態
 - **パーセント割引**: 割引率(0-100%)と上限額を持つ
 - **固定額割引**: 固定金額を持つ
-- ❌ 不正状態: 両方の割引が同時に存在、どちらも存在しない
+- NG 不正状態: 両方の割引が同時に存在、どちらも存在しない
 
 ### 2. 値の制約
 - **割引率**: number - 0以上1以下
@@ -216,21 +216,21 @@ Claudeにビジネスルールを提示する際の推奨フォーマット：
 
 ### 1. 共通エラー型の活用
 ```typescript
-// ❌ 冗長：各クラスで個別エラー型
+// NG: 冗長：各クラスで個別エラー型
 class A { static create(): Result<A, { kind: "AError"; message: string }> }
 class B { static create(): Result<B, { kind: "BError"; message: string }> }
 
-// ✅ 簡潔：共通エラー型
+// OK: 簡潔：共通エラー型
 class A { static create(): Result<A, ValidationError & { message: string }> }
 class B { static create(): Result<B, ValidationError & { message: string }> }
 ```
 
 ### 2. エラー作成ヘルパーの活用
 ```typescript
-// ❌ 冗長：毎回エラーオブジェクト作成
+// NG: 冗長：毎回エラーオブジェクト作成
 return { ok: false, error: { kind: "EmptyInput", message: "Input cannot be empty" } };
 
-// ✅ 簡潔：ヘルパー使用
+// OK: 簡潔：ヘルパー使用
 return { ok: false, error: createError({ kind: "EmptyInput" }) };
 ```
 
@@ -276,14 +276,14 @@ const result = ValidatedValue.builder<string>()
 
 ## 実装チェックリスト
 
-### 🚫 禁止パターン
+### 禁止パターン
 - `as Type`による強制型変換
 - オプショナルプロパティによる状態表現 `{ a?: X; b?: Y }`
 - `any`/`unknown`の安易な使用
 - 例外による制御フロー
 - ランタイムでの空文字・null判定 `if (str && str.trim() !== "")`
 
-### ✅ 推奨パターン
+### 推奨パターン
 - タグ付きユニオン： `{ kind: string; ... }`
 - Result型： `{ ok: boolean; ... }`
 - Smart Constructor： `private constructor + static create`

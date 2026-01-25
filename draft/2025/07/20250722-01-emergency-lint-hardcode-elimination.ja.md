@@ -40,12 +40,12 @@
 
 ### 優先度1: 型定義修復
 ```typescript
-// ❌ 禁止パターン
+// NG: 禁止パターン
 private readonly config: any
 static create(userConfig: any): ParamsCustomConfig
 export async function loadUserConfig(profile: ConfigProfile): Promise<any>
 
-// ✅ 修正パターン  
+// OK: 修正パターン  
 private readonly config: UserConfigData
 static create(userConfig: UserConfigData): ParamsCustomConfig
 export async function loadUserConfig(profile: ConfigProfile): Promise<UserConfigData>
@@ -53,22 +53,22 @@ export async function loadUserConfig(profile: ConfigProfile): Promise<UserConfig
 
 ### 優先度2: BreakdownParams完全統合
 ```typescript
-// ❌ 現在のConfigProfile依存パターン（除去対象）
+// NG: 現在のConfigProfile依存パターン（除去対象）
 DirectiveType.create("to", ConfigProfile.createDefault())
 
-// ✅ BreakdownParams統合パターン（目標）
+// OK: BreakdownParams統合パターン（目標）
 const twoParamsResult = await executeBreakdownParams(["to", "issue"], "test");
 const { directive, layer } = fromTwoParamsResult(twoParamsResult);
 ```
 
 ### 優先度3: async/await修復
 ```typescript
-// ❌ 修正対象  
+// NG: 修正対象  
 async get(profilePrefix?: string): Promise<MockConfigResult> {
   return { success: true, data: {} }; // awaitなし
 }
 
-// ✅ 修正後
+// OK: 修正後
 get(profilePrefix?: string): MockConfigResult {
   return { success: true, data: {} };
 }
@@ -93,7 +93,7 @@ get(profilePrefix?: string): MockConfigResult {
 
 #### 設計違反テスト削除対象
 ```typescript
-// ❌ 削除対象：ハードコードテスト
+// NG: 削除対象：ハードコードテスト
 describe("DirectiveType hardcoded validation", () => {
   test("accepts hardcoded values", () => {
     const validTypes = ["to", "summary", "defect"]; // ハードコード配列
@@ -101,12 +101,12 @@ describe("DirectiveType hardcoded validation", () => {
   });
 });
 
-// ❌ 削除対象：ConfigProfile依存テスト  
+// NG: 削除対象：ConfigProfile依存テスト  
 test("DirectiveType with ConfigProfile.createDefault()", () => {
   const directive = DirectiveType.create("to", ConfigProfile.createDefault());
 });
 
-// ✅ 保持対象：設定ファイルベーステスト
+// OK: 保持対象：設定ファイルベーステスト
 test("DirectiveType with configuration file", async () => {
   const config = await ConfigurationTestHelper.loadTestConfiguration("test-basic");
   const twoParamsResult = await executeBreakdownParams(["to", "issue"], "test-basic");
@@ -151,7 +151,7 @@ test("DirectiveType with configuration file", async () => {
 
 ### 最終ゴール
 ```bash
-# ✅ 完全成功の証明コマンド
+# OK: 完全成功の証明コマンド
 deno task ci:dirty  # エラー0件で完了
 deno task test      # 全テスト成功
 deno fmt --check    # フォーマット違反0件
