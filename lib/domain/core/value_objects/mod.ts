@@ -181,10 +181,6 @@ export async function formatPathValueObjectError(error: PathValueObjectError): P
   return `Unknown path error: ${JSON.stringify(error)}`;
 }
 
-// Validation Rule Value Object
-// Note: validation_rule.ts, error_severity.ts, timeout_duration.ts, workspace_name.ts
-// have been removed as part of DDD totality refactoring
-
 // Config Set Name Value Object
 export {
   ConfigSetName,

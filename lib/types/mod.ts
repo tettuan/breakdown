@@ -126,14 +126,6 @@ export { ConfigProfile } from "../config/config_profile_name.ts";
 export { ResultStatus } from "./enums.ts";
 export type { Result as EnumResult } from "./enums.ts";
 
-// Error severity types
-// export {
-//   ErrorSeverity as ErrorSeverityClass,
-//   ImpactScope,
-//   SeverityLevel,
-// } from "../domain/core/value_objects/error_severity.ts";
-// export type { ErrorMetadata } from "../domain/core/value_objects/error_severity.ts";
-
 // CLI Error severity enum for backward compatibility
 export const ErrorSeverity = {
   CRITICAL: "critical",
