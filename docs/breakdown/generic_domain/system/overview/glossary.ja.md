@@ -110,6 +110,7 @@ STDIN以外は、実際の内容を読み書きしない。PATHを値とし、�
 | fromFile | options.ja.md, path.ja.md | 入力ファイルを指定するパラメータ（-f, --from）。ファイルパスを指定し、PATHを変数の値として使用する。 | -f, --from, 入力ソース |
 | destinationFile | options.ja.md, path.ja.md | 出力先を指定するパラメータ（-o, --destination）。ファイルパスまたはディレクトリパスを指定し、出力先情報のPATHを変数の値として使用する。 | -o, --destination, 出力先 |
 | stdin | app_factory.ja.md, cli.ja.md | 標準入力からのデータ読み込み。入力ソースの一つとして機能し、ファイル入力と排他的に使用される。入力データの検出と読み込みの処理が実装されている。 | 入力ソース, -i, promptmanager |
+| base_prompt_dir | app_factory.ja.md | promptFilePathから派生する変数。プロンプトテンプレートが配置されているディレクトリパスを提供する。テンプレート内で`{base_prompt_dir}`として参照可能。末尾スラッシュは含まれない。 | promptFilePath, dirname, テンプレート変数 |
 
 #### 1.5 コマンドラインオプション
 
