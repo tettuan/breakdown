@@ -658,7 +658,9 @@ export class PromptTemplatePathResolverTotality {
       return {
         useSchema: Boolean(opts?.useSchema),
         adaptation: String(opts?.adaptation || ""),
-        fromLayerType: String(opts?.fromLayerType || opts?.input || DEFAULT_FROM_LAYER_TYPE),
+        fromLayerType: String(
+          opts?.fromLayerType || opts?.input || opts?.edition || DEFAULT_FROM_LAYER_TYPE,
+        ),
         fromFile: String(opts?.fromFile || ""),
       };
     }
