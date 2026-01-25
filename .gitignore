@@ -91,9 +91,6 @@ debug*.ts
 .agent/
 .agent/*
 
-# tmp files
-instructions/project-worker.md
-
 # Claude specific
 .claude/*
 !.claude/skills/
