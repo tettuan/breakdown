@@ -28,7 +28,13 @@ import type {
   ProcessingError as _ProcessingError,
   ValidationError as _ValidationError,
 } from "$lib/types/unified_error_types.ts";
-import type { RunBreakdownOptions } from "$lib/types/run_options.ts";
+/**
+ * Options for runBreakdown function
+ */
+interface RunBreakdownOptions {
+  /** When true, prompt content is returned instead of writing to stdout */
+  returnMode?: boolean;
+}
 
 /**
  * Default configuration profile name

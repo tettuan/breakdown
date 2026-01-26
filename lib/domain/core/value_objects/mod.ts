@@ -181,19 +181,6 @@ export async function formatPathValueObjectError(error: PathValueObjectError): P
   return `Unknown path error: ${JSON.stringify(error)}`;
 }
 
-// Config Set Name Value Object
-export {
-  ConfigSetName,
-  type ConfigSetNameError,
-  formatConfigSetNameError,
-  isEmptyNameError as isConfigSetEmptyNameError,
-  isInvalidCharactersError as isConfigSetInvalidCharactersError,
-  isInvalidFormatError as isConfigSetInvalidFormatError,
-  isReservedNameError as isConfigSetReservedNameError,
-  isStartsWithReservedPrefixError,
-  isTooLongError as isConfigSetTooLongError,
-} from "./config_set_name.ts";
-
 // Directive Type Value Object
 export {
   DirectiveType,

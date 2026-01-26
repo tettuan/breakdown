@@ -171,25 +171,3 @@ export type {
 } from "./unified_error_types.ts";
 export { ErrorFactory, ErrorGuards, extractUnifiedErrorMessage } from "./unified_error_types.ts";
 
-// Team-specific types for team development workflows
-export type {
-  TeamConfig,
-  TeamContextualVariables,
-  TeamInfo,
-  TeamIntegration,
-  TeamMember,
-  TeamOutputConfig,
-  TeamPaths,
-  TeamPromptConfig,
-  UserVariable as TeamUserVariable,
-} from "./team_types.ts";
-
-export {
-  isTeamConfig,
-  isTeamContextualVariables,
-  isTeamInfo,
-  isTeamOutputConfig,
-  isTeamPaths,
-  isTeamPromptConfig,
-  isUserVariable as isTeamUserVariable,
-} from "./team_types.ts";
