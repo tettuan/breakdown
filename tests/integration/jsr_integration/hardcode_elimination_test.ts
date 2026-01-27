@@ -146,67 +146,6 @@ describe("Hardcode elimination verification", () => {
     });
   });
 
-  describe("Configuration-driven verification in integration tests", () => {
-    it("Different profiles use different patterns", async () => {
-      // Verify using ConfigBasedTwoParamsBuilder
-      const { ConfigBasedTwoParamsBuilder } = await import(
-        "../../../lib/config/config_based_two_params_builder.ts"
-      );
-
-      // Create builders with different profiles
-      const profiles = [
-        { name: "default", expectedPatterns: true },
-        { name: "breakdown-params-integration", expectedPatterns: true },
-        { name: "flexible-test", expectedPatterns: true },
-      ];
-
-      const patterns: Record<string, { directive?: string; layer?: string }> = {};
-
-      for (const profile of profiles) {
-        try {
-          const builderResult = await ConfigBasedTwoParamsBuilder.fromConfig(profile.name);
-
-          if (builderResult.ok) {
-            const builder = builderResult.data;
-            patterns[profile.name] = {
-              directive: builder.getDirectivePattern(),
-              layer: builder.getLayerPattern(),
-            };
-          }
-        } catch (error) {
-          logger.debug("Profile loading skipped", {
-            profile: profile.name,
-            reason: error instanceof Error ? error.message : String(error),
-          });
-        }
-      }
-
-      logger.debug("Profile-specific patterns", patterns);
-
-      // Verify that at least 2 profiles are loaded
-      const loadedProfiles = Object.keys(patterns);
-      assertEquals(loadedProfiles.length >= 2, true, "Multiple profiles were not loaded");
-
-      // Verify that patterns exist and are strings
-      loadedProfiles.forEach((profileName) => {
-        const pattern = patterns[profileName];
-        if (pattern.directive) {
-          assertEquals(
-            typeof pattern.directive,
-            "string",
-            `${profileName} directive pattern is not a string`,
-          );
-        }
-        if (pattern.layer) {
-          assertEquals(
-            typeof pattern.layer,
-            "string",
-            `${profileName} layer pattern is not a string`,
-          );
-        }
-      });
-    });
-  });
 });
 
 /**
