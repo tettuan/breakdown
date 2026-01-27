@@ -189,8 +189,4 @@ export {
 } from "./directive_type.ts";
 
 // Layer Type Value Object
-export {
-  LayerType,
-  type LayerTypeError,
-  TwoParamsLayerTypePattern,
-} from "./layer_type.ts";
+export { LayerType, type LayerTypeError, TwoParamsLayerTypePattern } from "./layer_type.ts";

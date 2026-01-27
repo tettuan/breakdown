@@ -145,7 +145,6 @@ describe("Hardcode elimination verification", () => {
       }
     });
   });
-
 });
 
 /**
