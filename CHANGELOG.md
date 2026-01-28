@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.2] - 2026-01-29
+
+### Changed
+- **Refactoring**: Major code cleanup removing dead code and unused abstractions
+  - Unified PathResolvers with base class pattern
+  - Removed unused config validators, adapters, and commands
+  - Removed unused factory classes, templates, and error types
+  - Removed deprecated infrastructure abstractions
+
+### Fixed
+- **Template Resolution**: Fixed edition option support in template path resolver
+- **CLI Entry Point**: Restored entry_point_manager.ts needed for CLI
+
+### Added
+- **Template Variables**: Added `base_prompt_dir` template variable for prompt directory access
+
 ## [1.8.1] - 2026-01-07
 
 ### Fixed
