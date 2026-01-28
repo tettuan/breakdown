@@ -21,9 +21,11 @@ import type { PromptCliParams } from "./prompt_variables_factory.ts";
 import type { TwoParams_Result } from "../deps.ts";
 import { error as resultError, ok as resultOk, type Result } from "../types/result.ts";
 import type { PathResolutionError } from "../types/path_resolution_option.ts";
-
-// Legacy type alias for backward compatibility during migration
-// type DoubleParams_Result = PromptCliParams; // Deprecated: use TwoParams_Result
+import {
+  type BaseResolverConfig,
+  PathResolverBase,
+  type ResolverCliParams,
+} from "./path_resolver_base.ts";
 
 /**
  * Pure function to compute the prompt directory path.
@@ -44,13 +46,12 @@ export function computePromptDirectory(
 }
 
 /**
- * Simplified configuration type with clear base directory resolution
+ * Configuration for prompt template path resolver
  */
-export type PromptResolverConfig = {
+interface PromptResolverConfig extends BaseResolverConfig {
   readonly promptBaseDir: string;
   readonly schemaBaseDir: string;
-  readonly workingDir: string;
-};
+}
 
 /**
  * CLI options with unified string types for consistency
@@ -118,20 +119,17 @@ export class PromptTemplatePath {
 
 /**
  * Prompt template path resolver with full Totality implementation
+ * Extends PathResolverBase for common functionality
  */
-export class PromptTemplatePathResolverTotality {
-  private readonly config: PromptResolverConfig;
-  private readonly _cliParams: PromptCliParams | TwoParams_Result;
-
+export class PromptTemplatePathResolverTotality extends PathResolverBase<PromptResolverConfig> {
   /**
    * Private constructor following Smart Constructor pattern
    */
   private constructor(
     config: PromptResolverConfig,
-    cliParams: PromptCliParams | TwoParams_Result,
+    cliParams: ResolverCliParams,
   ) {
-    this.config = config;
-    this._cliParams = this.deepCopyCliParams(cliParams);
+    super(config, cliParams);
   }
 
   /**
@@ -143,8 +141,9 @@ export class PromptTemplatePathResolverTotality {
   ): Result<PromptTemplatePathResolverTotality, PathResolutionError> {
     const isDebug = Deno.env.get("LOG_LEVEL") === "debug";
 
-    // Validate configuration presence and type before any debug output
-    if (!config || typeof config !== "object" || Array.isArray(config)) {
+    // Validate config using base class
+    const configResult = PathResolverBase.validateBaseConfig(config);
+    if (!configResult.ok) {
       if (isDebug) {
         console.log("[PromptTemplatePathResolverTotality] create called with invalid config:", {
           config: config,
@@ -152,10 +151,7 @@ export class PromptTemplatePathResolverTotality {
           isArray: Array.isArray(config),
         });
       }
-      return resultError({
-        kind: "InvalidConfiguration",
-        details: "Configuration must be a non-null object",
-      });
+      return configResult;
     }
 
     if (isDebug) {
@@ -171,35 +167,16 @@ export class PromptTemplatePathResolverTotality {
       return baseDirValidationResult;
     }
 
-    // Validate cliParams presence and type
-    if (!cliParams || typeof cliParams !== "object" || Array.isArray(cliParams)) {
-      return resultError({
-        kind: "InvalidConfiguration",
-        details: "CLI parameters must be a non-null object",
-      });
+    // Validate cliParams using base class
+    const paramsResult = PathResolverBase.validateCliParams(cliParams);
+    if (!paramsResult.ok) {
+      return paramsResult;
     }
 
-    // Validate CLI parameters structure and content
-    const directiveType = PromptTemplatePathResolverTotality.extractDirectiveType(
-      cliParams,
-    );
-    const layerType = PromptTemplatePathResolverTotality.extractLayerType(cliParams);
-
-    if (!directiveType || !layerType) {
-      return resultError({
-        kind: "InvalidParameterCombination",
-        directiveType: directiveType || "(missing)",
-        layerType: layerType || "(missing)",
-      });
-    }
-
-    // Validate that extracted values are non-empty strings
-    if (directiveType.trim() === "" || layerType.trim() === "") {
-      return resultError({
-        kind: "InvalidParameterCombination",
-        directiveType: directiveType || "(empty)",
-        layerType: layerType || "(empty)",
-      });
+    // Validate parameter types using base class
+    const typeResult = PathResolverBase.validateParameterTypes(cliParams as ResolverCliParams);
+    if (!typeResult.ok) {
+      return typeResult;
     }
 
     // Convert config to simplified structure
@@ -293,35 +270,6 @@ export class PromptTemplatePathResolverTotality {
     }
 
     return result;
-  }
-
-  /**
-   * Deep copy CLI parameters
-   */
-  private deepCopyCliParams(
-    cliParams: PromptCliParams | TwoParams_Result,
-  ): PromptCliParams | TwoParams_Result {
-    if ("type" in cliParams && ("directive" in cliParams && "layer" in cliParams)) {
-      // TwoParams_Result
-      const twoParams = cliParams as TwoParams_Result;
-      const copy: TwoParams_Result = {
-        type: twoParams.type || "two",
-        params: twoParams.params ? [...twoParams.params] : [],
-        layerType: twoParams.params?.[1] || "",
-        directiveType: twoParams.directiveType || twoParams.params?.[0] || "",
-        options: { ...twoParams.options },
-      };
-      return copy;
-    } else {
-      // PromptCliParams (legacy format)
-      const promptParams = cliParams as PromptCliParams;
-      const copy: PromptCliParams = {
-        layerType: promptParams.layerType,
-        directiveType: promptParams.directiveType || "",
-        options: promptParams.options ? { ...promptParams.options } : {},
-      };
-      return copy;
-    }
   }
 
   /**
@@ -629,7 +577,7 @@ export class PromptTemplatePathResolverTotality {
    * Gets the useSchema flag option
    */
   private getUseSchemaFlag(): boolean {
-    const options = this.getOptions();
+    const options = this.extractOptions();
     return options.useSchema === true;
   }
 
@@ -637,42 +585,31 @@ export class PromptTemplatePathResolverTotality {
    * Gets the adaptation option with default empty string
    */
   private getAdaptation(): string {
-    const options = this.getOptions();
+    const options = this.extractOptions();
     return options.adaptation;
   }
 
   /**
    * Extract options with default values ensuring type safety
    */
-  private getOptions(): CliOptions {
+  private extractOptions(): CliOptions {
     const isDebug = Deno.env.get("LOG_LEVEL") === "debug";
+    const opts = this.getOptions<Record<string, unknown>>();
 
-    if ("options" in this._cliParams) {
-      const opts = this._cliParams.options as Record<string, unknown>;
-      if (isDebug) {
-        console.log(
-          "[PromptTemplatePathResolverTotality] getOptions - opts:",
-          JSON.stringify(opts, null, 2),
-        );
-      }
-      return {
-        useSchema: Boolean(opts?.useSchema),
-        adaptation: String(opts?.adaptation || ""),
-        fromLayerType: String(
-          opts?.fromLayerType || opts?.input || opts?.edition || DEFAULT_FROM_LAYER_TYPE,
-        ),
-        fromFile: String(opts?.fromFile || ""),
-      };
+    if (isDebug) {
+      console.log(
+        "[PromptTemplatePathResolverTotality] getOptions - opts:",
+        JSON.stringify(opts, null, 2),
+      );
     }
 
-    // For TwoParams_Result structure
-    const twoParams = this._cliParams as TwoParams_Result;
-    const opts = (twoParams as unknown as { options?: Record<string, unknown> }).options || {};
     return {
-      useSchema: Boolean(opts.useSchema),
-      adaptation: String(opts.adaptation || ""),
-      fromLayerType: String(opts.fromLayerType || opts.input || DEFAULT_FROM_LAYER_TYPE),
-      fromFile: String(opts.fromFile || ""),
+      useSchema: Boolean(opts?.useSchema),
+      adaptation: String(opts?.adaptation || ""),
+      fromLayerType: String(
+        opts?.fromLayerType || opts?.input || opts?.edition || DEFAULT_FROM_LAYER_TYPE,
+      ),
+      fromFile: String(opts?.fromFile || ""),
     };
   }
 
@@ -695,56 +632,6 @@ export class PromptTemplatePathResolverTotality {
   }
 
   /**
-   * Gets the directive type value
-   */
-  private getDirectiveType(): string {
-    return PromptTemplatePathResolverTotality.extractDirectiveType(this._cliParams);
-  }
-
-  /**
-   * Static helper to extract directive type
-   */
-  private static extractDirectiveType(
-    cliParams: PromptCliParams | TwoParams_Result,
-  ): string {
-    if ("directiveType" in cliParams) {
-      return cliParams.directiveType || "";
-    }
-    const twoParams = cliParams as TwoParams_Result;
-    if (twoParams.directiveType) {
-      return twoParams.directiveType;
-    }
-    if (twoParams.params && twoParams.params.length > 0) {
-      return twoParams.params[0];
-    }
-    return "";
-  }
-
-  /**
-   * Gets the layer type value
-   */
-  private getLayerType(): string {
-    return PromptTemplatePathResolverTotality.extractLayerType(this._cliParams);
-  }
-
-  /**
-   * Static helper to extract layer type
-   */
-  private static extractLayerType(cliParams: PromptCliParams | TwoParams_Result): string {
-    if ("layerType" in cliParams) {
-      return cliParams.layerType || "";
-    }
-    const twoParams = cliParams as TwoParams_Result;
-    if (twoParams.layerType) {
-      return twoParams.layerType;
-    }
-    if (twoParams.params && twoParams.params.length > 1) {
-      return twoParams.params[1];
-    }
-    return "";
-  }
-
-  /**
    * Determines if a fallback should be used
    */
   public shouldFallback(promptPath: string): boolean {
@@ -760,7 +647,7 @@ export class PromptTemplatePathResolverTotality {
     string,
     { kind: "InferenceFailure"; fileName: string; reason: string; message: string }
   > {
-    const options = this.getOptions();
+    const options = this.extractOptions();
 
     const isDebug = Deno.env.get("LOG_LEVEL") === "debug";
     if (isDebug) {

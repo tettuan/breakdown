@@ -22,12 +22,11 @@ import {
   DEFAULT_SCHEMA_BASE_DIR,
   type DEFAULT_SCHEMA_WORKSPACE_DIR as _DEFAULT_SCHEMA_WORKSPACE_DIR,
 } from "../config/constants.ts";
-
-// Legacy type alias for backward compatibility during migration
-type DoubleParams_Result = PromptCliParams;
-
-// Default schema base directory is now imported from constants
-// Use DEFAULT_SCHEMA_WORKSPACE_DIR for full workspace path
+import {
+  type BaseResolverConfig,
+  PathResolverBase,
+  type ResolverCliParams,
+} from "./path_resolver_base.ts";
 
 /**
  * Schema-specific errors as discriminated union
@@ -80,11 +79,12 @@ export function isFileSystemError(
 }
 
 /**
- * Configuration with explicit union types instead of optionals
+ * Configuration for schema file path resolver
  */
-export type SchemaResolverConfig =
-  | { kind: "WithSchemaConfig"; app_schema: { base_dir: string } }
-  | { kind: "NoSchemaConfig" };
+interface SchemaResolverConfig extends BaseResolverConfig {
+  kind: "WithSchemaConfig" | "NoSchemaConfig";
+  schemaBaseDir: string;
+}
 
 /**
  * Value object representing a resolved schema file path with validation
@@ -156,20 +156,17 @@ export class SchemaPath {
 
 /**
  * Schema file path resolver with full Totality implementation
+ * Extends PathResolverBase for common functionality
  */
-export class SchemaFilePathResolverTotality {
-  private readonly config: SchemaResolverConfig;
-  private readonly _cliParams: DoubleParams_Result | TwoParams_Result;
-
+export class SchemaFilePathResolverTotality extends PathResolverBase<SchemaResolverConfig> {
   /**
    * Private constructor following Smart Constructor pattern
    */
   private constructor(
     config: SchemaResolverConfig,
-    cliParams: DoubleParams_Result | TwoParams_Result,
+    cliParams: ResolverCliParams,
   ) {
-    this.config = config;
-    this._cliParams = this.deepCopyCliParams(cliParams);
+    super(config, cliParams);
   }
 
   /**
@@ -179,43 +176,24 @@ export class SchemaFilePathResolverTotality {
    */
   static create(
     config: Record<string, unknown>,
-    cliParams: DoubleParams_Result | TwoParams_Result,
+    cliParams: PromptCliParams | TwoParams_Result,
   ): Result<SchemaFilePathResolverTotality, PathResolutionError> {
-    // Validate configuration presence and type
-    if (!config || typeof config !== "object" || Array.isArray(config)) {
-      return resultError({
-        kind: "InvalidConfiguration",
-        details: "Configuration must be a non-null object",
-      });
+    // Validate config using base class
+    const configResult = PathResolverBase.validateBaseConfig(config);
+    if (!configResult.ok) {
+      return configResult;
     }
 
-    // Validate cliParams presence and type
-    if (!cliParams || typeof cliParams !== "object" || Array.isArray(cliParams)) {
-      return resultError({
-        kind: "InvalidConfiguration",
-        details: "CLI parameters must be a non-null object",
-      });
+    // Validate cliParams using base class
+    const paramsResult = PathResolverBase.validateCliParams(cliParams);
+    if (!paramsResult.ok) {
+      return paramsResult;
     }
 
-    // Validate CLI parameters structure and content
-    const directiveType = SchemaFilePathResolverTotality.extractDirectiveType(cliParams);
-    const layerType = SchemaFilePathResolverTotality.extractLayerType(cliParams);
-
-    if (!directiveType || !layerType) {
-      return resultError({
-        kind: "InvalidParameterCombination",
-        directiveType: directiveType || "(missing)",
-        layerType: layerType || "(missing)",
-      });
-    }
-
-    // Validate that extracted values are non-empty strings
-    if (directiveType.trim() === "" || layerType.trim() === "") {
-      return resultError({
-        kind: "InvalidParameterCombination",
-        directiveType: directiveType || "(empty)",
-        layerType: layerType || "(empty)",
-      });
+    // Validate parameter types using base class
+    const typeResult = PathResolverBase.validateParameterTypes(cliParams as ResolverCliParams);
+    if (!typeResult.ok) {
+      return typeResult;
     }
 
     // Convert config to discriminated union
@@ -230,43 +208,23 @@ export class SchemaFilePathResolverTotality {
    */
   private static normalizeConfig(config: Record<string, unknown>): SchemaResolverConfig {
     const appSchema = config.app_schema as { base_dir?: string } | undefined;
+    const workingDir = (config.working_dir as string) || Deno.cwd();
 
     if (appSchema?.base_dir && typeof appSchema.base_dir === "string") {
+      const schemaBaseDir = isAbsolute(appSchema.base_dir)
+        ? appSchema.base_dir
+        : resolve(workingDir, appSchema.base_dir);
       return {
         kind: "WithSchemaConfig",
-        app_schema: { base_dir: appSchema.base_dir },
+        workingDir,
+        schemaBaseDir,
       };
     } else {
-      return { kind: "NoSchemaConfig" };
-    }
-  }
-
-  /**
-   * Deep copy CLI parameters for immutability
-   */
-  private deepCopyCliParams(
-    cliParams: DoubleParams_Result | TwoParams_Result,
-  ): DoubleParams_Result | TwoParams_Result {
-    if ("type" in cliParams && cliParams.type === "two") {
-      // TwoParams_Result from breakdownparams
-      const twoParams = cliParams as TwoParams_Result;
-      const copy: TwoParams_Result = {
-        type: "two",
-        params: twoParams.params ? [...twoParams.params] : [],
-        layerType: twoParams.params?.[1] || "",
-        directiveType: twoParams.params?.[0] || "",
-        options: { ...twoParams.options },
-      } as TwoParams_Result;
-      return copy;
-    } else {
-      // DoubleParams_Result (PromptCliParams)
-      const doubleParams = cliParams as DoubleParams_Result;
-      const copy: DoubleParams_Result = {
-        layerType: doubleParams.layerType || "",
-        directiveType: doubleParams.directiveType || "",
-        options: doubleParams.options ? { ...doubleParams.options } : {},
-      } as DoubleParams_Result;
-      return copy;
+      return {
+        kind: "NoSchemaConfig",
+        workingDir,
+        schemaBaseDir: resolve(workingDir, DEFAULT_SCHEMA_BASE_DIR),
+      };
     }
   }
 
@@ -326,26 +284,7 @@ export class SchemaFilePathResolverTotality {
    * Never returns null or throws exceptions
    */
   private resolveBaseDirSafe(): Result<string, PathResolutionError> {
-    let baseDir: string;
-
-    switch (this.config.kind) {
-      case "WithSchemaConfig":
-        baseDir = this.config.app_schema.base_dir;
-        break;
-      case "NoSchemaConfig":
-        baseDir = DEFAULT_SCHEMA_BASE_DIR;
-        break;
-      // Exhaustive check - TypeScript ensures all cases are handled
-      default: {
-        const _exhaustive: never = this.config;
-        return _exhaustive;
-      }
-    }
-
-    // Ensure absolute path
-    if (!isAbsolute(baseDir)) {
-      baseDir = resolve(Deno.cwd(), baseDir);
-    }
+    const baseDir = this.config.schemaBaseDir;
 
     // Validate base directory format
     if (baseDir.includes("\0")) {
@@ -391,58 +330,6 @@ export class SchemaFilePathResolverTotality {
     }
 
     return join(baseDir, directiveType, layerType, fileName);
-  }
-
-  /**
-   * Gets the directive type with validation
-   */
-  private getDirectiveType(): string {
-    const type: string = SchemaFilePathResolverTotality.extractDirectiveType(this._cliParams);
-    return type || "unknown";
-  }
-
-  /**
-   * Static helper to extract directive type
-   * Handles multiple parameter formats safely
-   */
-  private static extractDirectiveType(
-    cliParams: DoubleParams_Result | TwoParams_Result,
-  ): string {
-    // Handle both legacy and new parameter structures
-    if ("directiveType" in cliParams && cliParams.directiveType) {
-      return cliParams.directiveType;
-    }
-    // For TwoParams_Result structure from breakdownparams
-    const twoParams = cliParams as TwoParams_Result;
-    if (twoParams.type === "two" && twoParams.params && twoParams.params.length > 0) {
-      return twoParams.params[0] || "";
-    }
-    return "";
-  }
-
-  /**
-   * Gets the layer type with validation
-   */
-  private getLayerType(): string {
-    const type: string = SchemaFilePathResolverTotality.extractLayerType(this._cliParams);
-    return type || "unknown";
-  }
-
-  /**
-   * Static helper to extract layer type
-   * Handles multiple parameter formats safely
-   */
-  private static extractLayerType(cliParams: DoubleParams_Result | TwoParams_Result): string {
-    // Handle both legacy and new parameter structures
-    if ("layerType" in cliParams && cliParams.layerType) {
-      return cliParams.layerType;
-    }
-    // For TwoParams_Result structure from breakdownparams
-    const twoParams = cliParams as TwoParams_Result;
-    if (twoParams.type === "two" && twoParams.params && twoParams.params.length > 1) {
-      return twoParams.params[1] || "";
-    }
-    return "";
   }
 
   /**

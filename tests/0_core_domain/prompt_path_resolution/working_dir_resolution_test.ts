@@ -16,7 +16,7 @@ import { join } from "jsr:@std/path@^1.0.9";
 import {
   formatPathResolutionError,
   PromptTemplatePathResolverTotality,
-} from "../../../lib/factory/prompt_template_path_resolver_totality.ts";
+} from "../../../lib/factory/prompt_template_path_resolver.ts";
 import { WorkingDirectoryPath } from "../../../lib/domain/core/value_objects/working_directory_path.ts";
 import type { TwoParams_Result } from "../../../lib/deps.ts";
 

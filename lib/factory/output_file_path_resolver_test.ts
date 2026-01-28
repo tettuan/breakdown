@@ -6,7 +6,7 @@ import { assertEquals, assertExists } from "jsr:@std/assert@^1.0.0";
 import {
   formatOutputFilePathError,
   OutputFilePathResolverTotality,
-} from "./output_file_path_resolver_totality.ts";
+} from "./output_file_path_resolver.ts";
 import type { PromptCliParams } from "../types/mod.ts";
 import { resolve } from "jsr:@std/path@^1.0.9";
 

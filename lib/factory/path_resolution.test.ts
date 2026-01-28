@@ -13,7 +13,7 @@
 import { assertEquals, assertExists } from "../deps.ts";
 import { join } from "jsr:@std/path@^1.0.9";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { PromptTemplatePathResolverTotality } from "./prompt_template_path_resolver_totality.ts";
+import { PromptTemplatePathResolverTotality } from "./prompt_template_path_resolver.ts";
 import { DEFAULT_FROM_LAYER_TYPE } from "../config/constants.ts";
 import type { TwoParams_Result } from "../deps.ts";
 

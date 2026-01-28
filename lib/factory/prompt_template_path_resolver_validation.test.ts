@@ -15,7 +15,7 @@ import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import {
   formatPathResolutionError,
   PromptTemplatePathResolverTotality,
-} from "./prompt_template_path_resolver_totality.ts";
+} from "./prompt_template_path_resolver.ts";
 import type { PathResolutionError } from "../types/path_resolution_option.ts";
 import type { TwoParams_Result } from "../deps.ts";
 

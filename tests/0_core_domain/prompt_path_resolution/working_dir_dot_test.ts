@@ -11,7 +11,7 @@ import { assertEquals, assertExists } from "../../deps.ts";
 import { join } from "jsr:@std/path@^1.0.9";
 import {
   PromptTemplatePathResolverTotality,
-} from "../../../lib/factory/prompt_template_path_resolver_totality.ts";
+} from "../../../lib/factory/prompt_template_path_resolver.ts";
 import type { TwoParams_Result } from "../../../lib/deps.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 

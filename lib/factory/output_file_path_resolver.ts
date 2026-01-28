@@ -12,6 +12,11 @@ import type { Result } from "../types/result.ts";
 import { error, ok } from "../types/result.ts";
 import type { PromptCliParams } from "../types/mod.ts";
 import { isAbsolute, resolve } from "jsr:@std/path@^1.0.9";
+import {
+  type BaseResolverConfig,
+  PathResolverBase,
+  type ResolverCliParams,
+} from "./path_resolver_base.ts";
 
 /**
  * Error types for output file path resolution
@@ -30,9 +35,31 @@ interface FilePath {
 }
 
 /**
- * Output file path resolver implementing Totality principle
+ * Configuration for output file path resolver
  */
-export class OutputFilePathResolverTotality {
+interface OutputResolverConfig extends BaseResolverConfig {
+  destinationPrefix?: string;
+}
+
+/**
+ * Output file path resolver implementing Totality principle
+ * Extends PathResolverBase for common functionality
+ */
+export class OutputFilePathResolverTotality extends PathResolverBase<OutputResolverConfig> {
+  private readonly filePath: FilePath;
+
+  /**
+   * Private constructor following Smart Constructor pattern
+   */
+  private constructor(
+    config: OutputResolverConfig,
+    cliParams: ResolverCliParams,
+    filePath: FilePath,
+  ) {
+    super(config, cliParams);
+    this.filePath = filePath;
+  }
+
   /**
    * Safely extract destination prefix from config
    */
@@ -93,13 +120,13 @@ export class OutputFilePathResolverTotality {
       },
     };
 
-    return ok(new OutputFilePathResolverTotality(filePath));
-  }
+    const resolverConfig: OutputResolverConfig = {
+      workingDir,
+      destinationPrefix,
+    };
 
-  /**
-   * Private constructor following Smart Constructor pattern
-   */
-  private constructor(private readonly filePath: FilePath) {}
+    return ok(new OutputFilePathResolverTotality(resolverConfig, cliParams, filePath));
+  }
 
   /**
    * Gets the resolved output file path
@@ -122,9 +149,6 @@ export class OutputFilePathResolverTotality {
         reason: "Output path cannot be empty",
       });
     }
-
-    // Additional validation can be added here
-    // For example: check if parent directory exists, check write permissions, etc.
 
     return ok(undefined);
   }

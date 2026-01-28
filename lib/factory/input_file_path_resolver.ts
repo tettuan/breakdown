@@ -15,40 +15,11 @@ import type { PromptCliParams } from "./prompt_variables_factory.ts";
 import type { TwoParams_Result } from "../deps.ts";
 import type { Result } from "../types/result.ts";
 import { error, ok } from "../types/result.ts";
-
-// Legacy type alias for backward compatibility during migration
-type DoubleParamsResult = PromptCliParams;
-
-// Type interfaces unified with Worker1 template pattern
-interface DirectiveValueObject {
-  readonly value: string;
-  readonly profile?: string;
-  readonly validatedByPattern?: boolean;
-  equals?(other: DirectiveValueObject): boolean;
-  toString?(): string;
-}
-
-interface LayerValueObject {
-  readonly value: string;
-  readonly profile?: string;
-  readonly validatedByPattern?: boolean;
-  equals?(other: LayerValueObject): boolean;
-  toString?(): string;
-}
-
-interface TotalityPromptCliParams extends PromptCliParams {
-  directive?: DirectiveValueObject;
-  layer?: LayerValueObject;
-  options: Record<string, unknown>;
-}
-
-interface LegacyPromptCliParams {
-  directiveType: string;
-  layerType: string;
-  options?: Record<string, unknown>;
-}
-
-// Remove UnknownObject type as it's no longer needed
+import {
+  type BaseResolverConfig,
+  PathResolverBase,
+  type ResolverCliParams,
+} from "./path_resolver_base.ts";
 
 /**
  * Enhanced error types for Input File Path Resolution
@@ -73,11 +44,11 @@ export type PathType =
   | { kind: "Filename"; name: string };
 
 /**
- * Configuration with explicit states
+ * Configuration for input file path resolver
  */
-export type InputResolverConfig =
-  | { kind: "WithWorkingDir"; working_dir: string }
-  | { kind: "NoWorkingDir" };
+interface InputResolverConfig extends BaseResolverConfig {
+  kind: "WithWorkingDir" | "NoWorkingDir";
+}
 
 /**
  * CLI options with explicit types
@@ -158,22 +129,17 @@ export class ResolvedInputPath {
 
 /**
  * Input file path resolver with full Totality implementation
+ * Extends PathResolverBase for common functionality
  */
-export class InputFilePathResolverTotality {
-  private readonly config: InputResolverConfig;
-  private readonly _cliParams: DoubleParamsResult | TwoParams_Result;
-  private readonly cwd: string;
-
+export class InputFilePathResolverTotality extends PathResolverBase<InputResolverConfig> {
   /**
    * Private constructor following Smart Constructor pattern
    */
   private constructor(
     config: InputResolverConfig,
-    cliParams: DoubleParamsResult | TwoParams_Result,
+    cliParams: ResolverCliParams,
   ) {
-    this.config = config;
-    this._cliParams = this.deepCopyCliParams(cliParams);
-    this.cwd = Deno.cwd();
+    super(config, cliParams);
   }
 
   /**
@@ -181,18 +147,22 @@ export class InputFilePathResolverTotality {
    */
   static create(
     config: Record<string, unknown>,
-    cliParams: DoubleParamsResult | TwoParams_Result,
+    cliParams: PromptCliParams | TwoParams_Result,
   ): Result<InputFilePathResolverTotality, InputFilePathError> {
-    // Validate config presence and type
-    if (!config || typeof config !== "object" || Array.isArray(config)) {
+    // Validate config using base class
+    const configResult = PathResolverBase.validateBaseConfig(config);
+    if (!configResult.ok) {
       return error({
         kind: "ConfigurationError",
-        message: "Configuration must be a non-null object",
+        message: configResult.error.kind === "InvalidConfiguration"
+          ? configResult.error.details
+          : "Configuration must be a non-null object",
       });
     }
 
-    // Validate cliParams presence and type
-    if (!cliParams || typeof cliParams !== "object" || Array.isArray(cliParams)) {
+    // Validate cliParams using base class
+    const paramsResult = PathResolverBase.validateCliParams(cliParams);
+    if (!paramsResult.ok) {
       return error({
         kind: "ConfigurationError",
         message: "CLI parameters must be a non-null object",
@@ -200,7 +170,9 @@ export class InputFilePathResolverTotality {
     }
 
     // Validate parameter structure
-    const validationResult = InputFilePathResolverTotality.validateParameterStructure(cliParams);
+    const validationResult = InputFilePathResolverTotality.validateParameterStructure(
+      cliParams,
+    );
     if (!validationResult.ok) {
       return validationResult;
     }
@@ -220,10 +192,13 @@ export class InputFilePathResolverTotality {
     if (workingDir && typeof workingDir === "string") {
       return {
         kind: "WithWorkingDir",
-        working_dir: workingDir,
+        workingDir: workingDir,
       };
     } else {
-      return { kind: "NoWorkingDir" };
+      return {
+        kind: "NoWorkingDir",
+        workingDir: Deno.cwd(),
+      };
     }
   }
 
@@ -231,29 +206,8 @@ export class InputFilePathResolverTotality {
    * Validates the structure of CLI parameters
    */
   private static validateParameterStructure(
-    cliParams: DoubleParamsResult | TwoParams_Result,
+    cliParams: PromptCliParams | TwoParams_Result,
   ): Result<void, InputFilePathError> {
-    // Check for Totality parameters structure
-    const hasTotalityProps = (p: unknown): p is TotalityPromptCliParams => {
-      if (!p || typeof p !== "object" || Array.isArray(p)) return false;
-      const obj = p as Record<string, unknown>;
-      return Boolean(
-        "directive" in obj && "layer" in obj &&
-          obj.directive && typeof obj.directive === "object" &&
-          "value" in (obj.directive as Record<string, unknown>) &&
-          obj.layer && typeof obj.layer === "object" &&
-          "value" in (obj.layer as Record<string, unknown>),
-      );
-    };
-
-    // Check for legacy parameters structure
-    const hasLegacyProps = (p: unknown): p is LegacyPromptCliParams => {
-      if (!p || typeof p !== "object" || Array.isArray(p)) return false;
-      const obj = p as Record<string, unknown>;
-      return "directiveType" in obj && "layerType" in obj &&
-        typeof obj.directiveType === "string" && typeof obj.layerType === "string";
-    };
-
     // Check for TwoParams_Result structure
     const hasTwoParamsProps = (p: unknown): p is TwoParams_Result => {
       if (!p || typeof p !== "object" || Array.isArray(p)) return false;
@@ -261,10 +215,15 @@ export class InputFilePathResolverTotality {
       return "type" in obj && obj.type === "two";
     };
 
-    if (
-      !hasTotalityProps(cliParams as unknown) && !hasLegacyProps(cliParams as unknown) &&
-      !hasTwoParamsProps(cliParams as unknown)
-    ) {
+    // Check for legacy parameters structure (PromptCliParams)
+    const hasLegacyProps = (p: unknown): boolean => {
+      if (!p || typeof p !== "object" || Array.isArray(p)) return false;
+      const obj = p as Record<string, unknown>;
+      return "directiveType" in obj && "layerType" in obj &&
+        typeof obj.directiveType === "string" && typeof obj.layerType === "string";
+    };
+
+    if (!hasTwoParamsProps(cliParams) && !hasLegacyProps(cliParams)) {
       return error({
         kind: "ConfigurationError",
         message: "CLI parameters must have valid structure",
@@ -273,59 +232,6 @@ export class InputFilePathResolverTotality {
     }
 
     return ok(undefined);
-  }
-
-  /**
-   * Deep copy CLI parameters for immutability
-   */
-  private deepCopyCliParams(
-    cliParams: DoubleParamsResult | TwoParams_Result,
-  ): DoubleParamsResult | TwoParams_Result {
-    // Check if it's TotalityPromptCliParams by checking for directive and layer properties
-    const hasTotalityProps = (p: unknown): p is TotalityPromptCliParams => {
-      if (!p || typeof p !== "object" || Array.isArray(p)) return false;
-      const obj = p as Record<string, unknown>;
-      return Boolean(
-        "directive" in obj && "layer" in obj &&
-          obj.directive && typeof obj.directive === "object" &&
-          "value" in (obj.directive as Record<string, unknown>) &&
-          obj.layer && typeof obj.layer === "object" &&
-          "value" in (obj.layer as Record<string, unknown>),
-      );
-    };
-
-    if (hasTotalityProps(cliParams as unknown)) {
-      // TotalityPromptCliParams structure
-      const totalityParams = cliParams as unknown as TotalityPromptCliParams;
-      const copy: PromptCliParams = {
-        directiveType: totalityParams.directiveType || totalityParams.directive?.value ||
-          "",
-        layerType: totalityParams.layerType || totalityParams.layer?.value || "",
-        options: { ...totalityParams.options },
-      };
-      return copy;
-    } else if ("type" in cliParams && cliParams.type === "two") {
-      // TwoParams_Result structure
-      const twoParams = cliParams as TwoParams_Result;
-      const copy: TwoParams_Result = {
-        type: "two",
-        params: twoParams.params ? [...twoParams.params] : [],
-        directiveType: twoParams.directiveType || twoParams.params?.[0] || "",
-        layerType: twoParams.params?.[1] || "",
-        options: { ...twoParams.options },
-      };
-      return copy;
-    } else {
-      // DoubleParamsResult (PromptCliParams)
-      const doubleParams = cliParams as DoubleParamsResult;
-      const copy: PromptCliParams = {
-        directiveType: doubleParams.directiveType,
-        layerType: doubleParams.layerType,
-        options: doubleParams.options ? { ...doubleParams.options } : {},
-      };
-
-      return copy;
-    }
   }
 
   /**
@@ -434,18 +340,9 @@ export class InputFilePathResolverTotality {
    * Extract options with proper type handling
    */
   private extractOptions(): InputCliOptions {
-    if ("options" in this._cliParams) {
-      const opts = this._cliParams.options as Record<string, unknown>;
-      return {
-        fromFile: opts?.fromFile as string | undefined,
-      };
-    }
-
-    // For TwoParams_Result structure
-    const twoParams = this._cliParams as TwoParams_Result;
-    const opts = (twoParams as unknown as { options?: Record<string, unknown> }).options || {};
+    const opts = this.getOptions<Record<string, unknown>>();
     return {
-      fromFile: opts.fromFile as string | undefined,
+      fromFile: opts?.fromFile as string | undefined,
     };
   }
 
@@ -634,36 +531,9 @@ export class InputFilePathResolverTotality {
    * Get the target directory for file organization
    */
   public getTargetDirectory(): Result<string, InputFilePathError> {
-    // Check if it's TotalityPromptCliParams structure
-    const hasTotalityProps = (p: unknown): p is TotalityPromptCliParams => {
-      if (!p || typeof p !== "object" || Array.isArray(p)) return false;
-      const obj = p as Record<string, unknown>;
-      return Boolean(
-        "directive" in obj && "layer" in obj &&
-          obj.directive && typeof obj.directive === "object" &&
-          "value" in (obj.directive as Record<string, unknown>) &&
-          obj.layer && typeof obj.layer === "object" &&
-          "value" in (obj.layer as Record<string, unknown>),
-      );
-    };
+    const layerType = this.getLayerType();
 
-    let directory: string;
-
-    if (hasTotalityProps(this._cliParams as unknown)) {
-      // TotalityPromptCliParams structure - use layer.value
-      const totalityParams = this._cliParams as unknown as TotalityPromptCliParams;
-      directory = totalityParams.layer?.value || "";
-    } else if ("layerType" in this._cliParams) {
-      // Legacy PromptCliParams structure
-      const legacyParams = this._cliParams as DoubleParamsResult;
-      directory = legacyParams.layerType || "";
-    } else {
-      // TwoParams_Result structure
-      const twoParams = this._cliParams as TwoParams_Result;
-      directory = twoParams.layerType || "";
-    }
-
-    if (!directory) {
+    if (!layerType) {
       return error({
         kind: "ConfigurationError",
         message: "Unable to determine target directory",
@@ -671,7 +541,7 @@ export class InputFilePathResolverTotality {
       });
     }
 
-    return ok(directory);
+    return ok(layerType);
   }
 }
 

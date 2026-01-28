@@ -3,7 +3,7 @@
  */
 
 import { assertEquals } from "jsr:@std/assert@^1.0.0";
-import { OutputFilePathResolverTotality } from "./output_file_path_resolver_totality.ts";
+import { OutputFilePathResolverTotality } from "./output_file_path_resolver.ts";
 import type { PromptCliParams } from "../types/mod.ts";
 import { resolve } from "jsr:@std/path@^1.0.9";
 

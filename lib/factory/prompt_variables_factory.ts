@@ -11,7 +11,6 @@
  */
 
 import type { PromptParams } from "@tettuan/breakdownprompt";
-// import { BreakdownConfig as _BreakdownConfig } from "@tettuan/breakdownconfig";
 import { DirectiveType } from "../domain/core/value_objects/directive_type.ts";
 import { LayerType } from "../domain/core/value_objects/layer_type.ts";
 import { ConfigProfile } from "../config/mod.ts";
@@ -26,22 +25,15 @@ import {
   TransformerFactory,
 } from "../domain/prompt_variable_transformer.ts";
 import {
-  type formatPathResolutionError as _formatPathResolutionError,
-  type PromptTemplatePath as _PromptTemplatePathResolver,
   PromptTemplatePathResolverTotality,
-} from "./prompt_template_path_resolver_totality.ts";
-import { SchemaFilePathResolverTotality } from "./schema_file_path_resolver_totality.ts";
-// Note: InputFilePathResolver and OutputFilePathResolver are separate implementations
+} from "./prompt_template_path_resolver.ts";
+import { SchemaFilePathResolverTotality } from "./schema_file_path_resolver.ts";
 import {
   InputFilePathResolverTotality as InputFilePathResolver,
-} from "./input_file_path_resolver_totality.ts";
+} from "./input_file_path_resolver.ts";
 import {
   OutputFilePathResolverTotality as OutputFilePathResolver,
-} from "./output_file_path_resolver_totality.ts";
-import type {
-  formatSchemaError as _formatSchemaError,
-  SchemaFilePathResolverTotality as _SchemaFilePathResolver,
-} from "./schema_file_path_resolver_totality.ts";
+} from "./output_file_path_resolver.ts";
 import { PathResolutionOption } from "../types/path_resolution_option.ts";
 import { error as resultError, ok, type Result } from "../types/result.ts";
 import {
@@ -50,6 +42,11 @@ import {
 } from "../types/prompt_variables_factory_error.ts";
 import { OutputPath } from "../types/output_destination.ts";
 import { FilePath } from "../types/file_path_value.ts";
+import {
+  PathResolutionFacade,
+  type PathResolutionConfig,
+} from "./path_resolution_facade.ts";
+import { VariableBuilderService } from "./variable_builder_service.ts";
 
 /**
  * Configuration options for prompt generation and file resolution.

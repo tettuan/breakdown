@@ -16,7 +16,7 @@ import {
   computePromptDirectory,
   formatPathResolutionError,
   PromptTemplatePathResolverTotality,
-} from "./prompt_template_path_resolver_totality.ts";
+} from "./prompt_template_path_resolver.ts";
 import { DEFAULT_FROM_LAYER_TYPE, DEFAULT_SCHEMA_BASE_DIR } from "../config/constants.ts";
 import type { TwoParams_Result } from "../deps.ts";
 

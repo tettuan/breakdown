@@ -19,7 +19,7 @@ import { dirname } from "jsr:@std/path@^1.0.9";
 import type { Result } from "$lib/types/result.ts";
 import { error, ok } from "$lib/types/result.ts";
 import { PromptVariablesFactory } from "$lib/factory/prompt_variables_factory.ts";
-import { PromptTemplatePathResolverTotality } from "$lib/factory/prompt_template_path_resolver_totality.ts";
+import { PromptTemplatePathResolverTotality } from "$lib/factory/prompt_template_path_resolver.ts";
 // ValidatedParams type is now defined inline since validator was removed
 type ValidatedParams = {
   directive: { value: string };
