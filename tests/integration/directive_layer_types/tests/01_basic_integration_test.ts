@@ -179,7 +179,7 @@ Deno.test(
     assertExists(invalidDirectives, "invalidDirectives should be defined in test configuration");
     assertExists(invalidLayers, "invalidLayers should be defined in test configuration");
 
-    // Step 2: DirectiveType エラーケース（via BreakdownParams integration）
+    // Step 2: DirectiveType error cases (via BreakdownParams integration)
     for (const invalid of invalidDirectives) {
       // Use BreakdownParams integration which applies config-based validation
       const args = [invalid, "project"]; // valid layer, invalid directive
@@ -194,7 +194,7 @@ Deno.test(
       }
     }
 
-    // Step 3: LayerType エラーケース（via BreakdownParams integration）
+    // Step 3: LayerType error cases (via BreakdownParams integration)
     for (const invalid of invalidLayers) {
       // Use BreakdownParams integration which applies config-based validation
       const args = ["to", invalid]; // valid directive, invalid layer
@@ -214,7 +214,7 @@ Deno.test(
 Deno.test("DirectiveType/LayerType Integration - 2_structure: Complete integration flow", async () => {
   logger.debug("Complete integration flow test started", { test: "complete_integration" });
 
-  // Step 1: 設定ファイルから複数の組み合わせを取得
+  // Step 1: Get multiple combinations from configuration file
   const configResult = await ConfigurationTestHelper.loadTestConfiguration("default");
   const directives = configResult.userConfig.testData?.validDirectives;
   const layers = configResult.userConfig.testData?.validLayers;
@@ -222,14 +222,14 @@ Deno.test("DirectiveType/LayerType Integration - 2_structure: Complete integrati
   assertExists(directives, "validDirectives should be defined in test configuration");
   assertExists(layers, "validLayers should be defined in test configuration");
 
-  // Step 2: 全組み合わせテスト
-  for (const directive of directives.slice(0, 2)) { // 最初の2つのみ使用
-    for (const layer of layers.slice(0, 2)) { // 最初の2つのみ使用
+  // Step 2: Test all combinations
+  for (const directive of directives.slice(0, 2)) { // Use only first 2
+    for (const layer of layers.slice(0, 2)) { // Use only first 2
       const args = [directive, layer];
 
       logger.debug("Combination test execution", { directive, layer });
 
-      // 完全統合フロー実行
+      // Execute complete integration flow
       const result = await createTwoParamsFromConfigFile(args, "default");
 
       assertEquals(result.ok, true, `Should succeed for ${directive}/${layer}`);
@@ -238,7 +238,7 @@ Deno.test("DirectiveType/LayerType Integration - 2_structure: Complete integrati
         assertEquals(twoParams.directiveType, directive);
         assertEquals(twoParams.layerType, layer);
 
-        // DirectiveType と LayerType オブジェクトの生成確認
+        // Verify DirectiveType and LayerType object creation
         const directiveTypeResult = DirectiveType.create(twoParams.directiveType);
         const layerTypeResult = LayerType.create(twoParams.layerType);
 

@@ -11,7 +11,7 @@ import { assertEquals, assertExists } from "../../deps.ts";
 import { join } from "jsr:@std/path@^1.0.9";
 import {
   PromptTemplatePathResolverTotality,
-} from "../../../lib/factory/prompt_template_path_resolver_totality.ts";
+} from "../../../lib/factory/prompt_template_path_resolver.ts";
 import type { TwoParams_Result } from "../../../lib/deps.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
@@ -400,6 +400,15 @@ Deno.test("Working directory relative paths - comprehensive test", async () => {
       },
     ];
 
+    // Create all directory structures in parallel
+    await Promise.all(structures.map(async (struct) => {
+      const templateDir = join(struct.expectedBasePath, "to", "task");
+      await Deno.mkdir(templateDir, { recursive: true });
+      const templateFile = join(templateDir, "f_default.md");
+      await Deno.writeTextFile(templateFile, `# Template for ${struct.name}\n{{input_text}}`);
+    }));
+
+    // Test each structure (synchronous operations after setup)
     for (const struct of structures) {
       logger.debug(`Testing: ${struct.name}`, {
         workingDir: struct.workingDir,
@@ -407,12 +416,8 @@ Deno.test("Working directory relative paths - comprehensive test", async () => {
         expectedBasePath: struct.expectedBasePath,
       });
 
-      // Create the expected directory structure
       const templateDir = join(struct.expectedBasePath, "to", "task");
-      await Deno.mkdir(templateDir, { recursive: true });
-
       const templateFile = join(templateDir, "f_default.md");
-      await Deno.writeTextFile(templateFile, `# Template for ${struct.name}\n{{input_text}}`);
 
       // Test configuration
       const config = {
@@ -455,14 +460,14 @@ Deno.test("Working directory relative paths - comprehensive test", async () => {
       }
     }
   } finally {
-    // Cleanup
+    // Cleanup in parallel
     const dirsToClean = ["tmp", "examples/.agent", "tests/fixtures/prompts"];
-    for (const dir of dirsToClean) {
+    await Promise.all(dirsToClean.map(async (dir) => {
       try {
         await Deno.remove(join(originalCwd, dir), { recursive: true });
       } catch {
         // Ignore if doesn't exist
       }
-    }
+    }));
   }
 });

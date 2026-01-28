@@ -1,6 +1,6 @@
 /**
  * Params Custom Config
- * BreakdownParams用のカスタム設定
+ * Custom configuration for BreakdownParams
  */
 
 // Internal type definitions for type safety

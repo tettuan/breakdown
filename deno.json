@@ -1,6 +1,6 @@
 {
   "name": "@tettuan/breakdown",
-  "version": "1.8.1",
+  "version": "1.8.2",
   "exports": {
     ".": "./mod.ts"
   },
@@ -40,14 +40,12 @@
       "tests/",
       "*test.ts",
       "draft/",
-      "CLAUDE.md",
-      "instructions/"
+      "CLAUDE.md"
     ]
   },
   "tasks": {
     "ci": "deno run --allow-read --allow-write --allow-run --allow-env --allow-net jsr:@aidevtool/ci",
     "ci:dirty": "deno run --allow-read --allow-write --allow-run --allow-env --allow-net jsr:@aidevtool/ci --allow-dirty",
-    "paneclear": "deno run --allow-read --allow-write --allow-run --allow-env --allow-net jsr:@aidevtool/tmux-monitor --onetime --clear",
     "test": "deno test --allow-env --allow-write --allow-read --allow-run"
   },
   "fmt": {
@@ -64,15 +62,25 @@
   "lint": {
     "include": [
       "lib/",
-      "tests/"
+      "tests/",
+      "cli/"
     ],
     "exclude": [
       "tmp/",
-      "tests/fixtures/"
+      "tests/fixtures/",
+      "**/*.ja.*",
+      "**/日本語.*"
     ],
     "rules": {
       "tags": [
         "recommended"
+      ],
+      "include": [
+        "no-eval",
+        "no-sync-fn-in-async-fn",
+        "prefer-ascii",
+        "single-var-declarator",
+        "verbatim-module-syntax"
       ]
     }
   },

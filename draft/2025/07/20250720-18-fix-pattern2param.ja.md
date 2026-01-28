@@ -89,7 +89,7 @@ deno run --allow-all ../cli/breakdown.ts find bugs --config=findbugs --from=tmp/
 
 ## エラー内容
 ```
-⚠️ Prompt generation issue: {"kind":"VariablesBuilderError","errors":["Failed to create DirectiveType: [object Object]"],"phase":"unexpected"}
+[WARN] Prompt generation issue: {"kind":"VariablesBuilderError","errors":["Failed to create DirectiveType: [object Object]"],"phase":"unexpected"}
 ```
 
 ## 根本原因

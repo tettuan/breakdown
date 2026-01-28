@@ -39,7 +39,7 @@
 
 #### 完全統合実装
 ```typescript
-// ✅ 設定ファイル → CustomConfig → BreakdownParams → TwoParamsResult
+// OK: 設定ファイル → CustomConfig → BreakdownParams → TwoParamsResult
 async function createCustomConfigFromProfile(profileName: string): Promise<ParamsCustomConfig> {
   const breakdownConfig = await loadUserConfig(profileName);
   return ParamsCustomConfig.create({
@@ -69,7 +69,7 @@ async function executeBreakdownParams(args: string[], profileName: string = "def
 ### 2. DirectiveType/LayerType純粋実装（ConfigProfile依存除去）
 
 ```typescript
-// ✅ BreakdownParams検証済み値の純粋実装
+// OK: BreakdownParams検証済み値の純粋実装
 class DirectiveType {
   readonly source = "BREAKDOWN_PARAMS_VALIDATED" as const;
   constructor(readonly value: string) { Object.freeze(this); }
@@ -94,7 +94,7 @@ function fromTwoParamsResult(twoParamsResult: TwoParamsResult): TwoParams {
 ### 3. 設定ファイルベーステスト実装
 
 ```typescript
-// ✅ 設定ファイルベーステストヘルパー
+// OK: 設定ファイルベーステストヘルパー
 export class BreakdownParamsTestHelper {
   static async createTwoParamsFromConfig(args: string[], profileName: string = "test"): Promise<TwoParams> {
     const twoParamsResult = await executeBreakdownParams(args, profileName);
@@ -102,7 +102,7 @@ export class BreakdownParamsTestHelper {
   }
 }
 
-// ❌ 削除対象：ハードコードテストヘルパー
+// NG: 削除対象：ハードコードテストヘルパー
 // - createDirectiveType(value: string): DirectiveType
 // - getValidDirectives(): string[]
 // - ConfigProfile.createDefault() 使用

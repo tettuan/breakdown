@@ -105,7 +105,7 @@ class TwoParamsOrchestrator {
 
     // 2. Read STDIN
     if (isDebug) {
-      console.log("[TwoParamsOrchestrator → TwoParamsStdinProcessor] Passing:", {
+      console.log("[TwoParamsOrchestrator -> TwoParamsStdinProcessor] Passing:", {
         config: Object.keys(config),
         options: Object.keys(options),
       });
@@ -130,7 +130,7 @@ class TwoParamsOrchestrator {
 
     // 3. Process variables
     if (isDebug) {
-      console.log("[TwoParamsStdinProcessor → TwoParamsVariableProcessor] Passing:", {
+      console.log("[TwoParamsStdinProcessor -> TwoParamsVariableProcessor] Passing:", {
         options: Object.keys(options),
         stdinState: stdinResult.data,
         stdinContent: stdinContent ? "(has content)" : "(empty/not provided)",
@@ -166,7 +166,7 @@ class TwoParamsOrchestrator {
 
     // 4. Generate prompt with validated parameters
     if (isDebug) {
-      console.log("[TwoParamsVariableProcessor → TwoParamsPromptGenerator] Passing:", {
+      console.log("[TwoParamsVariableProcessor -> TwoParamsPromptGenerator] Passing:", {
         config: Object.keys(config),
         validatedParams: validatedParams,
         options: Object.keys(options),
@@ -192,7 +192,7 @@ class TwoParamsOrchestrator {
 
     // 5. Process output using processor (no I/O, just string processing)
     if (isDebug) {
-      console.log("[TwoParamsPromptGenerator → TwoParamsOutputProcessor] Passing:", {
+      console.log("[TwoParamsPromptGenerator -> TwoParamsOutputProcessor] Passing:", {
         promptLength: promptResult.data.length,
       });
     }

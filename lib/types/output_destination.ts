@@ -5,7 +5,7 @@
  * avoiding implicit meanings of empty strings.
  */
 
-import { Result } from "./result.ts";
+import type { Result } from "./result.ts";
 
 /**
  * Discriminated union for output destination

@@ -5,7 +5,7 @@
  * with proper resource management and AbortSignal support.
  */
 
-import { readAll as _readAll } from "jsr:@std/io@0.224.9/read-all";
+import type { readAll as _readAll } from "jsr:@std/io@0.224.9/read-all";
 
 /**
  * Core interface for reading from stdin-like sources
@@ -144,6 +144,8 @@ export class DenoStdinReader implements StdinReader {
           throw new DOMException("Aborted", "AbortError");
         }
 
+        // Sequential await required: stream reading must be done chunk by chunk
+        // deno-lint-ignore no-await-in-loop
         const { done, value } = await reader.read();
 
         if (done) break;

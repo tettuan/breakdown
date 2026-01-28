@@ -20,8 +20,12 @@
 
 import type { DirectiveType } from "./directive_type.ts";
 import type { LayerType } from "./layer_type.ts";
-import { error, ok, Result } from "../../../types/result.ts";
-import { BasePathValueObject, DEFAULT_PATH_CONFIG, PathValidationConfig } from "./base_path.ts";
+import { error, ok, type Result } from "../../../types/result.ts";
+import {
+  BasePathValueObject,
+  DEFAULT_PATH_CONFIG,
+  type PathValidationConfig,
+} from "./base_path.ts";
 
 /**
  * Template Path specific error types using Discriminated Union

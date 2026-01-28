@@ -111,7 +111,7 @@ export class EntryPointManager {
       this.startupTime = new Date();
 
       if (this.config.verbose) {
-        console.log("🚀 Starting Breakdown application...");
+        console.log("[START] Starting Breakdown application...");
       }
 
       // 1. Validate environment
@@ -146,7 +146,7 @@ export class EntryPointManager {
 
       if (this.config.verbose) {
         const duration = Date.now() - this.startupTime.getTime();
-        console.log(`✅ Application completed successfully in ${duration}ms`);
+        console.log(`[OK] Application completed successfully in ${duration}ms`);
       }
 
       return ok(undefined);
@@ -194,7 +194,7 @@ export class EntryPointManager {
     }
 
     if (this.config.verbose) {
-      console.log("✅ Environment validation passed");
+      console.log("[OK] Environment validation passed");
       console.log(`   Requirements: ${requirements.join(", ")}`);
     }
 
@@ -234,7 +234,7 @@ export class EntryPointManager {
       this.signalHandlersInstalled = true;
 
       if (this.config.verbose) {
-        console.log("✅ Signal handlers configured");
+        console.log("[OK] Signal handlers configured");
       }
 
       return ok(undefined);
@@ -255,25 +255,25 @@ export class EntryPointManager {
   private async handleShutdownSignal(signal: string): Promise<void> {
     if (this.isShuttingDown) {
       // Force exit if already shutting down
-      console.log(`⚠️ Force exit on second ${signal}`);
+      console.log(`[WARN] Force exit on second ${signal}`);
       Deno.exit(1);
     }
 
     this.isShuttingDown = true;
 
     if (this.config.verbose) {
-      console.log(`📤 Received ${signal}, shutting down gracefully...`);
+      console.log(`[SIGNAL] Received ${signal}, shutting down gracefully...`);
     }
 
     // Perform graceful shutdown
     try {
       await this.shutdown();
       if (this.config.verbose) {
-        console.log("✅ Graceful shutdown completed");
+        console.log("[OK] Graceful shutdown completed");
       }
       Deno.exit(0);
     } catch (err) {
-      console.error("❌ Error during shutdown:", err);
+      console.error("[ERROR] Error during shutdown:", err);
       Deno.exit(1);
     }
   }
@@ -336,7 +336,7 @@ export class EntryPointManager {
       validateEnvironment: true,
       mainFunction,
       errorHandler: (error) => {
-        console.error("❌ Application Error:", error.message);
+        console.error("[ERROR] Application Error:", error.message);
         if (verbose && error.stack) {
           console.error(error.stack);
         }
@@ -353,7 +353,7 @@ export class EntryPointManager {
       validateEnvironment: true,
       mainFunction,
       errorHandler: (error) => {
-        console.error("🐛 Development Error:", error.message);
+        console.error("[DEBUG] Development Error:", error.message);
         if (error.stack) {
           console.error(error.stack);
         }

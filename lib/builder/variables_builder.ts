@@ -118,11 +118,11 @@ export class VariablesBuilder {
   }
 
   /**
-   * Add a standard variable (input_text_file or destination_path)
+   * Add a standard variable (input_text_file, destination_path, or base_prompt_dir)
    */
   addStandardVariable(name: string, value: string): this {
     // Validate that name is one of the allowed standard variables
-    const allowedNames = ["input_text_file", "destination_path"];
+    const allowedNames = ["input_text_file", "destination_path", "base_prompt_dir"];
     if (!allowedNames.includes(name)) {
       this._errors.push({
         kind: "invalid",

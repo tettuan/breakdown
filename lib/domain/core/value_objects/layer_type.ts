@@ -38,10 +38,10 @@ export type LayerTypeError =
   | { kind: "TooLong"; value: string; maxLength: number; message: string };
 
 /**
- * LayerType - 階層を表すValue Object
+ * LayerType - Value Object representing hierarchy level
  *
- * 役割: 「どのレベルで」を決定する核心ドメイン概念
- * 例: "project"(プロジェクト), "issue"(課題), "task"(タスク)
+ * Role: Core domain concept that determines "at which level"
+ * Examples: "project" (project level), "issue" (issue level), "task" (task level)
  *
  * Design Principles:
  * - Smart Constructor pattern with Result<T, E>
@@ -106,7 +106,7 @@ export class LayerType {
     }
     // Emergency: Configuration-based fallback instead of hardcoded array
     // Extract layer types from default pattern in config/default-user.yml
-    // Configuration-driven approach: config/default-user.yml → CustomConfig → BreakdownParams
+    // Configuration-driven approach: config/default-user.yml -> CustomConfig -> BreakdownParams
     try {
       // Pattern from config/default-user.yml: includes types expected by tests
       const defaultConfigPattern = "project|issue|task|component|module|bugs|feature|epic";
@@ -209,7 +209,7 @@ export class LayerType {
   /**
    * Gets common layer types (frequently used layer types)
    * Returns layer types based on configuration patterns without hardcoded values
-   * Configuration-driven approach: config/default-user.yml → CustomConfig → BreakdownParams
+   * Configuration-driven approach: config/default-user.yml -> CustomConfig -> BreakdownParams
    *
    * @param customConfig - Configuration provider for layer types
    * @returns Array of common layer types from configuration
@@ -574,176 +574,23 @@ export class LayerType {
 }
 
 /**
- * LayerTypeFactory - Factory for creating LayerType instances
- *
- * 統一されたLayerType作成インターフェースを提供。
- * バリデーション、エラーハンドリング、ファクトリーパターンを統合。
- */
-export class LayerTypeFactory {
-  /**
-   * Create LayerType from string with comprehensive validation
-   *
-   * @param input - String input to convert to LayerType
-   * @param config - Configuration provider for layer types (optional)
-   * @returns Result with LayerType or detailed error
-   */
-  static create(
-    input: string,
-    config?: LayerTypeConfig,
-  ): Result<LayerType, LayerTypeError> {
-    return LayerType.create(input, config);
-  }
-
-  /**
-   * Create LayerType with pattern validation
-   *
-   * @param input - String input
-   * @param pattern - Validation pattern
-   * @param config - Configuration provider for layer types (optional)
-   * @returns Result with LayerType or error
-   */
-  static createWithPattern(
-    input: string,
-    pattern: string,
-    config?: LayerTypeConfig,
-  ): Result<LayerType, LayerTypeError> {
-    // First validate input with pattern
-    const patternResult = TwoParamsLayerTypePattern.createOrError(pattern);
-    if (!patternResult.ok) {
-      return error({
-        kind: "InvalidFormat",
-        value: input,
-        pattern: pattern,
-        message: `Invalid pattern: ${
-          "message" in patternResult.error
-            ? patternResult.error.message
-            : "reason" in patternResult.error
-            ? patternResult.error.reason
-            : "Invalid pattern"
-        }`,
-      });
-    }
-
-    if (!patternResult.data.test(input)) {
-      return error({
-        kind: "InvalidFormat",
-        value: input,
-        pattern: pattern,
-        message: `Value "${input}" does not match pattern "${pattern}"`,
-      });
-    }
-
-    // Then create LayerType normally
-    return LayerType.create(input, config);
-  }
-
-  /**
-   * Batch create multiple LayerTypes
-   *
-   * @param inputs - Array of string inputs
-   * @param config - Configuration provider for layer types (optional)
-   * @returns Array of Results
-   */
-  static createMany(
-    inputs: string[],
-    config?: LayerTypeConfig,
-  ): Result<LayerType, LayerTypeError>[] {
-    return inputs.map((input) => LayerType.create(input, config));
-  }
-}
-
-/**
- * LayerTypePatternService - Configuration-based pattern matching service
- *
- * Provides pattern matching and validation services for LayerType based on configuration.
- * This service abstracts condition-based branching logic and provides a unified interface
- * for pattern validation operations.
- */
-export class LayerTypePatternService {
-  constructor(private config: LayerTypeConfig) {}
-
-  /**
-   * Validates pattern matching against configuration
-   *
-   * @param value - Value to validate
-   * @returns Result with boolean success or error with suggestions
-   */
-  async validatePattern(value: string): Promise<Result<boolean, LayerTypeError>> {
-    const validLayersResult = this.config.getLayerTypes();
-    const validLayers = Array.isArray(validLayersResult)
-      ? validLayersResult
-      : await validLayersResult;
-    const isValid = validLayers.includes(value);
-
-    if (!isValid) {
-      const suggestions = await this.calculateSuggestions(value);
-      return error({
-        kind: "PatternMismatch",
-        value,
-        validLayers,
-        suggestions,
-        message: `LayerType "${value}" not found in configuration. Did you mean: ${
-          suggestions.join(", ")
-        }?`,
-      });
-    }
-
-    return ok(true);
-  }
-
-  /**
-   * Calculate suggestions for invalid input
-   *
-   * @param input - Invalid input value
-   * @returns Array of suggested layer types
-   */
-  private async calculateSuggestions(input: string): Promise<readonly string[]> {
-    return await LayerType.calculateSuggestions(input, this.config);
-  }
-
-  /**
-   * Get all valid layer types from configuration
-   *
-   * @returns Array of valid layer types
-   */
-  async getValidLayers(): Promise<readonly string[]> {
-    const result = this.config.getLayerTypes();
-    return Array.isArray(result) ? result : await result;
-  }
-
-  /**
-   * Check if a layer type is valid according to configuration
-   *
-   * @param value - Layer type to check
-   * @returns true if valid
-   */
-  async isValidLayer(value: string): Promise<boolean> {
-    const validLayersResult = this.config.getLayerTypes();
-    const validLayers = Array.isArray(validLayersResult)
-      ? validLayersResult
-      : await validLayersResult;
-    return validLayers.includes(value);
-  }
-}
-
-/**
  * TwoParamsLayerTypePattern - LayerType pattern matching utility
  *
- * 従来のpattern-based validationとの互換性を保つためのユーティリティクラス。
- * 新しいLayerTypeクラスと統合するため、旧実装からのマイグレーション用として提供。
- * 新しいコードでは LayerType.create() を直接使用することを推奨。
+ * Utility class for maintaining compatibility with legacy pattern-based validation.
+ * Provided for migration from old implementation to integrate with new LayerType class.
+ * For new code, it is recommended to use LayerType.create() directly.
  */
 export class TwoParamsLayerTypePattern {
   private constructor(private readonly pattern: RegExp) {}
 
   /**
-   * 文字列パターンから TwoParamsLayerTypePattern を作成（Result型版）
+   * Creates TwoParamsLayerTypePattern from string pattern (Result type version)
    *
-   * Totality原則に準拠し、エラーを明示的に返す。
-   * 統一エラー型システムを使用してValidationErrorを返す。
+   * Follows Totality principle by explicitly returning errors.
+   * Uses unified error type system to return ValidationError.
    *
-   * @param pattern 正規表現文字列
-   * @returns 成功時は Result<TwoParamsLayerTypePattern>、失敗時はValidationError
+   * @param pattern Regular expression string
+   * @returns Result<TwoParamsLayerTypePattern> on success, ValidationError on failure
    */
   static createOrError(pattern: string): Result<TwoParamsLayerTypePattern, ValidationError> {
     if (typeof pattern !== "string") {
@@ -775,27 +622,27 @@ export class TwoParamsLayerTypePattern {
   }
 
   /**
-   * 値がパターンにマッチするかテスト
-   * @param value テスト対象の値
-   * @returns マッチする場合 true
+   * Tests if a value matches the pattern
+   * @param value Value to test
+   * @returns true if matches
    */
   test(value: string): boolean {
     return this.pattern.test(value);
   }
 
   /**
-   * パターン文字列を取得
-   * @returns 正規表現のソース文字列
+   * Gets the pattern string
+   * @returns Regular expression source string
    */
   getPattern(): string {
     return this.pattern.source;
   }
 
   /**
-   * 文字列パターンから TwoParamsLayerTypePattern を作成（従来版）
+   * Creates TwoParamsLayerTypePattern from string pattern (legacy version)
    *
-   * @param pattern 正規表現文字列
-   * @returns TwoParamsLayerTypePattern または null
+   * @param pattern Regular expression string
+   * @returns TwoParamsLayerTypePattern or null
    */
   static create(pattern: string): TwoParamsLayerTypePattern | null {
     const result = TwoParamsLayerTypePattern.createOrError(pattern);

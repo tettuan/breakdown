@@ -14,8 +14,12 @@
  * @module domain/core/value_objects/working_directory_path
  */
 
-import { error, ok, Result } from "../../../types/result.ts";
-import { BasePathValueObject, DEFAULT_PATH_CONFIG, PathValidationConfig } from "./base_path.ts";
+import { error, ok, type Result } from "../../../types/result.ts";
+import {
+  BasePathValueObject,
+  DEFAULT_PATH_CONFIG,
+  type PathValidationConfig,
+} from "./base_path.ts";
 import type { PathResolutionError } from "../../../types/path_resolution_option.ts";
 
 /**

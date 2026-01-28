@@ -2,7 +2,7 @@
  * @fileoverview TwoParamsResult Processing Chain - Comprehensive E2E Integration Tests
  *
  * This module provides end-to-end testing for the complete twoParamsResult processing chain:
- * CLI → BreakdownConfig → BreakdownParams → TwoParamsResult → TwoParams → VariablesBuilder → BreakdownPrompt → Output
+ * CLI -> BreakdownConfig -> BreakdownParams -> TwoParamsResult -> TwoParams -> VariablesBuilder -> BreakdownPrompt -> Output
  *
  * Test Coverage:
  * - Complete processing chain from CLI input to final output
@@ -731,7 +731,7 @@ The project serves critical business functions and requires careful analysis to 
       // Log success with comprehensive details
       logger.debug("Complete integration flow verification successful", {
         processing_chain:
-          "CLI → BreakdownConfig → BreakdownParams → TwoParamsResult → TwoParams → VariablesBuilder → BreakdownPrompt → Output",
+          "CLI -> BreakdownConfig -> BreakdownParams -> TwoParamsResult -> TwoParams -> VariablesBuilder -> BreakdownPrompt -> Output",
         stages_validated: [
           "CLI argument parsing",
           "Configuration loading",

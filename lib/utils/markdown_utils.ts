@@ -1,11 +1,11 @@
 /**
- * Markdownファイルのユーティリティ関数
+ * Utility functions for Markdown files
  */
 
 /**
- * YAMLフロントマターを除去する
- * @param content - Markdownファイルの内容
- * @returns フロントマターを除去した内容
+ * Remove YAML frontmatter from content
+ * @param content - The content of the Markdown file
+ * @returns The content with frontmatter removed
  */
 export function removeYamlFrontmatter(content: string): string {
   const regex = /^---\s*$[\s\S]*?^---\s*$/m;

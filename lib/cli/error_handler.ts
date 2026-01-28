@@ -13,8 +13,6 @@ import { error as resultError, ok } from "../types/result.ts";
 import type { TwoParamsHandlerError } from "./handlers/two_params_handler.ts";
 import type { UnifiedError } from "../types/unified_error_types.ts";
 import { extractUnifiedErrorMessage } from "../types/unified_error_types.ts";
-import type { CliError } from "./errors.ts";
-import { extractCliErrorMessage, isCliError } from "./errors.ts";
 
 /**
  * Error severity levels for determining handling strategy
@@ -56,30 +54,11 @@ export type ConfigValidationResult =
  * @returns The severity level of the error
  */
 export function analyzeErrorSeverity(
-  error: UnifiedError | TwoParamsHandlerError | CliError,
+  error: UnifiedError | TwoParamsHandlerError,
 ): ErrorSeverityResult {
   // Type check for defensive programming
   if (typeof error !== "object" || error === null) {
     return { kind: "critical" };
-  }
-
-  // CliError specific logic
-  if (isCliError(error)) {
-    switch (error.kind) {
-      case "InvalidOption":
-      case "DuplicateOption":
-      case "ConflictingOptions":
-        return { kind: "warning" };
-      case "MissingRequired":
-      case "InvalidInputType":
-      case "InvalidParameters":
-        return { kind: "critical" };
-      default: {
-        // Exhaustive check
-        const _exhaustive: never = error;
-        return { kind: "critical" };
-      }
-    }
   }
 
   // TwoParamsHandlerError specific logic
@@ -176,11 +155,6 @@ export function extractErrorMessage(error: unknown): Result<string, ErrorMessage
   }
 
   if (typeof error === "object" && error !== null) {
-    // Try CLI error handling first
-    if (isCliError(error)) {
-      return ok(extractCliErrorMessage(error));
-    }
-
     // Try unified error handling for objects with kind property
     if ("kind" in error) {
       const unifiedResult = safeExtractUnifiedErrorMessage(error as UnifiedError);
@@ -308,26 +282,6 @@ export type ErrorHandlingResult =
   | { ok: true; handled: false; reason: "critical_error" | "test_scenario" | "invalid_error_type" };
 
 /**
- * Handles CLI errors with appropriate severity
- * Returns Result type following Totality principle
- *
- * @param cliError - The CLI error to handle
- * @returns Result indicating if the error was handled gracefully
- */
-export function handleCliError(cliError: CliError): ErrorHandlingResult {
-  const severity = analyzeErrorSeverity(cliError);
-  const message = extractCliErrorMessage(cliError);
-
-  if (severity.kind === "warning") {
-    console.warn(`⚠️ CLI warning: ${message}`);
-    return { ok: true, handled: true, action: "logged_warning" };
-  }
-
-  console.error(`❌ CLI error: ${message}`);
-  return { ok: true, handled: false, reason: "critical_error" };
-}
-
-/**
  * Handles errors from two params handler with appropriate severity
  * Returns Result type following Totality principle
  *
@@ -366,7 +320,7 @@ export function handleTwoParamsError(
     const errorMsgResult = extractErrorMessage(promptError.error);
     if (!errorMsgResult.ok) {
       // Log the extraction error for debugging
-      console.warn(`⚠️ Error message extraction failed: ${errorMsgResult.error.cause}`);
+      console.warn(`[WARNING] Error message extraction failed: ${errorMsgResult.error.cause}`);
       return { ok: true, handled: false, reason: "invalid_error_type" };
     }
 
@@ -385,8 +339,8 @@ export function handleTwoParamsError(
     }
 
     // Handle as warning
-    console.warn(`⚠️ Prompt generation issue: ${errorMsgResult.data}`);
-    console.log("✅ Breakdown execution completed with warnings");
+    console.warn(`[WARNING] Prompt generation issue: ${errorMsgResult.data}`);
+    console.log("[OK] Breakdown execution completed with warnings");
     return { ok: true, handled: true, action: "logged_warning" };
   }
 

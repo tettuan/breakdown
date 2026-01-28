@@ -39,4 +39,4 @@ export const ${varName} = ${JSON.stringify(templates, null, 2)} as const;
 
 await Deno.writeTextFile(outputPath, tsContent);
 
-console.log(`✅ Converted (English .md only) ${inputDir} -> ${outputPath}`);
+console.log(`[OK] Converted (English .md only) ${inputDir} -> ${outputPath}`);

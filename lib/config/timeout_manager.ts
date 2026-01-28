@@ -1,8 +1,8 @@
 /**
  * Unified Timeout Management Module
  *
- * 環境変数に依存しない統一されたタイムアウト管理システム
- * YAMLベースの階層的設定による環境別タイムアウト制御
+ * A unified timeout management system that does not depend on environment variables.
+ * Environment-specific timeout control through YAML-based hierarchical configuration.
  *
  * @module
  */
@@ -14,7 +14,7 @@ import {
 } from "../io/enhanced_stdin.ts";
 
 /**
- * BreakdownConfig互換のCustomConfig型定義
+ * CustomConfig type definition compatible with BreakdownConfig
  */
 export interface BreakdownConfigCompatible {
   performance?: YamlPerformanceConfig;
@@ -24,35 +24,35 @@ export interface BreakdownConfigCompatible {
 }
 
 /**
- * 基本タイムアウト設定インターフェース
+ * Basic timeout configuration interface
  */
 export interface TimeoutConfig {
-  /** デフォルトタイムアウト（ミリ秒） */
+  /** Default timeout (milliseconds) */
   default: number;
-  /** CI環境用タイムアウト（ミリ秒） */
+  /** CI environment timeout (milliseconds) */
   ci: number;
-  /** テスト環境用タイムアウト（ミリ秒） */
+  /** Test environment timeout (milliseconds) */
   test: number;
-  /** インタラクティブ環境用タイムアウト（ミリ秒） */
+  /** Interactive environment timeout (milliseconds) */
   interactive: number;
 }
 
 /**
- * STDIN固有のタイムアウト設定インターフェース
+ * STDIN-specific timeout configuration interface
  */
 export interface StdinTimeoutConfig {
-  /** タイムアウト値（ミリ秒） */
+  /** Timeout value (milliseconds) */
   timeout: number;
-  /** 空入力を許可するか */
+  /** Whether to allow empty input */
   allowEmpty: boolean;
-  /** 強制読み込みモード */
+  /** Force read mode */
   forceRead: boolean;
-  /** デバッグ出力を有効にするか */
+  /** Whether to enable debug output */
   debug: boolean;
 }
 
 /**
- * YAML設定のPerformance部分の型定義
+ * Type definition for the Performance section of YAML configuration
  */
 export interface YamlPerformanceConfig {
   timeout?: number;
@@ -76,14 +76,14 @@ export interface YamlPerformanceConfig {
 }
 
 /**
- * 環境別タイムアウト設定の完全な構造
+ * Complete structure of environment-specific timeout configuration
  */
 export interface EnvironmentTimeoutConfig {
-  /** 基本タイムアウト設定 */
+  /** Basic timeout configuration */
   timeouts: TimeoutConfig;
-  /** STDIN用設定（デフォルト） */
+  /** STDIN configuration (default) */
   stdin: StdinTimeoutConfig & {
-    /** 環境別のSTDIN設定 */
+    /** Environment-specific STDIN configuration */
     environments: {
       ci: StdinTimeoutConfig;
       test: StdinTimeoutConfig;
@@ -93,12 +93,12 @@ export interface EnvironmentTimeoutConfig {
 }
 
 /**
- * 環境タイプの定義
+ * Definition of environment types
  */
 export type EnvironmentType = "ci" | "test" | "interactive";
 
 /**
- * デフォルトタイムアウト設定
+ * Default timeout configuration
  */
 export const DEFAULT_TIMEOUT_CONFIG: EnvironmentTimeoutConfig = {
   timeouts: {
@@ -136,11 +136,11 @@ export const DEFAULT_TIMEOUT_CONFIG: EnvironmentTimeoutConfig = {
 };
 
 /**
- * 統一タイムアウト管理クラス
+ * Unified timeout management class
  *
- * 環境変数に依存しない、設定ベースのタイムアウト管理を提供します。
- * YAMLから読み込まれた設定と環境検出機能を組み合わせて、
- * 適切なタイムアウト値を自動的に選択します。
+ * Provides configuration-based timeout management that does not depend on environment variables.
+ * Combines configuration loaded from YAML with environment detection to
+ * automatically select appropriate timeout values.
  */
 export class TimeoutManager {
   private config: EnvironmentTimeoutConfig;
@@ -149,34 +149,34 @@ export class TimeoutManager {
   private _debugMode: boolean;
 
   /**
-   * TimeoutManagerのコンストラクタ
+   * TimeoutManager constructor
    *
-   * @param config タイムアウト設定（省略時はデフォルト設定を使用）
-   * @param environmentType 環境タイプの明示的指定（省略時は自動検出）
-   * @param debugMode デバッグモードの有効/無効（省略時は設定から取得）
+   * @param config Timeout configuration (uses default configuration if omitted)
+   * @param environmentType Explicit environment type specification (auto-detected if omitted)
+   * @param debugMode Enable/disable debug mode (obtained from configuration if omitted)
    */
   constructor(
     config?: Partial<EnvironmentTimeoutConfig>,
     environmentType?: EnvironmentType,
     debugMode?: boolean,
   ) {
-    // 設定のマージ（デフォルト設定 + 提供された設定）
+    // Merge configuration (default configuration + provided configuration)
     this.config = this.mergeConfig(DEFAULT_TIMEOUT_CONFIG, config);
 
-    // 環境情報の取得
+    // Get environment information
     this._environmentInfo = detectEnvironment();
 
-    // 環境タイプの決定（明示的指定 > 自動検出）
+    // Determine environment type (explicit specification > auto-detection)
     this._environmentType = environmentType || this.detectEnvironmentType();
 
-    // デバッグモードの決定
+    // Determine debug mode
     this._debugMode = debugMode ?? this.config.stdin.environments[this._environmentType].debug;
 
     // Debug logging removed - use BreakdownLogger instead
   }
 
   /**
-   * 設定のディープマージを行う
+   * Perform deep merge of configuration
    */
   private mergeConfig(
     defaultConfig: EnvironmentTimeoutConfig,
@@ -211,8 +211,8 @@ export class TimeoutManager {
   }
 
   /**
-   * 環境タイプの自動検出
-   * enhanced_stdin.tsのdetectEnvironment()機能を活用
+   * Auto-detect environment type
+   * Utilizes the detectEnvironment() function from enhanced_stdin.ts
    */
   private detectEnvironmentType(): EnvironmentType {
     if (this._environmentInfo.isCI) {
@@ -230,9 +230,9 @@ export class TimeoutManager {
   }
 
   /**
-   * BREAKDOWN_TIMEOUT環境変数から値を取得
+   * Get value from BREAKDOWN_TIMEOUT environment variable
    *
-   * @returns 環境変数から取得したタイムアウト値、または undefined
+   * @returns Timeout value obtained from environment variable, or undefined
    */
   private getEnvironmentTimeout(): number | undefined {
     const envTimeout = Deno.env.get("BREAKDOWN_TIMEOUT");
@@ -246,19 +246,19 @@ export class TimeoutManager {
   }
 
   /**
-   * 現在の環境に応じた基本タイムアウト値を取得
+   * Get basic timeout value based on current environment
    *
-   * @returns 環境に適したタイムアウト値（ミリ秒）
+   * @returns Timeout value appropriate for the environment (milliseconds)
    */
   getTimeout(): number {
-    // BREAKDOWN_TIMEOUTが最優先
+    // BREAKDOWN_TIMEOUT takes highest priority
     const envTimeout = this.getEnvironmentTimeout();
     if (envTimeout !== undefined) {
       // Debug logging removed - use BreakdownLogger instead
       return envTimeout;
     }
 
-    // 既存のロジック
+    // Existing logic
     const timeout = this.config.timeouts[this._environmentType];
 
     // Debug logging removed - use BreakdownLogger instead
@@ -267,19 +267,19 @@ export class TimeoutManager {
   }
 
   /**
-   * STDIN用のタイムアウト値を取得
+   * Get timeout value for STDIN
    *
-   * @returns STDIN処理用のタイムアウト値（ミリ秒）
+   * @returns Timeout value for STDIN processing (milliseconds)
    */
   getStdinTimeout(): number {
-    // BREAKDOWN_TIMEOUTが最優先
+    // BREAKDOWN_TIMEOUT takes highest priority
     const envTimeout = this.getEnvironmentTimeout();
     if (envTimeout !== undefined) {
       // Debug logging removed - use BreakdownLogger instead
       return envTimeout;
     }
 
-    // 既存のロジック
+    // Existing logic
     const timeout = this.config.stdin.environments[this._environmentType].timeout;
 
     // Debug logging removed - use BreakdownLogger instead
@@ -288,9 +288,9 @@ export class TimeoutManager {
   }
 
   /**
-   * STDIN用の完全な設定を取得
+   * Get complete configuration for STDIN
    *
-   * @returns STDIN処理用の全設定
+   * @returns Complete configuration for STDIN processing
    */
   getStdinConfig(): StdinTimeoutConfig {
     const config = this.config.stdin.environments[this._environmentType];
@@ -301,13 +301,13 @@ export class TimeoutManager {
   }
 
   /**
-   * カスタムタイムアウト値の適用
+   * Apply custom timeout value
    *
-   * カスタム値が提供された場合はそれを使用し、
-   * そうでなければ環境に応じたデフォルト値を返す
+   * Uses the custom value if provided,
+   * otherwise returns the default value based on environment
    *
-   * @param customTimeout カスタムタイムアウト値（省略可能）
-   * @returns 適用されるタイムアウト値（ミリ秒）
+   * @param customTimeout Custom timeout value (optional)
+   * @returns Applied timeout value (milliseconds)
    */
   applyCustomTimeout(customTimeout?: number): number {
     const timeout = customTimeout || this.getTimeout();
@@ -318,27 +318,27 @@ export class TimeoutManager {
   }
 
   /**
-   * 環境タイプを取得
+   * Get environment type
    *
-   * @returns 現在の環境タイプ
+   * @returns Current environment type
    */
   getEnvironmentType(): EnvironmentType {
     return this._environmentType;
   }
 
   /**
-   * 環境情報を取得
+   * Get environment information
    *
-   * @returns 詳細な環境情報
+   * @returns Detailed environment information
    */
   getEnvironmentInfo(): EnvironmentInfo {
     return this._environmentInfo;
   }
 
   /**
-   * 設定のバリデーション
+   * Validate configuration
    *
-   * @returns バリデーション結果
+   * @returns Validation result
    */
   validateConfig(): {
     valid: boolean;
@@ -348,18 +348,18 @@ export class TimeoutManager {
     const errors: string[] = [];
     const warnings: string[] = [];
 
-    // タイムアウト値の範囲チェック
+    // Check timeout value range
     const timeouts = this.config.timeouts;
     Object.entries(timeouts).forEach(([env, timeout]) => {
       if (timeout < 0) {
         errors.push(`Invalid timeout for ${env}: ${timeout} (must be >= 0)`);
       }
-      if (timeout > 300000) { // 5分以上
+      if (timeout > 300000) { // More than 5 minutes
         warnings.push(`Very long timeout for ${env}: ${timeout}ms (>5 minutes)`);
       }
     });
 
-    // STDIN設定のチェック
+    // Check STDIN configuration
     Object.entries(this.config.stdin.environments).forEach(([env, config]) => {
       if (config.timeout < 0) {
         errors.push(`Invalid stdin timeout for ${env}: ${config.timeout} (must be >= 0)`);
@@ -377,11 +377,11 @@ export class TimeoutManager {
   }
 
   /**
-   * デバッグ情報の取得
+   * Get debug information
    *
-   * 現在の設定状態と環境情報を含む詳細な情報を返す
+   * Returns detailed information including current configuration state and environment information
    *
-   * @returns デバッグ用の詳細情報
+   * @returns Detailed information for debugging
    */
   getDebugInfo(): {
     environmentType: EnvironmentType;
@@ -404,11 +404,11 @@ export class TimeoutManager {
   }
 
   /**
-   * 設定の更新
+   * Update configuration
    *
-   * 実行時に設定を部分的に更新する
+   * Partially update configuration at runtime
    *
-   * @param updates 更新する設定の部分
+   * @param updates Partial configuration to update
    */
   updateConfig(updates: Partial<EnvironmentTimeoutConfig>): void {
     this.config = this.mergeConfig(this.config, updates);
@@ -417,11 +417,11 @@ export class TimeoutManager {
   }
 
   /**
-   * 環境タイプの強制変更
+   * Force change environment type
    *
-   * テスト時などに環境タイプを強制的に変更する
+   * Forcibly change the environment type during testing, etc.
    *
-   * @param environmentType 新しい環境タイプ
+   * @param environmentType New environment type
    */
   setEnvironmentType(environmentType: EnvironmentType): void {
     const _previousType = this._environmentType;
@@ -431,9 +431,9 @@ export class TimeoutManager {
   }
 
   /**
-   * デバッグモードの切り替え
+   * Toggle debug mode
    *
-   * @param enabled デバッグモードを有効にするか
+   * @param enabled Whether to enable debug mode
    */
   setDebugMode(enabled: boolean): void {
     this._debugMode = enabled;
@@ -442,26 +442,26 @@ export class TimeoutManager {
   }
 
   /**
-   * 環境検出設定を取得
+   * Get environment detection configuration
    *
-   * enhanced_stdin.tsのdetectEnvironment関数で使用される設定を提供します。
-   * これにより、環境変数への直接依存を回避します。
+   * Provides configuration used by the detectEnvironment function in enhanced_stdin.ts.
+   * This avoids direct dependency on environment variables.
    *
-   * @returns 環境検出設定
+   * @returns Environment detection configuration
    */
   getEnvironmentDetectionConfig(): EnvironmentDetectionConfig {
-    // デフォルトはDeno.env.getを使用（後方互換性のため）
-    // 将来的には、設定から環境変数の値を注入できるようにする
+    // Default uses Deno.env.get (for backward compatibility)
+    // In the future, environment variable values can be injected from configuration
     return {
       getEnvVar: (name: string) => Deno.env.get(name),
     };
   }
 
   /**
-   * 互換性API: lib/io/timeout_manager.tsとの後方互換性のための静的メソッド
+   * Compatibility API: Static method for backward compatibility with lib/io/timeout_manager.ts
    *
-   * @param customTimeout カスタムタイムアウト値（省略可能）
-   * @returns STDIN処理用のタイムアウト値（ミリ秒）
+   * @param customTimeout Custom timeout value (optional)
+   * @returns Timeout value for STDIN processing (milliseconds)
    */
   static getStdinTimeout(customTimeout?: number): number {
     if (customTimeout !== undefined) {
@@ -473,10 +473,10 @@ export class TimeoutManager {
   }
 
   /**
-   * 互換性API: タイムアウトコンテキストの作成
+   * Compatibility API: Create timeout context
    *
-   * @param customTimeout カスタムタイムアウト値（省略可能）
-   * @returns タイムアウトコンテキスト
+   * @param customTimeout Custom timeout value (optional)
+   * @returns Timeout context
    */
   static createContext(customTimeout?: number): {
     isCI: boolean;
@@ -494,10 +494,10 @@ export class TimeoutManager {
   }
 
   /**
-   * 互換性API: 環境に応じたタイムアウト値を取得
+   * Compatibility API: Get timeout value based on environment
    *
-   * @param context タイムアウトコンテキスト
-   * @returns 適切なタイムアウト値（ミリ秒）
+   * @param context Timeout context
+   * @returns Appropriate timeout value (milliseconds)
    */
   static getTimeout(context: {
     isCI: boolean;
@@ -516,19 +516,19 @@ export class TimeoutManager {
 }
 
 /**
- * ファクトリー関数: デフォルト設定でTimeoutManagerを作成
+ * Factory function: Create TimeoutManager with default configuration
  *
- * @returns デフォルト設定のTimeoutManager
+ * @returns TimeoutManager with default configuration
  */
 export function createDefaultTimeoutManager(): TimeoutManager {
   return new TimeoutManager();
 }
 
 /**
- * ファクトリー関数: YAML設定からTimeoutManagerを作成
+ * Factory function: Create TimeoutManager from YAML configuration
  *
- * @param yamlConfig YAML設定オブジェクト
- * @returns 設定済みのTimeoutManager
+ * @param yamlConfig YAML configuration object
+ * @returns Configured TimeoutManager
  */
 export function createTimeoutManagerFromConfig(
   yamlConfig: BreakdownConfigCompatible,
@@ -545,7 +545,7 @@ export function createTimeoutManagerFromConfig(
     },
   };
 
-  // STDIN設定が存在する場合
+  // If STDIN configuration exists
   if (performanceConfig.stdin) {
     config.stdin = {
       timeout: performanceConfig.stdin.timeout || DEFAULT_TIMEOUT_CONFIG.stdin.timeout,
@@ -573,9 +573,9 @@ export function createTimeoutManagerFromConfig(
 }
 
 /**
- * ファクトリー関数: BREAKDOWN_TIMEOUT環境変数からTimeoutManagerを作成
+ * Factory function: Create TimeoutManager from BREAKDOWN_TIMEOUT environment variable
  *
- * @returns 環境変数設定を反映したTimeoutManager
+ * @returns TimeoutManager reflecting environment variable configuration
  */
 export function createTimeoutManagerFromEnvironment(): TimeoutManager {
   const envTimeout = Deno.env.get("BREAKDOWN_TIMEOUT");
@@ -584,7 +584,7 @@ export function createTimeoutManagerFromEnvironment(): TimeoutManager {
   if (envTimeout) {
     const parsed = parseInt(envTimeout, 10);
     if (!isNaN(parsed) && parsed > 0) {
-      // 全環境に同じタイムアウトを適用
+      // Apply the same timeout to all environments
       config.timeouts = {
         default: parsed,
         ci: parsed,
@@ -592,7 +592,7 @@ export function createTimeoutManagerFromEnvironment(): TimeoutManager {
         interactive: parsed,
       };
 
-      // STDIN設定にも適用
+      // Also apply to STDIN configuration
       config.stdin = {
         timeout: parsed,
         allowEmpty: false,

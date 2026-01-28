@@ -95,7 +95,7 @@ export { createTwoParamsType, TwoParamsType, type TwoParamsTypeError } from "./t
 // Factory and creation utilities
 export { TypeFactory } from "./type_factory.ts";
 export type { TypeCreationResult } from "./type_factory.ts";
-// TypePatternProvider removed - JSR統合により削除
+// TypePatternProvider removed - removed due to JSR integration
 
 // Pattern types - LayerType pattern (now unified with domain implementation)
 // Note: TwoParamsLayerTypePattern has been removed (@deprecated)
@@ -114,22 +114,6 @@ export {
 } from "./prompt_variables_vo.ts";
 export type { PromptVariable, PromptVariables } from "./prompt_variables_vo.ts";
 
-// Deprecated legacy types (for backward compatibility)
-// NOTE: Legacy factories removed during DirectiveType -> DirectiveType refactor
-// TODO: Remove legacy test files that depend on these exports
-// export type { DirectiveType, LegacyLayerType } from "./legacy_factories.ts";
-// export {
-//   DirectiveTypeFactory,
-//   DirectiveTypeGuards,
-//   DirectiveFactory,
-//   LayerFactory,
-//   LegacyLayerTypeFactory,
-//   LegacyLayerTypeGuards,
-//   TwoParamsConfigFactory,
-//   VariableResultFactory,
-// } from "./legacy_factories.ts";
-// export type { PromptCliParams } from "./prompt_variables.ts"; // Moved to factory re-export to avoid duplicate
-
 // Layer type utilities - moved to domain/core/value_objects
 
 // Default implementations - moved to JSR packages
@@ -141,14 +125,6 @@ export { ConfigError, ParamsCustomConfig } from "./params_custom_config.ts";
 export { ConfigProfile } from "../config/config_profile_name.ts";
 export { ResultStatus } from "./enums.ts";
 export type { Result as EnumResult } from "./enums.ts";
-
-// Error severity types
-// export {
-//   ErrorSeverity as ErrorSeverityClass,
-//   ImpactScope,
-//   SeverityLevel,
-// } from "../domain/core/value_objects/error_severity.ts";
-// export type { ErrorMetadata } from "../domain/core/value_objects/error_severity.ts";
 
 // CLI Error severity enum for backward compatibility
 export const ErrorSeverity = {
@@ -194,26 +170,3 @@ export type {
   WorkspaceError,
 } from "./unified_error_types.ts";
 export { ErrorFactory, ErrorGuards, extractUnifiedErrorMessage } from "./unified_error_types.ts";
-
-// Team-specific types for team development workflows
-export type {
-  TeamConfig,
-  TeamContextualVariables,
-  TeamInfo,
-  TeamIntegration,
-  TeamMember,
-  TeamOutputConfig,
-  TeamPaths,
-  TeamPromptConfig,
-  UserVariable as TeamUserVariable,
-} from "./team_types.ts";
-
-export {
-  isTeamConfig,
-  isTeamContextualVariables,
-  isTeamInfo,
-  isTeamOutputConfig,
-  isTeamPaths,
-  isTeamPromptConfig,
-  isUserVariable as isTeamUserVariable,
-} from "./team_types.ts";

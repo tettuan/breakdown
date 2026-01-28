@@ -15,10 +15,11 @@
  * @module cli/generators/two_params_prompt_generator_ddd
  */
 
+import { dirname } from "jsr:@std/path@^1.0.9";
 import type { Result } from "$lib/types/result.ts";
 import { error, ok } from "$lib/types/result.ts";
 import { PromptVariablesFactory } from "$lib/factory/prompt_variables_factory.ts";
-import { PromptTemplatePathResolverTotality } from "$lib/factory/prompt_template_path_resolver_totality.ts";
+import { PromptTemplatePathResolverTotality } from "$lib/factory/prompt_template_path_resolver.ts";
 // ValidatedParams type is now defined inline since validator was removed
 type ValidatedParams = {
   directive: { value: string };
@@ -364,7 +365,7 @@ export class TwoParamsPromptGenerator {
    * Extract working directory with unified configuration validation
    */
   private extractWorkingDir(config: Record<string, unknown>): string | undefined {
-    // ✅ SINGLE SOURCE OF TRUTH: Only use working_dir at root level
+    // SINGLE SOURCE OF TRUTH: Only use working_dir at root level
     const workingDir = config.working_dir as string | undefined;
 
     return workingDir;
@@ -576,6 +577,13 @@ export class TwoParamsPromptGenerator {
 
       // Add values to builder
       builder.addFromFactoryValues(factoryValues);
+
+      // Add base_prompt_dir from promptFilePath
+      // This is the directory containing the prompt template file
+      if (factoryValues.promptFilePath) {
+        const basePromptDir = dirname(factoryValues.promptFilePath);
+        builder.addStandardVariable("base_prompt_dir", basePromptDir);
+      }
 
       // Only add destination_path if it exists in variables
       // Do not add it when outputFilePath is not provided

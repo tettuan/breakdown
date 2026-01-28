@@ -19,8 +19,11 @@ develop ──▶ release/v{X.Y.Z} ──PR──▶ main
    │                                   ▼
    │                              tag: v{X.Y.Z}
    │                                   │
+   │                            ╳ (GITHUB_TOKEN cannot trigger other workflows)
+   │                                   │
    │                                   ▼
-   │                            (publish.yml)
+   │                            (manual trigger)
+   │                            gh workflow run publish.yml -f tag=v{X.Y.Z}
    │                                   │
    │                                   ▼
    │                              JSR publish
@@ -103,14 +106,31 @@ Create PR: `release/v{NEW_VERSION}` → `main`
 
 **Important**: PR must be from `release/*` branch directly to `main` for auto-release to trigger.
 
-### 9. Merge triggers automation
+### 9. Merge triggers auto-release
 
 When PR to main is merged:
 
-1. `auto-release.yml` creates tag `v{NEW_VERSION}`
-2. `publish.yml` publishes to JSR
+1. `auto-release.yml` creates tag `v{NEW_VERSION}` and GitHub Release
 
-### 10. Sync develop with main
+**Note**: `publish.yml` does NOT auto-trigger (GITHUB_TOKEN limitation).
+
+### 10. Manually trigger JSR publish
+
+```bash
+gh workflow run publish.yml -f tag=v{NEW_VERSION}
+```
+
+Verify publication:
+
+```bash
+# Check workflow status
+gh run list --workflow=publish.yml --limit=1
+
+# Verify on JSR
+open https://jsr.io/@tettuan/breakdown
+```
+
+### 11. Sync develop with main
 
 After release is published, backmerge main to develop:
 
@@ -133,6 +153,7 @@ This ensures develop has the version bump and CHANGELOG updates.
 - [ ] CHANGELOG.md updated
 - [ ] PR to main created (from release/* branch)
 - [ ] PR merged → auto-release creates tag
+- [ ] Manually trigger publish: `gh workflow run publish.yml -f tag=v{VERSION}`
 - [ ] Verify JSR publication
 - [ ] Backmerge main to develop
 
@@ -155,7 +176,13 @@ git push -u origin release/v1.8.0
 # Create PR via GitHub
 # release/v1.8.0 → main (triggers auto-release on merge)
 
-# After merge and JSR publish, sync develop
+# After merge, manually trigger publish
+gh workflow run publish.yml -f tag=v1.8.0
+
+# Verify publish completed
+gh run list --workflow=publish.yml --limit=1
+
+# After JSR publish verified, sync develop
 git checkout develop
 git pull origin develop
 git merge origin/main

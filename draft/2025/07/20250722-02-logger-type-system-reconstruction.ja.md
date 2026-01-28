@@ -73,10 +73,10 @@ logger.warn(message, data);
 
 ### 優先度1: 破損import削除（即座実行）
 ```typescript
-// ❌ 問題コード (tests/0_core_domain/lib/domains/project_domain/entity/breakdown_project_entity_tests.ts:3:50)
+// NG: 問題コード (tests/0_core_domain/lib/domains/project_domain/entity/breakdown_project_entity_tests.ts:3:50)
 import type { Logger } from '../types/breakdown_logger.ts';
 
-// ✅ 修正コード（削除またはJSR直接インポート）
+// OK: 修正コード（削除またはJSR直接インポート）
 import { Logger } from 'jsr:@tettuan/breakdownlogger@1.0.8';
 ```
 
@@ -94,23 +94,23 @@ import { Logger } from 'jsr:@tettuan/breakdownlogger@1.0.8';
 5. **不要ファイル削除**: 設計違反テストファイル・バックアップファイル除去
 6. **古いコメント削除**: ハードコード関連コメント・例示の完全除去
 ```typescript
-// ❌ 問題パターン（15箇所）
+// NG: 問題パターン（15箇所）
 logger.debug("Processing data", "TAG", { data: value });
 logger.info("Success", "RESULT", result);
 
-// ✅ 修正パターン 
+// OK: 修正パターン 
 logger.debug("Processing data", { tag: "TAG", data: value });
 logger.info("Success", { tag: "RESULT", ...result });
 ```
 
 ### 優先度3: JSR依存関係統一
 ```json
-// ❌ 現在の問題（deno.json内でバージョン不整合）
+// NG: 現在の問題（deno.json内でバージョン不整合）
 "@tettuan/breakdownlogger": "jsr:@tettuan/breakdownlogger@^1.0.5"
 "@tettuan/breakdownparams": "jsr:@tettuan/breakdownparams@^1.1.0"
 "@tettuan/breakdownconfig": "jsr:@tettuan/breakdownconfig@^1.1.4"
 
-// ✅ 修正後（最新版への統一）
+// OK: 修正後（最新版への統一）
 "@tettuan/breakdownlogger": "jsr:@tettuan/breakdownlogger@^1.0.8"
 "@tettuan/breakdownparams": "jsr:@tettuan/breakdownparams@^1.2.0"
 "@tettuan/breakdownconfig": "jsr:@tettuan/breakdownconfig@^1.2.0"
@@ -118,10 +118,10 @@ logger.info("Success", { tag: "RESULT", ...result });
 
 ### 優先度2: Logger直接インポート統一
 ```typescript
-// ❌ 削除済み（型拡張ファイル）
+// NG: 削除済み（型拡張ファイル）
 // lib/types/breakdown_logger.d.ts
 
-// ✅ 修正後（JSR直接インポート）
+// OK: 修正後（JSR直接インポート）
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
 // 正しいAPIシグネチャ使用
@@ -212,7 +212,7 @@ lib/test_helpers/configuration_pattern_generator.ts（ハードコード例の�
 
 ### 最終ゴール
 ```bash
-# ✅ 完全成功の証明コマンド
+# OK: 完全成功の証明コマンド
 deno task ci:dirty  # エラー0件で完了
 deno check lib/     # Type エラー0件
 deno task test      # 全テスト成功

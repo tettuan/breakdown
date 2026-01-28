@@ -81,7 +81,7 @@ export class ProgressBar {
       const percentage = Math.floor((this.current / this.total) * 100);
       const filled = Math.floor((this.current / this.total) * this.width);
       const empty = this.width - filled;
-      const bar = "█".repeat(filled) + "░".repeat(empty);
+      const bar = "#".repeat(filled) + "-".repeat(empty);
       writeStdout(`\r[${bar}] ${percentage}%`);
     }
   }
@@ -97,7 +97,7 @@ export class ProgressBar {
  * Spinner UI component
  */
 export class Spinner {
-  private frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+  private frames = ["|", "/", "-", "\\"];
   private currentFrame = 0;
   private intervalId?: number;
   private quiet: boolean;

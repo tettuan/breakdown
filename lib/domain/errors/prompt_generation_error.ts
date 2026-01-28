@@ -181,7 +181,7 @@ export class PromptGenerationError extends BaseBreakdownError {
     variableName: string,
     circularPath: string[],
   ): PromptGenerationError {
-    const path = circularPath.join(" → ");
+    const path = circularPath.join(" -> ");
     return new PromptGenerationError(
       "circular-reference-detected",
       `Circular reference detected in variable '${variableName}': ${path}`,
@@ -344,7 +344,7 @@ export class PromptGenerationError extends BaseBreakdownError {
           });
           suggestions.push({
             action: "show-cycle",
-            description: `${this.context.circularPath.join(" → ")}`,
+            description: `${this.context.circularPath.join(" -> ")}`,
           });
         }
         suggestions.push({

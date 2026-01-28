@@ -111,7 +111,7 @@ describe("パラメータ検証テスト", () => {
 #### 移行前（ハードコードあり）
 
 ```typescript
-// ❌ ハードコード値を使用
+// NG: ハードコード値を使用
 const validDirectives = ["to", "summary", "defect"];
 const validLayers = ["project", "issue", "task"];
 
@@ -123,7 +123,7 @@ for (const directive of validDirectives) {
 #### 移行後（設定ファイル使用）
 
 ```typescript
-// ✅ 設定ファイルから動的に読み込み
+// OK: 設定ファイルから動的に読み込み
 const { userConfig } = await ConfigurationTestHelper.loadTestConfiguration("test-patterns/basic");
 const validDirectives = userConfig.testData.validDirectives;
 const validLayers = userConfig.testData.validLayers;
@@ -433,8 +433,8 @@ console.log(integrity.checks);
 
 ```yaml
 testData:
-  validDirectives: []  # ❌ 空配列
-  validDirectives: ["to", "summary"]  # ✅ 値あり
+  validDirectives: []  # NG: 空配列
+  validDirectives: ["to", "summary"]  # OK: 値あり
 ```
 
 ### 4. パターンマッチングエラー

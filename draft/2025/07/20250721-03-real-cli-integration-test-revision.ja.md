@@ -14,10 +14,10 @@
 ### 緊急リファクタリング完了済み前提
 以下の設計原則違反が**完全に解消済み**であることを前提とする：
 
-- ✅ **ハードコード配列の完全排除**: `["to", "summary", "defect", "find"]` および `["project", "issue", "task"]` パターンが一切存在しない
-- ✅ **設定ファイルベース実装**: 全てのDirectiveType/LayerTypeパターンが `*-user.yml` で管理されている
-- ✅ **BreakdownParams統合**: DEFAULT_CUSTOM_CONFIGによるCustomConfig提供が実装済み
-- ✅ **ProfileName → BreakdownConfig → CustomConfig フロー**: 設定ファイル読み込み機構が完全動作している
+- [OK] **ハードコード配列の完全排除**: `["to", "summary", "defect", "find"]` および `["project", "issue", "task"]` パターンが一切存在しない
+- [OK] **設定ファイルベース実装**: 全てのDirectiveType/LayerTypeパターンが `*-user.yml` で管理されている
+- [OK] **BreakdownParams統合**: DEFAULT_CUSTOM_CONFIGによるCustomConfig提供が実装済み
+- [OK] **ProfileName → BreakdownConfig → CustomConfig フロー**: 設定ファイル読み込み機構が完全動作している
 
 ### 新しいテスト要件
 現在の `05_pattern_matching_test.ts` と `06_random_pattern_matching_test.ts` は、`runCommand` を使った迂回路実装になっており、**真のCLI実行フロー**を検証していない。これは以下の問題を引き起こしている：
@@ -59,10 +59,10 @@
 
 #### 必須実装パターン
 ```typescript
-// ❌ 禁止パターン（排除済み）
+// NG: 禁止パターン（排除済み）
 const result = await runCommand(["breakdown", directive, layer]);
 
-// ✅ 必須パターン（真のCLI実行 + 設定ファイルベース）
+// OK: 必須パターン（真のCLI実行 + 設定ファイルベース）
 const process = new Deno.Command("deno", {
   args: [
     "run", "--allow-all", "breakdown.ts", 

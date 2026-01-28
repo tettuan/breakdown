@@ -76,14 +76,13 @@ Deno.test("0_architecture - WorkingDirectoryPath follows Value Object constraint
 
   try {
     const result = WorkingDirectoryPath.create(testDir);
-    assertExists(result.ok);
     assertEquals(result.ok, true);
 
     if (result.ok) {
       const path1 = result.data;
       const path2Result = WorkingDirectoryPath.create(testDir);
 
-      assertExists(path2Result.ok);
+      assertEquals(path2Result.ok, true);
       if (path2Result.ok) {
         const path2 = path2Result.data;
 
@@ -97,6 +96,34 @@ Deno.test("0_architecture - WorkingDirectoryPath follows Value Object constraint
     }
   } finally {
     await cleanupTestEnvironment(testDir);
+  }
+});
+
+Deno.test("0_architecture - WorkingDirectoryPath equals() returns false for different paths", async () => {
+  const testDir1 = await setupTestEnvironment();
+  const testDir2 = `${testDir1}/subdir`;
+  await createTestDirectory(testDir2);
+
+  try {
+    const path1Result = WorkingDirectoryPath.create(testDir1);
+    const path2Result = WorkingDirectoryPath.create(testDir2);
+
+    assertEquals(path1Result.ok, true);
+    assertEquals(path2Result.ok, true);
+
+    if (path1Result.ok && path2Result.ok) {
+      const path1 = path1Result.data;
+      const path2 = path2Result.data;
+
+      // Different paths should NOT be equal
+      assertEquals(path1.equals(path2), false);
+      assertEquals(path2.equals(path1), false);
+
+      // Verify they are actually different
+      assertNotEquals(path1.getAbsolutePath(), path2.getAbsolutePath());
+    }
+  } finally {
+    await cleanupTestEnvironment(testDir1);
   }
 });
 
@@ -146,7 +173,6 @@ Deno.test("1_behavior - create() with valid absolute path", async () => {
   try {
     const result = WorkingDirectoryPath.create(testDir);
 
-    assertExists(result.ok);
     assertEquals(result.ok, true);
 
     if (result.ok) {
@@ -171,7 +197,6 @@ Deno.test("1_behavior - create() with valid relative path", async () => {
 
     const result = WorkingDirectoryPath.create(subDir);
 
-    assertExists(result.ok);
     assertEquals(result.ok, true);
 
     if (result.ok) {
@@ -190,7 +215,6 @@ Deno.test("1_behavior - create() with valid relative path", async () => {
 Deno.test("1_behavior - current() factory method", () => {
   const result = WorkingDirectoryPath.current();
 
-  assertExists(result.ok);
   assertEquals(result.ok, true);
 
   if (result.ok) {
@@ -203,7 +227,6 @@ Deno.test("1_behavior - current() factory method", () => {
 Deno.test("1_behavior - temp() factory method", () => {
   const result = WorkingDirectoryPath.temp();
 
-  assertExists(result.ok);
   assertEquals(result.ok, true);
 
   if (result.ok) {
@@ -229,7 +252,6 @@ Deno.test("1_behavior - join() method", async () => {
 
   try {
     const result = WorkingDirectoryPath.create(testDir);
-    assertExists(result.ok);
     assertEquals(result.ok, true);
 
     if (result.ok) {
@@ -237,7 +259,6 @@ Deno.test("1_behavior - join() method", async () => {
       // Instead, create a subdir for the join test to pass
       await createTestDirectory(`${testDir}/subdir`);
       const joinResult = result.data.join("subdir");
-      assertExists(joinResult.ok);
       assertEquals(joinResult.ok, true);
 
       if (joinResult.ok) {
@@ -260,12 +281,10 @@ Deno.test("1_behavior - getParent() method", async () => {
 
   try {
     const result = WorkingDirectoryPath.create(subDir);
-    assertExists(result.ok);
     assertEquals(result.ok, true);
 
     if (result.ok) {
       const parentResult = result.data.getParent();
-      assertExists(parentResult.ok);
       assertEquals(parentResult.ok, true);
 
       if (parentResult.ok) {
@@ -286,12 +305,10 @@ Deno.test("1_behavior - getRelativePath() method", async () => {
     const baseDirResult = WorkingDirectoryPath.create(testDir);
     const subDirResult = WorkingDirectoryPath.create(subDir);
 
-    assertExists(baseDirResult.ok && subDirResult.ok);
     assertEquals(baseDirResult.ok && subDirResult.ok, true);
 
     if (baseDirResult.ok && subDirResult.ok) {
       const relativeResult = subDirResult.data.getRelativePath(baseDirResult.data);
-      assertExists(relativeResult.ok);
       assertEquals(relativeResult.ok, true);
 
       if (relativeResult.ok) {
@@ -308,7 +325,6 @@ Deno.test("1_behavior - getDirectoryName() method", async () => {
 
   try {
     const result = WorkingDirectoryPath.create(testDir);
-    assertExists(result.ok);
     assertEquals(result.ok, true);
 
     if (result.ok) {
@@ -361,7 +377,6 @@ Deno.test("1_behavior - createWithConfig() with createIfMissing option", async (
     };
 
     const result = WorkingDirectoryPath.createWithConfig(newDir, config);
-    assertExists(result.ok);
     assertEquals(result.ok, true);
 
     if (result.ok) {
@@ -372,7 +387,7 @@ Deno.test("1_behavior - createWithConfig() with createIfMissing option", async (
       assertEquals(result.data.directoryExists(), true);
 
       // Verify directory was actually created
-      const stat = Deno.statSync(newDir);
+      const stat = await Deno.stat(newDir);
       assertEquals(stat.isDirectory, true);
     }
   } finally {
@@ -390,7 +405,6 @@ Deno.test("1_behavior - createWithConfig() with permission requirements", async 
     };
 
     const result = WorkingDirectoryPath.createWithConfig(testDir, configWithWrite);
-    assertExists(result.ok);
     assertEquals(result.ok, true);
 
     if (result.ok) {
@@ -410,7 +424,6 @@ Deno.test("2_structure - WorkingDirectoryPath immutability", async () => {
 
   try {
     const result = WorkingDirectoryPath.create(testDir);
-    assertExists(result.ok);
     assertEquals(result.ok, true);
 
     if (result.ok) {
@@ -476,7 +489,6 @@ Deno.test("2_structure - toDebugString() output format", async () => {
 
   try {
     const result = WorkingDirectoryPath.create(testDir);
-    assertExists(result.ok);
     assertEquals(result.ok, true);
 
     if (result.ok) {
@@ -499,7 +511,6 @@ Deno.test("2_structure - toDebugString() output format", async () => {
 
 Deno.test("1_behavior - boundary case: root directory", () => {
   const result = WorkingDirectoryPath.create("/");
-  assertExists(result.ok);
   assertEquals(result.ok, true);
 
   if (result.ok) {
@@ -523,7 +534,6 @@ Deno.test("1_behavior - boundary case: very long path", async () => {
     await createTestDirectory(longPath);
 
     const result = WorkingDirectoryPath.create(longPath);
-    assertExists(result.ok);
     assertEquals(result.ok, true);
 
     if (result.ok) {
@@ -542,7 +552,6 @@ Deno.test("1_behavior - boundary case: paths with spaces and special characters"
     await createTestDirectory(specialDir);
 
     const result = WorkingDirectoryPath.create(specialDir);
-    assertExists(result.ok);
     assertEquals(result.ok, true);
 
     if (result.ok) {

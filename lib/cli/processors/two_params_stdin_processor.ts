@@ -62,7 +62,7 @@ export type InputProcessorError =
 export class TwoParamsStdinProcessor {
   /**
    * Check if stdin should be read based on options
-   * 🎖️ DEPLOYED: shouldReadStdin() pattern for consistency across processors
+   * DEPLOYED: shouldReadStdin() pattern for consistency across processors
    */
   private shouldReadStdin(options: Record<string, unknown>): boolean {
     // Skip in test environments to prevent resource leaks
@@ -77,15 +77,6 @@ export class TwoParamsStdinProcessor {
 
     // Default behavior: always read stdin (--from is only for path reference)
     return true;
-  }
-
-  /**
-   * Get file path from options if specified
-   * NOTE: This method is no longer used as --from doesn't read files
-   * @deprecated
-   */
-  private getFilePath(_options: Record<string, unknown>): string | null {
-    return null;
   }
 
   /**

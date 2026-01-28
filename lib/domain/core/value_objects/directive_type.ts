@@ -29,10 +29,10 @@ export type DirectiveTypeError =
   | { kind: "TooLong"; value: string; maxLength: number; message: string };
 
 /**
- * DirectiveType - 処理方向を表すValue Object
+ * DirectiveType - Value Object representing processing direction
  *
- * 役割: 「何をするか」を決定する核心ドメイン概念
- * 例: "to"(変換), "summary"(要約), "defect"(欠陥検出)
+ * Role: Core domain concept that determines "what to do"
+ * Examples: "to" (conversion), "summary" (summarization), "defect" (defect detection)
  *
  * Design Principles:
  * - Smart Constructor pattern with Result<T, E>
@@ -365,25 +365,25 @@ export class DirectiveType {
 }
 
 /**
- * TwoParamsDirectivePattern - DirectiveType用のバリデーションパターン
+ * TwoParamsDirectivePattern - Validation pattern for DirectiveType
  *
- * 正規表現パターンを安全にラップし、DirectiveTypeのバリデーションに使用する。
- * Smart Constructorパターンを採用して、無効なパターンの作成を防ぐ。
+ * Safely wraps regex patterns and uses them for DirectiveType validation.
+ * Adopts the Smart Constructor pattern to prevent creation of invalid patterns.
  *
- * 新しいDirectiveTypeクラスと統合するため、旧実装からのマイグレーション用として提供。
- * 新しいコードでは DirectiveType.create() を直接使用することを推奨。
+ * Provided for migration from legacy implementation to integrate with the new DirectiveType class.
+ * For new code, using DirectiveType.create() directly is recommended.
  */
 export class TwoParamsDirectivePattern {
   private constructor(private readonly pattern: RegExp) {}
 
   /**
-   * 文字列パターンから TwoParamsDirectivePattern を作成（Result型版）
+   * Create TwoParamsDirectivePattern from a string pattern (Result type version)
    *
-   * Totality原則に準拠し、エラーを明示的に返す。
-   * 統一エラー型システムを使用してValidationErrorを返す。
+   * Compliant with Totality principle, explicitly returns errors.
+   * Uses unified error type system to return ValidationError.
    *
-   * @param pattern 正規表現文字列
-   * @returns 成功時は Result<TwoParamsDirectivePattern>、失敗時はValidationError
+   * @param pattern - Regex pattern string
+   * @returns Result<TwoParamsDirectivePattern> on success, ValidationError on failure
    */
   static createOrError(pattern: string): Result<TwoParamsDirectivePattern, ValidationError> {
     if (typeof pattern !== "string") {
@@ -415,43 +415,43 @@ export class TwoParamsDirectivePattern {
   }
 
   /**
-   * 値がパターンにマッチするかテスト
-   * @param value テスト対象の値
-   * @returns マッチする場合 true
+   * Test if a value matches the pattern
+   * @param value - Value to test
+   * @returns true if matches
    */
   test(value: string): boolean {
     return this.pattern.test(value);
   }
 
   /**
-   * パターンの文字列表現を取得
-   * @returns 正規表現の文字列
+   * Get string representation of the pattern
+   * @returns Regex string
    */
   toString(): string {
     return this.pattern.toString();
   }
 
   /**
-   * パターンの文字列表現を取得（getPatternメソッド）
-   * @returns 正規表現の文字列
+   * Get string representation of the pattern (getPattern method)
+   * @returns Regex source string
    */
   getPattern(): string {
     return this.pattern.source;
   }
 
   /**
-   * TypePatternProvider インターフェース準拠のためのメソッド
-   * @returns 自身を返す（TypePatternProvider.getDirectivePattern用）
+   * Method for TypePatternProvider interface compliance
+   * @returns Returns itself (for TypePatternProvider.getDirectivePattern)
    */
   getDirectivePattern(): TwoParamsDirectivePattern {
     return this;
   }
 
   /**
-   * 文字列パターンから TwoParamsDirectivePattern を作成（従来版）
+   * Create TwoParamsDirectivePattern from a string pattern (legacy version)
    *
-   * @param pattern 正規表現文字列
-   * @returns TwoParamsDirectivePattern または null
+   * @param pattern - Regex pattern string
+   * @returns TwoParamsDirectivePattern or null
    */
   static create(pattern: string): TwoParamsDirectivePattern | null {
     const result = TwoParamsDirectivePattern.createOrError(pattern);

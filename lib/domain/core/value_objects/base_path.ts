@@ -15,7 +15,7 @@
  * @module domain/core/value_objects/base_path
  */
 
-import { error, ok, Result } from "../../../types/result.ts";
+import { error, ok, type Result } from "../../../types/result.ts";
 import type { ValidationError } from "../../../types/unified_error_types.ts";
 import { ErrorFactory } from "../../../types/unified_error_types.ts";
 

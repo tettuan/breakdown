@@ -1,8 +1,8 @@
 /**
- * @fileoverview BreakdownParams統合実装
+ * @fileoverview BreakdownParams Integration Implementation
  *
- * 設定ファイル → CustomConfig → BreakdownParams → TwoParamsResult フローの完全実装
- * ハードコード除去とConfigProfile依存除去のための核心モジュール
+ * Complete implementation of the configuration file -> CustomConfig -> BreakdownParams -> TwoParamsResult flow.
+ * Core module for eliminating hardcoding and removing ConfigProfile dependency.
  *
  * @module application/breakdown_params_integration
  */
@@ -17,7 +17,7 @@ import type { Result } from "../types/result.ts";
 import { error, ok } from "../types/result.ts";
 
 /**
- * BreakdownConfig設定データ型
+ * BreakdownConfig configuration data type
  */
 interface BreakdownConfigData {
   params?: {
@@ -35,7 +35,7 @@ interface BreakdownConfigData {
 }
 
 /**
- * BreakdownParams統合エラー型
+ * BreakdownParams integration error type
  */
 export type BreakdownParamsIntegrationError =
   | { kind: "ConfigLoadError"; profileName: string; message: string; cause?: unknown }
@@ -61,7 +61,7 @@ export type BreakdownParamsIntegrationError =
   | { kind: "LayerTypeCreationError"; value: string; message: string; cause?: unknown };
 
 /**
- * テスト環境用のデフォルト設定
+ * Default configuration for test environment
  */
 const TEST_DEFAULT_CONFIG: BreakdownConfigData = {
   params: {
@@ -81,7 +81,7 @@ const TEST_DEFAULT_CONFIG: BreakdownConfigData = {
 };
 
 /**
- * テスト環境かどうかを判定
+ * Determines if running in test environment
  */
 function isTestEnvironment(): boolean {
   return Deno.env.get("NODE_ENV") === "test" ||
@@ -90,7 +90,7 @@ function isTestEnvironment(): boolean {
 }
 
 /**
- * 設定データに緊急フォールバックを適用
+ * Applies emergency fallback to configuration data
  */
 function applyEmergencyFallback(
   configData: BreakdownConfigData,
@@ -98,13 +98,13 @@ function applyEmergencyFallback(
 ): BreakdownConfigData {
   const fallbackConfig = { ...configData };
 
-  // params セクションの補完
+  // Complement the params section
   if (!fallbackConfig.params) {
     fallbackConfig.params = { ...TEST_DEFAULT_CONFIG.params };
   } else if (!fallbackConfig.params.two) {
     fallbackConfig.params.two = { ...TEST_DEFAULT_CONFIG.params!.two };
   } else {
-    // directiveType の補完
+    // Complement directiveType
     if (!fallbackConfig.params.two.directiveType) {
       fallbackConfig.params.two.directiveType = {
         ...TEST_DEFAULT_CONFIG.params!.two!.directiveType,
@@ -114,7 +114,7 @@ function applyEmergencyFallback(
         .directiveType!.pattern!;
     }
 
-    // layerType の補完
+    // Complement layerType
     if (!fallbackConfig.params.two.layerType) {
       fallbackConfig.params.two.layerType = { ...TEST_DEFAULT_CONFIG.params!.two!.layerType };
     } else if (!fallbackConfig.params.two.layerType.pattern) {
@@ -127,15 +127,15 @@ function applyEmergencyFallback(
 }
 
 /**
- * 設定データの厳密なバリデーション（緊急フォールバック付き）
+ * Strict validation of configuration data (with emergency fallback)
  *
- * VariablesBuilderError や EmptyValue を防ぐため、
- * 設定ファイルの内容を詳細に検証する。
- * テスト環境では緊急フォールバックを提供。
+ * Validates configuration file contents in detail to prevent
+ * VariablesBuilderError and EmptyValue errors.
+ * Provides emergency fallback in test environment.
  *
- * @param configData - 検証対象の設定データ
- * @param profileName - プロファイル名（エラーメッセージ用）
- * @returns バリデーション結果（テスト環境では補完された設定データ）
+ * @param configData - Configuration data to validate
+ * @param profileName - Profile name (for error messages)
+ * @returns Validation result (complemented configuration data in test environment)
  */
 function validateConfigData(
   configData: BreakdownConfigData,
@@ -143,10 +143,10 @@ function validateConfigData(
 ): Result<BreakdownConfigData, BreakdownParamsIntegrationError> {
   const isTestEnv = isTestEnvironment();
 
-  // テスト環境では緊急フォールバックを適用
+  // Apply emergency fallback in test environment
   const workingConfig = isTestEnv ? applyEmergencyFallback(configData, profileName) : configData;
 
-  // 1. 基本構造の存在確認（テスト環境では警告のみ）
+  // 1. Verify basic structure existence (warning only in test environment)
   if (!workingConfig.params) {
     if (!isTestEnv) {
       return error({
@@ -171,7 +171,7 @@ function validateConfigData(
     }
   }
 
-  // 2. directiveType の厳密検証（テスト環境では警告のみ）
+  // 2. Strict validation of directiveType (warning only in test environment)
   const directiveTypeConfig = workingConfig.params?.two?.directiveType;
   if (!directiveTypeConfig) {
     if (!isTestEnv) {
@@ -199,7 +199,7 @@ function validateConfigData(
     }
   }
 
-  // 正規表現パターンの構文検証（既にフォールバック適用済みなので、例外は発生しないはず）
+  // Regex pattern syntax validation (exception should not occur since fallback is already applied)
   if (directiveTypeConfig?.pattern) {
     try {
       new RegExp(directiveTypeConfig.pattern);
@@ -217,7 +217,7 @@ function validateConfigData(
     }
   }
 
-  // 3. layerType の厳密検証（テスト環境では警告のみ）
+  // 3. Strict validation of layerType (warning only in test environment)
   const layerTypeConfig = workingConfig.params?.two?.layerType;
   if (!layerTypeConfig) {
     if (!isTestEnv) {
@@ -245,7 +245,7 @@ function validateConfigData(
     }
   }
 
-  // 正規表現パターンの構文検証（既にフォールバック適用済みなので、例外は発生しないはず）
+  // Regex pattern syntax validation (exception should not occur since fallback is already applied)
   if (layerTypeConfig?.pattern) {
     try {
       new RegExp(layerTypeConfig.pattern);
@@ -263,7 +263,7 @@ function validateConfigData(
     }
   }
 
-  // 4. パターンの空文字列検証（追加の安全性チェック）
+  // 4. Empty string validation for patterns (additional safety check)
   if (directiveTypeConfig?.pattern && directiveTypeConfig.pattern.trim() === "") {
     if (!isTestEnv) {
       return error({
@@ -290,18 +290,18 @@ function validateConfigData(
     }
   }
 
-  // 検証完了：フォールバック適用済みの設定データを返す
+  // Validation complete: return configuration data with fallback applied
   return ok(workingConfig);
 }
 
 /**
- * 設定ファイルからCustomConfigを生成
+ * Generate CustomConfig from configuration file
  *
- * プロファイル名に対応する*-user.ymlファイルから設定を読み込み、
- * BreakdownParams用のCustomConfigオブジェクトを生成する。
+ * Loads configuration from *-user.yml file corresponding to the profile name
+ * and generates CustomConfig object for BreakdownParams.
  *
- * @param profileName - 設定プロファイル名 (default: "default")
- * @returns CustomConfig生成結果
+ * @param profileName - Configuration profile name (default: "default")
+ * @returns CustomConfig generation result
  */
 export async function createCustomConfigFromProfile(
   profileName: string = "default",
@@ -309,7 +309,7 @@ export async function createCustomConfigFromProfile(
   const _isTestEnv = isTestEnvironment();
 
   try {
-    // BreakdownConfigから設定を読み込み
+    // Load configuration from BreakdownConfig
     const breakdownConfigResult = await BreakdownConfig.create(profileName);
 
     // Handle BreakdownConfig Result structure - need to extract actual config
@@ -346,13 +346,13 @@ export async function createCustomConfigFromProfile(
     await breakdownConfig.loadConfig();
     const configData = await breakdownConfig.getConfig();
 
-    // 厳密なバリデーション実行（フォールバック適用済みデータを取得）
+    // Execute strict validation (get data with fallback applied)
     const validationResult = validateConfigData(configData, profileName);
     if (!validationResult.ok) {
       return error(validationResult.error);
     }
 
-    // バリデーション済み＆フォールバック適用済みの設定データを使用
+    // Use validated configuration data with fallback applied
     const validatedConfig = validationResult.data;
 
     const customConfig: CustomConfig = {
@@ -387,28 +387,28 @@ export async function createCustomConfigFromProfile(
 }
 
 /**
- * BreakdownParamsを実行してTwoParamsResultを取得
+ * Execute BreakdownParams and get TwoParamsResult
  *
- * CLI引数を解析し、設定ファイルベースのバリデーションを実行。
- * ConfigProfile依存を完全に排除した純粋な実装。
+ * Parses CLI arguments and executes configuration file-based validation.
+ * Pure implementation that completely removes ConfigProfile dependency.
  *
- * @param args - CLI引数配列
- * @param profileName - 設定プロファイル名 (default: "default")
- * @returns TwoParamsResult取得結果
+ * @param args - CLI arguments array
+ * @param profileName - Configuration profile name (default: "default")
+ * @returns TwoParamsResult acquisition result
  */
 export async function executeBreakdownParams(
   args: string[],
   profileName: string = "default",
 ): Promise<Result<ParamsResult, BreakdownParamsIntegrationError>> {
   try {
-    // Step 1: CustomConfig生成
+    // Step 1: Generate CustomConfig
     const customConfigResult = await createCustomConfigFromProfile(profileName);
     if (!customConfigResult.ok) {
       return error(customConfigResult.error);
     }
 
-    // Step 2: BreakdownParams実行
-    // CustomConfigを使用してParamsParserを初期化（第2引数がCustomConfig）
+    // Step 2: Execute BreakdownParams
+    // Initialize ParamsParser with CustomConfig (second argument is CustomConfig)
     const parser = new ParamsParser(undefined, customConfigResult.data);
     let result;
     try {
@@ -430,7 +430,7 @@ export async function executeBreakdownParams(
       }
     }
 
-    // Step 3: 結果タイプ検証
+    // Step 3: Result type validation
     if (result.type !== "two") {
       return error({
         kind: "InvalidParamsType",
@@ -452,19 +452,19 @@ export async function executeBreakdownParams(
 }
 
 /**
- * TwoParamsResultからDirectiveType/LayerTypeに変換
+ * Convert TwoParamsResult to DirectiveType/LayerType
  *
- * BreakdownParamsで検証済みの値をドメインオブジェクトに変換。
- * ConfigProfile依存を完全に除去した純粋実装。
+ * Converts values validated by BreakdownParams to domain objects.
+ * Pure implementation that completely removes ConfigProfile dependency.
  *
- * @param twoParamsResult - BreakdownParamsからの結果
- * @returns TwoParams変換結果
+ * @param twoParamsResult - Result from BreakdownParams
+ * @returns TwoParams conversion result
  */
 export function fromTwoParamsResult(
   paramsResult: ParamsResult,
 ): Result<TwoParams, BreakdownParamsIntegrationError> {
   try {
-    // ParamsResult構造確認 (API調査結果に基づく)
+    // ParamsResult structure verification (based on API investigation results)
     // - type: "two"
     // - params: [directiveType, layerType]
     // - directiveType: string
@@ -480,10 +480,10 @@ export function fromTwoParamsResult(
       });
     }
 
-    // TwoParamsResultの構造に基づいて値を取得
+    // Get values based on TwoParamsResult structure
     const twoParamsResult = paramsResult as TwoParamsResult;
 
-    // 方法1: params配列から取得（実際のデータ構造）
+    // Method 1: Get from params array (actual data structure)
     let directiveValue: string | undefined;
     let layerValue: string | undefined;
 
@@ -495,7 +495,7 @@ export function fromTwoParamsResult(
       layerValue = twoParamsResult.params[1];
     }
 
-    // 方法2: directiveType/layerTypeプロパティから取得（フォールバック）
+    // Method 2: Get from directiveType/layerType properties (fallback)
     if (!directiveValue || !layerValue) {
       directiveValue = twoParamsResult.directiveType;
       layerValue = twoParamsResult.layerType;
@@ -510,7 +510,7 @@ export function fromTwoParamsResult(
       });
     }
 
-    // DirectiveType生成（BreakdownParamsで検証済み）
+    // Generate DirectiveType (already validated by BreakdownParams)
     const directiveResult = DirectiveType.create(directiveValue);
     if (!directiveResult.ok) {
       return error({
@@ -521,7 +521,7 @@ export function fromTwoParamsResult(
       });
     }
 
-    // LayerType生成（BreakdownParamsで検証済み）
+    // Generate LayerType (already validated by BreakdownParams)
     const layerResult = LayerType.create(layerValue);
     if (!layerResult.ok) {
       return error({
@@ -532,7 +532,7 @@ export function fromTwoParamsResult(
       });
     }
 
-    // TwoParams構築
+    // Build TwoParams
     const twoParamsCreateResult = TwoParams.create(directiveValue, layerValue);
     if (!twoParamsCreateResult.ok) {
       return error({
@@ -553,26 +553,26 @@ export function fromTwoParamsResult(
 }
 
 /**
- * 完全統合フロー: CLI引数 → 設定ファイルベース → TwoParams
+ * Complete integration flow: CLI arguments -> configuration file based -> TwoParams
  *
- * 全体の統合フローを1つのメソッドで実行。
- * ハードコード完全除去とConfigProfile依存除去を実現。
+ * Executes the entire integration flow in a single method.
+ * Achieves complete hardcode removal and ConfigProfile dependency elimination.
  *
- * @param args - CLI引数配列
- * @param profileName - 設定プロファイル名 (default: "default")
- * @returns 最終的なTwoParams結果
+ * @param args - CLI arguments array
+ * @param profileName - Configuration profile name (default: "default")
+ * @returns Final TwoParams result
  */
 export async function createTwoParamsFromConfigFile(
   args: string[],
   profileName: string = "default",
 ): Promise<Result<TwoParams, BreakdownParamsIntegrationError>> {
-  // Step 1: BreakdownParams実行
+  // Step 1: Execute BreakdownParams
   const paramsResult = await executeBreakdownParams(args, profileName);
   if (!paramsResult.ok) {
     return error(paramsResult.error);
   }
 
-  // Step 2: ドメインオブジェクト変換
+  // Step 2: Convert to domain objects
   const twoParamsResult = fromTwoParamsResult(paramsResult.data);
   if (!twoParamsResult.ok) {
     return error(twoParamsResult.error);

@@ -15,7 +15,7 @@
 
 #### 1. ハードコード配列の大量残存（20箇所以上）
 ```typescript
-// ❌ 残存中：lib/内に20箇所以上のハードコード配列
+// NG: 残存中：lib/内に20箇所以上のハードコード配列
 const validDirectiveTypes = ["to", "summary", "defect"];         // factory/0_architecture/
 const validLayerTypes = ["project", "issue", "task"];           // factory/0_architecture/
 const directiveTypes = ["to", "find", "summary", "defect"];     // domain/templates/
@@ -24,7 +24,7 @@ const directivePatterns = ["to", "summary", "defect"];          // cli/validator
 
 #### 2. ConfigProfile依存の部分残存
 ```typescript
-// ❌ 残存中：lib/factory/input_file_path_resolver_totality.ts
+// NG: 残存中：lib/factory/input_file_path_resolver_totality.ts
 readonly profile?: ConfigProfile;                            // 2箇所
 ```
 
@@ -105,7 +105,7 @@ lib/types/mod.ts                                     # コメント内のConfigP
 
 #### 必須確認項目
 ```bash
-# ❌ これらの検索結果が空でなければ作業未完了
+# NG: これらの検索結果が空でなければ作業未完了
 grep -r "\[\"to\".*\"summary\".*\"defect\"\]" lib/
 grep -r "\[\"project\".*\"issue\".*\"task\"\]" lib/
 grep -r "ConfigProfile" lib/ --exclude="*.md"
@@ -115,7 +115,7 @@ grep -r "directive.*===.*\"find\"" lib/
 
 #### 動作確認項目
 ```bash
-# ✅ これらが全て成功すること
+# OK: これらが全て成功すること
 deno task test                    # 全テスト成功
 deno run mod.ts --help           # CLI動作確認
 deno run mod.ts to project --config=custom  # 設定ファイル切り替え確認
@@ -125,7 +125,7 @@ deno run mod.ts to project --config=custom  # 設定ファイル切り替え確�
 
 #### JSR検証済み値統合実装
 ```typescript
-// ✅ 正しいパターン
+// OK: 正しいパターン
 class DirectiveType {
   readonly source = "BREAKDOWN_PARAMS_VALIDATED" as const;
   constructor(readonly value: string) { Object.freeze(this); }
@@ -142,7 +142,7 @@ function fromTwoParamsResult(result: TwoParamsResult): TwoParams {
 
 #### 設定ファイルベーステスト
 ```typescript
-// ✅ テストでの正しいパターン
+// OK: テストでの正しいパターン
 const userConfig = await loadUserConfig(ConfigProfile.createDefault());
 const customConfig = ParamsCustomConfig.create(userConfig);
 const result = await breakdownParams(args, customConfig);

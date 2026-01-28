@@ -349,8 +349,3 @@ export type TwoParams = TwoParamsType;
  * This allows TwoParams.is() and other static methods to work
  */
 export const TwoParams = TwoParamsType;
-
-/**
- * Default export for common usage
- */
-export default TwoParamsType;

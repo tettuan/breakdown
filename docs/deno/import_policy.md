@@ -39,12 +39,12 @@
 1. Standard Library Imports
 
 ```typescript
-// ✅ Correct import
+// OK: Correct import
 import { assertEquals } from "$std/assert/assert_equals.ts";
 import { join } from "$std/path/join.ts";
 import { exists } from "$std/fs/exists.ts";
 
-// ❌ Avoid these imports
+// NG: Avoid these imports
 import { assertEquals } from "https://deno.land/std/testing/asserts.ts";
 import { join } from "./deps.ts"; // Avoid direct re-exports
 ```
@@ -55,11 +55,11 @@ import { join } from "./deps.ts"; // Avoid direct re-exports
 - Use `./` or `../` for relative paths
 
 ```typescript
-// ✅ Correct import
+// OK: Correct import
 import { MyComponent } from "./components/MyComponent.ts";
 import type { Config } from "../types.ts";
 
-// ❌ Avoid these imports
+// NG: Avoid these imports
 import { MyComponent } from "components/MyComponent"; // No extension
 import type { Config } from "types"; // Unclear relative path
 ```
@@ -71,10 +71,10 @@ import type { Config } from "types"; // Unclear relative path
 // Use only for centralizing version management
 export { assertEquals, assertExists } from "$std/assert/mod.ts";
 
-// ✅ Correct usage
+// OK: Correct usage
 import { assertEquals } from "./deps.ts";
 
-// ❌ Avoid this usage
+// NG: Avoid this usage
 import { assertEquals } from "$std/assert/mod.ts"; // Decentralized version management
 ```
 

@@ -24,7 +24,7 @@ Deno.test("TypeFactory createFromJSR - Success case", () => {
 });
 
 Deno.test("TypeFactory createFromJSR - DirectiveType invalid", () => {
-  const jsrResult = createTwoParamsResult("", "project"); // 空のDirectiveType
+  const jsrResult = createTwoParamsResult("", "project"); // Empty DirectiveType
 
   const result = TypeFactory.createFromJSR(jsrResult);
 
@@ -36,7 +36,7 @@ Deno.test("TypeFactory createFromJSR - DirectiveType invalid", () => {
 });
 
 Deno.test("TypeFactory createFromJSR - LayerType invalid", () => {
-  const jsrResult = createTwoParamsResult("summary", ""); // 空のLayerType
+  const jsrResult = createTwoParamsResult("summary", ""); // Empty LayerType
 
   const result = TypeFactory.createFromJSR(jsrResult);
 
@@ -50,7 +50,7 @@ Deno.test("TypeFactory createFromJSR - LayerType invalid", () => {
 Deno.test("TypeFactory createFromJSR - Direct use of JSR validated values", () => {
   const jsrResult = createTwoParamsResult("summary", "project");
 
-  // JSR統合専用TypeFactoryは TypePatternProvider を使用しない
+  // JSR-integrated TypeFactory does not use TypePatternProvider
   const result = TypeFactory.createFromJSR(jsrResult);
 
   assertEquals(result.ok, true);

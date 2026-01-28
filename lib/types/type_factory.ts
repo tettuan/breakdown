@@ -16,36 +16,37 @@ import type { ProcessingError } from "./unified_error_types.ts";
 import { ErrorFactory } from "./unified_error_types.ts";
 
 /**
- * 型構築結果を表すResult型
- * 統一されたResult型とProcessingErrorを使用
+ * Result type representing type construction results
+ * Uses unified Result type and ProcessingError
  */
 export type TypeCreationResult<T> = Result<T, ProcessingError>;
 
-// JSR統合による新しいアーキテクチャ:
-// - 型構築はDirectiveType.create()/LayerType.create()に委譲
-// - バリデーションはBreakdownParams JSRパッケージが担当
-// - エラーハンドリングはResult型で統一
+// New architecture through JSR integration:
+// - Type construction delegated to DirectiveType.create()/LayerType.create()
+// - Validation handled by BreakdownParams JSR package
+// - Error handling unified with Result type
 
 /**
- * TypeFactory - JSR-based型構築のためのファクトリー
+ * TypeFactory - Factory for JSR-based type construction
  *
- * BreakdownParams JSRパッケージと連携して安全な型構築を提供。
- * Totality原則に従い、型構築の失敗も明示的にResult型で表現する。
+ * Provides safe type construction in coordination with BreakdownParams JSR package.
+ * Following the Totality principle, type construction failures are explicitly
+ * expressed using the Result type.
  *
- * @example JSR統合での使用（推奨方式）
+ * @example Usage with JSR integration (recommended approach)
  * ```typescript
- * // JSR検証済み値から直接生成
+ * // Generate directly from JSR-validated values
  * const jsrResult = await breakdownParams.parseArgs(args);
  * if (jsrResult.type === "two") {
  *   const typesResult = TypeFactory.createFromJSR(jsrResult);
  *   if (typesResult.ok) {
  *     const { directive, layer } = typesResult.data;
- *     // JSRバリデーション済み値から直接生成完了
+ *     // Generation complete from JSR-validated values
  *   }
  * }
  * ```
  *
- * @example 直接型構築（JSR検証済み値前提）
+ * @example Direct type construction (assumes JSR-validated values)
  * ```typescript
  * const directiveResult = TypeFactory.createDirectiveType("to");
  * if (directiveResult.ok) {
@@ -57,14 +58,14 @@ export type TypeCreationResult<T> = Result<T, ProcessingError>;
  */
 export class TypeFactory {
   /**
-   * DirectiveType を安全に構築（JSR検証済み値前提）
-   * @param value 構築対象の値（JSRによる事前検証を前提）
-   * @returns 成功した場合は DirectiveType、失敗した場合は Error
+   * Safely construct DirectiveType (assumes JSR-validated values)
+   * @param value The value to construct (assumes pre-validation by JSR)
+   * @returns DirectiveType on success, Error on failure
    */
   static createDirectiveType(
     value: string,
   ): TypeCreationResult<DirectiveType> {
-    // DirectiveTypeのcreateメソッドを直接使用（JSR検証済み前提）
+    // Use DirectiveType's create method directly (assumes JSR-validated)
     const directiveResult = DirectiveType.create(value);
 
     if (!directiveResult.ok) {
@@ -84,12 +85,12 @@ export class TypeFactory {
   }
 
   /**
-   * LayerType を安全に構築（JSR検証済み値前提）
-   * @param value 構築対象の値（JSRによる事前検証を前提）
-   * @returns 成功した場合は LayerType、失敗した場合は Error
+   * Safely construct LayerType (assumes JSR-validated values)
+   * @param value The value to construct (assumes pre-validation by JSR)
+   * @returns LayerType on success, Error on failure
    */
   static createLayerType(value: string): TypeCreationResult<LayerType> {
-    // LayerTypeのcreateメソッドを直接使用（JSR検証済み前提）
+    // Use LayerType's create method directly (assumes JSR-validated)
     const layerResult = LayerType.create(value);
 
     if (!layerResult.ok) {
@@ -109,14 +110,14 @@ export class TypeFactory {
   }
 
   /**
-   * DirectiveType と LayerType を同時に構築（JSR検証済み値前提）
+   * Construct both DirectiveType and LayerType simultaneously (assumes JSR-validated values)
    *
-   * 両方の型が必要な場合の便利メソッド。
-   * どちらか一方でも失敗した場合は全体が失敗となる。
+   * Convenience method when both types are needed.
+   * If either one fails, the entire operation fails.
    *
-   * @param directiveValue DirectiveType の値（JSR検証済み）
-   * @param layerValue LayerType の値（JSR検証済み）
-   * @returns 両方成功した場合は両型、失敗した場合は Error
+   * @param directiveValue DirectiveType value (JSR-validated)
+   * @param layerValue LayerType value (JSR-validated)
+   * @returns Both types on success, Error on failure
    */
   static createBothTypes(
     directiveValue: string,
@@ -142,23 +143,23 @@ export class TypeFactory {
   }
 
   /**
-   * JSR検証済みTwoParamsResultから直接型を生成（推奨メソッド）
+   * Generate types directly from JSR-validated TwoParamsResult (recommended method)
    *
-   * BreakdownParamsで既に検証済みの値を使用して、
-   * 直接的な型生成を行う。これがJSR統合における標準的なアプローチ。
+   * Performs direct type generation using values already validated by BreakdownParams.
+   * This is the standard approach for JSR integration.
    *
-   * @param jsrResult JSR BreakdownParamsによる検証済み結果
-   * @returns 成功した場合は両型、失敗した場合は Error
+   * @param jsrResult Result validated by JSR BreakdownParams
+   * @returns Both types on success, Error on failure
    *
-   * @example JSR統合の使用例
+   * @example JSR integration usage example
    * ```typescript
-   * // BreakdownParamsによる検証済み結果を直接利用
+   * // Directly use results validated by BreakdownParams
    * const jsrResult = await breakdownParams.parseArgs(args);
    * if (jsrResult.type === "two") {
    *   const typesResult = TypeFactory.createFromJSR(jsrResult);
    *   if (typesResult.ok) {
    *     const { directive, layer } = typesResult.data;
-   *     // JSR検証済み値から直接生成された型
+   *     // Types generated directly from JSR-validated values
    *   }
    * }
    * ```
@@ -166,7 +167,7 @@ export class TypeFactory {
   static createFromJSR(
     jsrResult: _TwoParams_Result,
   ): TypeCreationResult<{ directive: DirectiveType; layer: LayerType }> {
-    // JSR検証済み値を直接使用
+    // Use JSR-validated values directly
     const directiveResult = DirectiveType.create(jsrResult.directiveType);
     if (!directiveResult.ok) {
       return {
@@ -209,8 +210,8 @@ export class TypeFactory {
   }
 
   /**
-   * JSRパッケージ統合状況の確認（デバッグ用）
-   * @returns JSR統合の状態情報
+   * Check JSR package integration status (for debugging)
+   * @returns JSR integration status information
    */
   static debug(): {
     mode: "JSR_ONLY";

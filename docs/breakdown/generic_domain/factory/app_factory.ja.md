@@ -155,6 +155,7 @@ breakdown to issue --from=project.md \
 - adaptationType は --adaptation で指定された場合、プロンプトファイル名のsuffixとして利用される。
 - directiveType, layerType はコマンドの主要引数であり、各種パス解決のディレクトリ名等に利用される。
 - ユーザー変数（--uv-*）は userVariables オブジェクトに格納され、テンプレート内で `{uv-変数名}` として参照可能。
+- **base_prompt_dir** は promptFilePath から `dirname()` で算出される派生変数。プロンプトテンプレートが配置されているディレクトリパス（例: `/workspace/prompts/to/task`）を提供する。テンプレート内で `{base_prompt_dir}` として参照可能。末尾スラッシュは含まれない。
 ---
 
 - 入力オプション（CLIオプション）の詳細な説明は [breakdownparams リポジトリ](https://github.com/tettuan/breakdownparams) を参照してください。

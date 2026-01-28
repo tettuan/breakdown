@@ -258,7 +258,7 @@ export class AsyncConfigPatternProvider implements TypePatternProvider {
       return validation.directive.pattern;
     }
 
-    // ❌ HARDCODE ELIMINATION: No fallback patterns allowed
+    // [FORBIDDEN] HARDCODE ELIMINATION: No fallback patterns allowed
     // Configuration MUST define patterns explicitly
     return null;
   }
@@ -287,13 +287,13 @@ export class AsyncConfigPatternProvider implements TypePatternProvider {
       return validation.layer.pattern;
     }
 
-    // ❌ HARDCODE ELIMINATION: No fallback patterns allowed
+    // [FORBIDDEN] HARDCODE ELIMINATION: No fallback patterns allowed
     // Configuration MUST define patterns explicitly
     return null;
   }
 
   /**
-   * DirectiveType用バリデーション結果を取得
+   * Gets validation result for DirectiveType
    */
   validateDirectiveType(value: string): boolean {
     const pattern = this.getDirectivePattern();
@@ -301,7 +301,7 @@ export class AsyncConfigPatternProvider implements TypePatternProvider {
   }
 
   /**
-   * LayerType用バリデーション結果を取得
+   * Gets validation result for LayerType
    */
   validateLayerType(value: string): boolean {
     const pattern = this.getLayerTypePattern();
@@ -309,20 +309,20 @@ export class AsyncConfigPatternProvider implements TypePatternProvider {
   }
 
   /**
-   * 利用可能なDirectiveType値を取得
+   * Gets available DirectiveType values
    */
   getValidDirectiveTypes(): readonly string[] {
     const pattern = this.getDirectivePattern();
     if (!pattern) return [];
 
-    // パターンから取りうる値を動的に抽出
+    // Dynamically extract possible values from pattern
     const patternStr = pattern.getPattern();
     const extractedValues = this.extractValuesFromPattern(patternStr);
     if (extractedValues.length > 0) {
       return extractedValues;
     }
 
-    // 設定から直接取得する場合の処理
+    // Process when getting directly from configuration
     if (this.configData) {
       const validValues = this.extractValidValues(this.configData, "directive");
       if (validValues && validValues.length > 0) {
@@ -330,24 +330,24 @@ export class AsyncConfigPatternProvider implements TypePatternProvider {
       }
     }
 
-    return []; // デフォルトは空配列
+    return []; // Default is empty array
   }
 
   /**
-   * 利用可能なLayerType値を取得
+   * Gets available LayerType values
    */
   getValidLayerTypes(): readonly string[] {
     const pattern = this.getLayerTypePattern();
     if (!pattern) return [];
 
-    // パターンから取りうる値を動的に抽出
+    // Dynamically extract possible values from pattern
     const patternStr = pattern.getPattern();
     const extractedValues = this.extractValuesFromPattern(patternStr);
     if (extractedValues.length > 0) {
       return extractedValues;
     }
 
-    // 設定から直接取得する場合の処理
+    // Process when getting directly from configuration
     if (this.configData) {
       const validValues = this.extractValidValues(this.configData, "layer");
       if (validValues && validValues.length > 0) {
@@ -355,15 +355,15 @@ export class AsyncConfigPatternProvider implements TypePatternProvider {
       }
     }
 
-    return []; // デフォルトは空配列
+    return []; // Default is empty array
   }
 
   /**
-   * パターン文字列から値を抽出
+   * Extracts values from pattern string
    */
   private extractValuesFromPattern(pattern: string): string[] {
-    // 正規表現パターンから値を抽出
-    // 例: "^(値1|値2|値3)$" -> ["値1", "値2", "値3"]
+    // Extract values from regex pattern
+    // Example: "^(val1|val2|val3)$" -> ["val1", "val2", "val3"]
     const match = pattern.match(/^\^?\(([^)]+)\)\$?$/);
     if (match && match[1]) {
       return match[1].split("|").map((v) => v.trim()).filter((v) => v.length > 0);
@@ -372,19 +372,19 @@ export class AsyncConfigPatternProvider implements TypePatternProvider {
   }
 
   /**
-   * 設定から有効な値を抽出
+   * Extracts valid values from configuration
    */
   private extractValidValues(
     configData: Record<string, unknown>,
     type: "directive" | "layer",
   ): string[] | null {
-    // 直接的な values 配列を探す
+    // Look for direct values array
     const valuesKey = type === "directive" ? "directiveValues" : "layerTypeValues";
     if (Array.isArray(configData[valuesKey])) {
       return configData[valuesKey].filter((v): v is string => typeof v === "string");
     }
 
-    // ネストした構造から探す
+    // Look for nested structure
     const twoParamsRules = configData.twoParamsRules as {
       directive?: { values?: string[] };
       layer?: { values?: string[] };
@@ -398,7 +398,7 @@ export class AsyncConfigPatternProvider implements TypePatternProvider {
       }
     }
 
-    // validation構造から探す
+    // Look for validation structure
     const validation = configData.validation as {
       directive?: { values?: string[] };
       layer?: { values?: string[] };
@@ -457,7 +457,7 @@ export class DefaultPatternProvider implements TypePatternProvider {
   private layerPattern: TwoParamsLayerTypePattern | null;
 
   constructor() {
-    // ❌ HARDCODE ELIMINATION: DefaultPatternProvider must load from config
+    // [FORBIDDEN] HARDCODE ELIMINATION: DefaultPatternProvider must load from config
     // No hardcoded patterns allowed - use AsyncConfigPatternProvider instead
     console.warn(
       "DefaultPatternProvider should not be used - use AsyncConfigPatternProvider.create() instead",
@@ -467,7 +467,7 @@ export class DefaultPatternProvider implements TypePatternProvider {
   }
 
   /**
-   * ❌ HARDCODE ELIMINATION: All patterns must come from configuration
+   * [FORBIDDEN] HARDCODE ELIMINATION: All patterns must come from configuration
    * This method should not contain hardcoded patterns
    */
   private loadDirectivePattern(): TwoParamsDirectivePattern | null {
@@ -476,7 +476,7 @@ export class DefaultPatternProvider implements TypePatternProvider {
   }
 
   /**
-   * ❌ HARDCODE ELIMINATION: All patterns must come from configuration
+   * [FORBIDDEN] HARDCODE ELIMINATION: All patterns must come from configuration
    * This method should not contain hardcoded patterns
    */
   private loadLayerPattern(): TwoParamsLayerTypePattern | null {
@@ -501,7 +501,7 @@ export class DefaultPatternProvider implements TypePatternProvider {
   }
 
   /**
-   * DirectiveType用バリデーション結果を取得
+   * Gets validation result for DirectiveType
    */
   validateDirectiveType(value: string): boolean {
     const pattern = this.getDirectivePattern();
@@ -509,7 +509,7 @@ export class DefaultPatternProvider implements TypePatternProvider {
   }
 
   /**
-   * LayerType用バリデーション結果を取得
+   * Gets validation result for LayerType
    */
   validateLayerType(value: string): boolean {
     const pattern = this.getLayerTypePattern();
@@ -517,10 +517,10 @@ export class DefaultPatternProvider implements TypePatternProvider {
   }
 
   /**
-   * 利用可能なDirectiveType値を取得
+   * Gets available DirectiveType values
    */
   getValidDirectiveTypes(): readonly string[] {
-    // デフォルトパターンから動的に抽出
+    // Dynamically extract from default pattern
     const pattern = this.getDirectivePattern();
     if (pattern) {
       const patternStr = pattern.getPattern();
@@ -533,10 +533,10 @@ export class DefaultPatternProvider implements TypePatternProvider {
   }
 
   /**
-   * 利用可能なLayerType値を取得
+   * Gets available LayerType values
    */
   getValidLayerTypes(): readonly string[] {
-    // デフォルトパターンから動的に抽出
+    // Dynamically extract from default pattern
     const pattern = this.getLayerTypePattern();
     if (pattern) {
       const patternStr = pattern.getPattern();
@@ -558,7 +558,7 @@ export async function createPatternProvider(
   workspacePath?: string,
 ): Promise<TypePatternProvider> {
   if (!useConfig) {
-    // ❌ HARDCODE ELIMINATION: DefaultPatternProvider with hardcoded patterns not allowed
+    // [FORBIDDEN] HARDCODE ELIMINATION: DefaultPatternProvider with hardcoded patterns not allowed
     throw new Error(
       "Configuration-based pattern provider is required. " +
         "Hardcoded pattern fallback is forbidden by design.",
@@ -570,7 +570,7 @@ export async function createPatternProvider(
     return result.data;
   }
 
-  // ❌ HARDCODE ELIMINATION: No fallback to DefaultPatternProvider allowed
+  // [FORBIDDEN] HARDCODE ELIMINATION: No fallback to DefaultPatternProvider allowed
   // Configuration must be available - throw error instead of using hardcoded patterns
   const errorMsg = result.error.kind === "ConfigLoadFailed"
     ? result.error.message

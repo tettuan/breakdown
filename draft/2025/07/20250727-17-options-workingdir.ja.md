@@ -64,7 +64,7 @@
 - result_input_issue.md
 - result_short_form.md
 
-**⚠️ 問題発見**: 
+**[WARN] 問題発見**: 
 - --input=project 指定時に f_project.md が使用されない
 - 常に f_task.md (デフォルト) が使用される
 - 期待されるテンプレート選択動作が機能していない
@@ -78,7 +78,7 @@
 - result_detailed.md
 - result_custom.md
 
-**⚠️ 問題発見**:
+**[WARN] 問題発見**:
 - --adaptation=strict 指定時に f_task_strict.md が使用されない
 - adaptationサフィックス付きテンプレートが無視される
 - フォールバック動作により基本テンプレートが使用される

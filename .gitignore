@@ -15,6 +15,7 @@
 .vscode/settings.json
 .vscode/extensions.json
 .idea/
+.serena/
 *.suo
 *.ntvs*
 *.njsproj
@@ -56,6 +57,7 @@ yarn-error.log*
 # Cache directories
 .cache/
 .temp/
+.ci-local/
 
 # Local development
 *.local
@@ -90,9 +92,6 @@ debug*.ts
 .agent
 .agent/
 .agent/*
-
-# tmp files
-instructions/project-worker.md
 
 # Claude specific
 .claude/*

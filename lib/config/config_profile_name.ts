@@ -34,17 +34,6 @@ export class ConfigProfile {
   }
 
   /**
-   * @deprecated createDefault() は廃止予定
-   * BreakdownParams統合により設定ファイルベース実装に移行。
-   * ConfigProfile.create() を使用してください。
-   *
-   * @returns Default ConfigProfile instance
-   */
-  static createDefault(): ConfigProfile {
-    return new ConfigProfile(ConfigProfile.DEFAULT);
-  }
-
-  /**
    * Create ConfigProfile from CLI option value
    * @param cliOption - CLI option value
    * @returns ConfigProfile instance

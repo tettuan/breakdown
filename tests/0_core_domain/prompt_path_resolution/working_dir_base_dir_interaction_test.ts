@@ -12,7 +12,7 @@ import { assertEquals, assertExists } from "../../deps.ts";
 import { join } from "jsr:@std/path@^1.0.9";
 import {
   PromptTemplatePathResolverTotality,
-} from "../../../lib/factory/prompt_template_path_resolver_totality.ts";
+} from "../../../lib/factory/prompt_template_path_resolver.ts";
 import type { TwoParams_Result } from "../../../lib/deps.ts";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
 
@@ -77,14 +77,14 @@ Deno.test("3_core - Working directory '.' with relative base_dir paths", async (
 
         // The resolved path should be the absolute path to the template
         // Note: On macOS, /var is a symlink to /private/var, so we need to compare real paths
-        const expectedPath = Deno.realPathSync(templateFile);
-        const actualPath = Deno.realPathSync(pathResult.data.value);
+        const expectedPath = await Deno.realPath(templateFile);
+        const actualPath = await Deno.realPath(pathResult.data.value);
         assertEquals(actualPath, expectedPath);
         assertEquals(pathResult.data.status, "Found");
 
         // Verify the base directory is correctly resolved
-        const expectedBaseDir = Deno.realPathSync(join(testDir, ".agent", "climpt", "prompts"));
-        const actualBaseDir = Deno.realPathSync(pathResult.data.metadata.baseDir);
+        const expectedBaseDir = await Deno.realPath(join(testDir, ".agent", "climpt", "prompts"));
+        const actualBaseDir = await Deno.realPath(pathResult.data.metadata.baseDir);
         assertEquals(actualBaseDir, expectedBaseDir);
       }
     }
