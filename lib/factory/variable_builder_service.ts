@@ -26,7 +26,7 @@ import { PathResolutionOption } from "../types/path_resolution_option.ts";
 import { error as resultError, ok, type Result } from "../types/result.ts";
 import { FilePath } from "../types/file_path_value.ts";
 import { OutputPath } from "../types/output_destination.ts";
-import type { PromptCliParams, PromptCliOptions } from "./prompt_variables_factory.ts";
+import type { PromptCliOptions, PromptCliParams } from "./prompt_variables_factory.ts";
 import type { ResolvedPaths } from "./path_resolution_facade.ts";
 
 /**

@@ -24,9 +24,7 @@ import {
   PromptVariableTransformer,
   TransformerFactory,
 } from "../domain/prompt_variable_transformer.ts";
-import {
-  PromptTemplatePathResolverTotality,
-} from "./prompt_template_path_resolver.ts";
+import { PromptTemplatePathResolverTotality } from "./prompt_template_path_resolver.ts";
 import { SchemaFilePathResolverTotality } from "./schema_file_path_resolver.ts";
 import {
   InputFilePathResolverTotality as InputFilePathResolver,
@@ -42,11 +40,6 @@ import {
 } from "../types/prompt_variables_factory_error.ts";
 import { OutputPath } from "../types/output_destination.ts";
 import { FilePath } from "../types/file_path_value.ts";
-import {
-  PathResolutionFacade,
-  type PathResolutionConfig,
-} from "./path_resolution_facade.ts";
-import { VariableBuilderService } from "./variable_builder_service.ts";
 
 /**
  * Configuration options for prompt generation and file resolution.

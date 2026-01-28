@@ -12,12 +12,9 @@
  */
 
 import { DEFAULT_PROMPT_BASE_DIR, DEFAULT_SCHEMA_BASE_DIR } from "../config/constants.ts";
-import type { TwoParams_Result } from "../deps.ts";
-import { error as resultError, ok, type Result } from "../types/result.ts";
+import { ok, type Result } from "../types/result.ts";
 import type { PathResolutionError } from "../types/path_resolution_option.ts";
-import {
-  PromptTemplatePathResolverTotality,
-} from "./prompt_template_path_resolver.ts";
+import { PromptTemplatePathResolverTotality } from "./prompt_template_path_resolver.ts";
 import { SchemaFilePathResolverTotality } from "./schema_file_path_resolver.ts";
 import {
   InputFilePathResolverTotality as InputFilePathResolver,
