@@ -337,9 +337,9 @@ cat > "${CONFIG_DIR}/production-custom-user.yml" << 'EOF'
 params:
   two:
     directiveType:
-      pattern: "^(to|summary|defect)$"
+      pattern: "^(to|summary|defect|find)$"
     layerType:
-      pattern: "^(project|issue|task)$"
+      pattern: "^(project|issue|task|bugs)$"
 custom:
   enabled: true
 EOF

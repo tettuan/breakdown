@@ -230,25 +230,21 @@ echo "Command: breakdown to task --from=project_overview.md"
 echo "Expected: Should use f_default.md template (no --input specified)"
 echo
 
-$BREAKDOWN to task -o="$OUTPUT_DIR/result_no_input.md" < "$OUTPUT_DIR/project_overview.md" 2>&1
+RESULT_1=$($BREAKDOWN to task -o="$OUTPUT_DIR/result_no_input.md" < "$OUTPUT_DIR/project_overview.md" 2>/dev/null)
 
-if [ -f "$OUTPUT_DIR/result_no_input.md" ]; then
-    echo "Result preview:"
-    head -5 "$OUTPUT_DIR/result_no_input.md" | sed 's/^/  /'
-    echo
-    
-    # Check which template was used
-    if grep -q "Input Type: UNSPECIFIED" "$OUTPUT_DIR/result_no_input.md"; then
-        echo "✅ Used f_default.md as expected"
-    elif grep -q "Input Type: TASK" "$OUTPUT_DIR/result_no_input.md"; then
-        echo "❌ Unexpectedly used f_task.md instead of f_default.md"
-    elif grep -q "Input Type: PROJECT" "$OUTPUT_DIR/result_no_input.md"; then
-        echo "❌ Unexpectedly used f_project.md"
-    elif grep -q "Input Type: ISSUE" "$OUTPUT_DIR/result_no_input.md"; then
-        echo "❌ Unexpectedly used f_issue.md"
-    else
-        echo "⚠️  Could not determine which template was used"
-    fi
+echo "$RESULT_1"
+
+# Check which template was used from stdout output
+if echo "$RESULT_1" | grep -q "Input Type: UNSPECIFIED"; then
+    echo "✅ Used f_default.md as expected"
+elif echo "$RESULT_1" | grep -q "Input Type: TASK"; then
+    echo "❌ Unexpectedly used f_task.md instead of f_default.md"
+elif echo "$RESULT_1" | grep -q "Input Type: PROJECT"; then
+    echo "❌ Unexpectedly used f_project.md"
+elif echo "$RESULT_1" | grep -q "Input Type: ISSUE"; then
+    echo "❌ Unexpectedly used f_issue.md"
+else
+    echo "⚠️  Could not determine which template was used"
 fi
 echo
 
@@ -258,21 +254,17 @@ echo "Command: breakdown to task --from=project_overview.md --input=project"
 echo "Expected: Should use f_project.md template (not f_task.md)"
 echo
 
-$BREAKDOWN to task --input=project -o="$OUTPUT_DIR/result_input_project.md" < "$OUTPUT_DIR/project_overview.md" 2>&1
+RESULT_2=$($BREAKDOWN to task --input=project -o="$OUTPUT_DIR/result_input_project.md" < "$OUTPUT_DIR/project_overview.md" 2>/dev/null)
 
-if [ -f "$OUTPUT_DIR/result_input_project.md" ]; then
-    echo "Result preview:"
-    head -5 "$OUTPUT_DIR/result_input_project.md" | sed 's/^/  /'
-    echo
-    
-    # Check which template was used
-    if grep -q "Input Type: PROJECT" "$OUTPUT_DIR/result_input_project.md"; then
-        echo "✅ Used f_project.md as expected"
-    elif grep -q "Input Type: TASK" "$OUTPUT_DIR/result_input_project.md"; then
-        echo "❌ Incorrectly used f_task.md instead of f_project.md"
-    else
-        echo "⚠️ Template content differs from expected"
-    fi
+echo "$RESULT_2"
+
+# Check which template was used from stdout output
+if echo "$RESULT_2" | grep -q "Input Type: PROJECT"; then
+    echo "✅ Used f_project.md as expected"
+elif echo "$RESULT_2" | grep -q "Input Type: TASK"; then
+    echo "❌ Incorrectly used f_task.md instead of f_project.md"
+else
+    echo "⚠️ Template content differs from expected"
 fi
 echo
 
@@ -282,21 +274,17 @@ echo "Command: breakdown to task --from=issue_list.md --input=issue"
 echo "Expected: Should use f_issue.md template (not f_task.md)"
 echo
 
-$BREAKDOWN to task --input=issue -o="$OUTPUT_DIR/result_input_issue.md" < "$OUTPUT_DIR/issue_list.md" 2>&1
+RESULT_3=$($BREAKDOWN to task --input=issue -o="$OUTPUT_DIR/result_input_issue.md" < "$OUTPUT_DIR/issue_list.md" 2>/dev/null)
 
-if [ -f "$OUTPUT_DIR/result_input_issue.md" ]; then
-    echo "Result preview:"
-    head -5 "$OUTPUT_DIR/result_input_issue.md" | sed 's/^/  /'
-    echo
-    
-    # Check which template was used
-    if grep -q "Input Type: ISSUE" "$OUTPUT_DIR/result_input_issue.md"; then
-        echo "✅ Used f_issue.md as expected"
-    elif grep -q "Input Type: TASK" "$OUTPUT_DIR/result_input_issue.md"; then
-        echo "❌ Incorrectly used f_task.md instead of f_issue.md"
-    else
-        echo "⚠️ Template content differs from expected"
-    fi
+echo "$RESULT_3"
+
+# Check which template was used from stdout output
+if echo "$RESULT_3" | grep -q "Input Type: ISSUE"; then
+    echo "✅ Used f_issue.md as expected"
+elif echo "$RESULT_3" | grep -q "Input Type: TASK"; then
+    echo "❌ Incorrectly used f_task.md instead of f_issue.md"
+else
+    echo "⚠️ Template content differs from expected"
 fi
 echo
 
@@ -306,21 +294,17 @@ echo "Command: breakdown to task --from=task_list.md -i=task"
 echo "Expected: Should use f_task.md template"
 echo
 
-$BREAKDOWN to task -i=task -o="$OUTPUT_DIR/result_short_form.md" < "$OUTPUT_DIR/task_list.md" 2>&1
+RESULT_4=$($BREAKDOWN to task -i=task -o="$OUTPUT_DIR/result_short_form.md" < "$OUTPUT_DIR/task_list.md" 2>/dev/null)
 
-if [ -f "$OUTPUT_DIR/result_short_form.md" ]; then
-    echo "Result preview:"
-    head -5 "$OUTPUT_DIR/result_short_form.md" | sed 's/^/  /'
-    echo
-    
-    # Check which template was used
-    if grep -q "Input Type: TASK" "$OUTPUT_DIR/result_short_form.md"; then
-        echo "✅ Used f_task.md as expected"
-    else
-        echo "❌ Did not use expected template"
-    fi
+echo "$RESULT_4"
+
+# Check which template was used from stdout output
+if echo "$RESULT_4" | grep -q "Input Type: TASK"; then
+    echo "✅ Used f_task.md as expected"
+elif [ -z "$RESULT_4" ]; then
+    echo "❌ Command produced no output with -i=task format"
 else
-    echo "❌ Command failed with -i=task format"
+    echo "❌ Did not use expected template"
 fi
 echo
 

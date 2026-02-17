@@ -14,7 +14,7 @@ export * from "@tettuan/breakdownprompt";
 // JSR standard library
 export { ensureDir, exists, walk } from "@std/fs";
 export { dirname, join, resolve } from "@std/path";
-export { parse } from "@std/flags";
+export { parseArgs as parse } from "@std/cli/parse-args";
 export {
   assert,
   assertEquals,
