@@ -6,192 +6,43 @@ allowed-tools: Bash, Read, Edit
 
 # Release Process
 
-This skill guides the release process following Git Flow with automated CI/CD.
+リリースの詳細手順は `/release-procedure` を参照。このスキルはリリースの概要とチェックリストを提供する。
 
-## Release Flow Overview
+## Release Flow
 
 ```
-develop ──▶ release/v{X.Y.Z} ──PR──▶ main
-   ▲                                   │
-   │                                   ▼
-   │                            (auto-release.yml)
-   │                                   │
-   │                                   ▼
-   │                              tag: v{X.Y.Z}
-   │                                   │
-   │                            ╳ (GITHUB_TOKEN cannot trigger other workflows)
-   │                                   │
-   │                                   ▼
-   │                            (manual trigger)
-   │                            gh workflow run publish.yml -f tag=v{X.Y.Z}
-   │                                   │
-   │                                   ▼
-   │                              JSR publish
-   │                                   │
-   └───────────── backmerge ◀──────────┘
+develop ──▶ release/v{X.Y.Z} ──PR──▶ develop ──PR──▶ main ──▶ vtag ──▶ JSR publish
 ```
 
-## Workflow
+## Quick Steps
 
-### 1. Ensure develop is ready
-
-```bash
-git checkout develop
-git pull origin develop
-git status
-```
-
-Verify all features for this release are merged.
-
-### 2. Run full CI locally
-
-```bash
-deno task ci
-```
-
-All tests must pass before proceeding.
-
-### 3. Determine version number
-
-Follow semantic versioning:
-
-- **MAJOR** (X.0.0): Breaking changes
-- **MINOR** (0.X.0): New features, backward compatible
-- **PATCH** (0.0.X): Bug fixes only
-
-Check current version:
-
-```bash
-jq -r '.version' deno.json
-```
-
-### 4. Create release branch
-
-```bash
-git checkout -b release/v{NEW_VERSION}
-```
-
-### 5. Bump version
-
-Use the project's bump script:
-
-```bash
-bash scripts/bump_version.sh
-```
-
-Or manually update `deno.json`:
-
-```bash
-# Edit deno.json version field
-```
-
-### 6. Update CHANGELOG.md
-
-Add release notes under new version heading.
-
-### 7. Commit version bump
-
-```bash
-git add deno.json CHANGELOG.md
-git commit -m "chore: bump version to {NEW_VERSION}"
-```
-
-### 8. Push and create PR to main
-
-```bash
-git push -u origin release/v{NEW_VERSION}
-```
-
-Create PR: `release/v{NEW_VERSION}` → `main`
-
-**Important**: PR must be from `release/*` branch directly to `main` for auto-release to trigger.
-
-### 9. Merge triggers auto-release
-
-When PR to main is merged:
-
-1. `auto-release.yml` creates tag `v{NEW_VERSION}` and GitHub Release
-
-**Note**: `publish.yml` does NOT auto-trigger (GITHUB_TOKEN limitation).
-
-### 10. Manually trigger JSR publish
-
-```bash
-gh workflow run publish.yml -f tag=v{NEW_VERSION}
-```
-
-Verify publication:
-
-```bash
-# Check workflow status
-gh run list --workflow=publish.yml --limit=1
-
-# Verify on JSR
-open https://jsr.io/@tettuan/breakdown
-```
-
-### 11. Sync develop with main
-
-After release is published, backmerge main to develop:
-
-```bash
-git checkout develop
-git pull origin develop
-git merge origin/main
-git push origin develop
-```
-
-This ensures develop has the version bump and CHANGELOG updates.
+1. `git checkout develop && git pull origin develop`
+2. `deno task ci` — 全テスト pass を確認
+3. `git checkout -b release/v{NEW_VERSION}`
+4. `bash scripts/bump_version.sh` — `deno.json` + `lib/version.ts` 更新
+5. CHANGELOG.md 更新
+6. `git add deno.json lib/version.ts CHANGELOG.md && git commit -m "chore: bump version to {NEW_VERSION}"`
+7. `git push -u origin release/v{NEW_VERSION}`
+8. PR: `release/* → develop` (merge 後)
+9. PR: `develop → main` (merge で auto-release.yml が tag 作成)
+10. `gh workflow run publish.yml -f tag=v{NEW_VERSION}` — JSR publish
+11. Backmerge: `git checkout develop && git merge origin/main && git push origin develop`
 
 ## Checklist
 
 - [ ] All features merged to develop
 - [ ] `deno task ci` passes
-- [ ] Version number determined (semver)
-- [ ] Release branch created from develop
-- [ ] Version bumped in `deno.json`
+- [ ] Version bumped (`deno.json` + `lib/version.ts`)
 - [ ] CHANGELOG.md updated
-- [ ] PR to main created (from release/* branch)
-- [ ] PR merged → auto-release creates tag
-- [ ] Manually trigger publish: `gh workflow run publish.yml -f tag=v{VERSION}`
-- [ ] Verify JSR publication
-- [ ] Backmerge main to develop
+- [ ] PR: release/* → develop → main
+- [ ] vtag created on main
+- [ ] `gh workflow run publish.yml -f tag=v{VERSION}`
+- [ ] JSR publication verified
+- [ ] Backmerge main → develop
 
-## Example: Release v1.8.0
+## Notes
 
-```bash
-# Prepare
-git checkout develop
-git pull origin develop
-deno task ci
-
-# Create release
-git checkout -b release/v1.8.0
-bash scripts/bump_version.sh
-# Edit CHANGELOG.md
-git add deno.json CHANGELOG.md
-git commit -m "chore: bump version to 1.8.0"
-git push -u origin release/v1.8.0
-
-# Create PR via GitHub
-# release/v1.8.0 → main (triggers auto-release on merge)
-
-# After merge, manually trigger publish
-gh workflow run publish.yml -f tag=v1.8.0
-
-# Verify publish completed
-gh run list --workflow=publish.yml --limit=1
-
-# After JSR publish verified, sync develop
-git checkout develop
-git pull origin develop
-git merge origin/main
-git push origin develop
-```
-
-## Important Notes
-
-- Never push directly to `main`
-- Version in `deno.json` must match tag
-- Auto-release only triggers on `release/*` branch merge to main
-- JSR publish requires tag to be on main branch
+- Never push directly to `main` or `develop`
+- Version in `deno.json` must match `lib/version.ts` and tag
+- Flow: `release/* → develop → main`（直接 main への PR は禁止）
+- JSR publish requires manual trigger after auto-release

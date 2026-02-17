@@ -6,7 +6,7 @@ allowed-tools: Bash, Read
 
 # Create Feature Branch
 
-This skill creates feature branches following the project's Git Flow strategy.
+release/* ブランチから作業ブランチを作成する（branch-management 規約に準拠）。
 
 ## Branch Naming Convention
 
@@ -17,6 +17,7 @@ This skill creates feature branches following the project's Git Flow strategy.
 | `refactor/` | Refactoring        | `refactor/output-processor` |
 | `update/`   | Dependency updates | `update/jsr-packages`       |
 | `remove/`   | Feature removal    | `remove/deprecated-api`     |
+| `docs/`     | Documentation      | `docs/update-readme`        |
 
 ## Workflow
 
@@ -28,22 +29,28 @@ git status
 
 If there are uncommitted changes, ask user how to handle them.
 
-### 2. Update develop branch
+### 2. Find active release branch
 
 ```bash
-git checkout develop
-git pull origin develop
+git branch -a | grep 'release/'
 ```
 
-### 3. Create feature branch
+If no release branch exists, create one from develop first (see `/release-procedure`).
 
-Format: `{prefix}/issue-{number}-{short-description}`
+### 3. Update release branch
+
+```bash
+git checkout release/vX.Y.Z
+git pull origin release/vX.Y.Z
+```
+
+### 4. Create work branch from release
 
 ```bash
 git checkout -b feat/issue-{NUMBER}-{DESCRIPTION}
 ```
 
-### 4. Confirm creation
+### 5. Confirm creation
 
 ```bash
 git branch --show-current
@@ -52,22 +59,14 @@ git branch --show-current
 ## Checklist
 
 - [ ] Working directory is clean
-- [ ] develop branch is up to date
+- [ ] Active release branch identified
+- [ ] Release branch is up to date
 - [ ] Branch name follows convention
-- [ ] Branch is created from develop
-
-## Example
-
-For Issue #88 (add return mode):
-
-```bash
-git checkout develop
-git pull origin develop
-git checkout -b feat/issue-88-return-mode
-```
+- [ ] Branch is created from release/* (NOT from develop or main)
 
 ## Notes
 
-- Always branch from `develop`, not `main`
+- **Always branch from `release/*`**, not `develop` or `main` (branch-management 規約)
 - Include issue number in branch name for traceability
 - Use lowercase with hyphens for descriptions
+- If no release branch exists, ask user to create one first
