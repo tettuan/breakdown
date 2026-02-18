@@ -1,32 +1,65 @@
 ---
 name: release
-description: Create a release following Git Flow strategy. Use when preparing a release, bumping version, creating release branch, or when user says "release", "bump version", "prepare release", "ship version".
-allowed-tools: Bash, Read, Edit
+description: Use when user says 'release', 'リリース', 'publish', 'vtag', 'version up', 'バージョンアップ', 'bump version', 'prepare release', 'ship version', or discusses merging to main/develop. Guides through version bump and release flow.
+allowed-tools: [Bash, Read, Edit, Grep, Glob]
 ---
 
-# Release Process
+# Release Procedure
 
-リリースの詳細手順は `/release-procedure` を参照。このスキルはリリースの概要とチェックリストを提供する。
+全リリースフロー（version bump → CI → PR → merge → vtag → JSR publish）を管理する。各マージは明示的なユーザー指示が必要。
 
 ## Release Flow
 
 ```
-develop ──▶ release/v{X.Y.Z} ──PR──▶ develop ──PR──▶ main ──▶ vtag ──▶ JSR publish
+develop → release/* →PR→ develop →PR→ main → vtag → publish.yml → JSR
 ```
 
-## Quick Steps
+## Version Files
 
-1. `git checkout develop && git pull origin develop`
-2. `deno task ci` — 全テスト pass を確認
-3. `git checkout -b release/v{NEW_VERSION}`
-4. `bash scripts/bump_version.sh` — `deno.json` + `lib/version.ts` 更新
-5. CHANGELOG.md 更新
-6. `git add deno.json lib/version.ts CHANGELOG.md && git commit -m "chore: bump version to {NEW_VERSION}"`
-7. `git push -u origin release/v{NEW_VERSION}`
-8. PR: `release/* → develop` (merge 後)
-9. PR: `develop → main` (merge で auto-release.yml が tag 作成)
-10. `gh workflow run publish.yml -f tag=v{NEW_VERSION}` — JSR publish
-11. Backmerge: `git checkout develop && git merge origin/main && git push origin develop`
+`deno.json` の `"version"` と `lib/version.ts` の `VERSION` は一致必須。Patch (x.y.Z): バグ修正 / Minor (x.Y.0): 新機能 / Major (X.0.0): 破壊的変更
+
+## Steps
+
+```bash
+# 1. Prepare release branch
+git checkout develop && git pull origin develop
+git checkout -b release/v{X.Y.Z}
+
+# 2. Version bump
+scripts/bump_version.sh --patch  # or --minor, --major
+grep '"version"' deno.json && grep 'VERSION' lib/version.ts  # 確認
+
+# 3. CHANGELOG.md 更新
+
+# 4. Local CI
+deno task ci
+
+# 5. Commit & push
+git add deno.json lib/version.ts CHANGELOG.md && git commit -m "chore: bump version to X.Y.Z"
+git push -u origin release/vX.Y.Z
+
+# 6. release → develop PR (CI pass → merge)
+gh pr create --base develop --head release/vX.Y.Z --title "Release vX.Y.Z"
+gh pr checks <PR#> --watch && gh pr merge <PR#> --merge
+
+# 7. develop → main PR (CI pass → merge)
+gh pr create --base main --head develop --title "Release vX.Y.Z"
+gh pr checks <PR#> --watch && gh pr merge <PR#> --merge
+
+# 8. vtag (手動作成)
+git fetch origin main && git tag vX.Y.Z origin/main && git push origin vX.Y.Z
+
+# 9. JSR publish (手動トリガー)
+gh workflow run publish.yml -f tag=vX.Y.Z
+
+# 10. Backmerge
+git checkout develop && git pull origin develop && git merge origin/main && git push origin develop
+
+# 11. Cleanup
+git branch -D release/vX.Y.Z && git push origin --delete release/vX.Y.Z
+```
+
+連続マージ禁止: 各ステップでユーザー承認を得てから次に進む。ブランチ戦略は `/branch-management`、CI は `/local-ci` `/ci-troubleshooting` を参照。
 
 ## Checklist
 
@@ -34,15 +67,18 @@ develop ──▶ release/v{X.Y.Z} ──PR──▶ develop ──PR──▶ m
 - [ ] `deno task ci` passes
 - [ ] Version bumped (`deno.json` + `lib/version.ts`)
 - [ ] CHANGELOG.md updated
-- [ ] PR: release/* → develop → main
-- [ ] vtag created on main
-- [ ] `gh workflow run publish.yml -f tag=v{VERSION}`
+- [ ] PR: release/* → develop (merged)
+- [ ] PR: develop → main (merged)
+- [ ] vtag created on main (`git tag vX.Y.Z origin/main && git push origin vX.Y.Z`)
+- [ ] `gh workflow run publish.yml -f tag=vX.Y.Z`
 - [ ] JSR publication verified
 - [ ] Backmerge main → develop
+- [ ] Release branch cleaned up
 
 ## Notes
 
 - Never push directly to `main` or `develop`
 - Version in `deno.json` must match `lib/version.ts` and tag
 - Flow: `release/* → develop → main`（直接 main への PR は禁止）
-- JSR publish requires manual trigger after auto-release
+- vtag は手動作成（auto-release.yml は head branch が `release/*` の場合のみ動作）
+- JSR publish requires manual trigger after vtag
