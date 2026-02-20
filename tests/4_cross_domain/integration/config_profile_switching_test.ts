@@ -6,16 +6,16 @@
  * - Configuration values are properly resolved for each profile
  * - Dynamic configuration loading works as expected
  *
- * @module tests/integration/config_profile_switching_test
+ * @module tests/4_cross_domain/integration/config_profile_switching_test
  */
 
 import { assertEquals, assertExists } from "@std/assert";
-import { ConfigProfile } from "../../lib/config/config_profile_name.ts";
-import { ConfigPatternProvider } from "../../lib/config/pattern_provider.ts";
+import { ConfigProfile } from "../../../lib/config/config_profile_name.ts";
+import { ConfigPatternProvider } from "../../../lib/config/pattern_provider.ts";
 import { BreakdownConfig } from "@tettuan/breakdownconfig";
 import { TestLoggerFactory } from "$test/helpers/test_logger_factory.ts";
 
-const logger = TestLoggerFactory.create("integration", "config-profile-switching");
+const logger = TestLoggerFactory.create("cross", "integration/config-profile-switching");
 
 Deno.test("ConfigProfile - Default profile creation", () => {
   const profile = ConfigProfile.create();

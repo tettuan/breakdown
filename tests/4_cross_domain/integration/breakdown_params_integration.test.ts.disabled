@@ -4,15 +4,15 @@
  * Configuration file (*-user.yml) → CustomConfig → BreakdownParams → TwoParamsResult complete integration test
  * Verification of hardcode elimination and ConfigProfile dependency removal
  *
- * @module tests/integration/breakdown_params_integration.test
+ * @module tests/4_cross_domain/integration/breakdown_params_integration.test
  */
 
 import { assert, assertEquals, assertExists } from "@std/assert";
 import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { loadUserConfig } from "../../lib/config/user_config_loader.ts";
-import { ParamsCustomConfig } from "../../lib/config/params_custom_config.ts";
-import { ConfigProfile } from "../../lib/config/config_profile_name.ts";
-import { executeBreakdownParams } from "../../lib/application/breakdown_params_integration.ts";
+import { loadUserConfig } from "../../../lib/config/user_config_loader.ts";
+import { ParamsCustomConfig } from "../../../lib/config/params_custom_config.ts";
+import { ConfigProfile } from "../../../lib/config/config_profile_name.ts";
+import { executeBreakdownParams } from "../../../lib/application/breakdown_params_integration.ts";
 
 const logger = new BreakdownLogger("breakdown-params-integration");
 

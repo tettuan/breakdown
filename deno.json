@@ -46,7 +46,10 @@
   "tasks": {
     "ci": "deno run --allow-read --allow-write --allow-run --allow-env --allow-net jsr:@aidevtool/ci",
     "ci:dirty": "deno run --allow-read --allow-write --allow-run --allow-env --allow-net jsr:@aidevtool/ci --allow-dirty",
-    "test": "deno test --allow-env --allow-write --allow-read --allow-run"
+    "test": "deno test --allow-env --allow-write --allow-read --allow-run",
+    "test:unit": "deno test lib/ --allow-env --allow-write --allow-read --allow-run",
+    "test:integration": "deno test tests/ --allow-env --allow-write --allow-read --allow-run",
+    "test:e2e": "deno test tests/4_cross_domain/e2e/ --allow-env --allow-write --allow-read --allow-run"
   },
   "fmt": {
     "indentWidth": 2,
