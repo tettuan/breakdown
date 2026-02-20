@@ -4,7 +4,7 @@
  * Test integration flow operation with various configuration file patterns
  * Implement configuration file-based tests after eliminating createDefault() dependencies
  *
- * @module tests/integration/breakdown_params/02_config_driven_integration_test
+ * @module tests/4_cross_domain/integration/breakdown_params/02_config_driven_integration_test
  */
 
 import { assertEquals, assertExists } from "@std/assert";
@@ -12,7 +12,7 @@ import { BreakdownLogger } from "@tettuan/breakdownlogger";
 import {
   createTwoParamsFromConfigFile,
   executeBreakdownParams,
-} from "../../../lib/application/breakdown_params_integration.ts";
+} from "../../../../lib/application/breakdown_params_integration.ts";
 
 // Initialize test logger
 const logger = new BreakdownLogger("config-driven-test");

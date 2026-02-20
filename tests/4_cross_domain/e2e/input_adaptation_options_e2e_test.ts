@@ -15,14 +15,14 @@
  */
 
 import { assertEquals, assertExists } from "@std/assert";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { TestLoggerFactory } from "$test/helpers/test_logger_factory.ts";
 import { runBreakdown } from "../../../cli/breakdown.ts";
 import { join } from "@std/path";
 import { DEFAULT_CONFIG_DIR } from "../../../lib/config/constants.ts";
 import { MockStdinReader } from "../../../lib/io/stdin_reader_interface.ts";
 
 // Initialize test logger
-const logger = new BreakdownLogger("e2e-input-adaptation");
+const logger = TestLoggerFactory.create("cross", "e2e/input-adaptation");
 
 /**
  * E2E Test Fixture Setup for Input/Adaptation Options

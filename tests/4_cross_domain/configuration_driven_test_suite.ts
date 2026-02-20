@@ -8,7 +8,7 @@
  */
 
 import { assertEquals, assertExists } from "@std/assert";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { TestLoggerFactory } from "$test/helpers/test_logger_factory.ts";
 import { ConfigurationTestHelper } from "../../lib/test_helpers/configuration_test_helper_simple.ts";
 import {
   createTwoParamsFromConfigFile,
@@ -16,7 +16,7 @@ import {
 } from "../../lib/application/breakdown_params_integration.ts";
 
 // Initialize test logger
-const logger = new BreakdownLogger("config-driven-test");
+const logger = TestLoggerFactory.create("cross", "config-driven");
 
 /**
  * Configuration file-based test matrix

@@ -4,7 +4,7 @@
  * Test suite meeting regression test requirements after createDefault() modifications
  * Verify that existing functionality is not affected
  *
- * @module tests/integration/breakdown_params/03_regression_test
+ * @module tests/4_cross_domain/integration/breakdown_params/03_regression_test
  */
 
 import { assertEquals, assertExists } from "@std/assert";
@@ -13,9 +13,9 @@ import {
   createCustomConfigFromProfile,
   createTwoParamsFromConfigFile,
   executeBreakdownParams,
-} from "../../../lib/application/breakdown_params_integration.ts";
-import { TwoParamsType } from "../../../lib/types/two_params.ts";
-import { ConfigurationTestHelper } from "../../../lib/test_helpers/configuration_test_helper_simple.ts";
+} from "../../../../lib/application/breakdown_params_integration.ts";
+import { TwoParamsType } from "../../../../lib/types/two_params.ts";
+import { ConfigurationTestHelper } from "../../../../lib/test_helpers/configuration_test_helper_simple.ts";
 
 // Initialize test logger
 const logger = new BreakdownLogger("regression-test");

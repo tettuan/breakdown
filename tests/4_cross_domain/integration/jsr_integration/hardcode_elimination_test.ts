@@ -4,16 +4,16 @@
  * Verify that no hardcoded arrays exist in the codebase,
  * and all type definitions are dynamically loaded from configuration files
  *
- * @module tests/integration/jsr_integration/hardcode_elimination_test
+ * @module tests/4_cross_domain/integration/jsr_integration/hardcode_elimination_test
  */
 
 import { assertEquals } from "@std/assert";
 import { describe, it } from "@std/testing/bdd";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { TestLoggerFactory } from "$test/helpers/test_logger_factory.ts";
 // Removed @std/io import - not needed for file reading operations
 import { join } from "@std/path";
 
-const logger = new BreakdownLogger("hardcode-check");
+const logger = TestLoggerFactory.create("cross", "integration/hardcode-check");
 
 describe("Hardcode elimination verification", () => {
   describe("DirectiveType/LayerType array hardcode detection", () => {

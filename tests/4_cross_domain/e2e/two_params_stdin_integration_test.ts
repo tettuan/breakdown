@@ -17,7 +17,7 @@
  */
 
 import { assertEquals, assertExists } from "@std/assert";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { TestLoggerFactory } from "$test/helpers/test_logger_factory.ts";
 import { ConfigurationTestHelper } from "../../../lib/test_helpers/configuration_test_helper_simple.ts";
 import { twoParamsHandler } from "../../../lib/cli/handlers/two_params_handler.ts";
 import { join } from "@std/path";
@@ -26,7 +26,7 @@ import { DEFAULT_CONFIG_DIR } from "../../../lib/config/constants.ts";
 import { MockStdinReader } from "../../../lib/io/stdin_reader_interface.ts";
 
 // Test logger initialization
-const logger = new BreakdownLogger("e2e-stdin-integration");
+const logger = TestLoggerFactory.create("cross", "e2e/stdin-integration");
 
 /**
  * STDIN Integration Tests - Note on Mocking Strategy

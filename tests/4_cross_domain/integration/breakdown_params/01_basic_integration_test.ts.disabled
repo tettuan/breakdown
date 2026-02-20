@@ -4,7 +4,7 @@
  * 設定ファイル → CustomConfig → TwoParamsResult → TwoParams フローの基本動作をテスト
  * createDefault()修正後のテスト要件に対応
  *
- * @module tests/integration/breakdown_params/01_basic_integration_test
+ * @module tests/4_cross_domain/integration/breakdown_params/01_basic_integration_test
  */
 
 import { assertEquals, assertExists } from "@std/assert";
@@ -14,8 +14,8 @@ import {
   createTwoParamsFromConfigFile,
   executeBreakdownParams,
   fromTwoParamsResult,
-} from "../../../lib/application/breakdown_params_integration.ts";
-import { ConfigurationTestHelper } from "../../../lib/test_helpers/configuration_test_helper_simple.ts";
+} from "../../../../lib/application/breakdown_params_integration.ts";
+import { ConfigurationTestHelper } from "../../../../lib/test_helpers/configuration_test_helper_simple.ts";
 
 // Test logger initialization
 const logger = new BreakdownLogger("integration-test");

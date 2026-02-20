@@ -4,24 +4,24 @@
  * Completely eliminates hardcode dependencies and migrates to configuration file-based implementation.
  * Achieves dynamic type generation and validation through BreakdownParams integration.
  *
- * @module tests/integration/directive_layer_types/tests/01_basic_integration_test
+ * @module tests/4_cross_domain/integration/directive_layer_types/tests/01_basic_integration_test
  */
 
 import { assert, assertEquals, assertExists } from "@std/assert";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
-import { ConfigurationTestHelper } from "../../../../lib/test_helpers/configuration_test_helper_simple.ts";
-// import { setupBreakdownConfigIntegrationTest } from "../../../../lib/test_helpers/breakdown_config_test_setup.ts";
+import { TestLoggerFactory } from "$test/helpers/test_logger_factory.ts";
+import { ConfigurationTestHelper } from "../../../../../lib/test_helpers/configuration_test_helper_simple.ts";
+// import { setupBreakdownConfigIntegrationTest } from "../../../../../lib/test_helpers/breakdown_config_test_setup.ts";
 import {
   createCustomConfigFromProfile,
   createTwoParamsFromConfigFile,
   executeBreakdownParams,
   fromTwoParamsResult,
-} from "../../../../lib/application/breakdown_params_integration.ts";
-import { DirectiveType } from "../../../../lib/domain/core/value_objects/directive_type.ts";
-import { LayerType } from "../../../../lib/domain/core/value_objects/layer_type.ts";
+} from "../../../../../lib/application/breakdown_params_integration.ts";
+import { DirectiveType } from "../../../../../lib/domain/core/value_objects/directive_type.ts";
+import { LayerType } from "../../../../../lib/domain/core/value_objects/layer_type.ts";
 
 // Test logger initialization
-const logger = new BreakdownLogger("directive-layer-integration-test");
+const logger = TestLoggerFactory.create("cross", "integration/directive-layer");
 
 /**
  * Helper function to replace assertFalse

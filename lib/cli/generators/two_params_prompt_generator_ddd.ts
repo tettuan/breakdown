@@ -11,6 +11,7 @@
  * - Type-safe configuration handling
  * - Smart Constructors for domain objects
  * - Immutable value objects
+ * - No duplicated config extraction (factory handles config values)
  *
  * @module cli/generators/two_params_prompt_generator_ddd
  */
@@ -32,36 +33,12 @@ import type { PromptCliParams } from "$lib/types/mod.ts";
 import { type FactoryResolvedValues, VariablesBuilder } from "$lib/builder/variables_builder.ts";
 import type { ProcessedVariables } from "../../processor/variable_processor.ts";
 import { PromptManagerAdapter } from "$lib/prompt/prompt_manager_adapter.ts";
-import { DEFAULT_PROMPT_BASE_DIR } from "$lib/config/constants.ts";
 import { PromptPath } from "$lib/types/prompt_types.ts";
 import type { PromptError, PromptVariables } from "$lib/types/prompt_types.ts";
 
 // ============================================================================
 // Domain Value Objects - Type-safe prompt generation entities
 // ============================================================================
-
-/**
- * PromptConfiguration - Immutable configuration for prompt generation
- */
-interface PromptConfiguration {
-  readonly promptDir?: string;
-  readonly schemaDir?: string;
-  readonly workingDir?: string;
-  readonly adaptation?: string;
-  readonly extended?: boolean;
-  readonly customValidation?: boolean;
-  readonly errorFormat?: "simple" | "detailed" | "json";
-}
-
-/**
- * GenerationContext - Immutable context for prompt generation
- */
-interface GenerationContext {
-  readonly params: ValidatedParams;
-  readonly configuration: PromptConfiguration;
-  readonly variables: ProcessedVariables;
-  readonly options: Record<string, unknown>;
-}
 
 /**
  * PromptResult - Result of prompt generation
@@ -119,6 +96,10 @@ export type PromptGeneratorError =
  *
  * This service maintains clear separation between domain logic (prompt generation rules)
  * and infrastructure concerns (file system, adapters), following DDD principles.
+ *
+ * Config extraction is delegated to PromptVariablesFactory to avoid duplication.
+ * This generator creates PromptCliParams directly and lets the factory handle
+ * all config value resolution (promptDir, schemaDir, workingDir, etc.).
  */
 export class TwoParamsPromptGenerator {
   constructor(
@@ -151,56 +132,43 @@ export class TwoParamsPromptGenerator {
       console.log("[TwoParamsPromptGenerator] options.edition:", options.edition);
     }
 
-    // 1. Validate and create configuration
-    const configResult = this.createConfiguration(config, options);
-    if (isDebug) {
-      console.log(
-        "[TwoParamsPromptGenerator] createConfiguration result:",
-        JSON.stringify(
-          {
-            ok: configResult.ok,
-            data: configResult.ok ? configResult.data : undefined,
-            error: !configResult.ok ? configResult.error : undefined,
-          },
-          null,
-          2,
-        ),
-      );
-    }
-    if (!configResult.ok) {
-      return error(configResult.error);
+    // 1. Validate inputs
+    if (!config || typeof config !== "object") {
+      return error({
+        kind: "InvalidConfiguration",
+        message: "Configuration must be a valid object",
+        field: "config",
+      });
     }
 
-    // 2. Create generation context
-    const contextResult = this.createGenerationContext(
-      params,
-      configResult.data,
-      variables,
-      options,
-    );
-    if (isDebug) {
-      console.log(
-        "[TwoParamsPromptGenerator] createGenerationContext result:",
-        JSON.stringify(
-          {
-            ok: contextResult.ok,
-            data: contextResult.ok ? contextResult.data : undefined,
-            error: !contextResult.ok ? contextResult.error : undefined,
-          },
-          null,
-          2,
-        ),
-      );
-    }
-    if (!contextResult.ok) {
-      return error(contextResult.error);
+    if (!params.directive || !params.layer) {
+      return error({
+        kind: "InvalidContext",
+        message: "Invalid parameters: directive and layer are required",
+        details: params,
+      });
     }
 
-    // 3. Create and validate factory
-    const factoryResult = await this.createAndValidateFactory(
-      contextResult.data,
-      config,
-    );
+    if (!variables || !variables.standardVariables || !variables.userVariables) {
+      return error({
+        kind: "InvalidContext",
+        message:
+          "Invalid variables: ProcessedVariables must contain standardVariables and userVariables",
+        details: variables,
+      });
+    }
+
+    // 2. Create CLI params directly (no intermediate config extraction)
+    const cliParams = this.createCliParams(params, options, variables);
+    if (isDebug) {
+      console.log(
+        "[TwoParamsPromptGenerator] createCliParams result:",
+        JSON.stringify(cliParams, null, 2),
+      );
+    }
+
+    // 3. Create and validate factory (factory handles config extraction)
+    const factoryResult = await this.createAndValidateFactory(config, cliParams);
     if (isDebug) {
       console.log(
         "[TwoParamsPromptGenerator] createPromptFactory result:",
@@ -221,7 +189,7 @@ export class TwoParamsPromptGenerator {
     // 4. Build variables
     const variablesResult = await this.buildVariables(
       factoryResult.data,
-      contextResult.data,
+      variables,
     );
     if (isDebug) {
       console.log(
@@ -241,12 +209,13 @@ export class TwoParamsPromptGenerator {
       return error(variablesResult.error);
     }
 
-    // 5. Generate prompt
+    // 5. Generate prompt content
     const promptResult = await this.generatePromptContent(
       factoryResult.data,
       variablesResult.data,
-      contextResult.data,
+      params,
       config,
+      options,
     );
     if (isDebug) {
       console.log(
@@ -276,103 +245,7 @@ export class TwoParamsPromptGenerator {
   // ============================================================================
 
   /**
-   * Create configuration from raw config and options
-   */
-  private createConfiguration(
-    config: Record<string, unknown>,
-    options: Record<string, unknown>,
-  ): Result<PromptConfiguration, PromptGeneratorError> {
-    // Validate configuration object
-    if (!config || typeof config !== "object") {
-      return error({
-        kind: "InvalidConfiguration",
-        message: "Configuration must be a valid object",
-        field: "config",
-      });
-    }
-
-    // Extract prompt directory
-    const promptDir = this.extractPromptDir(config, options);
-    if (!promptDir) {
-      return error({
-        kind: "ConfigurationValidationError",
-        message:
-          "Missing required configuration: promptDir or app_prompt.base_dir must be specified",
-        missingProperties: ["promptDir", "app_prompt.base_dir"],
-      });
-    }
-
-    // Create configuration value object
-    const configuration: PromptConfiguration = {
-      promptDir,
-      schemaDir: this.extractSchemaDir(config, options),
-      workingDir: this.extractWorkingDir(config),
-      adaptation: options.adaptation as string | undefined,
-      extended: options.extended as boolean | undefined,
-      customValidation: options.customValidation as boolean | undefined,
-      errorFormat: this.extractErrorFormat(options),
-    };
-
-    return ok(configuration);
-  }
-
-  /**
-   * Extract prompt directory with fallbacks
-   */
-  private extractPromptDir(
-    config: Record<string, unknown>,
-    options: Record<string, unknown>,
-  ): string | undefined {
-    // Priority: options > config.promptDir > config.app_prompt.base_dir
-    if (options.promptDir && typeof options.promptDir === "string") {
-      return options.promptDir;
-    }
-
-    if (config.promptDir && typeof config.promptDir === "string") {
-      return config.promptDir;
-    }
-
-    const appPrompt = config.app_prompt as Record<string, unknown> | undefined;
-    if (appPrompt?.base_dir && typeof appPrompt.base_dir === "string") {
-      return appPrompt.base_dir;
-    }
-
-    // Fallback to default prompt directory when configuration loading fails
-    // This allows the system to work even when BreakdownConfig can't load properly
-    return DEFAULT_PROMPT_BASE_DIR;
-  }
-
-  /**
-   * Extract schema directory
-   */
-  private extractSchemaDir(
-    config: Record<string, unknown>,
-    options: Record<string, unknown>,
-  ): string | undefined {
-    if (options.schemaDir && typeof options.schemaDir === "string") {
-      return options.schemaDir;
-    }
-
-    const appSchema = config.app_schema as Record<string, unknown> | undefined;
-    if (appSchema?.base_dir && typeof appSchema.base_dir === "string") {
-      return appSchema.base_dir;
-    }
-
-    return undefined;
-  }
-
-  /**
-   * Extract working directory with unified configuration validation
-   */
-  private extractWorkingDir(config: Record<string, unknown>): string | undefined {
-    // SINGLE SOURCE OF TRUTH: Only use working_dir at root level
-    const workingDir = config.working_dir as string | undefined;
-
-    return workingDir;
-  }
-
-  /**
-   * Extract and validate error format
+   * Extract and validate error format from options
    */
   private extractErrorFormat(
     options: Record<string, unknown>,
@@ -385,54 +258,16 @@ export class TwoParamsPromptGenerator {
   }
 
   /**
-   * Create generation context
-   */
-  private createGenerationContext(
-    params: ValidatedParams,
-    configuration: PromptConfiguration,
-    variables: ProcessedVariables,
-    options: Record<string, unknown>,
-  ): Result<GenerationContext, PromptGeneratorError> {
-    // Validate parameters
-    if (!params.directive || !params.layer) {
-      return error({
-        kind: "InvalidContext",
-        message: "Invalid parameters: directive and layer are required",
-        details: params,
-      });
-    }
-
-    // Validate variables
-    if (!variables || !variables.standardVariables || !variables.userVariables) {
-      return error({
-        kind: "InvalidContext",
-        message:
-          "Invalid variables: ProcessedVariables must contain standardVariables and userVariables",
-        details: variables,
-      });
-    }
-
-    const context: GenerationContext = {
-      params,
-      configuration,
-      variables,
-      options,
-    };
-
-    return ok(context);
-  }
-
-  /**
    * Create and validate factory
+   *
+   * The factory handles all config value extraction (promptDir, schemaDir, workingDir)
+   * through its own createWithConfig/create methods.
    */
   private async createAndValidateFactory(
-    context: GenerationContext,
     config: Record<string, unknown>,
+    cliParams: PromptCliParams,
   ): Promise<Result<PromptVariablesFactory, PromptGeneratorError>> {
     try {
-      // Create CLI parameters
-      const cliParams = this.createCliParams(context);
-
       // Use config passed from test if available, otherwise load BreakdownConfig
       // This allows tests to override configuration without affecting production behavior
       const factoryResult = config && Object.keys(config).length > 0
@@ -466,11 +301,17 @@ export class TwoParamsPromptGenerator {
   }
 
   /**
-   * Create CLI parameters from context
+   * Create CLI parameters directly from validated params, options, and variables
+   *
+   * Config values like promptDir, schemaDir, workingDir are passed through from
+   * options as-is. The PromptVariablesFactory handles the actual config extraction
+   * and fallback logic, so we do not duplicate that here.
    */
-  private createCliParams(context: GenerationContext): PromptCliParams {
-    const { params, configuration, variables, options } = context;
-
+  private createCliParams(
+    params: ValidatedParams,
+    options: Record<string, unknown>,
+    variables: ProcessedVariables,
+  ): PromptCliParams {
     return {
       layerType: params.layer.value,
       directiveType: params.directive.value,
@@ -478,15 +319,14 @@ export class TwoParamsPromptGenerator {
         fromFile: (options.f as string) || (options.from as string) || (options.fromFile as string),
         destinationFile: (options.o as string) || (options.destination as string) ||
           (options.output as string),
-        input: (options.e as string) || (options.edition as string), // Add edition option for fromLayerType
-        adaptation: (options.a as string) || (options.adaptation as string) ||
-          configuration.adaptation,
-        promptDir: configuration.promptDir,
+        input: (options.e as string) || (options.edition as string),
+        adaptation: (options.a as string) || (options.adaptation as string),
+        promptDir: options.promptDir as string | undefined,
         input_text: variables.standardVariables.input_text,
         userVariables: variables.userVariables,
-        extended: configuration.extended,
-        customValidation: configuration.customValidation,
-        errorFormat: configuration.errorFormat,
+        extended: options.extended as boolean | undefined,
+        customValidation: options.customValidation as boolean | undefined,
+        errorFormat: this.extractErrorFormat(options),
         config: options.config as string,
       },
     };
@@ -521,7 +361,7 @@ export class TwoParamsPromptGenerator {
    */
   private buildVariables(
     factory: PromptVariablesFactory,
-    context: GenerationContext,
+    variables: ProcessedVariables,
   ): Promise<Result<Record<string, string>, PromptGeneratorError>> {
     try {
       const allParams = factory.getAllParams();
@@ -550,10 +390,10 @@ export class TwoParamsPromptGenerator {
         // Only include outputFilePath if it's not empty
         ...(allParams.outputFilePath ? { outputFilePath: allParams.outputFilePath } : {}),
         schemaFilePath: allParams.schemaFilePath,
-        userVariables: context.variables.userVariables,
+        userVariables: variables.userVariables,
         // Fallback: Use inputText if available, otherwise use standardVariables.input_text
-        inputText: (context.variables as { inputText?: string }).inputText ||
-          context.variables.standardVariables.input_text,
+        inputText: (variables as { inputText?: string }).inputText ||
+          variables.standardVariables.input_text,
       };
 
       // Create and validate builder
@@ -589,15 +429,15 @@ export class TwoParamsPromptGenerator {
       // Do not add it when outputFilePath is not provided
       if (allParams.outputFilePath && !factoryValues.outputFilePath) {
         // outputFilePath exists but wasn't added to factoryValues
-        if (context.variables.allVariables?.destination_path) {
+        if (variables.allVariables?.destination_path) {
           builder.addStandardVariable(
             "destination_path",
-            context.variables.allVariables.destination_path,
+            variables.allVariables.destination_path,
           );
-        } else if (context.variables.standardVariables?.destination_path) {
+        } else if (variables.standardVariables?.destination_path) {
           builder.addStandardVariable(
             "destination_path",
-            context.variables.standardVariables.destination_path,
+            variables.standardVariables.destination_path,
           );
         }
       }
@@ -634,158 +474,107 @@ export class TwoParamsPromptGenerator {
    * Uses PromptTemplatePathResolverTotality for consistent path resolution
    */
   private async generatePromptContent(
-    factory: PromptVariablesFactory,
+    _factory: PromptVariablesFactory,
     variables: Record<string, string>,
-    context?: GenerationContext,
-    config?: Record<string, unknown>,
+    params: ValidatedParams,
+    config: Record<string, unknown>,
+    options: Record<string, unknown>,
   ): Promise<Result<PromptResult, PromptGeneratorError>> {
     const isDebug = Deno.env.get("LOG_LEVEL") === "debug";
     try {
-      // Use PromptTemplatePathResolverTotality if context and config are available
-      if (context && config) {
-        // Create CLI params from context
-        const cliParams = {
-          layerType: context.params.layer?.value || "",
-          directiveType: context.params.directive?.value || "",
-          options: context.options || {},
-        };
+      // Create CLI params for path resolver
+      const cliParams = {
+        layerType: params.layer.value,
+        directiveType: params.directive.value,
+        options: options || {},
+      };
 
-        // Use PromptTemplatePathResolverTotality for consistent path resolution
-        const resolverResult = PromptTemplatePathResolverTotality.create(config, cliParams);
-        if (!resolverResult.ok) {
-          return error({
-            kind: "PromptPathError",
-            path: "Failed to create path resolver",
-            error: `Path resolver creation failed: ${resolverResult.error.kind}`,
-          });
-        }
+      // Use PromptTemplatePathResolverTotality for consistent path resolution
+      const resolverResult = PromptTemplatePathResolverTotality.create(config, cliParams);
+      if (!resolverResult.ok) {
+        return error({
+          kind: "PromptPathError",
+          path: "Failed to create path resolver",
+          error: `Path resolver creation failed: ${resolverResult.error.kind}`,
+        });
+      }
 
-        const resolver = resolverResult.data;
-        const pathResult = resolver.getPath();
-        if (!pathResult.ok) {
-          // Extract attempted paths from TemplateNotFound error for better error message
-          let errorMessage = `Template path resolution failed: ${pathResult.error.kind}`;
-          let attemptedPath = "Unknown path";
+      const resolver = resolverResult.data;
+      const pathResult = resolver.getPath();
+      if (!pathResult.ok) {
+        // Extract attempted paths from TemplateNotFound error for better error message
+        let errorMessage = `Template path resolution failed: ${pathResult.error.kind}`;
+        let attemptedPath = "Unknown path";
 
-          if (pathResult.error.kind === "TemplateNotFound" && "attempted" in pathResult.error) {
-            const templateNotFoundError = pathResult.error as {
-              attempted: string[];
-              fallback?: string;
-            };
-            if (templateNotFoundError.attempted && templateNotFoundError.attempted.length > 0) {
-              attemptedPath = templateNotFoundError.attempted[0];
-              errorMessage = `Template not found: ${attemptedPath}`;
-              if (templateNotFoundError.attempted.length > 1) {
-                errorMessage += `\nAttempted paths: ${templateNotFoundError.attempted.join(", ")}`;
-              }
-              if (templateNotFoundError.fallback) {
-                errorMessage += `\nFallback: ${templateNotFoundError.fallback}`;
-              }
+        if (pathResult.error.kind === "TemplateNotFound" && "attempted" in pathResult.error) {
+          const templateNotFoundError = pathResult.error as {
+            attempted: string[];
+            fallback?: string;
+          };
+          if (templateNotFoundError.attempted && templateNotFoundError.attempted.length > 0) {
+            attemptedPath = templateNotFoundError.attempted[0];
+            errorMessage = `Template not found: ${attemptedPath}`;
+            if (templateNotFoundError.attempted.length > 1) {
+              errorMessage += `\nAttempted paths: ${templateNotFoundError.attempted.join(", ")}`;
+            }
+            if (templateNotFoundError.fallback) {
+              errorMessage += `\nFallback: ${templateNotFoundError.fallback}`;
             }
           }
-
-          return error({
-            kind: "PromptPathError",
-            path: attemptedPath,
-            error: errorMessage,
-          });
         }
 
-        const templatePath = pathResult.data;
-        const promptFilePath = templatePath.value;
-
-        // Create PromptPath
-        const promptPathResult = PromptPath.create(promptFilePath);
-        if (!promptPathResult.ok) {
-          return error({
-            kind: "PromptPathError",
-            path: promptFilePath,
-            error: promptPathResult.error.message,
-          });
-        }
-
-        // Generate prompt using PromptTemplatePathResolverTotality result
-        if (isDebug) {
-          console.log(
-            "[generatePrompt] Creating prompt variables with:",
-            JSON.stringify(variables, null, 2),
-          );
-        }
-        const promptVariables = this.createPromptVariables(variables);
-        const result = await this.adapter.generatePrompt(
-          promptPathResult.data,
-          promptVariables,
-        );
-
-        if (!result.ok) {
-          return error({
-            kind: "PromptGenerationError",
-            error: this.formatPromptError(result.error),
-            details: result.error,
-          });
-        }
-
-        // Create result with metadata
-        const promptResult: PromptResult = {
-          content: result.data.content,
-          metadata: {
-            path: promptFilePath,
-            variables,
-            timestamp: new Date().toISOString(),
-          },
-        };
-
-        return ok(promptResult);
-      } else {
-        // Fallback to original factory-based logic
-        const allParams = factory.getAllParams();
-        const promptFilePath = allParams.promptFilePath;
-
-        // Create PromptPath
-        const pathResult = PromptPath.create(promptFilePath);
-        if (!pathResult.ok) {
-          return error({
-            kind: "PromptPathError",
-            path: promptFilePath,
-            error: pathResult.error.message,
-          });
-        }
-
-        // Create PromptVariables
-        if (isDebug) {
-          console.log(
-            "[generatePrompt] Creating prompt variables with:",
-            JSON.stringify(variables, null, 2),
-          );
-        }
-        const promptVariables = this.createPromptVariables(variables);
-
-        // Generate prompt using adapter
-        const result = await this.adapter.generatePrompt(
-          pathResult.data,
-          promptVariables,
-        );
-
-        if (!result.ok) {
-          return error({
-            kind: "PromptGenerationError",
-            error: this.formatPromptError(result.error),
-            details: result.error,
-          });
-        }
-
-        // Create result with metadata
-        const promptResult: PromptResult = {
-          content: result.data.content,
-          metadata: {
-            path: promptFilePath,
-            variables,
-            timestamp: new Date().toISOString(),
-          },
-        };
-
-        return ok(promptResult);
+        return error({
+          kind: "PromptPathError",
+          path: attemptedPath,
+          error: errorMessage,
+        });
       }
+
+      const templatePath = pathResult.data;
+      const promptFilePath = templatePath.value;
+
+      // Create PromptPath
+      const promptPathResult = PromptPath.create(promptFilePath);
+      if (!promptPathResult.ok) {
+        return error({
+          kind: "PromptPathError",
+          path: promptFilePath,
+          error: promptPathResult.error.message,
+        });
+      }
+
+      // Generate prompt using PromptTemplatePathResolverTotality result
+      if (isDebug) {
+        console.log(
+          "[generatePrompt] Creating prompt variables with:",
+          JSON.stringify(variables, null, 2),
+        );
+      }
+      const promptVariables = this.createPromptVariables(variables);
+      const result = await this.adapter.generatePrompt(
+        promptPathResult.data,
+        promptVariables,
+      );
+
+      if (!result.ok) {
+        return error({
+          kind: "PromptGenerationError",
+          error: this.formatPromptError(result.error),
+          details: result.error,
+        });
+      }
+
+      // Create result with metadata
+      const promptResult: PromptResult = {
+        content: result.data.content,
+        metadata: {
+          path: promptFilePath,
+          variables,
+          timestamp: new Date().toISOString(),
+        },
+      };
+
+      return ok(promptResult);
     } catch (err) {
       return error({
         kind: "PromptGenerationError",
