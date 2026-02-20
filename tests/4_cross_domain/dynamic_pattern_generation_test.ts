@@ -8,12 +8,12 @@
  */
 
 import { assertEquals, assertExists } from "@std/assert";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { TestLoggerFactory } from "$test/helpers/test_logger_factory.ts";
 import { ConfigurationTestHelper } from "../../lib/test_helpers/configuration_test_helper_simple.ts";
 import { ConfigurationPatternGenerator } from "../../lib/test_helpers/configuration_pattern_generator.ts";
 
 // Test logger initialization
-const logger = new BreakdownLogger("dynamic-pattern-test");
+const logger = TestLoggerFactory.create("cross", "dynamic-pattern");
 
 Deno.test("3_core: Dynamic pattern generation - ConfigurationPatternGenerator basic functionality", () => {
   logger.debug("ConfigurationPatternGenerator basic functionality test started", {

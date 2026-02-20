@@ -14,9 +14,9 @@ import {
   PromptTemplatePathResolverTotality,
 } from "../../../lib/factory/prompt_template_path_resolver.ts";
 import type { TwoParams_Result } from "../../../lib/deps.ts";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { TestLoggerFactory } from "$test/helpers/test_logger_factory.ts";
 
-const logger = new BreakdownLogger("working-dir-base-dir-test");
+const logger = TestLoggerFactory.create("core", "working-dir-base-dir");
 
 Deno.test("3_core - Working directory '.' with relative base_dir paths", async () => {
   const originalCwd = Deno.cwd();

@@ -18,7 +18,7 @@
  */
 
 import { assertEquals, assertExists } from "@std/assert";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { TestLoggerFactory } from "$test/helpers/test_logger_factory.ts";
 import { ConfigurationTestHelper } from "../../../lib/test_helpers/configuration_test_helper_simple.ts";
 import { twoParamsHandler } from "../../../lib/cli/handlers/two_params_handler.ts";
 import { ConfigLoader } from "../../../lib/config/loader.ts";
@@ -26,7 +26,7 @@ import { MockStdinReader } from "../../../lib/io/stdin_reader_interface.ts";
 import { join } from "@std/path";
 
 // Initialize test logger
-const logger = new BreakdownLogger("e2e-error-edge-cases");
+const logger = TestLoggerFactory.create("cross", "e2e/error-edge-cases");
 
 /**
  * Test Environment Controller for Error Simulation

@@ -15,6 +15,7 @@ import { LayerType } from "../domain/core/value_objects/layer_type.ts";
 import { TwoParams } from "../domain/core/aggregates/two_params.ts";
 import type { Result } from "../types/result.ts";
 import { error, ok } from "../types/result.ts";
+import { ConfigLoader } from "../config/loader.ts";
 
 /**
  * BreakdownConfig configuration data type
@@ -61,24 +62,24 @@ export type BreakdownParamsIntegrationError =
   | { kind: "LayerTypeCreationError"; value: string; message: string; cause?: unknown };
 
 /**
- * Default configuration for test environment
+ * Loads fallback configuration from default-user.yml
+ * Used as emergency fallback when test environment has missing config
  */
-const TEST_DEFAULT_CONFIG: BreakdownConfigData = {
-  params: {
-    two: {
-      directiveType: {
-        pattern: "^(to|summary|defect|find|analyze|extract)$",
-        errorMessage:
-          "Invalid directive type. Must be one of: to, summary, defect, find, analyze, extract",
-      },
-      layerType: {
-        pattern: "^(project|issue|task|bugs|component|module)$",
-        errorMessage:
-          "Invalid layer type. Must be one of: project, issue, task, bugs, component, module",
-      },
-    },
-  },
-};
+async function loadDefaultFallbackConfig(): Promise<BreakdownConfigData> {
+  try {
+    const configResult = await ConfigLoader.loadBreakdownConfig("default", Deno.cwd());
+    if (configResult.ok && configResult.data) {
+      const data = configResult.data as Record<string, unknown>;
+      const params = data.params as BreakdownConfigData["params"];
+      if (params?.two) {
+        return { params: { two: params.two } };
+      }
+    }
+  } catch {
+    // Config loading failed - no fallback available
+  }
+  return { params: undefined };
+}
 
 /**
  * Determines if running in test environment
@@ -91,34 +92,42 @@ function isTestEnvironment(): boolean {
 
 /**
  * Applies emergency fallback to configuration data
+ * Loads fallback patterns from default-user.yml instead of using hardcoded values
  */
-function applyEmergencyFallback(
+async function applyEmergencyFallback(
   configData: BreakdownConfigData,
   _profileName: string,
-): BreakdownConfigData {
+): Promise<BreakdownConfigData> {
+  const fallbackDefaults = await loadDefaultFallbackConfig();
+
+  // If fallback loading failed (no params available), return configData unchanged
+  if (!fallbackDefaults.params) {
+    return configData;
+  }
+
   const fallbackConfig = { ...configData };
 
   // Complement the params section
   if (!fallbackConfig.params) {
-    fallbackConfig.params = { ...TEST_DEFAULT_CONFIG.params };
+    fallbackConfig.params = { ...fallbackDefaults.params };
   } else if (!fallbackConfig.params.two) {
-    fallbackConfig.params.two = { ...TEST_DEFAULT_CONFIG.params!.two };
+    fallbackConfig.params.two = { ...fallbackDefaults.params!.two };
   } else {
     // Complement directiveType
     if (!fallbackConfig.params.two.directiveType) {
       fallbackConfig.params.two.directiveType = {
-        ...TEST_DEFAULT_CONFIG.params!.two!.directiveType,
+        ...fallbackDefaults.params!.two!.directiveType,
       };
     } else if (!fallbackConfig.params.two.directiveType.pattern) {
-      fallbackConfig.params.two.directiveType.pattern = TEST_DEFAULT_CONFIG.params!.two!
+      fallbackConfig.params.two.directiveType.pattern = fallbackDefaults.params!.two!
         .directiveType!.pattern!;
     }
 
     // Complement layerType
     if (!fallbackConfig.params.two.layerType) {
-      fallbackConfig.params.two.layerType = { ...TEST_DEFAULT_CONFIG.params!.two!.layerType };
+      fallbackConfig.params.two.layerType = { ...fallbackDefaults.params!.two!.layerType };
     } else if (!fallbackConfig.params.two.layerType.pattern) {
-      fallbackConfig.params.two.layerType.pattern = TEST_DEFAULT_CONFIG.params!.two!.layerType!
+      fallbackConfig.params.two.layerType.pattern = fallbackDefaults.params!.two!.layerType!
         .pattern!;
     }
   }
@@ -137,14 +146,16 @@ function applyEmergencyFallback(
  * @param profileName - Profile name (for error messages)
  * @returns Validation result (complemented configuration data in test environment)
  */
-function validateConfigData(
+async function validateConfigData(
   configData: BreakdownConfigData,
   profileName: string,
-): Result<BreakdownConfigData, BreakdownParamsIntegrationError> {
+): Promise<Result<BreakdownConfigData, BreakdownParamsIntegrationError>> {
   const isTestEnv = isTestEnvironment();
 
   // Apply emergency fallback in test environment
-  const workingConfig = isTestEnv ? applyEmergencyFallback(configData, profileName) : configData;
+  const workingConfig = isTestEnv
+    ? await applyEmergencyFallback(configData, profileName)
+    : configData;
 
   // 1. Verify basic structure existence (warning only in test environment)
   if (!workingConfig.params) {
@@ -347,7 +358,7 @@ export async function createCustomConfigFromProfile(
     const configData = await breakdownConfig.getConfig();
 
     // Execute strict validation (get data with fallback applied)
-    const validationResult = validateConfigData(configData, profileName);
+    const validationResult = await validateConfigData(configData, profileName);
     if (!validationResult.ok) {
       return error(validationResult.error);
     }
