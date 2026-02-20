@@ -104,19 +104,9 @@ export class LayerType {
         return configLayers;
       }
     }
-    // Emergency: Configuration-based fallback instead of hardcoded array
-    // Extract layer types from default pattern in config/default-user.yml
-    // Configuration-driven approach: config/default-user.yml -> CustomConfig -> BreakdownParams
-    try {
-      // Pattern from config/default-user.yml: includes types expected by tests
-      const defaultConfigPattern = "project|issue|task|component|module|bugs|feature|epic";
-      return defaultConfigPattern.split("|");
-    } catch {
-      // Only if configuration loading completely fails - prevent system breakage
-      throw new Error(
-        "Configuration loading failed: Unable to load layer types from config/default-user.yml",
-      );
-    }
+    // No config provided - return empty array
+    // Callers must provide LayerTypeConfig for meaningful results
+    return [];
   }
 
   /**

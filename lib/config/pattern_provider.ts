@@ -111,6 +111,7 @@ interface PatternConfig {
  */
 export class ConfigPatternProvider implements TypePatternProvider {
   private config: BreakdownConfig;
+  private configData: Record<string, unknown> = {};
   private _patternCache: {
     directive: TwoParamsDirectivePattern | null | undefined;
     layer: TwoParamsLayerTypePattern | null | undefined;
@@ -125,14 +126,7 @@ export class ConfigPatternProvider implements TypePatternProvider {
    * @param config - Initialized BreakdownConfig instance with loaded configuration
    */
   constructor(config: BreakdownConfig) {
-    // Create defensive copy to ensure immutability
-    // Note: BreakdownConfig may contain methods, so use structuredClone or shallow copy
-    try {
-      this.config = structuredClone(config);
-    } catch {
-      // Fallback to shallow copy if structuredClone fails with methods
-      this.config = Object.assign(Object.create(Object.getPrototypeOf(config)), config);
-    }
+    this.config = config;
   }
 
   /**
@@ -158,7 +152,14 @@ export class ConfigPatternProvider implements TypePatternProvider {
     }
     const config = configResult.data;
     await config.loadConfig();
-    return ok(new ConfigPatternProvider(config));
+    const provider = new ConfigPatternProvider(config);
+    // Pre-load config data for synchronous access
+    try {
+      provider.configData = await config.getConfig();
+    } catch {
+      // Config data will remain empty - patterns will return null
+    }
+    return ok(provider);
   }
 
   /**
@@ -240,57 +241,15 @@ export class ConfigPatternProvider implements TypePatternProvider {
   }
 
   /**
-   * Gets configuration data from BreakdownConfig
+   * Gets pre-loaded configuration data for synchronous access
    *
-   * @returns Promise<Result<Record<string, unknown>, ConfigurationError>> - Result with configuration data or error
-   */
-  private async getConfigData(): Promise<Result<Record<string, unknown>, ConfigurationError>> {
-    try {
-      const configData = await this.config.getConfig();
-      return ok(configData);
-    } catch (err) {
-      return error(ErrorFactory.configError(
-        "ConfigurationError",
-        {
-          message: `Failed to get configuration data: ${
-            err instanceof Error ? err.message : String(err)
-          }`,
-          source: "ConfigPatternProvider.getConfigData",
-        },
-      ));
-    }
-  }
-
-  /**
-   * Gets configuration data from BreakdownConfig synchronously
-   * [CRITICAL]: This method must properly access config data for pattern loading
-   * Currently using async getConfigData() method through temporary sync wrapper
+   * Config data is loaded during create() factory method.
+   * When constructed directly (not via create()), returns empty object.
    *
    * @returns Record<string, unknown> - Configuration data object
    */
   private getConfigDataSync(): Record<string, unknown> {
-    try {
-      // Use async method through Promise chain (temporary solution)
-      // TODO: Refactor pattern provider interface to be fully async
-      let configData: Record<string, unknown> = {};
-
-      // Synchronous access to config data through blocking async call
-      // This is NOT ideal but necessary to maintain interface compatibility
-      this.getConfigData().then((result) => {
-        if (result.ok) {
-          configData = result.data;
-        } else {
-          console.warn("Failed to get config data:", result.error);
-        }
-      }).catch((error) => {
-        console.warn("Error getting config data:", error);
-      });
-
-      return configData;
-    } catch (error) {
-      console.warn("Failed to get config data synchronously:", error);
-      return {};
-    }
+    return this.configData;
   }
 
   /**
