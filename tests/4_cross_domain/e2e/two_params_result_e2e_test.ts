@@ -16,14 +16,14 @@
  */
 
 import { assertEquals, assertExists } from "@std/assert";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { TestLoggerFactory } from "$test/helpers/test_logger_factory.ts";
 import { ConfigurationTestHelper } from "../../../lib/test_helpers/configuration_test_helper_simple.ts";
 import { runBreakdown } from "../../../cli/breakdown.ts";
 import { join } from "@std/path";
 import { DEFAULT_CONFIG_DIR } from "../../../lib/config/constants.ts";
 
 // Initialize test logger
-const logger = new BreakdownLogger("e2e-two-params");
+const logger = TestLoggerFactory.create("cross", "e2e/two-params");
 
 /**
  * E2E Test Fixture Setup

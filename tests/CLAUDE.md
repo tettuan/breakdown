@@ -115,6 +115,50 @@ LOG_LENGTH=W deno test --allow-env --allow-write --allow-read
 | LOG_LENGTH | S, L, W | S=100文字, L=200文字, W=無制限 |
 | LOG_KEY | 文字列（カンマ/コロン/スラッシュ区切り） | モジュールフィルタ |
 
+# Logger Naming Convention
+
+## TestLoggerFactory
+
+New tests MUST use `TestLoggerFactory` from `tests/helpers/test_logger_factory.ts`:
+
+```typescript
+import { TestLoggerFactory, STAGE } from "$test/helpers/test_logger_factory.ts";
+
+const logger = TestLoggerFactory.create("core", "working-dir-resolution");
+```
+
+### Domain Mapping
+
+| Test Directory | Domain Key |
+|---|---|
+| tests/0_core_domain/ | core |
+| tests/4_cross_domain/ | cross |
+| tests/integration/ | integration |
+
+### Stage Lifecycle Keys
+
+Every `logger.debug()` call MUST include a `stage` property as the FIRST key in the data object:
+
+| Stage | Usage |
+|---|---|
+| setup | TempDir creation, fixture placement |
+| config | Test configuration, CLI args, options |
+| execution | Main logic invocation |
+| verification | Assert targets, result summary |
+| teardown | Cleanup status, skip reasons |
+
+Example:
+```typescript
+logger.debug("Test environment created", { stage: STAGE.SETUP, testDir, workingDir });
+logger.debug("Resolver configuration", { stage: STAGE.CONFIG, config, cliParams });
+logger.debug("Path resolution", { stage: STAGE.VERIFICATION, status: result.status });
+logger.debug("Cleanup complete", { stage: STAGE.TEARDOWN, removed: true });
+```
+
+### Reference
+
+Full strategy: `tmp/plans/logger_strategy/breakdown_logger_tests_plan.md`
+
 # Local CI 戦略
 
 `deno task ci` の実行時間が長いとき、エラーが多いとき、

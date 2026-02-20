@@ -8,7 +8,7 @@
  */
 
 import { assert, assertEquals, assertExists } from "@std/assert";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { TestLoggerFactory } from "$test/helpers/test_logger_factory.ts";
 import { ConfigurationTestHelper } from "../../../../lib/test_helpers/configuration_test_helper_simple.ts";
 // import { setupBreakdownConfigIntegrationTest } from "../../../../lib/test_helpers/breakdown_config_test_setup.ts";
 import {
@@ -21,7 +21,7 @@ import { DirectiveType } from "../../../../lib/domain/core/value_objects/directi
 import { LayerType } from "../../../../lib/domain/core/value_objects/layer_type.ts";
 
 // Test logger initialization
-const logger = new BreakdownLogger("directive-layer-integration-test");
+const logger = TestLoggerFactory.create("integration", "directive-layer");
 
 /**
  * Helper function to replace assertFalse

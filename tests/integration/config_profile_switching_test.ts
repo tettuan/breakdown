@@ -13,9 +13,9 @@ import { assertEquals, assertExists } from "@std/assert";
 import { ConfigProfile } from "../../lib/config/config_profile_name.ts";
 import { ConfigPatternProvider } from "../../lib/config/pattern_provider.ts";
 import { BreakdownConfig } from "@tettuan/breakdownconfig";
-import { BreakdownLogger } from "@tettuan/breakdownlogger";
+import { TestLoggerFactory } from "$test/helpers/test_logger_factory.ts";
 
-const logger = new BreakdownLogger("config-profile-switching-test");
+const logger = TestLoggerFactory.create("integration", "config-profile-switching");
 
 Deno.test("ConfigProfile - Default profile creation", () => {
   const profile = ConfigProfile.create();
