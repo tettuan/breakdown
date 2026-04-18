@@ -438,6 +438,11 @@ Deno.test("E2E: Tier2 - Configuration Profile Switching", async () => {
     scenario: "Multiple profile operation verification",
   });
 
+  // Issue #104: runBreakdown now returns {ok:false} on prompt generation
+  // errors (no warning-downgrade). Ensure prompt templates exist so the
+  // profile-switching path reaches successful prompt generation.
+  await testSetup.setupAgentPrompts();
+
   const profiles = ["default-test", "flexible-test"];
   const testInputContent = "# Profile Test Content\n\nTesting different configuration profiles.";
 
@@ -456,13 +461,18 @@ Deno.test("E2E: Tier2 - Configuration Profile Switching", async () => {
     stdout.start();
 
     try {
-      // Set environment variable for profile (simulating CLI --config)
-      const originalEnv = Deno.env.get("BREAKDOWN_PROFILE");
+      // Pass profile via --config (BREAKDOWN_PROFILE env is not consumed by
+      // runBreakdown; the profile is detected via ConfigPrefixDetector).
       const originalSkipStdin = Deno.env.get("BREAKDOWN_SKIP_STDIN");
-      Deno.env.set("BREAKDOWN_PROFILE", profile);
       Deno.env.set("BREAKDOWN_SKIP_STDIN", "true");
 
-      const args = [validDirective, validLayer, `--from=${inputFile}`, "--destination=output.md"];
+      const args = [
+        `--config=${profile}`,
+        validDirective,
+        validLayer,
+        `--from=${inputFile}`,
+        "--destination=output.md",
+      ];
       const result = await runBreakdown(args);
       const output = stdout.stop();
 
@@ -476,11 +486,6 @@ Deno.test("E2E: Tier2 - Configuration Profile Switching", async () => {
       assertExists(output, `Profile ${profile} should generate output`);
 
       // Restore environment
-      if (originalEnv) {
-        Deno.env.set("BREAKDOWN_PROFILE", originalEnv);
-      } else {
-        Deno.env.delete("BREAKDOWN_PROFILE");
-      }
       if (originalSkipStdin !== undefined) {
         Deno.env.set("BREAKDOWN_SKIP_STDIN", originalSkipStdin);
       } else {
