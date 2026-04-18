@@ -133,6 +133,8 @@
       "Bash(scripts/bump_version.sh:*)",
       "Bash(scripts/local_ci.sh:*)",
       "Bash(bash scripts/local_ci.sh:*)",
+      "Bash(bash examples/*)",
+      "Bash(examples/*)",
       "WebFetch(domain:jsr.io)",
       "WebFetch(domain:deno.land)",
       "WebFetch(domain:docs.deno.com)",
