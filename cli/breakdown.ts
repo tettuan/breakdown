@@ -17,12 +17,16 @@ import { ParamsParser } from "@tettuan/breakdownparams";
 import type { showHelp as _showHelp, showVersion as _showVersion } from "$lib/cli/help.ts";
 import { handleZeroParams } from "$lib/cli/handlers/zero_params_handler.ts";
 import { handleOneParams } from "$lib/cli/handlers/one_params_handler.ts";
-import { handleTwoParams } from "$lib/cli/handlers/two_params_handler.ts";
+import {
+  handleTwoParams,
+  type TwoParamsHandlerError,
+} from "$lib/cli/handlers/two_params_handler.ts";
 import { ParamsCustomConfig } from "$lib/types/params_custom_config.ts";
 import { ResultStatus } from "$lib/types/enums.ts";
 import { ConfigProfile } from "$lib/config/config_profile_name.ts";
-import { type formatError as _formatError, handleTwoParamsError } from "$lib/cli/error_handler.ts";
+import type { formatError as _formatError } from "$lib/cli/error_handler.ts";
 import type { Result } from "$lib/types/result.ts";
+import type { PromptError } from "$lib/types/prompt_types.ts";
 import type {
   ConfigurationError as _ConfigurationError,
   ProcessingError as _ProcessingError,
@@ -48,10 +52,26 @@ type BreakdownError =
   | { kind: "ConfigProfileError"; message: string; cause: unknown }
   | { kind: "ConfigLoadError"; message: string }
   | { kind: "ParameterParsingError"; message: string }
+  | { kind: "PromptGenerationError"; cause: PromptError | string }
   | { kind: "TwoParamsHandlerError"; cause: unknown }
   | { kind: "OneParamsHandlerError"; cause: unknown }
   | { kind: "ZeroParamsHandlerError"; cause: unknown }
   | { kind: "UnknownResultType"; type: string };
+
+/**
+ * Map a TwoParamsHandlerError to a BreakdownError.
+ *
+ * Issue #104: When prompt generation fails, surface the structured
+ * PromptError (or string) via PromptGenerationError so library callers
+ * can branch on result.error.cause.kind. All other handler errors fall
+ * back to TwoParamsHandlerError with the full error as cause.
+ */
+function mapTwoParamsHandlerError(err: TwoParamsHandlerError): BreakdownError {
+  if (err.kind === "PromptGenerationError") {
+    return { kind: "PromptGenerationError", cause: err.error };
+  }
+  return { kind: "TwoParamsHandlerError", cause: err };
+}
 
 /**
  * Main entry point for the Breakdown prompt generation tool.
@@ -271,18 +291,8 @@ export async function runBreakdown(
       }
 
       if (!handlerResult.ok) {
-        // Use centralized error handler
-        if (!handleTwoParamsError(handlerResult.error, config)) {
-          return {
-            ok: false,
-            error: {
-              kind: "TwoParamsHandlerError",
-              cause: handlerResult.error,
-            },
-          };
-        }
-        // Error was handled gracefully as warning
-        return { ok: true, data: undefined };
+        // Issue #104: always return {ok:false} for library mode; never downgrade to warning.
+        return { ok: false, error: mapTwoParamsHandlerError(handlerResult.error) };
       }
 
       // I/O Boundary: Decide output based on returnMode
