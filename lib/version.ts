@@ -5,4 +5,4 @@
  * The current version of Breakdown CLI, synchronized with deno.json.
  * @module
  */
-export const VERSION = "1.8.6";
+export const VERSION = "1.8.7";
