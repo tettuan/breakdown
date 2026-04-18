@@ -500,6 +500,57 @@ const transformPromptToOutput = (
 };
 ```
 
+### 6.1 CLI / Library 境界と stdout/stderr 方針（Issue #104）
+
+`runBreakdown` は唯一の I/O 境界レイヤであり、`options.returnMode` によって**CLIモード**と**Libraryモード**の 2 つの契約を切り替える。内部のハンドラ・オーケストレーションは純粋なデータ変換（文字列を返すのみ）であり、副作用は本境界でのみ発生する。
+
+#### CLI モード（`returnMode` 未指定 または `false`）
+
+| シナリオ | stdout | stderr | プロセス終了 |
+|----------|--------|--------|-------------|
+| 成功 | 生成されたプロンプト文字列を書き出す | （未使用） | 0 |
+| エラー | （書き込みなし） | `BreakdownError` の診断情報 + `mainFunction` 経由のエラー出力 | 1 |
+
+- stdout は **プロンプト出力専用**。診断・警告・進捗メッセージなど一切を書き込まない。
+- `runBreakdown` 自体は `Result<string | undefined, BreakdownError>` を返すが、CLIエントリポイント（`import.meta.main` 配下の `mainFunction`）が `result.ok === false` を検知すると `Deno.exit(1)` で終了する。
+- 設定プロファイル未検出などのリカバリ可能な状況では `console.error("[Warning] Configuration not found, using defaults: ...")` を stderr に出力し、空設定で処理を続行する（stdout には影響しない）。
+
+#### Library モード（`returnMode: true`）
+
+| シナリオ | 戻り値 | stdout | stderr |
+|----------|--------|--------|--------|
+| 成功 | `{ ok: true, data: string }` | 書き込みなし | 書き込みなし |
+| エラー | `{ ok: false, error: BreakdownError }` | 書き込みなし | 書き込みなし（`LOG_LEVEL=debug` の debug ログを除く） |
+
+- Library 利用者は `result.error.kind` の判別ユニオンで分岐可能。
+- `PromptGenerationError.cause` が `PromptError`（オブジェクト）である場合、`cause.kind === "TemplateNotFound"` など JSR `@tettuan/breakdownprompt` 由来の構造化エラーを取得できる。
+- path resolver の短絡（例: `app_prompt.base_dir` 不在）では `cause: string` で届く。これは現状の実装制約であり、consumer は `typeof result.error.cause === "object"` で分岐すること。
+
+#### BreakdownError の判別ユニオン
+
+`cli/breakdown.ts` が export する `BreakdownError` は、ドメイン境界を跨いで伝播するすべての失敗を閉じたユニオンで表現する：
+
+```typescript
+type BreakdownError =
+  | { kind: "ConfigProfileError"; message: string; cause: unknown }
+  | { kind: "ConfigLoadError"; message: string }
+  | { kind: "ParameterParsingError"; message: string }
+  | { kind: "PromptGenerationError"; cause: PromptError | string }
+  | { kind: "TwoParamsHandlerError"; cause: unknown }
+  | { kind: "OneParamsHandlerError"; cause: unknown }
+  | { kind: "ZeroParamsHandlerError"; cause: unknown }
+  | { kind: "UnknownResultType"; type: string };
+```
+
+- `PromptGenerationError` は `TwoParamsHandlerError.PromptGenerationError` を `mapTwoParamsHandlerError()` 経由で平坦化した結果であり、`cause` にもとの `PromptError` をそのまま格納する（Issue #104 C1: PromptError preservation）。
+- それ以外のハンドラ起因エラーは `TwoParamsHandlerError` / `OneParamsHandlerError` / `ZeroParamsHandlerError` にラップされ、元の discriminated union が `cause` として保持される。
+
+#### 設計原則の根拠
+
+1. **Result 契約の一貫性**: 成功は `{ ok: true, data }`、失敗は `{ ok: false, error }` のみ。severity-downgrade による「警告 = 成功扱い」の混在は廃止（Issue #104 C3）。
+2. **I/O 副作用の一点集中**: 内部レイヤは純粋関数として文字列を返し、stdout 書き込みは本境界でのみ行う。Library 利用時に stdout が汚染されない。
+3. **構造化エラーの保全**: `PromptError.kind` を layer boundary を跨いでも失わない（`PromptGenerationError.cause: PromptError | string`）。これにより consumer は `TemplateNotFound` などを型安全に判別できる。
+
 ### 注意：アプリケーションスコープ外のドメイン
 
 ```typescript
@@ -614,6 +665,12 @@ flowchart TD
 ---
 
 ## CHANGELOG
+
+### 2026-04-18: CLI/Library 境界契約と Result 統一（Issue #104）
+- 第5章に「6.1 CLI / Library 境界と stdout/stderr 方針」を新設
+- `runBreakdown` の CLI モード / Library モード契約を明文化（成功時・エラー時の stdout/stderr の扱い）
+- `BreakdownError` 判別ユニオンの定義を記載
+- `PromptError` の layer boundary 越えの保全と、path resolver 短絡時に `cause: string` で届く制約を記述
 
 ### 2026-04-18: 設計ドキュメント整理により重複定義を統合
 - DirectiveType / LayerType / ConfigProfile のクラス定義を [two_params_types.ja.md](./two_params_types.ja.md) に集約し、本ファイルでは参照に変更

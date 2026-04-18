@@ -153,6 +153,40 @@ breakdown to issue \
 - **パラメータエラー** - コマンドライン引数の修正が必要
 - **ファイルエラー** - ファイルの準備または権限の確認が必要
 
+### stdout と stderr の使い分け
+
+Breakdown CLI は出力チャネルを用途別に厳密に分離します（Issue #104）。
+
+| チャネル | 用途 | 具体例 |
+|---------|------|-------|
+| **stdout** | プロンプト本文の出力のみ | 生成されたプロンプト文字列 |
+| **stderr** | 診断・警告・エラーメッセージ | `[Warning] Configuration not found, using defaults: ...`、エラー情報 |
+
+- パイプライン利用（例: `breakdown to task > prompt.md`）では、警告やエラーがプロンプト出力ファイルに混ざりません。
+- リダイレクト時に診断も捕捉したい場合は `breakdown to task > prompt.md 2> stderr.log` のように別ファイルへ振り分けます。
+
+### 終了コード
+
+| 状態 | 終了コード | 動作 |
+|------|-----------|------|
+| 成功 | 0 | プロンプトを stdout に出力して正常終了 |
+| エラー | 1 | `stderr` に `Entry Point Error: ...` を出力して異常終了 |
+
+エラー発生時は `Deno.exit(1)` により即座に終了し、stdout への書き込みは行われません。スクリプト内で利用する場合は `$?` または `$LASTEXITCODE` で結果を判定できます。
+
+```bash
+# 成功/失敗をシェルで判定する例
+if breakdown to task -f input.md > out.md; then
+  echo "OK"
+else
+  echo "NG: exit code $?"
+fi
+```
+
+### Library モードとの違い
+
+TypeScript/Deno から `runBreakdown(args, { returnMode: true })` として呼び出した場合、**stdout / stderr には一切書き込まれず**、すべての結果は `Result<string, BreakdownError>` として戻り値で受け取れます。詳細は [ドメイン境界とデータフロー §6.1](../domain_core/domain_boundaries_flow.ja.md#61-cli--library-境界と-stdoutstderr-方針issue-104) を参照してください。
+
 ## 設定との連携
 
 ### プロファイル切り替え
