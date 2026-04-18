@@ -37,4 +37,10 @@ gh pr merge --merge    # release → develop / develop → main (履歴保持)
 
 `feature/*` (新機能) / `fix/*` (バグ修正) / `refactor/*` (リファクタ) / `docs/*` (ドキュメント) / `release/vX.Y.Z` (リリース)
 
+issue 起因の場合は番号をブランチ名に含める: `fix/<issue-number>-<short-desc>` 例: `fix/123-empty-directive`
+
+## Issue Linking on PR
+
+issue 起因のブランチから PR を作成するときは、**PR 本文の先頭に `Fixes #<issue-number>` を必ず記載**する（merge 時に issue が自動 close される）。詳細ルールは `/fix-checklist` の「Issue-driven Fix」を参照。
+
 リリースフロー全体は `/release-procedure`、CI は `/local-ci` を参照。

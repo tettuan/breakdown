@@ -29,3 +29,17 @@ allowed-tools: [Read, Glob, Grep]
 7. **Then Fix** — 根本原因に対する最小変更を行う
 
 複雑な問題は `tmp/investigation/<issue>/` に overview.md, trace.md, root-cause.md を書き出す（mermaid図必須）。
+
+## Issue-driven Fix: コミット・PR に issue 番号を必ず紐づける
+
+issue 起因の修正作業（GitHub issue / ユーザー報告で番号が存在する場合）は、以下を**必ず**守る:
+
+- **コミットメッセージ末尾に `Fixes #<issue-number>` を記載**（複数 issue は `Fixes #12, Fixes #34`）
+  - 例: `fix(parser): handle empty DirectiveType\n\nFixes #123`
+  - `Fixes` / `Closes` / `Resolves` いずれも可（GitHub が自動 close するキーワード）
+  - 単なる関連付けで close させたくない場合は `Refs #<issue-number>`
+- **PR 本文冒頭に `Fixes #<issue-number>` を記載**（PR merge 時に issue が自動 close される）
+- issue 番号が不明な場合は**修正着手前にユーザーに確認**し、番号が判明してからコミットする
+- work branch 名にも番号を含める: `fix/<issue-number>-<short-desc>`（例: `fix/123-empty-directive`）
+
+理由: issue ↔ コミット ↔ PR のトレーサビリティを担保し、close漏れ・重複対応・原因追跡の迷子を防ぐ。
