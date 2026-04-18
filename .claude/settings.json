@@ -163,6 +163,23 @@
       "Skill(init)",
       "Skill(security-review)"
     ],
-    "deny": []
+    "deny": [
+      "Bash(sudo:*)",
+      "Bash(rm -rf /:*)",
+      "Bash(rm -rf ~:*)",
+      "Bash(rm -rf $HOME:*)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git push --force-with-lease:*)",
+      "Bash(git commit --no-verify:*)",
+      "Bash(git commit -n:*)",
+      "Bash(git reset --hard origin:*)",
+      "Bash(git clean -fdx:*)",
+      "Bash(deno eval:*)",
+      "Bash(bash:*)",
+      "Bash(sh -c:*)",
+      "Bash(zsh -c:*)",
+      "Bash(eval:*)"
+    ]
   }
 }
