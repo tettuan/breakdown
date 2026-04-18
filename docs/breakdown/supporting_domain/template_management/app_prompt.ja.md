@@ -32,6 +32,20 @@ app_prompt:
 - `{variable_name}`: テンプレート変数は `{` と `}` で括る
 - `{{variable_name}}` は間違い。
 
+# プロンプトテンプレートの配置ルール
+
+- プロンプトテンプレートは `app_prompt.base_dir`（working_dir 相対）配下に、DirectiveType / LayerType に対応するディレクトリ階層で配置する。
+- ファイル命名規則と組み合わせの詳細仕様は、パス解決の正式参照である [app_factory.ja.md](../../generic_domain/factory/app_factory.ja.md) を参照すること。
+- ディレクトリ階層の具体例は [interface/path_resolution.ja.md](../../interface/path_resolution.ja.md) も参考になる。
+
 ---
 
-詳細なパスや変数の扱い、命名規則などは path.ja.md を参照してください。
+詳細なパスや変数の扱い、命名規則などは [app_factory.ja.md](../../generic_domain/factory/app_factory.ja.md) を参照してください。
+
+---
+
+## CHANGELOG
+
+### 2026-04-18: 設計ドキュメント整理
+- パス解決ルールの説明を [app_factory.ja.md](../../generic_domain/factory/app_factory.ja.md) への参照に置換
+- 「プロンプトテンプレートの配置ルール」を本ファイル固有の責務として明示

@@ -1,74 +1,63 @@
 # オプション型のドメインストーリー
 
+> **本ファイルの位置付け**: ドメインストーリー視点（ユーザーがどのオプションをどう使い分けるか）に特化しています。
+> - 型定義の正本: [two_params_types.ja.md](./two_params_types.ja.md)（DirectiveType / LayerType / ConfigProfile / TwoParams）
+> - ドメイン境界図とドメイン間データフロー: [domain_boundaries_flow.ja.md](./domain_boundaries_flow.ja.md)
+> - パス解決ルール: [../interface/path_resolution.ja.md](../interface/path_resolution.ja.md)
+>
+> 本ファイルでは、CLI 利用者が **情報表示 / 管理操作 / プロンプト生成** の 3 つのオプション利用シナリオをどう体験するか、という観点に絞って説明します。型・境界の技術詳細は上記の権威ファイルを参照してください。
+
 ## プロローグ：Breakdown CLIの本質
 
-Breakdown CLIは、**3つの異なるドメイン**を持つアプリケーションです：
+Breakdown CLIをユーザー視点で見ると、**3つの異なる利用シナリオ**に分かれます：
 
-1. **情報表示ドメイン** - システム情報を提供する
-2. **管理操作ドメイン** - アプリケーション状態を管理する  
-3. **プロンプト生成ドメイン** - 文書をプロンプトに変換する
+1. **情報表示シナリオ** - システム情報を取得する（`--help`, `--version`）
+2. **管理操作シナリオ** - アプリケーション状態を管理する（`init`, `copy`, `delete`）
+3. **プロンプト生成シナリオ** - 文書をプロンプトに変換する（`to issue` など）
 
-この3つのドメインは、それぞれ異なる責務、異なるユーザー体験、異なる複雑さを持っています。
+この3つのシナリオは、それぞれ異なる責務、異なるユーザー体験、異なる複雑さを持っています。なお、Breakdown CLI 全体のドメイン境界（パラメータバリデーション・パス解決・変数生成・出力など内部ドメイン）の詳細は [domain_boundaries_flow.ja.md](./domain_boundaries_flow.ja.md) を参照してください。
 
-## 第1章：ドメインの発見
+## 第1章：シナリオの発見
 
-### ドメインの分離原則
+### 各シナリオの特徴
 
-```typescript
-// ドメインの境界を明確に定義
-type BreakdownDomain = 
-  | "information-display"    // 情報表示：単純・即時
-  | "management-operation"   // 管理操作：状態変更・設定
-  | "prompt-generation";     // プロンプト生成：複雑・変換
-```
-
-### 各ドメインの特徴
-
-#### 情報表示ドメイン
+#### 情報表示シナリオ
 - **責務**: ユーザーにシステム情報を提供
 - **複雑さ**: 最小限（フラグの判定のみ）
 - **変換**: なし（即座に結果を返す）
 - **典型例**: `breakdown --help`, `breakdown --version`
 
-#### 管理操作ドメイン  
+#### 管理操作シナリオ
 - **責務**: アプリケーション状態・設定の管理
 - **複雑さ**: 中程度（設定の読み書き）
 - **変換**: 限定的（設定ファイルとの相互作用）
 - **典型例**: `breakdown init`, `breakdown copy`, `breakdown delete`
 
-#### プロンプト生成ドメイン
+#### プロンプト生成シナリオ
 - **責務**: 文書をプロンプトに変換・生成
 - **複雑さ**: 最大（多段階変換処理）
 - **変換**: 完全（ファイル→変数→プロンプト→出力）
 - **典型例**: `breakdown to issue`, `breakdown summary project`
 
-## 第2章：コマンド構造の設計
+## 第2章：コマンド構造とシナリオの対応
 
 ### パラメータ数による自然な分類
 
-```typescript
-// CLIの自然な構造がドメインを反映
-type CommandStructure = 
-  | ZeroParamsResult    // オプションのみ → 情報表示
-  | OneParamsResult     // 単一動詞 → 管理操作
-  | TwoParamsResult;    // 動詞+目的語 → プロンプト生成
-```
+CLIのパラメータ数は、そのまま利用シナリオの分岐になります。
 
-この分類は**偶然ではありません**。コマンドの自然な構造が、そのまま**ドメインの境界**を表しています。
+- **Zero パラメータ**: `--help`, `--version` → 情報表示シナリオ（システムへの問い合わせ）
+- **One パラメータ**: `init`, `copy`, `delete` → 管理操作シナリオ（アプリケーションへの指示）
+- **Two パラメータ**: `to issue`, `summary project` → プロンプト生成シナリオ（変換処理の指定）
 
-### 設計の意図
-
-- **Zero**: `--help`, `--version` → システムへの問い合わせ
-- **One**: `init`, `copy`, `delete` → アプリケーションへの指示
-- **Two**: `to issue`, `summary project` → 変換処理の指定
+> パラメータ解析の型表現（`ZeroParamsResult` / `OneParamsResult` / `TwoParamsResult`）と内部ドメイン境界については [two_params_types.ja.md](./two_params_types.ja.md) と [domain_boundaries_flow.ja.md](./domain_boundaries_flow.ja.md) を参照してください。
 
 ## 第3章：オプション型の責務分離
 
-### ドメイン専用オプション型
+### シナリオ専用オプション型
 
 ```typescript
-// 各ドメインは専用のオプション型を持つ
-type Options = 
+// 各シナリオは専用のオプション型を持つ
+type Options =
   | SystemOptions        // 情報表示専用
   | ManagementOptions    // 管理操作専用
   | PromptVariableSource // プロンプト生成専用（統合型）
@@ -118,7 +107,7 @@ interface PromptVariableSource {
 - **変換性**: 複雑な変換処理に対応
 - **専用性**: TwoParamsResultでのみ使用
 
-## 第4章：プロンプト生成ドメインの内部構造
+## 第4章：プロンプト生成シナリオの内部構造
 
 ### 3つのオプション型の役割
 
@@ -158,23 +147,21 @@ interface DynamicVariableOption {
 
 1. **協調動作**: 単独では意味を成さない
 2. **変換統一**: 同じ変換エンジンで処理される
-3. **ドメイン境界**: プロンプト生成という単一のドメイン
+3. **シナリオの一体性**: プロンプト生成という単一の利用シナリオで完結する
 
 ## 第5章：変換処理の段階的設計
 
-### ドメイン別の変換戦略
+### シナリオ別の変換戦略
 
-```typescript
-// 各ドメインの変換戦略
-type TransformationStrategy = 
-  | "none"        // 情報表示：変換なし
-  | "limited"     // 管理操作：限定的変換
-  | "full";       // プロンプト生成：完全変換
-```
+| シナリオ | 変換戦略 | 説明 |
+|---------|---------|------|
+| 情報表示 | none | 変換なし、即座に結果を返す |
+| 管理操作 | limited | 設定ファイルとの限定的な相互作用 |
+| プロンプト生成 | full | ファイル → 変数 → プロンプト → 出力 の多段階変換 |
 
 ### 変換処理の詳細
 
-#### 情報表示ドメイン: 即時応答
+#### 情報表示シナリオ: 即時応答
 ```typescript
 // 変換処理なし
 function handleSystemOptions(options: SystemOptions): string {
@@ -184,7 +171,7 @@ function handleSystemOptions(options: SystemOptions): string {
 }
 ```
 
-#### 管理操作ドメイン: 設定変更
+#### 管理操作シナリオ: 設定変更
 ```typescript
 // 限定的変換
 function handleManagementOptions(command: string, options: ManagementOptions) {
@@ -197,7 +184,7 @@ function handleManagementOptions(command: string, options: ManagementOptions) {
 }
 ```
 
-#### プロンプト生成ドメイン: 完全変換
+#### プロンプト生成シナリオ: 完全変換
 ```typescript
 // 完全変換パイプライン
 function handlePromptGeneration(source: PromptVariableSource): PromptVariables {
@@ -225,7 +212,7 @@ function handlePromptGeneration(source: PromptVariableSource): PromptVariables {
 
 ## 第6章：拡張性の設計
 
-### 管理操作ドメインの拡張戦略
+### 管理操作シナリオの拡張戦略
 
 #### 現在の設計思想
 ```typescript
@@ -255,7 +242,7 @@ interface ManagementOptions {
 }
 ```
 
-### プロンプト生成ドメインの拡張戦略
+### プロンプト生成シナリオの拡張戦略
 
 #### 統合型の利点
 ```typescript
@@ -279,7 +266,7 @@ type PromptGenerationOptions =
 
 #### パラメータ型による分岐
 ```typescript
-// ドメイン境界を明確に分離
+// シナリオごとの処理を明確に分離
 function processCommand(result: ParameterResult) {
   switch (result.type) {
     case "zero-params":
@@ -294,7 +281,7 @@ function processCommand(result: ParameterResult) {
 
 #### オプション型の使い分け
 ```typescript
-// 各ドメインで専用のオプション型を使用
+// 各シナリオで専用のオプション型を使用
 function handleManagementOperation(command: string, options: ManagementOptions) {
   // ManagementOptionsの型安全な使用
   const { config, force, backup, target } = options;
@@ -312,46 +299,34 @@ function handleManagementOperation(command: string, options: ManagementOptions) 
 
 ### エラーハンドリングの戦略
 
-#### ドメイン別のエラー処理
-```typescript
-// 各ドメインの特性に応じたエラー処理
-class BreakdownError extends Error {
-  constructor(domain: BreakdownDomain, message: string) {
-    super(`[${domain}] ${message}`);
-  }
-}
-
-// 使用例
-throw new BreakdownError("management-operation", "Target file not found");
-throw new BreakdownError("prompt-generation", "Invalid template adaptation");
-```
+シナリオごとにエラーの粒度と回復方針が異なります。情報表示は失敗が稀、管理操作は対象不在を明示、プロンプト生成は変換段階ごとに別種のエラーを返すのが基本です。エラー型の正本定義および境界でのエラー伝播は [domain_boundaries_flow.ja.md](./domain_boundaries_flow.ja.md) を参照してください。
 
 ## 第8章：設計の振り返り
 
 ### 成功した設計原則
 
-1. **ドメイン分離**: 3つの明確なドメイン境界
-2. **責務分離**: 各ドメインに専用のオプション型
+1. **シナリオ分離**: 3つの明確な利用シナリオ
+2. **責務分離**: 各シナリオに専用のオプション型
 3. **拡張性**: 将来の機能追加に対応
 4. **型安全性**: TypeScriptの型システムを活用
-5. **一貫性**: 統一されたドメイン用語と設計方針
+5. **一貫性**: 統一されたユビキタス言語と設計方針
 
 ### 設計の意図
 
-- **理解しやすさ**: ドメインストーリーによる文脈の提供
+- **理解しやすさ**: シナリオストーリーによる文脈の提供
 - **実装しやすさ**: 明確な責務分離と型安全性
 - **保守しやすさ**: 拡張性と一貫性の両立
-- **誤解の防止**: 各ドメインの境界と責務の明確化
+- **誤解の防止**: 各シナリオの境界と責務の明確化
 
-## エピローグ：ドメインモデルの価値
+## エピローグ：シナリオ駆動オプション設計の価値
 
-このオプション型設計は、単なる技術的な型定義ではありません。**Breakdown CLIのドメインモデル**そのものです。
+このオプション型設計は、単なる技術的な型定義ではありません。**Breakdown CLI のユーザー体験そのもの**を表現しています。
 
-- **情報表示ドメイン**: シンプルで即座に応答
-- **管理操作ドメイン**: 柔軟で拡張可能
-- **プロンプト生成ドメイン**: 複雑で強力
+- **情報表示シナリオ**: シンプルで即座に応答
+- **管理操作シナリオ**: 柔軟で拡張可能
+- **プロンプト生成シナリオ**: 複雑で強力
 
-この3つのドメインが調和することで、Breakdown CLIは**一貫性のある**、**理解しやすい**、**拡張しやすい**アプリケーションとなっています。
+この3つのシナリオが調和することで、Breakdown CLIは**一貫性のある**、**理解しやすい**、**拡張しやすい**アプリケーションとなっています。
 
 ## 参考資料
 
@@ -384,3 +359,13 @@ static create(value: string): Result<ValueObject, ValidationError> {
 
 **ドメインストーリー設計**: 2025年7月  
 **設計思想**: ドメイン駆動設計による責務分離と型安全性の両立
+
+---
+
+## CHANGELOG
+
+### 2026-04-18: 設計ドキュメント整理により重複定義を統合
+- 冒頭に位置付けセクションを追加し、本ファイルをユーザー視点のシナリオストーリー専用に再定義
+- `BreakdownDomain` / `CommandStructure` の型定義（[domain_boundaries_flow.ja.md](./domain_boundaries_flow.ja.md) と [two_params_types.ja.md](./two_params_types.ja.md) と重複）を散文化
+- エラーハンドリングの型定義を削除し、正本である [domain_boundaries_flow.ja.md](./domain_boundaries_flow.ja.md) への参照に置換
+- 用語を「ドメイン」から「シナリオ」に統一し、内部ドメインとの混同を回避

@@ -188,10 +188,11 @@ Claudeにビジネスルールを提示する際の推奨フォーマット：
 - [`docs/breakdown/overview/totality-type.ja.yml`](./totality-type.ja.yml)
 
 ### 具体的な適用例
-- **LayerTypeとDirectiveTypeのSmart Constructor化実例**（実装予定）
+- **LayerTypeとDirectiveTypeのSmart Constructor化実例**
   - TYPE設計はドメイン駆動設計によって定義される
-  - 詳細なドメイン設計については [#file:domain_core](../../domain_core/) を参照
-  - 核心ドメインにおける型安全性の実装パターン
+  - 核心ドメインの型定義および Smart Constructor の具体実装は [two_params_types.ja.md](../../../domain_core/two_params_types.ja.md) を参照
+  - **全域性原則の実装例（ドメイン境界横断のValueObject / Result型 / Discriminated Union の運用）** は [domain_boundaries_flow.ja.md](../../../domain_core/domain_boundaries_flow.ja.md) を参照
+  - 関連するドメイン全体像は [#file:domain_core](../../../domain_core/) を参照
 
 ### 実例テンプレート
 ```markdown
@@ -366,3 +367,11 @@ const result = ValidValue.create("test", (input) =>
 ```
 
 **目標**: ビジネスルールが型に反映され、コンパイラが不正状態を検出し、`switch`文に`default`が不要な設計
+
+---
+
+## CHANGELOG
+
+### 2026-04-18: 設計ドキュメント整理
+- 「具体的な適用例」セクションから [domain_boundaries_flow.ja.md](../../../domain_core/domain_boundaries_flow.ja.md) への相互参照を明示
+- LayerType / DirectiveType の Smart Constructor 実装の正本として [two_params_types.ja.md](../../../domain_core/two_params_types.ja.md) を参照

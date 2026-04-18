@@ -129,6 +129,66 @@ BreakdownPrompt → 結果出力
 3. **ファイル解決エラー**: 存在しないファイル・ディレクトリの処理
 4. **プロンプト生成エラー**: テンプレート・変数置換エラーの処理
 
+### BreakdownError 判別ユニオン（Issue #104）
+
+`runBreakdown` が返す `Result<string | undefined, BreakdownError>` のエラー側は、全域的な判別ユニオンとして定義される：
+
+```typescript
+type BreakdownError =
+  | { kind: "ConfigProfileError"; message: string; cause: unknown }
+  | { kind: "ConfigLoadError"; message: string }
+  | { kind: "ParameterParsingError"; message: string }
+  | { kind: "PromptGenerationError"; cause: PromptError | string }
+  | { kind: "TwoParamsHandlerError"; cause: unknown }
+  | { kind: "OneParamsHandlerError"; cause: unknown }
+  | { kind: "ZeroParamsHandlerError"; cause: unknown }
+  | { kind: "UnknownResultType"; type: string };
+```
+
+各 `kind` の発生源と対応方法：
+
+| kind | 発生源 | 典型的な対応 |
+|------|--------|-------------|
+| `ConfigProfileError` | `--config` で指定されたプロファイル名が不正 | 入力値の修正 |
+| `ConfigLoadError` | 設定ファイルの読み込みに失敗 | 設定ファイル配置・内容の確認 |
+| `ParameterParsingError` | BreakdownParams が args を拒否 | CLI 引数の修正 |
+| `PromptGenerationError` | プロンプト生成パイプラインの失敗（テンプレート未検出・変数エラー等） | `cause.kind` で分岐 |
+| `TwoParamsHandlerError` | Two params 経路のハンドラ内部エラー（PromptGenerationError 以外） | `cause` を展開して詳細調査 |
+| `OneParamsHandlerError` / `ZeroParamsHandlerError` | init/help/version 等の経路の失敗 | `cause` を展開して詳細調査 |
+| `UnknownResultType` | BreakdownParams が予期しない result type を返した場合のセーフティ | バージョン整合性の確認 |
+
+#### PromptError の保全と制約
+
+`PromptGenerationError.cause` の型は `PromptError | string` であり、`PromptError` は以下の判別ユニオン：
+
+```typescript
+type PromptError =
+  | { kind: "TemplateNotFound"; path: string; workingDir?: string; attemptedPaths?: string[] }
+  | { kind: "InvalidVariables"; details: string[] }
+  | { kind: "SchemaError"; schema: string; error: string }
+  | { kind: "InvalidPath"; message: string }
+  | { kind: "TemplateParseError"; template: string; error: string }
+  | { kind: "ConfigurationError"; message: string };
+```
+
+**重要な制約**:
+
+- `cause` が `PromptError` オブジェクトとして届くのは、**BreakdownPrompt adapter 経由**での失敗時のみ（例: テンプレートファイルの読み込みに成功して内容エラーとなった場合）。
+- path resolver の短絡（例: `app_prompt.base_dir` 不在で解決に失敗）では `cause: string` として届く。
+- consumer が `cause.kind === "TemplateNotFound"` のような分岐を行う場合、まず `typeof result.error.cause === "object"` で分岐する必要がある。
+
+```typescript
+// 安全な分岐例
+if (!result.ok && result.error.kind === "PromptGenerationError") {
+  const cause = result.error.cause;
+  if (typeof cause === "object" && cause.kind === "TemplateNotFound") {
+    console.error(`Template not found: ${cause.path}`);
+  } else {
+    console.error(`Prompt generation failed: ${String(cause)}`);
+  }
+}
+```
+
 ## パフォーマンス考慮事項
 
 - ファイル読み込みの最適化
