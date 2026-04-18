@@ -390,4 +390,9 @@ TwoParams (純粋な値オブジェクト)
 
 このドメイン型定義により、TwoParamsがDirectiveTypeとLayerTypeの2つを持つという関係性が型安全に表現され、**BreakdownParams による外部検証システム**を活用した信頼性の高いドメインオブジェクトとして機能します。さらに、これらの型はプロンプトテンプレートとスキーマファイルの物理的な配置を決定する重要な役割を担い、ファイルシステム上のリソースへの確実なアクセスを可能にします。ConfigProfileの短寿命化により、責務の明確化と処理効率の向上が実現されています。
 
+## 関連ドキュメント
+
+- [domain_boundaries_flow.ja.md](./domain_boundaries_flow.ja.md) - 本型がドメイン境界を跨ぐ際の役割・データフロー・境界図
+- [option_types.ja.md](./option_types.ja.md) - CLI オプション利用シナリオ（ドメインストーリー視点）
+- [totality.ja.md](../generic_domain/system/overview/totality.ja.md) - Smart Constructor 基底クラス `ValidatedValue<T>` と全域性原則
 

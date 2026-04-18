@@ -1,5 +1,7 @@
 # 技術基盤ドメイン（Generic Domain）
 
+> ドメイン全体（核心／支援／汎用）の位置付けと相互関係は [index.ja.md](../index.ja.md) を参照してください。本ファイルは技術基盤ドメイン固有の責務・設計原則・JSR パッケージ責務・利用パターンを扱います。
+
 ## 概要
 
 技術基盤ドメインは、システム全体の技術的な基盤を提供する**汎用ドメイン**です。これらのドメインは、核心ドメインと支援ドメインの両方から利用され、システムの安定性と保守性を支える重要な役割を担います。
@@ -217,6 +219,68 @@ describe('Performance', () => {
   });
 });
 ```
+
+## JSR パッケージ責務
+
+技術基盤ドメインは、**ドメインの境界を明確にする設計意図** により、4 つの専用 JSR パッケージへ機能分離しています。本セクションを正本とし、index.ja.md・domain_boundaries_flow.ja.md・two_params_types.ja.md・app_factory.ja.md からは本セクションを参照してください。
+
+### 1. [@tettuan/breakdownconfig](https://jsr.io/@tettuan/breakdownconfig) - 設定管理
+
+**責務**: アプリケーション設定とユーザー設定の統一管理。
+
+- `*-app.yml`（アプリケーション設定）と `*-user.yml`（ユーザー設定）の階層的読み込み
+- プロファイルプレフィクス（例: `breakdown-`, `search-`）による用途別設定切り替え
+- `working_dir`（SINGLE SOURCE OF TRUTH）と各種 `base_dir` の解決基盤
+
+**他ドメインとの境界**: 設定値は `BreakdownConfig` として核心ドメインへ受け渡され、CLI 引数（`BreakdownParams` 結果）と組み合わせて Factory が利用します。設定パターンは [@tettuan/breakdownparams](https://jsr.io/@tettuan/breakdownparams) へ `ParamsCustomConfig` として委譲されます。
+
+詳細フロー: [domain_boundaries_flow.ja.md](../domain_core/domain_boundaries_flow.ja.md)
+
+### 2. [@tettuan/breakdownparams](https://jsr.io/@tettuan/breakdownparams) - パラメータ解析
+
+**責務**: コマンドライン引数の型安全な解析・バリデーション。
+
+- 設定ベースの `directivePatterns` / `layerPatterns` による検証
+- `ZeroParamsResult` / `OneParamResult` / `TwoParamsResult` の生成（旧 NoParams/Single/Double）
+- `ParamsCustomConfig` を介した BreakdownConfig との統合
+
+**他ドメインとの境界**: 検証済み `TwoParamsResult` は `lib/application/breakdown_params_integration.ts` 経由で核心ドメインの `TwoParams`（DirectiveType / LayerType）へ変換されます。BreakdownParams 検証済みのため、追加の `directivePatterns` / `layerPatterns` 検証は不要です。
+
+具体的な API 利用方法: [JSR @tettuan/breakdownparams](https://jsr.io/@tettuan/breakdownparams) のドキュメントを参照
+詳細統合: [two_params_types.ja.md](../domain_core/two_params_types.ja.md)
+
+### 3. [@tettuan/breakdownprompt](https://jsr.io/@tettuan/breakdownprompt) - プロンプト生成
+
+**責務**: 特定されたプロンプトファイルに対する変数置換・スキーマ参照・プロンプト生成。
+
+- プロンプトテンプレートファイルの読み込み
+- `PromptParams`（外部 API 仕様適合の最終形態）を入力に変数置換実行
+- 全変数が文字列の辞書に平坦化された状態で受領
+
+**他ドメインとの境界**: プロンプトファイルパスの特定（`PromptTemplatePathResolver`）と変数構築（`PromptVariablesFactory`）は核心ドメインの責務であり、BreakdownPrompt は「何を使うか」の判断は行いません。`PromptParams` は契約インターフェースとして機能します。
+
+詳細仕様: [prompt_variables.ja.md](../domain_core/prompt_variables.ja.md), [JSR PromptParams](https://jsr.io/@tettuan/breakdownprompt/doc/~/PromptParams)
+
+### 4. [@tettuan/breakdownlogger](https://jsr.io/@tettuan/breakdownlogger) - ログ出力（テスト専用）
+
+**責務**: 診断・デバッグ情報の出力。
+
+- `LOG_LEVEL`（debug / info / warn / error）による出力制御
+- `LOG_KEY` によるモジュール別フィルタリング
+- `LOG_LENGTH` による出力長制御
+
+**他ドメインとの境界**: **テストコードでのみ使用** が原則です。実装コード（`lib/` 配下のプロダクションコード）での使用は禁止されています。テスト実行時の動作観測専用ツールとして位置付けられています。
+
+詳細: [docs/tests/testing.ja.md](../../tests/testing.ja.md)
+
+### JSR パッケージとドメイン境界
+
+| パッケージ | 対応ドメイン | 寿命 | 検証責務 |
+|-----------|------------|------|---------|
+| breakdownconfig | 設定管理（核心） | ConfigProfile 短寿命 → BreakdownConfig 分離後終了 | 設定スキーマ |
+| breakdownparams | パラメータ解析（核心） | 1 リクエスト | DirectiveType / LayerType パターン |
+| breakdownprompt | プロンプト生成（核心） | 1 リクエスト | PromptParams 契約 |
+| breakdownlogger | ログ出力（汎用） | 全寿命（テスト時） | なし |
 
 ## 関連ドキュメント
 
