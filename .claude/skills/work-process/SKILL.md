@@ -1,9 +1,9 @@
 ---
-name: workflow
+name: work-process
 description: How to approach work. Applies to all tasks including implementation, planning, investigation, design, review, and auditing.
 ---
 
-# Workflow
+# Work Process
 
 Main Agent はコンテキストを判断に集中させるため、調査・実装を全て Sub Agent に委譲する Conductor パターンで動く。
 

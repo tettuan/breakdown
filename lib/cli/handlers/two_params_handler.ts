@@ -17,6 +17,7 @@
 import type { Result } from "$lib/types/result.ts";
 import { error, ok } from "$lib/types/result.ts";
 import type { BreakdownConfigCompatible } from "$lib/config/timeout_manager.ts";
+import type { PromptError } from "$lib/types/prompt_types.ts";
 import { TwoParamsVariableProcessor } from "../processors/two_params_variable_processor.ts";
 import { TwoParamsPromptGenerator } from "../generators/two_params_prompt_generator_ddd.ts";
 import { TwoParamsStdinProcessor } from "../processors/two_params_stdin_processor.ts";
@@ -38,7 +39,7 @@ export type TwoParamsHandlerError =
   | { kind: "FactoryCreationError"; error: string }
   | { kind: "FactoryValidationError"; errors: string[] }
   | { kind: "VariablesBuilderError"; errors: string[] }
-  | { kind: "PromptGenerationError"; error: string }
+  | { kind: "PromptGenerationError"; error: PromptError | string }
   | {
     kind: "OutputWriteError";
     message: string;
@@ -283,7 +284,34 @@ class TwoParamsOrchestrator {
   }
 
   /**
+   * Type guard for PromptError discriminated union
+   *
+   * Checks if the value matches one of the six PromptError variants:
+   * TemplateNotFound, InvalidVariables, SchemaError, InvalidPath,
+   * TemplateParseError, ConfigurationError.
+   */
+  private isPromptError(value: unknown): value is PromptError {
+    if (typeof value !== "object" || value === null || !("kind" in value)) {
+      return false;
+    }
+    const kind = (value as { kind: unknown }).kind;
+    return (
+      kind === "TemplateNotFound" ||
+      kind === "InvalidVariables" ||
+      kind === "SchemaError" ||
+      kind === "InvalidPath" ||
+      kind === "TemplateParseError" ||
+      kind === "ConfigurationError"
+    );
+  }
+
+  /**
    * Map prompt generation errors to handler errors using type guards
+   *
+   * When the upstream generator returns a PromptGenerationError whose
+   * inner `error` field is a structured PromptError, preserve the
+   * PromptError object so downstream (runBreakdown) can branch on
+   * its discriminator. Otherwise fall back to string extraction.
    */
   private mapPromptError(error: unknown): TwoParamsHandlerError {
     // Check if it's a FactoryValidationError
@@ -302,6 +330,22 @@ class TwoParamsOrchestrator {
       return {
         kind: "FactoryValidationError",
         errors,
+      };
+    }
+
+    // Preserve structured PromptError when the upstream generator already
+    // produced {kind:"PromptGenerationError", error: PromptError, ...}.
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "kind" in error &&
+      (error as { kind: unknown }).kind === "PromptGenerationError" &&
+      "error" in error &&
+      this.isPromptError((error as { error: unknown }).error)
+    ) {
+      return {
+        kind: "PromptGenerationError",
+        error: (error as { error: PromptError }).error,
       };
     }
 

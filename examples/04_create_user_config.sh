@@ -70,10 +70,18 @@ fi
 echo "✅ Created user configuration at: ${CONFIG_DIR}/default-user.yml"
 
 # Create findbugs-user.yml for find bugs functionality
+# NOTE: find/bugs は default の directive/layer パターン外なので、
+#       findbugs プロファイルではパターンを拡張して許可する。
 cat > "${CONFIG_DIR}/findbugs-user.yml" << EOF
 # User configuration for find bugs functionality
 working_dir: ".agent/climpt"
 username: "findbugs-user"
+params:
+  two:
+    directiveType:
+      pattern: "^(to|summary|defect|find)$"
+    layerType:
+      pattern: "^(project|issue|task|bugs)$"
 EOF
 
 # Validate findbugs-user.yml creation

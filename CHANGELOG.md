@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.6] - 2026-04-18
+
+### Changed
+- `runBreakdown({ returnMode: true })` now returns `{ ok: false, error }` with a structured `BreakdownError` when prompt generation fails (Issue #104). Previously it returned `{ ok: true, data: undefined }` with a stdout warning for some error cases, violating the Result contract.
+- Library mode produces no stdout output. Diagnostic warnings (e.g. missing configuration profile) are routed to stderr via `console.error`, so callers using `returnMode: true` receive clean `Result<string, BreakdownError>` without side effects on stdout.
+- `TwoParamsHandlerError.PromptGenerationError.error` changed from `string` to `PromptError | string` to preserve the discriminated `PromptError` kind (e.g. `TemplateNotFound`) across layer boundaries. `BreakdownError.PromptGenerationError.cause` is the surfaced field for library consumers.
+
+### Removed
+- `handleTwoParamsError`, `analyzeErrorSeverity`, `isTestingErrorHandling`, and the `ErrorHandlingResult` / `ErrorSeverity*` types in `lib/cli/error_handler.ts`. The severity-downgrade path violated the Result contract by returning `{ ok: true }` for recoverable errors and relied on fragile substring matching (e.g. `"/nonexistent/"`).
+- `lib/cli/error_handler.ts` itself after the refactor (dead code).
+
+### Migration notes
+- Callers of `runBreakdown(args, { returnMode: true })` that previously treated `result.data === undefined` as success should now check `result.ok === true` and `typeof result.data === "string"`.
+- Error cases now set `result.error.kind === "PromptGenerationError"` with `result.error.cause` being a `PromptError` object when the failure originated from the BreakdownPrompt adapter. Path-resolution short-circuits (e.g. missing `base_dir`) still surface as `cause: string`. Consumers that need to branch on `result.error.cause.kind` should first check `typeof result.error.cause === "object"`.
+
 ## [1.8.4] - 2026-02-19
 
 ### Changed

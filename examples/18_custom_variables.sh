@@ -94,6 +94,8 @@ echo "  --uv-budget='500万円'"
 echo
 echo "【3. 実行コマンド】"
 
+# NOTE: -o= は「プロンプト内で参照される出力パス」で、実ファイルは生成しない。
+#       プロンプト本体は stdout に流れるため、検証用に > でファイルに捕捉する。
 $BREAKDOWN to project \
   --input=project \
   --uv-company_name="テックコーポレーション" \
@@ -102,7 +104,7 @@ $BREAKDOWN to project \
   --uv-team_size="5名" \
   --uv-deadline="2024年3月末" \
   --uv-budget="500万円" \
-  -o="$OUTPUT_DIR/custom_project.md" < "$OUTPUT_DIR/project_brief.md" 2>&1
+  -o="$OUTPUT_DIR/custom_project.md" < "$OUTPUT_DIR/project_brief.md" > "$OUTPUT_DIR/custom_project.md" 2>&1
 
 echo
 echo "【4. 生成結果の検証】"
@@ -208,7 +210,7 @@ $BREAKDOWN summary task \
   --adaptation="agile" \
   --uv-sprint_length="2週間" \
   --uv-story_point_scale="フィボナッチ数列" \
-  -o="$OUTPUT_DIR/agile_tasks.md" < "$OUTPUT_DIR/feature_request.md" 2>&1
+  -o="$OUTPUT_DIR/agile_tasks.md" < "$OUTPUT_DIR/feature_request.md" > "$OUTPUT_DIR/agile_tasks.md" 2>&1
 
 echo
 echo "【4. 生成結果の検証】"
@@ -249,7 +251,7 @@ echo "システム要件:
   --uv-deployment="Kubernetes" \
   --uv-monitoring="Prometheus + Grafana" \
   --uv-security_level="PCI-DSS準拠" \
-  -o="$OUTPUT_DIR/system_issue.md" 2>&1
+  -o="$OUTPUT_DIR/system_issue.md" > "$OUTPUT_DIR/system_issue.md" 2>&1
 
 echo "✅ STDINとカスタム変数の組み合わせ完了"
 

@@ -40,6 +40,31 @@ if [ ! -d "${CONFIG_DIR}" ]; then
     fi
 fi
 
+# Create environment-specific profiles (dev/staging/prod).
+# 03_setup_environment.sh は default/basic/production 等を作成するが、
+# この例では「環境別プロファイル切り替え」を示すため dev/staging/prod を自前で生成する。
+for PROFILE in dev staging prod; do
+    cat > "${CONFIG_DIR}/${PROFILE}-app.yml" << EOF
+# ${PROFILE} environment application configuration
+working_dir: ".agent/climpt"
+app_prompt:
+  base_dir: "prompts"
+app_schema:
+  base_dir: "schema"
+EOF
+    cat > "${CONFIG_DIR}/${PROFILE}-user.yml" << EOF
+# ${PROFILE} environment user configuration
+params:
+  two:
+    directiveType:
+      pattern: "^(to|summary|defect)$"
+    layerType:
+      pattern: "^(project|issue|task)$"
+environment: "${PROFILE}"
+EOF
+done
+echo "Created environment profiles: dev, staging, prod"
+
 # Create sample input file for testing
 echo "Creating test input file..."
 cat > profile_test.md << 'EOF'

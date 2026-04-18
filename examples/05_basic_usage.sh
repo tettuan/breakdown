@@ -178,15 +178,16 @@ function processUser(user) {
 }
 EOF
 
-# Step 1: デフォルト設定での成功確認 (03_setup_environment.shで有効化済み)
-echo "Testing with default configuration..."
+# Step 1: デフォルト設定での拒否確認 (README: "デフォルトでは利用不可")
+echo "Testing with default configuration (expected to be rejected)..."
 error_log=$(mktemp)
 if BREAKDOWN find bugs --config=default --from="$OUTPUT_DIR/buggy_code.js" > "$OUTPUT_DIR/bugs_default.md" 2>"$error_log"; then
-    echo "✅ Success: find bugs is enabled in default configuration"
+    echo "⚠️  Unexpected: find bugs succeeded with default config"
+    echo "   (README spec says default profile must not accept 'find bugs')"
 else
-    echo "❌ Error: find bugs failed with default config"
+    echo "✅ Expected: find bugs is rejected with default config"
     if [ -s "$error_log" ]; then
-        echo "   Error details: $(cat "$error_log")"
+        echo "   Rejection reason: $(head -1 "$error_log")"
     fi
 fi
 rm -f "$error_log"
