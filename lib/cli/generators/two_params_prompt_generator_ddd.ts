@@ -75,7 +75,11 @@ export type PromptGeneratorError =
   }
   // Prompt generation errors
   | { readonly kind: "PromptPathError"; readonly path: string; readonly error: string }
-  | { readonly kind: "PromptGenerationError"; readonly error: string; readonly details?: unknown }
+  | {
+    readonly kind: "PromptGenerationError";
+    readonly error: PromptError | string;
+    readonly details?: unknown;
+  }
   | { readonly kind: "TemplateError"; readonly template: string; readonly error: string }
   // Configuration errors
   | { readonly kind: "InvalidConfiguration"; readonly message: string; readonly field?: string }
@@ -557,9 +561,12 @@ export class TwoParamsPromptGenerator {
       );
 
       if (!result.ok) {
+        // Preserve structured PromptError so downstream layers can branch on
+        // its discriminated union (TemplateNotFound, InvalidVariables, ...)
+        // instead of re-parsing a formatted string. See Issue #104.
         return error({
           kind: "PromptGenerationError",
-          error: this.formatPromptError(result.error),
+          error: result.error,
           details: result.error,
         });
       }
