@@ -24,7 +24,6 @@ import {
 import { ParamsCustomConfig } from "$lib/types/params_custom_config.ts";
 import { ResultStatus } from "$lib/types/enums.ts";
 import { ConfigProfile } from "$lib/config/config_profile_name.ts";
-import type { formatError as _formatError } from "$lib/cli/error_handler.ts";
 import type { Result } from "$lib/types/result.ts";
 import type { PromptError } from "$lib/types/prompt_types.ts";
 import type {
@@ -222,7 +221,7 @@ export async function runBreakdown(
       errorMessage = "Unknown configuration error";
     }
 
-    console.warn(
+    console.error(
       "[Warning] Configuration not found, using defaults:",
       errorMessage,
       configProfile.value ? `profile: ${configProfile.value}` : "no profile",
@@ -246,7 +245,7 @@ export async function runBreakdown(
   if (paramsConfigResult.status === ResultStatus.SUCCESS) {
     customConfig = paramsConfigResult.data; // undefined if no breakdown config, or CustomConfig if present
   } else {
-    console.warn("[Warning] Configuration extraction failed:", paramsConfigResult.error?.message);
+    console.error("[Warning] Configuration extraction failed:", paramsConfigResult.error?.message);
     customConfig = undefined; // Fall back to BreakdownParams defaults
   }
 
