@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.8] - 2026-04-19
+
+### Changed
+- Updated JSR dependencies to latest compatible versions.
+
+### Documentation
+- `release` skill: auto-progress release flow without per-step user confirmation; prefer `pull --ff-only` for develop/main syncing.
+
+## [1.8.7] - 2026-04-18
+
+### Changed
+- CI: removed duplicate workflow triggers to prevent redundant pipeline runs.
+
+### Documentation
+- `branch-management` skill: link to issue-fix convention.
+- Skill guidance: enforce issue-linked commits and stepwise release checklist.
+
 ## [1.8.6] - 2026-04-18
 
 ### Changed
