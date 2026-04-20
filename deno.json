@@ -19,7 +19,7 @@
     "@std/yaml": "jsr:@std/yaml@^1.0.12",
     "@std/testing": "jsr:@std/testing@^1.0.17",
     "@tettuan/breakdown": "jsr:@tettuan/breakdown@^1.8.2",
-    "@tettuan/breakdownconfig": "jsr:@tettuan/breakdownconfig@^1.2.4",
+    "@tettuan/breakdownconfig": "jsr:@tettuan/breakdownconfig@^1.2.5",
     "@tettuan/breakdownparams": "jsr:@tettuan/breakdownparams@^1.2.3",
     "@tettuan/breakdownprompt": "jsr:@tettuan/breakdownprompt@^1.2.8",
     "@tettuan/breakdownlogger": "jsr:@tettuan/breakdownlogger@^1.1.3"
